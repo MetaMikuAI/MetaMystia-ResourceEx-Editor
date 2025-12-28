@@ -470,7 +470,7 @@ export default function Home() {
 			<header className="sticky top-0 z-50 w-full border-b border-white/10 bg-white/5 backdrop-blur-md">
 				<div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-8">
 					<div className="flex select-none items-center gap-3">
-						<div className="h-8 w-8 rounded-full border border-white/10 bg-mystia bg-cover bg-no-repeat" />
+						<div className="h-8 w-8 rounded-full border border-white/10 bg-[url(/assets/icon.png)] bg-cover bg-no-repeat" />
 						<div className="flex items-baseline gap-2">
 							<span className="text-lg font-bold tracking-tight">
 								ResourceEx Editor
