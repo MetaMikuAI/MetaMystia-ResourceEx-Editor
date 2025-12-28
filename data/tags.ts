@@ -87,5 +87,9 @@ export const BEVERAGE_TAGS: Tag[] = [
 	{ id: 19, name: '提神' },
 ];
 
-export const FOOD_TAG_MAP = Object.fromEntries(FOOD_TAGS.map((t) => [t.id, t.name]));
-export const BEVERAGE_TAG_MAP = Object.fromEntries(BEVERAGE_TAGS.map((t) => [t.id, t.name]));
+export const FOOD_TAG_MAP = Object.fromEntries(
+	FOOD_TAGS.map((t) => [t.id, t.name])
+);
+export const BEVERAGE_TAG_MAP = Object.fromEntries(
+	BEVERAGE_TAGS.map((t) => [t.id, t.name])
+);

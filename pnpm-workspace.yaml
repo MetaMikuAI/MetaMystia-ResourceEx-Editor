@@ -1,0 +1,2 @@
+publicHoistPattern:
+  - postcss-load-config

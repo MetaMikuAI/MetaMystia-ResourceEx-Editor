@@ -1,0 +1,10 @@
+{
+	"recommendations": [
+		"bradlc.vscode-tailwindcss",
+		"EditorConfig.EditorConfig",
+		"esbenp.prettier-vscode",
+		"mgmcdermott.vscode-language-babel",
+		"redhat.vscode-yaml",
+		"syler.sass-indented"
+	]
+}

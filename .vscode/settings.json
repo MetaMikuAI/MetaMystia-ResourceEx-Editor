@@ -1,0 +1,31 @@
+{
+	"editor.formatOnSave": true,
+	"editor.insertSpaces": false,
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"prettier.enable": true,
+	"[markdown]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+	"[scss]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+	"[javascript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+	"[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+	"[typescriptreact]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[tsx]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+	"[json]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+	"[jsonc]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+	"[yaml]": { "editor.defaultFormatter": "redhat.vscode-yaml" },
+	"[yml]": { "editor.defaultFormatter": "redhat.vscode-yaml" },
+	"tailwindCSS.classAttributes": ["className", "classNames", "tw"],
+	"tailwindCSS.experimental.classRegex": [
+		["([\"'`][^\"'`]*.*?[\"'`])", "[\"'`]([^\"'`]*).*?[\"'`]"]
+	],
+	"explorer.fileNesting.enabled": true,
+	"explorer.fileNesting.expand": false,
+	"explorer.fileNesting.patterns": {
+		"next.config.ts": "*.config.mjs, *.config.ts, next-env.d.ts, types.d.ts",
+		"package.json": ".*cache, .*ignore, .*rc, .editorconfig, .env*, .git*, pnpm-lock.yaml, pnpm-workspace.yaml, tsconfig.json",
+		"README*": "*.md, LICENSE"
+	},
+	"typescript.enablePromptUseWorkspaceTsdk": true,
+	"typescript.tsdk": "./node_modules/typescript/lib"
+}
