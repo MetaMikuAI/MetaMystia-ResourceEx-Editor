@@ -4,12 +4,14 @@ import { type ChangeEvent, useEffect, useState } from 'react';
 
 import { BEVERAGE_TAGS, FOOD_TAGS, FOOD_TAG_MAP } from '@/data/tags';
 import { cn } from '@/lib';
-import type {
-	Character,
-	CharacterPortrait,
-	CharacterType,
-	FoodRequest,
-	ResourceEx,
+import {
+	type Character,
+	type CharacterPortrait,
+	type CharacterSpriteSet,
+	type CharacterType,
+	type FoodRequest,
+	type GuestInfo,
+	type ResourceEx,
 } from '@/types/resource';
 
 const DEFAULT_CHARACTER: Character = {
@@ -77,6 +79,7 @@ export default function Home() {
 												...Array(9).fill(''),
 											].slice(0, 9)
 										: Array(9).fill(''),
+									conversation: char.guest.conversation || [],
 									// 导入时，如果 foodRequests 中的 tagId 在 likeFoodTag 中，则默认启用
 									foodRequests: char.guest.foodRequests.map(
 										(req) => ({
@@ -243,13 +246,14 @@ export default function Home() {
 		setHasUnsavedChanges(true);
 	};
 
-	const updateGuest = (charIndex: number, updates: Partial<any>) => {
+	const updateGuest = (charIndex: number, updates: Partial<GuestInfo>) => {
 		const newCharacters = [...data.characters];
 		const char = newCharacters[charIndex];
 		const guest = char?.guest || {
 			fundRangeLower: 0,
 			fundRangeUpper: 0,
 			evaluation: Array(9).fill(''),
+			conversation: [],
 			foodRequests: [],
 			hateFoodTag: [],
 			likeFoodTag: [],
@@ -300,7 +304,7 @@ export default function Home() {
 	const updateFoodRequest = (
 		charIndex: number,
 		requestIndex: number,
-		updates: Partial<any>
+		updates: Partial<FoodRequest>
 	) => {
 		const char = data.characters[charIndex];
 		if (!char?.guest) return;
@@ -337,7 +341,10 @@ export default function Home() {
 		updateSpriteSet(charIndex, { name: label, mainSprite, eyeSprite });
 	};
 
-	const updateSpriteSet = (charIndex: number, updates: Partial<any>) => {
+	const updateSpriteSet = (
+		charIndex: number,
+		updates: Partial<CharacterSpriteSet>
+	) => {
 		const newCharacters = [...data.characters];
 		const char = newCharacters[charIndex];
 		const spriteSet = char?.characterSpriteSetCompact || {
@@ -394,6 +401,7 @@ export default function Home() {
 			fundRangeLower: 0,
 			fundRangeUpper: 0,
 			evaluation: Array(9).fill(''),
+			conversation: [],
 			foodRequests: [],
 			hateFoodTag: [],
 			likeFoodTag: [],
@@ -407,6 +415,33 @@ export default function Home() {
 		} as Character;
 		setData({ ...data, characters: newCharacters });
 		setHasUnsavedChanges(true);
+	};
+
+	const addConversation = (charIndex: number) => {
+		const char = data.characters[charIndex];
+		if (!char?.guest) return;
+		const newConv = [...(char.guest.conversation || []), ''];
+		updateGuest(charIndex, { conversation: newConv });
+	};
+
+	const updateConversation = (
+		charIndex: number,
+		convIndex: number,
+		value: string
+	) => {
+		const char = data.characters[charIndex];
+		if (!char?.guest || !char.guest.conversation) return;
+		const newConv = [...char.guest.conversation];
+		newConv[convIndex] = value;
+		updateGuest(charIndex, { conversation: newConv });
+	};
+
+	const removeConversation = (charIndex: number, convIndex: number) => {
+		const char = data.characters[charIndex];
+		if (!char?.guest || !char.guest.conversation) return;
+		const newConv = [...char.guest.conversation];
+		newConv.splice(convIndex, 1);
+		updateGuest(charIndex, { conversation: newConv });
 	};
 
 	const downloadJson = () => {
@@ -1024,6 +1059,72 @@ export default function Home() {
 															/>
 														</div>
 													))}
+												</div>
+											</div>
+
+											<div className="flex flex-col gap-4">
+												<div className="ml-1 flex items-center justify-between">
+													<label className="text-sm font-bold opacity-70">
+														闲聊文本 (Conversations)
+													</label>
+													<button
+														onClick={() =>
+															addConversation(
+																selectedIndex!
+															)
+														}
+														className="rounded border border-white/10 bg-white/10 px-2 py-1 text-[10px] transition-all hover:bg-white/20"
+													>
+														+ 添加闲聊
+													</button>
+												</div>
+												<div className="flex flex-col gap-2">
+													{selectedChar.guest?.conversation?.map(
+														(conv, i) => (
+															<div
+																key={i}
+																className="flex gap-2"
+															>
+																<input
+																	type="text"
+																	value={conv}
+																	onChange={(
+																		e
+																	) =>
+																		updateConversation(
+																			selectedIndex!,
+																			i,
+																			e
+																				.target
+																				.value
+																		)
+																	}
+																	placeholder="请输入闲聊文本..."
+																	className="flex-1 rounded-lg border border-white/10 bg-black/20 p-2 text-sm transition-all focus:outline-none focus:ring-1 focus:ring-primary/50"
+																/>
+																<button
+																	onClick={() =>
+																		removeConversation(
+																			selectedIndex!,
+																			i
+																		)
+																	}
+																	className="flex h-9 w-9 items-center justify-center rounded-lg border border-danger/20 bg-danger/10 text-danger transition-all hover:bg-danger/20"
+																>
+																	×
+																</button>
+															</div>
+														)
+													)}
+													{(!selectedChar.guest
+														?.conversation ||
+														selectedChar.guest
+															.conversation
+															.length === 0) && (
+														<div className="rounded-xl border border-dashed border-white/5 py-4 text-center text-xs opacity-30">
+															暂无闲聊文本
+														</div>
+													)}
 												</div>
 											</div>
 
