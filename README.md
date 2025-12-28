@@ -1,0 +1,1 @@
+基于 [东方夜雀食堂小助手](https://github.com/AnYiEE/touhou-mystia-izakaya-assistant) 开发

@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #fbf8f3;
+  --foreground: #0d0d0d;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #000000;
+    --foreground: #fafafa;
+  }
+}
+
+.dark {
+  --background: #000000;
+  --foreground: #fafafa;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.bg-blend-mystia-pseudo {
+  // Due to the poor performance of `background-attachment: fixed`, use pseudo-elements to achieve a similar fixed background effect.
+  @apply before:fixed before:-z-10 before:h-full before:w-full before:bg-mystia before:bg-cover before:bg-center before:bg-no-repeat before:bg-blend-overlay before:content-[''];
+
+  &::before {
+    background-color: var(--background);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    &::before {
+      background-color: rgba(0, 0, 0, 0.9);
+    }
+  }
+
+  .dark &::before {
+    background-color: rgba(0, 0, 0, 0.9);
+  }
+}
+
+@layer components {
+  .btn-mystia {
+    @apply transition-all duration-200 active:scale-[0.98] hover:brightness-95 active:brightness-90 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl px-4 py-2 font-medium backdrop-blur-md bg-opacity-80 flex items-center justify-center gap-2;
+  }
+
+  .btn-mystia-primary {
+    @apply btn-mystia bg-primary text-white shadow-lg shadow-primary/20;
+  }
+
+  .btn-mystia-success {
+    @apply btn-mystia bg-success text-white shadow-lg shadow-success/20;
+  }
+
+  .btn-mystia-danger {
+    @apply btn-mystia bg-danger text-white shadow-lg shadow-danger/20;
+  }
+
+  .btn-mystia-secondary {
+    @apply btn-mystia bg-white/10 border border-white/20 hover:bg-white/20;
+  }
+
+  .textarea-mystia {
+    @apply w-full bg-black/20 border border-white/10 rounded-xl p-4 pl-6 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all resize-none;
+    field-sizing: content;
+    min-height: 5rem;
+  }
+}
