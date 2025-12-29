@@ -250,7 +250,7 @@ export default function Home() {
 	const updateGuest = (charIndex: number, updates: Partial<GuestInfo>) => {
 		const newCharacters = [...data.characters];
 		const char = newCharacters[charIndex];
-		const guest = char?.guest || {
+		const defaultGuest: GuestInfo = {
 			fundRangeLower: 0,
 			fundRangeUpper: 0,
 			evaluation: Array(9).fill(''),
@@ -260,6 +260,7 @@ export default function Home() {
 			likeFoodTag: [],
 			likeBevTag: [],
 		};
+		const guest = { ...defaultGuest, ...(char?.guest || {}) };
 		newCharacters[charIndex] = {
 			...char,
 			guest: { ...guest, ...updates },
@@ -309,7 +310,7 @@ export default function Home() {
 	) => {
 		const char = data.characters[charIndex];
 		if (!char?.guest) return;
-		const newRequests = [...char.guest.foodRequests];
+		const newRequests = [...(char.guest.foodRequests || [])];
 		newRequests[requestIndex] = {
 			...newRequests[requestIndex],
 			...updates,
@@ -396,32 +397,17 @@ export default function Home() {
 		evalIndex: number,
 		value: string
 	) => {
-		const newCharacters = [...data.characters];
-		const char = newCharacters[charIndex];
-		const guest = char?.guest || {
-			fundRangeLower: 0,
-			fundRangeUpper: 0,
-			evaluation: Array(9).fill(''),
-			conversation: [],
-			foodRequests: [],
-			hateFoodTag: [],
-			likeFoodTag: [],
-			likeBevTag: [],
-		};
-		const newEval = [...guest.evaluation];
+		const char = data.characters[charIndex];
+		const currentEval = char?.guest?.evaluation || Array(9).fill('');
+		const newEval = [...currentEval];
 		newEval[evalIndex] = value;
-		newCharacters[charIndex] = {
-			...char,
-			guest: { ...guest, evaluation: newEval },
-		} as Character;
-		setData({ ...data, characters: newCharacters });
-		setHasUnsavedChanges(true);
+		updateGuest(charIndex, { evaluation: newEval });
 	};
 
 	const addConversation = (charIndex: number) => {
 		const char = data.characters[charIndex];
 		if (!char?.guest) return;
-		const newConv = [...char.guest.conversation, ''];
+		const newConv = [...(char.guest.conversation || []), ''];
 		updateGuest(charIndex, { conversation: newConv });
 	};
 
@@ -1120,7 +1106,7 @@ export default function Home() {
 													</button>
 												</div>
 												<div className="flex flex-col gap-2">
-													{selectedChar.guest?.conversation.map(
+													{selectedChar.guest?.conversation?.map(
 														(conv, i) => (
 															<div
 																key={i}
@@ -1157,8 +1143,9 @@ export default function Home() {
 															</div>
 														)
 													)}
-													{selectedChar.guest
-														.conversation.length ===
+													{(selectedChar.guest
+														?.conversation
+														?.length || 0) ===
 														0 && (
 														<div className="rounded-xl border border-dashed border-white/5 py-4 text-center text-xs opacity-30">
 															暂无闲聊文本
