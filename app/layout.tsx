@@ -8,9 +8,9 @@ export const metadata: Metadata = {
 	description: 'MetaMystia ResourceEx Editor',
 };
 
-export default function RootLayout({ children }: PropsWithChildren<{}>) {
+export default function RootLayout({ children }: PropsWithChildren) {
 	return (
-		<html lang="en">
+		<html lang="zh-CN">
 			<body className="bg-blend-mystia-pseudo">{children}</body>
 		</html>
 	);
