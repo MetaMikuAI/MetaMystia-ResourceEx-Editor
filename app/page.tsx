@@ -4,14 +4,14 @@ import { type ChangeEvent, useEffect, useState } from 'react';
 
 import { BEVERAGE_TAGS, FOOD_TAGS, FOOD_TAG_MAP } from '@/data/tags';
 import { cn } from '@/lib';
-import {
-	type Character,
-	type CharacterPortrait,
-	type CharacterSpriteSet,
-	type CharacterType,
-	type FoodRequest,
-	type GuestInfo,
-	type ResourceEx,
+import type {
+	Character,
+	CharacterPortrait,
+	CharacterSpriteSet,
+	CharacterType,
+	FoodRequest,
+	GuestInfo,
+	ResourceEx,
 } from '@/types/resource';
 
 const DEFAULT_CHARACTER: Character = {
@@ -79,7 +79,6 @@ export default function Home() {
 												...Array(9).fill(''),
 											].slice(0, 9)
 										: Array(9).fill(''),
-									conversation: char.guest.conversation || [],
 									// 导入时，如果 foodRequests 中的 tagId 在 likeFoodTag 中，则默认启用
 									foodRequests: char.guest.foodRequests.map(
 										(req) => ({
@@ -420,7 +419,7 @@ export default function Home() {
 	const addConversation = (charIndex: number) => {
 		const char = data.characters[charIndex];
 		if (!char?.guest) return;
-		const newConv = [...(char.guest.conversation || []), ''];
+		const newConv = [...char.guest.conversation, ''];
 		updateGuest(charIndex, { conversation: newConv });
 	};
 
@@ -1079,7 +1078,7 @@ export default function Home() {
 													</button>
 												</div>
 												<div className="flex flex-col gap-2">
-													{selectedChar.guest?.conversation?.map(
+													{selectedChar.guest?.conversation.map(
 														(conv, i) => (
 															<div
 																key={i}
@@ -1116,11 +1115,9 @@ export default function Home() {
 															</div>
 														)
 													)}
-													{(!selectedChar.guest
-														?.conversation ||
-														selectedChar.guest
-															.conversation
-															.length === 0) && (
+													{selectedChar.guest
+														.conversation.length ===
+														0 && (
 														<div className="rounded-xl border border-dashed border-white/5 py-4 text-center text-xs opacity-30">
 															暂无闲聊文本
 														</div>

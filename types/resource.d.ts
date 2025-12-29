@@ -20,6 +20,7 @@ export interface GuestInfo {
 	fundRangeLower: number;
 	fundRangeUpper: number;
 	evaluation: string[];
+	conversation: string[];
 	foodRequests: FoodRequest[];
 	hateFoodTag: number[];
 	likeFoodTag: LikeTag[];
@@ -38,7 +39,7 @@ export interface Character {
 	label: string;
 	descriptions: string[];
 	type: CharacterType;
-	portraits?: CharacterPortrait[];
+	portraits?: CharacterPortrait[] | undefined;
 	guest?: GuestInfo | undefined;
 	characterSpriteSetCompact?: CharacterSpriteSet | undefined;
 }
