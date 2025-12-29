@@ -16,6 +16,13 @@ export interface LikeTag {
 	weight: number;
 }
 
+export interface SpawnConfig {
+	izakayaId: number;
+	relativeProb: number;
+	onlySpawnAfterUnlocking: boolean;
+	onlySpawnWhenPlaceBeRecorded: boolean;
+}
+
 export interface GuestInfo {
 	fundRangeLower: number;
 	fundRangeUpper: number;
@@ -25,6 +32,7 @@ export interface GuestInfo {
 	hateFoodTag: number[];
 	likeFoodTag: LikeTag[];
 	likeBevTag: LikeTag[];
+	spawn?: SpawnConfig[] | undefined;
 }
 
 export interface CharacterSpriteSet {

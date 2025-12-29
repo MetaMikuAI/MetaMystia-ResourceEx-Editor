@@ -3,6 +3,7 @@
 import { type ChangeEvent, useEffect, useState } from 'react';
 
 import { BEVERAGE_TAGS, FOOD_TAGS, FOOD_TAG_MAP } from '@/data/tags';
+import { IZAKAYAS } from '@/data/Izakayas';
 import { cn } from '@/lib';
 import type {
 	Character,
@@ -12,6 +13,7 @@ import type {
 	FoodRequest,
 	GuestInfo,
 	ResourceEx,
+	SpawnConfig,
 } from '@/types/resource';
 
 const DEFAULT_CHARACTER: Character = {
@@ -441,6 +443,46 @@ export default function Home() {
 		const newConv = [...char.guest.conversation];
 		newConv.splice(convIndex, 1);
 		updateGuest(charIndex, { conversation: newConv });
+	};
+
+	const toggleSpawn = (charIndex: number, izakayaId: number) => {
+		const char = data.characters[charIndex];
+		if (!char?.guest) return;
+
+		const currentSpawns = char.guest.spawn || [];
+		const exists = currentSpawns.find((s) => s.izakayaId === izakayaId);
+
+		let newSpawns;
+		if (exists) {
+			newSpawns = currentSpawns.filter((s) => s.izakayaId !== izakayaId);
+		} else {
+			newSpawns = [
+				...currentSpawns,
+				{
+					izakayaId,
+					relativeProb: 0,
+					onlySpawnAfterUnlocking: false,
+					onlySpawnWhenPlaceBeRecorded: false,
+				},
+			];
+		}
+
+		updateGuest(charIndex, { spawn: newSpawns });
+	};
+
+	const updateSpawn = (
+		charIndex: number,
+		izakayaId: number,
+		updates: Partial<SpawnConfig>
+	) => {
+		const char = data.characters[charIndex];
+		if (!char?.guest?.spawn) return;
+
+		const newSpawns = char.guest.spawn.map((s) =>
+			s.izakayaId === izakayaId ? { ...s, ...updates } : s
+		);
+
+		updateGuest(charIndex, { spawn: newSpawns });
 	};
 
 	const downloadJson = () => {
@@ -1463,6 +1505,220 @@ export default function Home() {
 															请先在上方选择喜爱食物标签
 														</div>
 													)}
+												</div>
+											</div>
+
+											<div className="flex flex-col gap-4">
+												<label className="ml-1 text-sm font-bold opacity-70">
+													出没地点 (Spawn Locations)
+												</label>
+												<div className="flex flex-col gap-2 rounded-xl border border-white/10 bg-black/20 p-4">
+													<div className="flex flex-wrap gap-2">
+														{IZAKAYAS.map(
+															(izakaya) => {
+																const isSelected =
+																	selectedChar.guest?.spawn?.some(
+																		(s) =>
+																			s.izakayaId ===
+																			izakaya.id
+																	);
+																return (
+																	<button
+																		key={
+																			izakaya.id
+																		}
+																		onClick={() =>
+																			toggleSpawn(
+																				selectedIndex!,
+																				izakaya.id
+																			)
+																		}
+																		className={cn(
+																			'flex items-center rounded-lg border px-3 py-1.5 text-[11px] font-medium transition-all',
+																			isSelected
+																				? 'border-primary bg-primary/20 text-black shadow-[0_0_10px_rgba(var(--primary-rgb),0.2)]'
+																				: 'border-white/10 bg-white/5 text-black hover:bg-white/10'
+																		)}
+																	>
+																		<span className="mr-1.5 opacity-50">
+																			(
+																			{
+																				izakaya.id
+																			}
+																			)
+																		</span>
+																		{
+																			izakaya.name
+																		}
+																	</button>
+																);
+															}
+														)}
+													</div>
+
+													{selectedChar.guest
+														?.spawn &&
+														selectedChar.guest.spawn
+															.length > 0 && (
+															<div className="mt-4 flex flex-col gap-3 border-t border-white/10 pt-4">
+																{selectedChar.guest.spawn.map(
+																	(spawn) => {
+																		const izakaya =
+																			IZAKAYAS.find(
+																				(
+																					i
+																				) =>
+																					i.id ===
+																					spawn.izakayaId
+																			);
+																		return (
+																			<div
+																				key={
+																					spawn.izakayaId
+																				}
+																				className="flex items-center gap-4 rounded-lg border border-white/5 bg-white/5 p-3"
+																			>
+																				<div className="w-32 shrink-0 text-[11px] font-bold">
+																					<span className="mr-1 opacity-50">
+																						(
+																						{
+																							spawn.izakayaId
+																						}
+
+																						)
+																					</span>
+																					{
+																						izakaya?.name
+																					}
+																				</div>
+																				<div className="flex flex-1 items-center gap-6">
+																					<div className="flex flex-1 flex-col gap-1">
+																						<div className="flex items-center justify-between">
+																							<label className="text-[10px] opacity-70">
+																								相对概率
+																							</label>
+																							<span className="text-[10px] opacity-50">
+																								{
+																									spawn.relativeProb
+																								}
+																							</span>
+																						</div>
+																						<div className="flex items-center gap-2">
+																							<input
+																								type="range"
+																								min="0"
+																								max="1"
+																								step="0.01"
+																								value={
+																									spawn.relativeProb
+																								}
+																								onChange={(
+																									e
+																								) =>
+																									updateSpawn(
+																										selectedIndex!,
+																										spawn.izakayaId,
+																										{
+																											relativeProb:
+																												parseFloat(
+																													e
+																														.target
+																														.value
+																												) ||
+																												0,
+																										}
+																									)
+																								}
+																								className="h-1 flex-1 cursor-pointer appearance-none rounded-lg bg-white/10 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary"
+																							/>
+																							<input
+																								type="number"
+																								step="0.01"
+																								value={
+																									spawn.relativeProb
+																								}
+																								onChange={(
+																									e
+																								) =>
+																									updateSpawn(
+																										selectedIndex!,
+																										spawn.izakayaId,
+																										{
+																											relativeProb:
+																												parseFloat(
+																													e
+																														.target
+																														.value
+																												) ||
+																												0,
+																										}
+																									)
+																								}
+																								className="w-12 rounded border border-white/10 bg-black/20 px-1 py-0.5 text-center text-[10px] focus:outline-none focus:ring-1 focus:ring-primary/50"
+																							/>
+																						</div>
+																					</div>
+																					<div className="flex gap-4">
+																						<div className="flex flex-col items-center gap-1">
+																							<label className="text-[10px] opacity-70">
+																								解锁后出现
+																							</label>
+																							<input
+																								type="checkbox"
+																								checked={
+																									spawn.onlySpawnAfterUnlocking
+																								}
+																								onChange={(
+																									e
+																								) =>
+																									updateSpawn(
+																										selectedIndex!,
+																										spawn.izakayaId,
+																										{
+																											onlySpawnAfterUnlocking:
+																												e
+																													.target
+																													.checked,
+																										}
+																									)
+																								}
+																								className="rounded border-white/20 bg-black/20 text-primary focus:ring-0"
+																							/>
+																						</div>
+																						<div className="flex flex-col items-center gap-1">
+																							<label className="text-[10px] opacity-70">
+																								记录后出现
+																							</label>
+																							<input
+																								type="checkbox"
+																								checked={
+																									spawn.onlySpawnWhenPlaceBeRecorded
+																								}
+																								onChange={(
+																									e
+																								) =>
+																									updateSpawn(
+																										selectedIndex!,
+																										spawn.izakayaId,
+																										{
+																											onlySpawnWhenPlaceBeRecorded:
+																												e
+																													.target
+																													.checked,
+																										}
+																									)
+																								}
+																								className="rounded border-white/20 bg-black/20 text-primary focus:ring-0"
+																							/>
+																						</div>
+																					</div>
+																				</div>
+																			</div>
+																		);
+																	}
+																)}
+															</div>
+														)}
 												</div>
 											</div>
 										</div>
