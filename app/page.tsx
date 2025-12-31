@@ -1,6 +1,6 @@
 'use client';
 
-import { type ChangeEvent, useEffect, useState } from 'react';
+import { type ChangeEvent, useEffect, useMemo, useState } from 'react';
 import type { Character, CharacterType, ResourceEx } from '@/types/resource';
 import { Header } from '@/components/Header';
 import { CharacterList } from '@/components/CharacterList';
@@ -202,8 +202,18 @@ export default function Home() {
 		setHasUnsavedChanges(false);
 	};
 
-	const selectedChar =
-		selectedIndex !== null ? data.characters[selectedIndex] : null;
+	const selectedChar = useMemo(() => {
+		if (selectedIndex === null) {
+			return null;
+		}
+
+		const char = data.characters[selectedIndex];
+		if (char === undefined) {
+			throw new ReferenceError('Selected character not found');
+		}
+
+		return char;
+	}, [data.characters, selectedIndex]);
 
 	const isIdDuplicate = (id: number, currentIndex: number) => {
 		return data.characters.some(
