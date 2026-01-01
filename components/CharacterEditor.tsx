@@ -79,6 +79,7 @@ export function CharacterEditor({
 			evaluation: Array(9).fill(''),
 			conversation: [],
 			foodRequests: [],
+			bevRequests: [],
 			hateFoodTag: [],
 			likeFoodTag: [],
 			likeBevTag: [],

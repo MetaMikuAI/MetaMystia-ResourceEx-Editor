@@ -5,10 +5,9 @@ export interface CharacterPortrait {
 	path: string;
 }
 
-export interface FoodRequest {
+export interface Request {
 	tagId: number;
 	request: string;
-	enabled?: boolean | undefined;
 }
 
 export interface LikeTag {
@@ -28,7 +27,8 @@ export interface GuestInfo {
 	fundRangeUpper: number;
 	evaluation: string[];
 	conversation: string[];
-	foodRequests: FoodRequest[];
+	foodRequests: Request[];
+	bevRequests: Request[];
 	hateFoodTag: number[];
 	likeFoodTag: LikeTag[];
 	likeBevTag: LikeTag[];

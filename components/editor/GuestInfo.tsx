@@ -1,6 +1,11 @@
 import { useState } from 'react';
-import { GuestInfo, FoodRequest, SpawnConfig } from '@/types/resource';
-import { BEVERAGE_TAGS, FOOD_TAGS, FOOD_TAG_MAP } from '@/data/tags';
+import { GuestInfo, Request, SpawnConfig } from '@/types/resource';
+import {
+	BEVERAGE_TAGS,
+	FOOD_TAGS,
+	FOOD_TAG_MAP,
+	BEVERAGE_TAG_MAP,
+} from '@/data/tags';
 import { IZAKAYAS } from '@/data/izakayas';
 import { cn } from '@/lib';
 
@@ -30,6 +35,7 @@ export function GuestInfoEditor({
 
 		let newTags;
 		let newFoodRequests = [...(guest.foodRequests || [])];
+		let newBevRequests = [...(guest.bevRequests || [])];
 
 		if (exists) {
 			newTags = currentTags.filter((t) => t.tagId !== tagId);
@@ -40,12 +46,17 @@ export function GuestInfoEditor({
 					(r) => r.tagId === tagId
 				);
 				if (!existingReq) {
-					newFoodRequests.push({ tagId, request: '', enabled: true });
+					newFoodRequests.push({ tagId, request: '' });
 				}
 			}
+			// Beverage requests are "closed" by default, so we don't add them to bevRequests here
 		}
 
-		onUpdate({ [field]: newTags, foodRequests: newFoodRequests });
+		onUpdate({
+			[field]: newTags,
+			foodRequests: newFoodRequests,
+			bevRequests: newBevRequests,
+		});
 	};
 
 	const toggleHateTag = (tagId: number) => {
@@ -64,17 +75,49 @@ export function GuestInfoEditor({
 		onUpdate({ hateFoodTag: newTags });
 	};
 
-	const updateFoodRequest = (
-		requestIndex: number,
-		updates: Partial<FoodRequest>
-	) => {
+	const updateFoodRequest = (tagId: number, updates: Partial<Request>) => {
 		if (!guest) return;
 		const newRequests = [...(guest.foodRequests || [])];
-		newRequests[requestIndex] = {
-			...newRequests[requestIndex],
-			...updates,
-		} as FoodRequest;
-		onUpdate({ foodRequests: newRequests });
+		const index = newRequests.findIndex((r) => r.tagId === tagId);
+		if (index !== -1) {
+			newRequests[index] = {
+				...newRequests[index],
+				...updates,
+			} as Request;
+			onUpdate({ foodRequests: newRequests });
+		}
+	};
+
+	const toggleRequest = (
+		field: 'foodRequests' | 'bevRequests',
+		tagId: number,
+		enabled: boolean
+	) => {
+		if (!guest) return;
+		const currentRequests = [...(guest[field] || [])];
+		const index = currentRequests.findIndex((r) => r.tagId === tagId);
+
+		if (enabled && index === -1) {
+			currentRequests.push({ tagId, request: '' });
+		} else if (!enabled && index !== -1) {
+			currentRequests.splice(index, 1);
+		}
+
+		onUpdate({ [field]: currentRequests });
+	};
+
+	const updateBevRequest = (tagId: number, updates: Partial<Request>) => {
+		if (!guest) return;
+		const newRequests = [...(guest.bevRequests || [])];
+		const index = newRequests.findIndex((r) => r.tagId === tagId);
+
+		if (index !== -1) {
+			newRequests[index] = {
+				...newRequests[index],
+				...updates,
+			} as Request;
+			onUpdate({ bevRequests: newRequests });
+		}
 	};
 
 	const updateEvaluation = (evalIndex: number, value: string) => {
@@ -459,103 +502,188 @@ export function GuestInfoEditor({
 					<div className="flex flex-col gap-4">
 						<div className="ml-1 flex items-center justify-between">
 							<label className="text-sm font-bold opacity-70">
-								特殊食物请求 (Food Requests)
+								食物点单请求 (Food Requests)
 							</label>
 							<span className="text-[10px] italic opacity-40">
 								根据上方喜爱食物自动同步
 							</span>
 						</div>
 						<div className="grid grid-cols-1 gap-3">
-							{guest?.foodRequests
-								.filter((req) =>
-									guest?.likeFoodTag.some(
-										(t) => t.tagId === req.tagId
-									)
-								)
+							{(guest?.likeFoodTag || [])
 								.sort((a, b) => a.tagId - b.tagId)
-								.map((req) => (
-									<div
-										key={req.tagId}
-										className={cn(
-											'flex items-center gap-3 rounded-xl border p-3 transition-all',
-											req.enabled !== false
-												? 'border-white/5 bg-black/10'
-												: 'border-transparent bg-black/5 opacity-50'
-										)}
-									>
-										<div className="flex w-32 flex-shrink-0 items-center gap-3">
-											<input
-												type="checkbox"
-												checked={req.enabled !== false}
-												onChange={(e) => {
-													const realIndex =
-														guest!.foodRequests.findIndex(
-															(r) =>
-																r.tagId ===
-																req.tagId
+								.map((tag) => {
+									const req = guest?.foodRequests?.find(
+										(r) => r.tagId === tag.tagId
+									);
+									const isEnabled = !!req;
+									return (
+										<div
+											key={tag.tagId}
+											className={cn(
+												'flex items-center gap-3 rounded-xl border p-3 transition-all',
+												isEnabled
+													? 'border-white/5 bg-black/10'
+													: 'border-transparent bg-black/5 opacity-60'
+											)}
+										>
+											<div className="flex w-32 flex-shrink-0 items-center gap-3">
+												<input
+													type="checkbox"
+													checked={isEnabled}
+													onChange={(e) => {
+														toggleRequest(
+															'foodRequests',
+															tag.tagId,
+															e.target.checked
 														);
-													updateFoodRequest(
-														realIndex,
-														{
-															enabled:
-																e.target
-																	.checked,
-														}
-													);
-												}}
-												className="h-4 w-4 rounded border-white/10 bg-black/20 text-primary focus:ring-primary/50"
-											/>
-											<div
-												className={cn(
-													'border px-1.5 py-0.5 text-[11px] font-medium transition-colors',
-													req.enabled !== false
-														? 'border-[#9d5437] bg-[#e6b4a6] text-[#830000]'
-														: 'border-white/10 bg-white/5 text-white/40'
-												)}
-											>
-												<span className="mr-1">⦁</span>
-												{FOOD_TAG_MAP[req.tagId] ||
-													req.tagId}
+													}}
+													className="h-4 w-4 rounded border-white/10 bg-black/20 text-primary focus:ring-primary/50"
+												/>
+												<div
+													className={cn(
+														'border px-1.5 py-0.5 text-[11px] font-medium transition-colors',
+														isEnabled
+															? 'border-[#9d5437] bg-[#e6b4a6] text-[#830000]'
+															: 'border-black/10 bg-black/5 text-black/40 dark:border-white/10 dark:bg-white/5 dark:text-white/40'
+													)}
+												>
+													<span className="mr-1">
+														⦁
+													</span>
+													{FOOD_TAG_MAP[tag.tagId] ||
+														tag.tagId}
+												</div>
+											</div>
+											<div className="flex flex-1 flex-col gap-1">
+												<input
+													type="text"
+													value={req?.request || ''}
+													disabled={!isEnabled}
+													onChange={(e) => {
+														updateFoodRequest(
+															tag.tagId,
+															{
+																request:
+																	e.target
+																		.value,
+															}
+														);
+													}}
+													className="rounded-lg border border-white/10 bg-black/20 p-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50"
+													placeholder={
+														!isEnabled
+															? '已禁用'
+															: `请输入对“${
+																	FOOD_TAG_MAP[
+																		tag
+																			.tagId
+																	]
+																}”的请求文本...`
+													}
+												/>
 											</div>
 										</div>
-										<div className="flex flex-1 flex-col gap-1">
-											<input
-												type="text"
-												value={req.request}
-												disabled={req.enabled === false}
-												onChange={(e) => {
-													const realIndex =
-														guest!.foodRequests.findIndex(
-															(r) =>
-																r.tagId ===
-																req.tagId
-														);
-													updateFoodRequest(
-														realIndex,
-														{
-															request:
-																e.target.value,
-														}
-													);
-												}}
-												className="rounded-lg border border-white/10 bg-black/20 p-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50 disabled:opacity-30"
-												placeholder={
-													req.enabled === false
-														? '已禁用'
-														: `请输入对“${FOOD_TAG_MAP[req.tagId]}”的请求文本...`
-												}
-											/>
-										</div>
-									</div>
-								))}
-							{(!guest?.foodRequests ||
-								guest.foodRequests.filter((req) =>
-									guest?.likeFoodTag.some(
-										(t) => t.tagId === req.tagId
-									)
-								).length === 0) && (
+									);
+								})}
+							{(!guest?.likeFoodTag ||
+								guest.likeFoodTag.length === 0) && (
 								<div className="rounded-xl border-2 border-dashed border-white/5 py-4 text-center text-sm opacity-30">
 									请先在上方选择喜爱食物标签
+								</div>
+							)}
+						</div>
+					</div>
+
+					<div className="flex flex-col gap-4">
+						<div className="ml-1 flex items-center justify-between">
+							<label className="text-sm font-bold opacity-70">
+								酒水点单请求 (Beverage Requests)
+							</label>
+							<span className="text-[10px] italic opacity-40">
+								根据上方喜爱酒水自动同步
+							</span>
+						</div>
+						<div className="grid grid-cols-1 gap-3">
+							{(guest?.likeBevTag || [])
+								.sort((a, b) => a.tagId - b.tagId)
+								.map((tag) => {
+									const req = guest?.bevRequests?.find(
+										(r) => r.tagId === tag.tagId
+									);
+									const isEnabled = !!req;
+									return (
+										<div
+											key={tag.tagId}
+											className={cn(
+												'flex items-center gap-3 rounded-xl border p-3 transition-all',
+												isEnabled
+													? 'border-white/5 bg-black/10'
+													: 'border-transparent bg-black/5 opacity-60'
+											)}
+										>
+											<div className="flex w-32 flex-shrink-0 items-center gap-3">
+												<input
+													type="checkbox"
+													checked={isEnabled}
+													onChange={(e) => {
+														toggleRequest(
+															'bevRequests',
+															tag.tagId,
+															e.target.checked
+														);
+													}}
+													className="h-4 w-4 rounded border-white/10 bg-black/20 text-primary focus:ring-primary/50"
+												/>
+												<div
+													className={cn(
+														'border px-1.5 py-0.5 text-[11px] font-medium transition-colors',
+														isEnabled
+															? 'border-[#6f929b] bg-[#b0cfd7] text-[#a45c22]'
+															: 'border-black/10 bg-black/5 text-black/40 dark:border-white/10 dark:bg-white/5 dark:text-white/40'
+													)}
+												>
+													{
+														BEVERAGE_TAG_MAP[
+															tag.tagId
+														]
+													}
+												</div>
+											</div>
+											<div className="flex flex-1 flex-col gap-1">
+												<input
+													type="text"
+													value={req?.request || ''}
+													disabled={!isEnabled}
+													onChange={(e) => {
+														updateBevRequest(
+															tag.tagId,
+															{
+																request:
+																	e.target
+																		.value,
+															}
+														);
+													}}
+													className="rounded-lg border border-white/10 bg-black/20 p-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50"
+													placeholder={
+														!isEnabled
+															? '已禁用'
+															: `请输入对“${
+																	BEVERAGE_TAG_MAP[
+																		tag
+																			.tagId
+																	]
+																}”的请求文本...`
+													}
+												/>
+											</div>
+										</div>
+									);
+								})}
+							{(!guest?.likeBevTag ||
+								guest.likeBevTag.length === 0) && (
+								<div className="rounded-xl border-2 border-dashed border-white/5 py-4 text-center text-sm opacity-30">
+									请先在上方选择喜爱酒水标签
 								</div>
 							)}
 						</div>

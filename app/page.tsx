@@ -68,17 +68,9 @@ export default function Home() {
 												...Array(9).fill(''),
 											].slice(0, 9)
 										: Array(9).fill(''),
-									// 导入时，如果 foodRequests 中的 tagId 在 likeFoodTag 中，则默认启用
-									foodRequests: char.guest.foodRequests.map(
-										(req) => ({
-											...req,
-											enabled:
-												req.enabled ??
-												char.guest?.likeFoodTag.some(
-													(t) => t.tagId === req.tagId
-												),
-										})
-									),
+									// 导入时，确保请求列表存在
+									foodRequests: char.guest.foodRequests || [],
+									bevRequests: char.guest.bevRequests || [],
 								}
 							: undefined,
 					}));
@@ -167,25 +159,26 @@ export default function Home() {
 	};
 
 	const downloadJson = () => {
-		// 导出时过滤掉未启用的食物请求
 		const exportData = {
 			...data,
 			characters: data.characters.map((char) => {
 				if (!char.guest) return char;
-				const activeLikeTagIds = char.guest.likeFoodTag.map(
+				const activeLikeFoodTagIds = char.guest.likeFoodTag.map(
+					(t) => t.tagId
+				);
+				const activeLikeBevTagIds = char.guest.likeBevTag.map(
 					(t) => t.tagId
 				);
 				return {
 					...char,
 					guest: {
 						...char.guest,
-						foodRequests: char.guest.foodRequests
-							.filter(
-								(req) =>
-									activeLikeTagIds.includes(req.tagId) &&
-									req.enabled !== false
-							)
-							.map(({ enabled, ...rest }) => rest), // 导出时移除 UI 专用的 enabled 字段
+						foodRequests: char.guest.foodRequests.filter((req) =>
+							activeLikeFoodTagIds.includes(req.tagId)
+						),
+						bevRequests: (char.guest.bevRequests || []).filter(
+							(req) => activeLikeBevTagIds.includes(req.tagId)
+						),
 					},
 				};
 			}),
