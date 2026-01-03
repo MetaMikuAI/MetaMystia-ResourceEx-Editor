@@ -1,9 +1,4 @@
-export interface Izakaya {
-	id: number;
-	name: string;
-}
-
-export const IZAKAYAS: Izakaya[] = [
+export const IZAKAYAS = [
 	{ id: -1, name: '?????' },
 	{ id: 0, name: '兽道推车' },
 	{ id: 1, name: '兽道小屋' },
@@ -67,8 +62,4 @@ export const IZAKAYAS: Izakaya[] = [
 	{ id: 5005, name: '魔界雀食堂' },
 	{ id: 5006, name: '兽道食堂抓捕圈' },
 	{ id: 5007, name: '月之都试炼' },
-];
-
-export const IZAKAYA_MAP = Object.fromEntries(
-	IZAKAYAS.map((i) => [i.id, i.name])
-);
+] as const satisfies ReadonlyArray<{ id: number; name: string }>;
