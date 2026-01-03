@@ -8,6 +8,7 @@ import type {
 import { SPECIAL_GUESTS } from '@/data/specialGuest';
 import { SPECIAL_PORTRAITS } from '@/data/specialPortraits';
 import { useData } from '@/components/DataContext';
+import { cn } from '@/lib';
 
 interface DialogEditorProps {
 	dialogPackage: DialogPackage | null;
@@ -64,7 +65,8 @@ export function DialogEditor({
 						type="text"
 						value={dialogPackage.name}
 						onChange={(e) => onUpdate({ name: e.target.value })}
-						className={`w-full rounded-lg border bg-white/50 px-3 py-2 text-sm text-black outline-none focus:border-black/30 focus:ring-2 focus:ring-black/10 ${
+						className={cn(
+							'w-full rounded-lg border bg-white/50 px-3 py-2 text-sm text-black outline-none focus:border-black/30 focus:ring-2 focus:ring-black/10',
 							allPackages.some(
 								(pkg, idx) =>
 									idx !== packageIndex &&
@@ -72,7 +74,7 @@ export function DialogEditor({
 							) && dialogPackage.name.length > 0
 								? 'border-red-300 bg-red-50'
 								: 'border-black/10'
-						}`}
+						)}
 					/>
 				</div>
 
@@ -269,7 +271,7 @@ function DialogItem({
 							</div>
 							<div className="rounded bg-black/5 px-2 py-1 text-center">
 								<div className="text-[10px] font-medium text-black/60">
-									({dialog.characterId}){charName}{' '}
+									({dialog.characterId}){charName}
 									&nbsp;&nbsp; ({dialog.pid}){portraitName}
 								</div>
 							</div>

@@ -93,7 +93,6 @@ export function Portraits({
 								</div>
 								<div className="flex flex-1 flex-col gap-1">
 									<label className="ml-1 text-[10px] font-bold opacity-50">
-										{' '}
 										备注标签
 									</label>
 									<input
@@ -110,7 +109,6 @@ export function Portraits({
 								</div>
 								<div className="flex flex-1 flex-col gap-1">
 									<label className="ml-1 text-[10px] font-bold opacity-50">
-										{' '}
 										图片路径
 									</label>
 									<input

@@ -1,5 +1,6 @@
-import { ChangeEvent } from 'react';
+import { type ChangeEvent } from 'react';
 import Link from 'next/link';
+import { cn } from '@/lib';
 
 interface HeaderProps {
 	onCreateBlank: () => void;
@@ -32,21 +33,23 @@ export function Header({
 					<nav className="flex items-center gap-1">
 						<Link
 							href="/character"
-							className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
+							className={cn(
+								'rounded-lg px-3 py-1.5 text-sm font-medium transition-all',
 								currentPage === 'character'
 									? 'bg-black/10 text-black'
 									: 'text-black/60 hover:bg-black/5 hover:text-black'
-							}`}
+							)}
 						>
 							角色编辑
 						</Link>
 						<Link
 							href="/dialogue"
-							className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
+							className={cn(
+								'rounded-lg px-3 py-1.5 text-sm font-medium transition-all',
 								currentPage === 'dialogue'
 									? 'bg-black/10 text-black'
 									: 'text-black/60 hover:bg-black/5 hover:text-black'
-							}`}
+							)}
 						>
 							对话编辑
 						</Link>

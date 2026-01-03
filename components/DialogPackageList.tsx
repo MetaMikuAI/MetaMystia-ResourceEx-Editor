@@ -1,4 +1,5 @@
 import type { DialogPackage } from '@/types/resource';
+import { cn } from '@/lib';
 
 interface DialogPackageListProps {
 	packages: DialogPackage[];
@@ -36,13 +37,14 @@ export function DialogPackageList({
 					return (
 						<div
 							key={index}
-							className={`rounded-lg border p-3 transition-all ${
+							className={cn(
+								'rounded-lg border p-3 transition-all',
 								selectedIndex === index
 									? 'border-black/30 bg-black/10 shadow-sm'
 									: isDuplicate
 										? 'border-orange-300 bg-orange-50'
 										: 'border-black/10 bg-white/5 hover:border-black/20 hover:bg-white/10'
-							}`}
+							)}
 						>
 							<div className="flex items-start justify-between gap-2">
 								<button
