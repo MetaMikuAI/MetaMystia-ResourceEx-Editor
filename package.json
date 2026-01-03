@@ -6,7 +6,6 @@
 		"dev": "next dev",
 		"build": "next build",
 		"serve": "pnpx serve out",
-		"predeploy": "pnpm run build",
 		"format": "prettier --cache --write .",
 		"preinstall": "npx only-allow pnpm",
 		"prepare": "husky",
