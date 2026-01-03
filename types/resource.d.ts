@@ -2,6 +2,7 @@ export type CharacterType = 'Self' | 'Special' | 'Normal' | 'Unknown';
 
 export interface CharacterPortrait {
 	pid: number;
+	label?: string;
 	path: string;
 }
 

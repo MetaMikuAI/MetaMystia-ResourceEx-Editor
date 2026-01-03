@@ -93,6 +93,24 @@ export function Portraits({
 								</div>
 								<div className="flex flex-1 flex-col gap-1">
 									<label className="ml-1 text-[10px] font-bold opacity-50">
+										{' '}
+										备注标签
+									</label>
+									<input
+										type="text"
+										value={portrait.label || ''}
+										onChange={(e) =>
+											onUpdate(i, {
+												label: e.target.value,
+											})
+										}
+										placeholder="例如：大妖精 低沉"
+										className="rounded-lg border border-white/10 bg-black/20 p-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50"
+									/>
+								</div>
+								<div className="flex flex-1 flex-col gap-1">
+									<label className="ml-1 text-[10px] font-bold opacity-50">
+										{' '}
 										图片路径
 									</label>
 									<input

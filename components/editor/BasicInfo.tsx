@@ -1,4 +1,4 @@
-import { Character, CharacterType } from '@/types/resource';
+import { Character } from '@/types/resource';
 import { cn } from '@/lib';
 
 interface BasicInfoProps {
@@ -41,20 +41,14 @@ export function BasicInfo({
 			</div>
 			<div className="flex flex-col gap-2">
 				<label className="ml-1 text-sm font-bold opacity-70">
-					角色类型
+					角色类型（固定）
 				</label>
-				<select
-					value={character.type}
-					onChange={(e) =>
-						onUpdate({ type: e.target.value as CharacterType })
-					}
-					className="appearance-none rounded-xl border border-white/10 bg-black/20 p-3 transition-all focus:outline-none focus:ring-2 focus:ring-primary/50"
-				>
-					<option value="Special">Special (稀客)</option>
-					<option value="Self">Self (自机)</option>
-					<option value="Normal">Normal (普客)</option>
-					<option value="Unknown">Unknown (未知)</option>
-				</select>
+				<input
+					type="text"
+					value="Special (稀客)"
+					disabled
+					className="cursor-not-allowed rounded-xl border border-white/10 bg-black/10 p-3 text-black/50"
+				/>
 			</div>
 			<div className="flex flex-col gap-2">
 				<label className="ml-1 text-sm font-bold opacity-70">
