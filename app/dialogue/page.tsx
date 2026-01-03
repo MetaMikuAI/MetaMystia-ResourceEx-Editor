@@ -3,7 +3,7 @@
 import { type ChangeEvent, useState } from 'react';
 import type { Dialog, DialogPackage, ResourceEx } from '@/types/resource';
 import { Header } from '@/components/Header';
-import { useData } from '@/lib/DataContext';
+import { useData } from '@/components/DataContext';
 import { DialogPackageList } from '@/components/DialogPackageList';
 import { DialogEditor } from '@/components/DialogEditor';
 

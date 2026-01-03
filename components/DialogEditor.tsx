@@ -7,7 +7,7 @@ import type {
 } from '@/types/resource';
 import { SPECIAL_GUESTS } from '@/data/SpecialGuest';
 import { SPECIAL_PORTRAITS } from '@/data/SpecialPortraits';
-import { useData } from '@/lib/DataContext';
+import { useData } from '@/components/DataContext';
 
 interface DialogEditorProps {
 	dialogPackage: DialogPackage | null;

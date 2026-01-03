@@ -5,7 +5,7 @@ import type { Character, CharacterType, ResourceEx } from '@/types/resource';
 import { Header } from '@/components/Header';
 import { CharacterList } from '@/components/CharacterList';
 import { CharacterEditor } from '@/components/CharacterEditor';
-import { useData } from '@/lib/DataContext';
+import { useData } from '@/components/DataContext';
 
 const DEFAULT_CHARACTER: Character = {
 	id: 0,

@@ -1,6 +1,6 @@
 import { type PropsWithChildren } from 'react';
 import { type Metadata } from 'next';
-import { DataProvider } from '@/lib/DataContext';
+import { DataProvider } from '@/components/DataContext';
 
 import './globals.scss';
 
