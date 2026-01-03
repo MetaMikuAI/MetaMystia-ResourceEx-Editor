@@ -1,8 +1,4 @@
-export interface SpecialGuest {
-	id: number;
-	name: string;
-}
-export const SPECIAL_GUESTS: SpecialGuest[] = [
+export const SPECIAL_GUESTS = [
 	{ id: 0, name: '莉格露' },
 	{ id: 1, name: '露米娅' },
 	{ id: 2, name: '橙' },
@@ -16,7 +12,7 @@ export const SPECIAL_GUESTS: SpecialGuest[] = [
 	{ id: 10, name: '雾雨魔理沙' },
 	{ id: 11, name: '魂魄妖梦' },
 	{ id: 12, name: '??????' },
-	{ id: 13, name: '?????' },
+	{ id: 13, name: '??????' },
 	{ id: 14, name: '幽谷响子' },
 	{ id: 15, name: '红美铃' },
 	{ id: 16, name: '因幡帝' },
@@ -107,4 +103,4 @@ export const SPECIAL_GUESTS: SpecialGuest[] = [
 	{ id: 5013, name: '宫出口瑞灵' },
 	{ id: 5014, name: '小野塚小町' },
 	{ id: 5015, name: '豪德寺三花' },
-];
+] as const satisfies ReadonlyArray<{ id: number; name: string }>;

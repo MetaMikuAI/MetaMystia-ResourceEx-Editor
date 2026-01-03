@@ -5,8 +5,8 @@ import type {
 	Character,
 	CharacterType,
 } from '@/types/resource';
-import { SPECIAL_GUESTS } from '@/data/SpecialGuest';
-import { SPECIAL_PORTRAITS } from '@/data/SpecialPortraits';
+import { SPECIAL_GUESTS } from '@/data/specialGuest';
+import { SPECIAL_PORTRAITS } from '@/data/specialPortraits';
 import { useData } from '@/components/DataContext';
 
 interface DialogEditorProps {

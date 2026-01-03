@@ -1,11 +1,4 @@
-export interface SpecialPortrait {
-	characterId: number;
-	pid: number;
-	name: string;
-	filename: string;
-}
-
-export const SPECIAL_PORTRAITS: SpecialPortrait[] = [
+export const SPECIAL_PORTRAITS = [
 	{
 		characterId: 0,
 		pid: 0,
@@ -5965,4 +5958,9 @@ export const SPECIAL_PORTRAITS: SpecialPortrait[] = [
 		name: '三花 无表情张嘴',
 		filename: 'Special_5015_3_三花_无表情张嘴.png',
 	},
-];
+] as const satisfies ReadonlyArray<{
+	characterId: number;
+	pid: number;
+	name: string;
+	filename: string;
+}>;
