@@ -249,7 +249,7 @@ function DialogItem({
 								<img
 									src={portraitPath}
 									alt="角色立绘"
-									className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
+									className="image-rendering-pixelated h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
 									onError={(e) => {
 										const target = e.currentTarget;
 										target.style.display = 'none';
