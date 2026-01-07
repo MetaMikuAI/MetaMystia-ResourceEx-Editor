@@ -46,7 +46,7 @@ export interface Character {
 	id: number;
 	name: string;
 	label: string;
-	descriptions: string[];
+	descriptions?: string[];
 	type: CharacterType;
 	portraits?: CharacterPortrait[] | undefined;
 	guest?: GuestInfo | undefined;

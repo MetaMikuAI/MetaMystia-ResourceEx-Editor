@@ -1,5 +1,7 @@
-import { Character } from '@/types/resource';
+import { memo, useId } from 'react';
+
 import { cn } from '@/lib';
+import type { Character } from '@/types/resource';
 
 interface BasicInfoProps {
 	character: Character;
@@ -7,71 +9,96 @@ interface BasicInfoProps {
 	onUpdate: (updates: Partial<Character>) => void;
 }
 
-export function BasicInfo({
+export const BasicInfo = memo<BasicInfoProps>(function BasicInfo({
 	character,
 	isIdDuplicate,
 	onUpdate,
-}: BasicInfoProps) {
+}) {
+	const idId = useId();
+	const idLabel = useId();
+	const idName = useId();
+	const idType = useId();
+
 	return (
 		<div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-			<div className="flex flex-col gap-2">
-				<div className="ml-1 flex items-center justify-between">
-					<label className="text-sm font-bold opacity-70">
-						角色 ID
+			<div className="flex flex-col gap-1">
+				<div className="flex items-center justify-between">
+					<label
+						htmlFor={idId}
+						className="text-xs font-medium uppercase opacity-60"
+					>
+						角色ID
 					</label>
 					{isIdDuplicate && (
-						<span className="text-[10px] font-bold text-danger">
-							ID 已存在
+						<span className="rounded bg-danger px-1.5 py-0.5 text-[10px] font-medium">
+							ID重复
 						</span>
 					)}
 				</div>
 				<input
+					id={idId}
 					type="number"
 					value={character.id}
-					onChange={(e) =>
-						onUpdate({ id: parseInt(e.target.value) || 0 })
-					}
+					onChange={(e) => {
+						onUpdate({ id: parseInt(e.target.value) || 0 });
+					}}
 					className={cn(
-						'rounded-xl border bg-black/20 p-3 transition-all focus:outline-none focus:ring-2',
+						'h-9 w-full rounded-lg border bg-white/40 px-3 py-2 text-sm text-foreground outline-none focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:bg-black/10 dark:focus:border-white/30 dark:focus:ring-white/10',
 						isIdDuplicate
-							? 'border-danger focus:ring-danger/50'
-							: 'border-white/10 focus:ring-primary/50'
+							? 'border-danger bg-danger text-white opacity-50 focus:border-danger'
+							: 'border-black/10 dark:border-white/10'
 					)}
 				/>
 			</div>
-			<div className="flex flex-col gap-2">
-				<label className="ml-1 text-sm font-bold opacity-70">
+			<div className="flex flex-col gap-1">
+				<label
+					htmlFor={idType}
+					className="text-xs font-medium uppercase opacity-60"
+				>
 					角色类型（固定）
 				</label>
 				<input
-					type="text"
-					value="Special (稀客)"
 					disabled
-					className="cursor-not-allowed rounded-xl border border-white/10 bg-black/10 p-3 text-black/50"
+					id={idType}
+					type="text"
+					value="Special（稀客）"
+					className="h-9 w-full cursor-not-allowed rounded-lg border border-black/10 bg-white/40 px-3 py-2 text-sm text-foreground outline-none disabled:opacity-50 dark:border-white/10 dark:bg-black/10"
 				/>
 			</div>
-			<div className="flex flex-col gap-2">
-				<label className="ml-1 text-sm font-bold opacity-70">
+			<div className="flex flex-col gap-1">
+				<label
+					htmlFor={idName}
+					className="text-xs font-medium uppercase opacity-60"
+				>
 					角色名称
 				</label>
 				<input
+					id={idName}
 					type="text"
 					value={character.name}
-					onChange={(e) => onUpdate({ name: e.target.value })}
-					className="rounded-xl border border-white/10 bg-black/20 p-3 transition-all focus:outline-none focus:ring-2 focus:ring-primary/50"
+					onChange={(e) => {
+						onUpdate({ name: e.target.value });
+					}}
+					className="h-9 w-full rounded-lg border border-black/10 bg-white/40 px-3 py-2 text-sm text-foreground outline-none focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:border-white/10 dark:bg-black/10 dark:focus:border-white/30 dark:focus:ring-white/10"
 				/>
 			</div>
-			<div className="flex flex-col gap-2">
-				<label className="ml-1 text-sm font-bold opacity-70">
-					内部标签 (Label)
+			<div className="flex flex-col gap-1">
+				<label
+					htmlFor={idLabel}
+					className="text-xs font-medium uppercase opacity-60"
+				>
+					内部标签（Label）
 				</label>
 				<input
+					id={idLabel}
 					type="text"
 					value={character.label}
-					onChange={(e) => onUpdate({ label: e.target.value })}
-					className="rounded-xl border border-white/10 bg-black/20 p-3 transition-all focus:outline-none focus:ring-2 focus:ring-primary/50"
+					onChange={(e) => {
+						onUpdate({ label: e.target.value });
+					}}
+					className="h-9 w-full rounded-lg border border-black/10 bg-white/40 px-3 py-2 text-sm text-foreground outline-none focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:border-white/10 dark:bg-black/10 dark:focus:border-white/30 dark:focus:ring-white/10"
 				/>
 			</div>
 		</div>
 	);
-}
+});

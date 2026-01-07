@@ -1,175 +1,214 @@
-import {
-	Character,
-	CharacterPortrait,
-	GuestInfo,
-	CharacterSpriteSet,
-} from '@/types/resource';
+import { memo, useCallback } from 'react';
+
 import { BasicInfo } from './editor/BasicInfo';
 import { Descriptions } from './editor/Descriptions';
-import { Portraits } from './editor/Portraits';
 import { GuestInfoEditor } from './editor/GuestInfo';
+import { Portraits } from './editor/Portraits';
 import { SpriteSetEditor } from './editor/SpriteSet';
+
+import type {
+	Character,
+	CharacterPortrait,
+	CharacterSpriteSet,
+	GuestInfo,
+} from '@/types/resource';
 
 interface CharacterEditorProps {
 	character: Character | null;
 	isIdDuplicate: boolean;
-	onUpdate: (updates: Partial<Character>) => void;
 	onRemove: () => void;
+	onUpdate: (updates: Partial<Character>) => void;
 }
 
-export function CharacterEditor({
-	character,
-	isIdDuplicate,
-	onUpdate,
-	onRemove,
-}: CharacterEditorProps) {
-	if (!character) {
-		return (
-			<div className="rounded-2xl border border-white/20 bg-white/10 p-8 shadow-xl backdrop-blur-md md:col-span-2">
-				<div className="flex h-full items-center justify-center italic opacity-40">
-					请从左侧选择一个角色进行编辑，或点击 + 号添加新角色
-				</div>
-			</div>
+export const CharacterEditor = memo<CharacterEditorProps>(
+	function CharacterEditor({ character, isIdDuplicate, onRemove, onUpdate }) {
+		const updateDescription = useCallback(
+			(index: number, value: string) => {
+				if (!character) {
+					return;
+				}
+				const newDescriptions = [...(character.descriptions ?? [])];
+				newDescriptions[index] = value;
+				onUpdate({ descriptions: newDescriptions });
+			},
+			[character?.descriptions, onUpdate]
 		);
-	}
 
-	const updateDescription = (index: number, value: string) => {
-		const newDescriptions = [...(character.descriptions || [])];
-		newDescriptions[index] = value;
-		onUpdate({ descriptions: newDescriptions });
-	};
-
-	const addPortrait = () => {
-		const portraits = character.portraits || [];
-		const nextPid =
-			portraits.length > 0
-				? Math.max(...portraits.map((p) => p.pid)) + 1
-				: 0;
-		const label = character.label || 'Character';
-		onUpdate({
-			portraits: [
-				...portraits,
-				{ pid: nextPid, path: `assets/${label}_${nextPid}.png` },
-			],
-		});
-	};
-
-	const updatePortrait = (
-		index: number,
-		updates: Partial<CharacterPortrait>
-	) => {
-		const portraits = [...(character.portraits || [])];
-		portraits[index] = {
-			...portraits[index],
-			...updates,
-		} as CharacterPortrait;
-		onUpdate({ portraits });
-	};
-
-	const removePortrait = (index: number) => {
-		const portraits = [...(character.portraits || [])];
-		portraits.splice(index, 1);
-		onUpdate({ portraits });
-	};
-
-	const updateGuest = (updates: Partial<GuestInfo>) => {
-		const defaultGuest: GuestInfo = {
-			fundRangeLower: 0,
-			fundRangeUpper: 0,
-			evaluation: Array(9).fill(''),
-			conversation: [],
-			foodRequests: [],
-			bevRequests: [],
-			hateFoodTag: [],
-			likeFoodTag: [],
-			likeBevTag: [],
-		};
-		const guest = {
-			...defaultGuest,
-			...(character.guest || {}),
-			...updates,
-		};
-		onUpdate({ guest });
-	};
-
-	const enableGuest = () => {
-		updateGuest({});
-	};
-
-	const disableGuest = () => {
-		onUpdate({ guest: undefined });
-	};
-
-	const updateSpriteSet = (updates: Partial<CharacterSpriteSet>) => {
-		const spriteSet = character.characterSpriteSetCompact || {
-			name: character.label || '',
-			mainSprite: Array(12).fill(''),
-			eyeSprite: Array(24).fill(''),
-		};
-		onUpdate({ characterSpriteSetCompact: { ...spriteSet, ...updates } });
-	};
-
-	const enableSpriteSet = () => {
-		const label = character.label || 'Unknown';
-		const mainSprite = [];
-		for (let row = 0; row < 4; row++) {
-			for (let col = 0; col < 3; col++) {
-				mainSprite.push(
-					`assets/${label}/${label}_Main_${row}, ${col}.png`
-				);
+		const addPortrait = useCallback(() => {
+			if (!character) {
+				return;
 			}
-		}
-		const eyeSprite = [];
-		for (let row = 0; row < 6; row++) {
-			for (let col = 0; col < 4; col++) {
-				eyeSprite.push(
-					`assets/${label}/${label}_Eyes_${row}, ${col}.png`
-				);
-			}
-		}
-		updateSpriteSet({ name: label, mainSprite, eyeSprite });
-	};
+			const portraits = character.portraits ?? [];
+			const nextPid =
+				portraits.length > 0
+					? Math.max(...portraits.map((p) => p.pid)) + 1
+					: 0;
+			const label = character.label || 'Character';
+			onUpdate({
+				portraits: [
+					...portraits,
+					{ pid: nextPid, path: `assets/${label}_${nextPid}.png` },
+				],
+			});
+		}, [character, onUpdate]);
 
-	const disableSpriteSet = () => {
-		onUpdate({ characterSpriteSetCompact: undefined });
-	};
+		const removePortrait = useCallback(
+			(index: number) => {
+				if (!character) {
+					return;
+				}
+				const portraits = [...(character.portraits ?? [])];
+				portraits.splice(index, 1);
+				onUpdate({ portraits });
+			},
+			[character?.portraits, onUpdate]
+		);
 
-	const generateDefaultSprites = () => {
-		const label = character.label || 'Unknown';
-		const mainSprite = [];
-		for (let row = 0; row < 4; row++) {
-			for (let col = 0; col < 3; col++) {
-				mainSprite.push(
-					`assets/${label}/${label}_Main_${row}, ${col}.png`
-				);
-			}
-		}
-		const eyeSprite = [];
-		for (let row = 0; row < 6; row++) {
-			for (let col = 0; col < 4; col++) {
-				eyeSprite.push(
-					`assets/${label}/${label}_Eyes_${row}, ${col}.png`
-				);
-			}
-		}
-		updateSpriteSet({ name: label, mainSprite, eyeSprite });
-	};
+		const updatePortrait = useCallback(
+			(index: number, updates: Partial<CharacterPortrait>) => {
+				if (!character) {
+					return;
+				}
+				const portraits = [...(character.portraits ?? [])];
+				portraits[index] = {
+					...portraits[index],
+					...updates,
+				} as CharacterPortrait;
+				onUpdate({ portraits });
+			},
+			[character?.portraits, onUpdate]
+		);
 
-	return (
-		<div className="rounded-2xl border border-white/20 bg-white/10 p-8 shadow-xl backdrop-blur-md md:col-span-2">
-			<div className="flex flex-col gap-8">
+		const updateGuest = useCallback(
+			(updates: Partial<GuestInfo>) => {
+				if (!character) {
+					return;
+				}
+				const defaultGuest: GuestInfo = {
+					fundRangeLower: 0,
+					fundRangeUpper: 0,
+					evaluation: Array(9).fill(''),
+					conversation: [],
+					foodRequests: [],
+					bevRequests: [],
+					hateFoodTag: [],
+					likeFoodTag: [],
+					likeBevTag: [],
+				};
+				const guest = {
+					...defaultGuest,
+					...(character.guest ?? {}),
+					...updates,
+				};
+				onUpdate({ guest });
+			},
+			[character?.guest, onUpdate]
+		);
+
+		const enableGuest = useCallback(() => {
+			updateGuest({});
+		}, [updateGuest]);
+
+		const disableGuest = useCallback(() => {
+			onUpdate({ guest: undefined });
+		}, [onUpdate]);
+
+		const updateSpriteSet = useCallback(
+			(updates: Partial<CharacterSpriteSet>) => {
+				if (!character) {
+					return;
+				}
+				const spriteSet = character.characterSpriteSetCompact ?? {
+					name: character.label || '',
+					mainSprite: Array(12).fill(''),
+					eyeSprite: Array(24).fill(''),
+				};
+				onUpdate({
+					characterSpriteSetCompact: { ...spriteSet, ...updates },
+				});
+			},
+			[character, onUpdate]
+		);
+
+		const enableSpriteSet = useCallback(() => {
+			if (!character) {
+				return;
+			}
+			const label = character.label || 'Unknown';
+			const mainSprite = [];
+			for (let row = 0; row < 4; row++) {
+				for (let col = 0; col < 3; col++) {
+					mainSprite.push(
+						`assets/${label}/${label}_Main_${row}, ${col}.png`
+					);
+				}
+			}
+			const eyeSprite = [];
+			for (let row = 0; row < 6; row++) {
+				for (let col = 0; col < 4; col++) {
+					eyeSprite.push(
+						`assets/${label}/${label}_Eyes_${row}, ${col}.png`
+					);
+				}
+			}
+			updateSpriteSet({ name: label, mainSprite, eyeSprite });
+		}, [character, updateSpriteSet]);
+
+		const disableSpriteSet = useCallback(() => {
+			onUpdate({ characterSpriteSetCompact: undefined });
+		}, [onUpdate]);
+
+		const generateDefaultSprites = useCallback(() => {
+			if (!character) {
+				return;
+			}
+			const label = character.label || 'Unknown';
+			const mainSprite = [];
+			for (let row = 0; row < 4; row++) {
+				for (let col = 0; col < 3; col++) {
+					mainSprite.push(
+						`assets/${label}/${label}_Main_${row}, ${col}.png`
+					);
+				}
+			}
+			const eyeSprite = [];
+			for (let row = 0; row < 6; row++) {
+				for (let col = 0; col < 4; col++) {
+					eyeSprite.push(
+						`assets/${label}/${label}_Eyes_${row}, ${col}.png`
+					);
+				}
+			}
+			updateSpriteSet({ name: label, mainSprite, eyeSprite });
+		}, [character, updateSpriteSet]);
+
+		if (!character) {
+			return (
+				<div className="flex flex-col items-center justify-center rounded-lg bg-white/10 p-4 shadow-md backdrop-blur lg:col-span-2">
+					<div className="flex items-center justify-center text-center font-semibold italic opacity-30">
+						请从左侧选择一个角色进行编辑，或点击 + 按钮添加新角色
+					</div>
+				</div>
+			);
+		}
+
+		return (
+			<div className="flex flex-col gap-8 overflow-y-auto rounded-lg bg-white/10 p-4 shadow-md backdrop-blur lg:col-span-2">
 				<div className="flex items-center justify-between border-b border-white/10 pb-4">
-					<div className="flex items-center gap-4">
-						<h2 className="text-2xl font-bold">
-							编辑角色: {character.name}
+					<div className="flex items-center gap-2">
+						<h2 className="text-xl font-semibold">
+							<span className="hidden md:inline">编辑角色：</span>
+							<span className="font-bold">
+								{character.name || '未命名角色'}
+							</span>
 						</h2>
-						<span className="rounded-full bg-primary/20 px-3 py-1 text-sm font-bold text-primary">
-							{character.type}
+						<span className="rounded-full bg-primary/20 px-3 py-1 text-sm font-medium text-primary">
+							{character.type || '未知类型'}
 						</span>
 					</div>
 					<button
 						onClick={onRemove}
-						className="rounded-lg bg-danger/20 px-3 py-1 text-sm font-bold text-danger transition-colors hover:bg-danger/30"
+						className="btn-mystia-danger rounded-full px-3 py-1 text-sm"
 					>
 						删除角色
 					</button>
@@ -182,15 +221,15 @@ export function CharacterEditor({
 				/>
 
 				<Descriptions
-					descriptions={character.descriptions}
+					descriptions={character.descriptions ?? []}
 					onUpdate={updateDescription}
 				/>
 
 				<Portraits
-					portraits={character.portraits || []}
+					portraits={character.portraits ?? []}
 					onAdd={addPortrait}
-					onUpdate={updatePortrait}
 					onRemove={removePortrait}
+					onUpdate={updatePortrait}
 				/>
 
 				<GuestInfoEditor
@@ -209,6 +248,6 @@ export function CharacterEditor({
 					onGenerateDefaults={generateDefaultSprites}
 				/>
 			</div>
-		</div>
-	);
-}
+		);
+	}
+);

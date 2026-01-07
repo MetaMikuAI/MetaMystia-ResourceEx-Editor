@@ -1,69 +1,86 @@
-import { Character } from '@/types/resource';
+import { memo, useCallback } from 'react';
+
 import { cn } from '@/lib';
+import type { Character } from '@/types/resource';
 
 interface CharacterListProps {
 	characters: Character[];
 	selectedIndex: number | null;
-	onSelect: (index: number) => void;
 	onAdd: () => void;
+	onSelect: (index: number) => void;
 }
 
-export function CharacterList({
+export const CharacterList = memo<CharacterListProps>(function CharacterList({
 	characters,
 	selectedIndex,
-	onSelect,
 	onAdd,
-}: CharacterListProps) {
-	const isIdDuplicate = (id: number, currentIndex: number) => {
-		return characters.some((c, i) => i !== currentIndex && c.id === id);
-	};
+	onSelect,
+}) {
+	const isIdDuplicate = useCallback(
+		(id: number, index: number) => {
+			return characters.some((c, i) => i !== index && c.id === id);
+		},
+		[characters]
+	);
 
 	return (
-		<div className="h-[70vh] overflow-y-auto rounded-2xl border border-white/20 bg-white/10 p-4 shadow-xl backdrop-blur-md">
-			<div className="mb-4 flex items-center justify-between px-2">
+		<div className="flex h-min flex-col gap-4 overflow-y-auto rounded-lg bg-white/10 p-4 shadow-md backdrop-blur lg:sticky lg:top-24">
+			<div className="flex items-center justify-between">
 				<h2 className="text-xl font-semibold">角色列表</h2>
 				<button
 					onClick={onAdd}
-					className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/10 text-lg transition-all hover:bg-white/20 active:scale-90"
+					className="btn-mystia h-8 w-8 text-lg hover:bg-black/5 dark:hover:bg-white/5"
 				>
 					+
 				</button>
 			</div>
 			<div className="flex flex-col gap-2">
 				{characters.map((char, index) => {
-					const duplicate = isIdDuplicate(char.id, index);
+					const isDuplicate = isIdDuplicate(char.id, index);
 					return (
 						<button
 							key={index}
-							onClick={() => onSelect(index)}
+							onClick={() => {
+								onSelect(index);
+							}}
 							className={cn(
-								'rounded-xl border p-4 text-left transition-all',
+								'btn-mystia-primary flex-col items-start border p-4',
 								selectedIndex === index
-									? duplicate
+									? isDuplicate
 										? 'border-danger bg-danger/20 shadow-inner'
 										: 'border-primary bg-primary/20 shadow-inner'
-									: duplicate
+									: isDuplicate
 										? 'border-danger/50 bg-danger/10 hover:bg-danger/20'
-										: 'border-transparent bg-white/5 hover:bg-white/10'
+										: 'border-transparent bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10'
 							)}
 						>
-							<div className="flex items-start justify-between">
-								<div className="text-lg font-bold">
+							<div className="flex items-center justify-between gap-2">
+								<span className="text-lg font-bold text-foreground">
 									{char.name || '未命名角色'}
-								</div>
-								{duplicate && (
-									<span className="rounded bg-danger px-1.5 py-0.5 text-[10px] font-bold text-white">
-										ID 重复
+								</span>
+								{isDuplicate && (
+									<span className="rounded bg-danger px-1.5 py-0.5 text-[10px] font-medium">
+										ID重复
 									</span>
 								)}
 							</div>
-							<div className="font-mono text-xs opacity-60">
+							<div className="font-mono text-xs text-foreground opacity-80">
 								ID: {char.id} | {char.type}
 							</div>
 						</button>
 					);
 				})}
+				{characters.length === 0 && (
+					<div className="rounded-lg border border-dashed border-black/10 p-8 text-center dark:border-white/10">
+						<p className="text-sm text-black/40 dark:text-white/40">
+							暂无角色
+						</p>
+						<p className="mt-1 text-xs text-black/30 dark:text-white/30">
+							点击上方 + 按钮创建
+						</p>
+					</div>
+				)}
 			</div>
 		</div>
 	);
-}
+});

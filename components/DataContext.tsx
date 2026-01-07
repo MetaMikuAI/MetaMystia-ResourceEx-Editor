@@ -5,8 +5,10 @@ import {
 	useContext,
 	useState,
 	useEffect,
-	type ReactNode,
+	type PropsWithChildren,
+	memo,
 } from 'react';
+
 import type { ResourceEx } from '@/types/resource';
 
 interface DataContextType {
@@ -16,9 +18,11 @@ interface DataContextType {
 	setHasUnsavedChanges: (value: boolean) => void;
 }
 
-const DataContext = createContext<DataContextType | undefined>(undefined);
+const DataContext = createContext<DataContextType | null>(null);
 
-export function DataProvider({ children }: { children: ReactNode }) {
+export const DataProvider = memo<PropsWithChildren>(function DataProvider({
+	children,
+}) {
 	const [data, setData] = useState<ResourceEx>({
 		characters: [],
 		dialogPackages: [],
@@ -32,7 +36,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
 				e.returnValue = '';
 			}
 		};
+
 		window.addEventListener('beforeunload', handleBeforeUnload);
+
 		return () => {
 			window.removeEventListener('beforeunload', handleBeforeUnload);
 		};
@@ -45,12 +51,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
 			{children}
 		</DataContext.Provider>
 	);
-}
+});
 
 export function useData() {
 	const context = useContext(DataContext);
+
 	if (!context) {
 		throw new Error('useData must be used within a DataProvider');
 	}
+
 	return context;
 }

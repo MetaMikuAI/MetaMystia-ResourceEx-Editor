@@ -8,7 +8,10 @@ const config: Config = {
 	darkMode: 'media',
 	theme: {
 		extend: {
-			backgroundImage: { mystia: 'url("/assets/mystia.png")' },
+			backgroundImage: {
+				logo: 'url(/assets/icon.png)',
+				mystia: 'url(/assets/mystia.png)',
+			},
 			colors: {
 				background: 'var(--background)',
 				foreground: 'var(--foreground)',
@@ -17,6 +20,7 @@ const config: Config = {
 				success: { DEFAULT: '#85b26c', foreground: '#ffffff' },
 				danger: { DEFAULT: '#ec9aa1', foreground: '#ffffff' },
 			},
+			screens: { '3xl': '1920px', '4xl': '2560px' },
 		},
 	},
 	plugins: [],

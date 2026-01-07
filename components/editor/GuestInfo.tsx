@@ -196,8 +196,8 @@ export function GuestInfoEditor({
 					>
 						▶
 					</span>
-					<label className="cursor-pointer text-sm font-bold opacity-70">
-						顾客配置 (Guest Info)
+					<label className="cursor-pointer font-semibold">
+						顾客配置（Guest Info）
 					</label>
 				</div>
 				<button
@@ -209,10 +209,8 @@ export function GuestInfoEditor({
 						}
 					}}
 					className={cn(
-						'rounded-lg border px-3 py-1 text-xs transition-all active:scale-95',
-						guest
-							? 'border-danger/20 bg-danger/10 text-danger hover:bg-danger/20'
-							: 'border-white/10 bg-white/10 hover:bg-white/20'
+						'whitespace-nowrap rounded-full px-3 py-1 text-sm',
+						guest ? 'btn-mystia-danger' : 'btn-mystia-primary'
 					)}
 				>
 					{guest ? '移除顾客配置' : '启用顾客配置'}
@@ -371,7 +369,7 @@ export function GuestInfoEditor({
 													? isConflict
 														? 'border-danger bg-danger/40 text-white shadow-[0_0_10px_rgba(239,68,68,0.5)]'
 														: 'border-[#9d5437] bg-[#e6b4a6] text-[#830000]'
-													: 'border-white/20 bg-white/10 text-black hover:bg-white/20'
+													: 'border-white/20 bg-white/10 hover:bg-white/20'
 											)}
 											title={
 												isConflict
@@ -426,7 +424,7 @@ export function GuestInfoEditor({
 													? isConflict
 														? 'border-danger bg-danger/40 text-white shadow-[0_0_10px_rgba(239,68,68,0.5)]'
 														: 'border-danger bg-danger/10 text-danger'
-													: 'border-white/20 bg-white/10 text-black hover:bg-white/20'
+													: 'border-white/20 bg-white/10 hover:bg-white/20'
 											)}
 											title={
 												isConflict
@@ -478,7 +476,7 @@ export function GuestInfoEditor({
 												'relative flex items-center border px-1.5 py-0.5 text-[11px] font-bold transition-all',
 												isSelected
 													? 'border-[#6f929b] bg-[#b0cfd7] text-[#a45c22]'
-													: 'border-white/20 bg-white/10 text-black hover:bg-white/20'
+													: 'border-white/20 bg-white/10 hover:bg-white/20'
 											)}
 										>
 											<span
@@ -526,7 +524,7 @@ export function GuestInfoEditor({
 													: 'border-transparent bg-black/5 opacity-60'
 											)}
 										>
-											<div className="flex w-32 flex-shrink-0 items-center gap-3">
+											<div className="flex shrink-0 items-center gap-3">
 												<input
 													type="checkbox"
 													checked={isEnabled}
@@ -621,7 +619,7 @@ export function GuestInfoEditor({
 													: 'border-transparent bg-black/5 opacity-60'
 											)}
 										>
-											<div className="flex w-32 flex-shrink-0 items-center gap-3">
+											<div className="flex shrink-0 items-center gap-3">
 												<input
 													type="checkbox"
 													checked={isEnabled}
@@ -708,8 +706,8 @@ export function GuestInfoEditor({
 											className={cn(
 												'flex items-center rounded-lg border px-3 py-1.5 text-[11px] font-medium transition-all',
 												isSelected
-													? 'border-primary bg-primary/20 text-black shadow-[0_0_10px_rgba(var(--primary-rgb),0.2)]'
-													: 'border-white/10 bg-white/5 text-black hover:bg-white/10'
+													? 'border-primary bg-primary/20 shadow-[0_0_10px_rgba(var(--primary-rgb),0.2)]'
+													: 'border-white/10 bg-white/5 hover:bg-white/10'
 											)}
 										>
 											<span className="mr-1.5 opacity-50">
@@ -730,7 +728,7 @@ export function GuestInfoEditor({
 										return (
 											<div
 												key={spawn.izakayaId}
-												className="flex items-center gap-4 rounded-lg border border-white/5 bg-white/5 p-3"
+												className="flex w-full flex-wrap items-center gap-4 rounded-lg border border-white/5 bg-white/5 p-3"
 											>
 												<div className="w-32 shrink-0 text-[11px] font-bold">
 													<span className="mr-1 opacity-50">
@@ -738,7 +736,7 @@ export function GuestInfoEditor({
 													</span>
 													{izakaya?.name}
 												</div>
-												<div className="flex flex-1 items-center gap-6">
+												<div className="flex w-full flex-1 flex-wrap items-center gap-6">
 													<div className="flex flex-1 flex-col gap-1">
 														<div className="flex items-center justify-between">
 															<label className="text-[10px] opacity-70">
@@ -801,7 +799,7 @@ export function GuestInfoEditor({
 													</div>
 													<div className="flex gap-4">
 														<div className="flex flex-col items-center gap-1">
-															<label className="text-[10px] opacity-70">
+															<label className="whitespace-nowrap text-[10px] opacity-70">
 																解锁后出现
 															</label>
 															<input
@@ -824,7 +822,7 @@ export function GuestInfoEditor({
 															/>
 														</div>
 														<div className="flex flex-col items-center gap-1">
-															<label className="text-[10px] opacity-70">
+															<label className="whitespace-nowrap text-[10px] opacity-70">
 																记录后出现
 															</label>
 															<input
@@ -858,8 +856,13 @@ export function GuestInfoEditor({
 				</div>
 			)}
 			{isExpanded && !guest && (
-				<div className="rounded-xl border-2 border-dashed border-white/5 py-8 text-center text-sm opacity-30">
-					该角色尚未启用顾客配置
+				<div className="rounded-lg border border-dashed border-black/10 p-8 text-center dark:border-white/10">
+					<p className="text-sm text-black/40 dark:text-white/40">
+						暂未启用顾客配置
+					</p>
+					<p className="mt-1 text-xs text-black/30 dark:text-white/30">
+						点击右侧按钮启用
+					</p>
 				</div>
 			)}
 		</div>

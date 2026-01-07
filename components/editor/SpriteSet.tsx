@@ -47,8 +47,8 @@ export function SpriteSetEditor({
 					>
 						▶
 					</span>
-					<label className="cursor-pointer text-sm font-bold opacity-70">
-						角色小人配置 (Sprite Set)
+					<label className="cursor-pointer font-semibold">
+						角色小人配置（Sprite Set）
 					</label>
 				</div>
 				<button
@@ -60,10 +60,8 @@ export function SpriteSetEditor({
 						}
 					}}
 					className={cn(
-						'rounded-lg border px-3 py-1 text-xs transition-all active:scale-95',
-						spriteSet
-							? 'border-danger/20 bg-danger/10 text-danger hover:bg-danger/20'
-							: 'border-white/10 bg-white/10 hover:bg-white/20'
+						'whitespace-nowrap rounded-full px-3 py-1 text-sm',
+						spriteSet ? 'btn-mystia-danger' : 'btn-mystia-primary'
 					)}
 				>
 					{spriteSet ? '移除小人配置' : '启用小人配置'}
@@ -157,8 +155,13 @@ export function SpriteSetEditor({
 				</div>
 			)}
 			{isExpanded && !spriteSet && (
-				<div className="rounded-xl border-2 border-dashed border-white/5 py-8 text-center text-sm opacity-30">
-					该角色尚未启用小人配置
+				<div className="rounded-lg border border-dashed border-black/10 p-8 text-center dark:border-white/10">
+					<p className="text-sm text-black/40 dark:text-white/40">
+						暂未启用角色小人配置
+					</p>
+					<p className="mt-1 text-xs text-black/30 dark:text-white/30">
+						点击右侧按钮启用
+					</p>
 				</div>
 			)}
 		</div>

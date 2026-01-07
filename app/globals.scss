@@ -16,28 +16,23 @@
 
 @layer components {
 	.btn-mystia {
-		@apply flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-opacity-80 px-4 py-2 font-medium backdrop-blur-md transition-all hover:brightness-95 active:scale-[.98] active:brightness-90 disabled:cursor-not-allowed disabled:opacity-50;
+		@apply flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-opacity-80 px-4 py-2 font-medium backdrop-blur-md transition-all hover:brightness-95 active:scale-[.98] active:brightness-90 disabled:cursor-not-allowed disabled:opacity-50 dark:backdrop-blur-none;
 	}
 
 	.btn-mystia-primary {
-		@apply btn-mystia bg-primary text-primary-foreground;
+		@apply btn-mystia bg-primary text-primary-foreground dark:bg-primary/70;
 	}
 
 	.btn-mystia-secondary {
-		@apply btn-mystia bg-secondary text-secondary-foreground;
+		@apply btn-mystia bg-secondary text-secondary-foreground dark:bg-secondary/70;
 	}
 
 	.btn-mystia-success {
-		@apply btn-mystia bg-success text-success-foreground;
+		@apply btn-mystia bg-success text-success-foreground dark:bg-success/70;
 	}
 
 	.btn-mystia-danger {
-		@apply btn-mystia bg-danger text-danger-foreground;
-	}
-
-	.textarea-mystia {
-		@apply min-h-20 w-full resize-none rounded-xl border border-white/10 bg-black/10 p-4 pl-6 transition-all focus:outline-none focus:ring-2 focus:ring-primary/50;
-		field-sizing: content;
+		@apply btn-mystia bg-danger text-danger-foreground dark:bg-danger/70;
 	}
 }
 

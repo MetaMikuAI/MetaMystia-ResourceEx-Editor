@@ -36,27 +36,27 @@ export function Portraits({
 					>
 						▶
 					</span>
-					<label className="cursor-pointer text-sm font-bold opacity-70">
-						立绘配置 (Portraits){' '}
+					<label className="cursor-pointer font-semibold">
+						立绘配置（Portraits）
 						{portraits?.length ? `(${portraits.length})` : ''}
 					</label>
 				</div>
 				<button
 					onClick={onAdd}
-					className="rounded-lg border border-white/10 bg-white/10 px-3 py-1 text-xs transition-all hover:bg-white/20 active:scale-95"
+					className="btn-mystia-primary whitespace-nowrap rounded-full px-3 py-1 text-sm"
 				>
-					添加立绘
+					添加立绘配置
 				</button>
 			</div>
 			{isExpanded && (
-				<div className="animate-in fade-in slide-in-from-top-2 grid grid-cols-1 gap-3 duration-200">
+				<div className="grid grid-cols-1 gap-3 duration-200">
 					{portraits?.map((portrait, i) => {
 						const duplicatePid = isPidDuplicate(portrait.pid, i);
 						return (
 							<div
 								key={i}
 								className={cn(
-									'flex items-end gap-3 rounded-xl border bg-black/10 p-4 transition-all',
+									'flex w-full flex-wrap items-end gap-3 rounded-xl border bg-black/10 p-4 transition-all',
 									duplicatePid
 										? 'border-danger/50 bg-danger/5'
 										: 'border-white/5'
@@ -133,8 +133,13 @@ export function Portraits({
 						);
 					})}
 					{(!portraits || portraits.length === 0) && (
-						<div className="rounded-xl border-2 border-dashed border-white/5 py-4 text-center text-sm opacity-30">
-							暂无立绘配置
+						<div className="rounded-lg border border-dashed border-black/10 p-8 text-center dark:border-white/10">
+							<p className="text-sm text-black/40 dark:text-white/40">
+								暂无立绘配置
+							</p>
+							<p className="mt-1 text-xs text-black/30 dark:text-white/30">
+								点击右侧按钮添加
+							</p>
 						</div>
 					)}
 				</div>
