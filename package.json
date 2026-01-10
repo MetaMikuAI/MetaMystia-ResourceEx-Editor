@@ -24,7 +24,6 @@
 	"devDependencies": {
 		"@types/file-saver": "^2.0.7",
 		"@types/node": "^24.10.4",
-		"@types/postcss-load-config": "^3.0.1",
 		"@types/react": "^19.2.7",
 		"@types/react-dom": "^19.2.3",
 		"husky": "^9.1.7",

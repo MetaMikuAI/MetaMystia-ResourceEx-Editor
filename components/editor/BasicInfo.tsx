@@ -19,6 +19,9 @@ export const BasicInfo = memo<BasicInfoProps>(function BasicInfo({
 	const idName = useId();
 	const idType = useId();
 
+	const isIdTooSmall = character.id < 9000;
+	const isLabelInvalid = !character.label.startsWith('_');
+
 	return (
 		<div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
 			<div className="flex flex-col gap-1">
@@ -29,11 +32,18 @@ export const BasicInfo = memo<BasicInfoProps>(function BasicInfo({
 					>
 						角色ID
 					</label>
-					{isIdDuplicate && (
-						<span className="rounded bg-danger px-1.5 py-0.5 text-[10px] font-medium">
-							ID重复
-						</span>
-					)}
+					<div className="flex gap-2">
+						{isIdDuplicate && (
+							<span className="rounded bg-danger px-1.5 py-0.5 text-[10px] font-medium text-white">
+								ID重复
+							</span>
+						)}
+						{isIdTooSmall && (
+							<span className="rounded bg-danger px-1.5 py-0.5 text-[10px] font-medium text-white">
+								ID需&ge;9000
+							</span>
+						)}
+					</div>
 				</div>
 				<input
 					id={idId}
@@ -44,7 +54,7 @@ export const BasicInfo = memo<BasicInfoProps>(function BasicInfo({
 					}}
 					className={cn(
 						'h-9 w-full rounded-lg border bg-white/40 px-3 py-2 text-sm text-foreground outline-none focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:bg-black/10 dark:focus:border-white/30 dark:focus:ring-white/10',
-						isIdDuplicate
+						isIdDuplicate || isIdTooSmall
 							? 'border-danger bg-danger text-white opacity-50 focus:border-danger'
 							: 'border-black/10 dark:border-white/10'
 					)}
@@ -83,12 +93,19 @@ export const BasicInfo = memo<BasicInfoProps>(function BasicInfo({
 				/>
 			</div>
 			<div className="flex flex-col gap-1">
-				<label
-					htmlFor={idLabel}
-					className="text-xs font-medium uppercase opacity-60"
-				>
-					内部标签（Label）
-				</label>
+				<div className="flex items-center justify-between">
+					<label
+						htmlFor={idLabel}
+						className="text-xs font-medium uppercase opacity-60"
+					>
+						内部标签（Label）
+					</label>
+					{isLabelInvalid && (
+						<span className="rounded bg-danger px-1.5 py-0.5 text-[10px] font-medium text-white">
+							必须以_开头
+						</span>
+					)}
+				</div>
 				<input
 					id={idLabel}
 					type="text"
@@ -96,7 +113,12 @@ export const BasicInfo = memo<BasicInfoProps>(function BasicInfo({
 					onChange={(e) => {
 						onUpdate({ label: e.target.value });
 					}}
-					className="h-9 w-full rounded-lg border border-black/10 bg-white/40 px-3 py-2 text-sm text-foreground outline-none focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:border-white/10 dark:bg-black/10 dark:focus:border-white/30 dark:focus:ring-white/10"
+					className={cn(
+						'h-9 w-full rounded-lg border bg-white/40 px-3 py-2 text-sm text-foreground outline-none focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:bg-black/10 dark:focus:border-white/30 dark:focus:ring-white/10',
+						isLabelInvalid
+							? 'border-danger bg-danger text-white opacity-50 focus:border-danger'
+							: 'border-black/10 dark:border-white/10'
+					)}
 				/>
 			</div>
 		</div>

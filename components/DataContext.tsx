@@ -42,6 +42,7 @@ export const DataProvider = memo<PropsWithChildren>(function DataProvider({
 	const [data, setData] = useState<ResourceEx>({
 		characters: [],
 		dialogPackages: [],
+		ingredients: [],
 	});
 	const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
@@ -243,9 +244,37 @@ export const DataProvider = memo<PropsWithChildren>(function DataProvider({
 
 			zip.file('ResourceEx.json', JSON.stringify(exportData, null, 2));
 
-			// Add assets
+			// Collect all used asset paths
+			const usedPaths = new Set<string>();
+
+			// 1. Ingredients
+			exportData.ingredients.forEach((ing) => {
+				if (ing.spritePath) usedPaths.add(ing.spritePath);
+			});
+
+			// 2. Characters
+			exportData.characters.forEach((char) => {
+				// Portraits
+				char.portraits?.forEach((p) => {
+					if (p.path) usedPaths.add(p.path);
+				});
+
+				// Sprite Sets
+				if (char.characterSpriteSetCompact) {
+					char.characterSpriteSetCompact.mainSprite.forEach((p) => {
+						if (p) usedPaths.add(p);
+					});
+					char.characterSpriteSetCompact.eyeSprite.forEach((p) => {
+						if (p) usedPaths.add(p);
+					});
+				}
+			});
+
+			// Add only used assets
 			assetsRef.current.forEach((blob, path) => {
-				zip.file(path, blob);
+				if (usedPaths.has(path)) {
+					zip.file(path, blob);
+				}
 			});
 
 			const content = await zip.generateAsync({ type: 'blob' });
@@ -263,7 +292,7 @@ export const DataProvider = memo<PropsWithChildren>(function DataProvider({
 			return;
 		}
 		// Clear data
-		setData({ characters: [], dialogPackages: [] });
+		setData({ characters: [], dialogPackages: [], ingredients: [] });
 		// Clear assets
 		Object.values(assetUrls).forEach((url) => revokeUrl(url));
 		assetsRef.current = new Map();

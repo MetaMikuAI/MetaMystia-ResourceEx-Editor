@@ -58,6 +58,17 @@ export const Header = memo(function Header() {
 						>
 							对话编辑
 						</Link>
+						<Link
+							href="/ingredient"
+							className={cn(
+								'btn-mystia',
+								pathname === '/ingredient'
+									? 'bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10'
+									: 'hover:bg-black/5 dark:hover:bg-white/5'
+							)}
+						>
+							原料编辑
+						</Link>
 					</nav>
 				</div>
 				<div className="flex items-center gap-1 text-center">

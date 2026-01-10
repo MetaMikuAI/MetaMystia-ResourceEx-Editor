@@ -66,7 +66,22 @@ export interface DialogPackage {
 	dialogList: Dialog[];
 }
 
+export interface Ingredient {
+	id: number;
+	name: string;
+	description: string;
+	level: number;
+	prefix: number;
+	isFish: boolean;
+	isMeat: boolean;
+	isVeg: boolean;
+	baseValue: number;
+	tags: number[];
+	spritePath: string;
+}
+
 export interface ResourceEx {
 	characters: Character[];
 	dialogPackages: DialogPackage[];
+	ingredients: Ingredient[];
 }
