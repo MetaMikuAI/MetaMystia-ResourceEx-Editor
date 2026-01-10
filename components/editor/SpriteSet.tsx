@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { CharacterSpriteSet } from '@/types/resource';
 import { cn } from '@/lib';
+import { useData } from '@/components/DataContext';
 
 interface SpriteSetProps {
+	characterId: number;
 	spriteSet: CharacterSpriteSet | undefined;
 	label: string;
 	onUpdate: (updates: Partial<CharacterSpriteSet>) => void;
@@ -12,14 +14,15 @@ interface SpriteSetProps {
 }
 
 export function SpriteSetEditor({
+	characterId,
 	spriteSet,
-	label,
 	onUpdate,
 	onEnable,
 	onDisable,
 	onGenerateDefaults,
 }: SpriteSetProps) {
 	const [isExpanded, setIsExpanded] = useState(false);
+	const { updateAsset, getAssetUrl } = useData();
 
 	const updateSpriteArray = (
 		field: 'mainSprite' | 'eyeSprite',
@@ -30,6 +33,40 @@ export function SpriteSetEditor({
 		const newArray = [...spriteSet[field]];
 		newArray[index] = value;
 		onUpdate({ [field]: newArray });
+	};
+
+	const handleUpload = (
+		field: 'mainSprite' | 'eyeSprite',
+		index: number,
+		file: File
+	) => {
+		// Check size and reject if invalid
+		const img = new Image();
+		img.src = URL.createObjectURL(file);
+		img.onload = () => {
+			URL.revokeObjectURL(img.src);
+			if (img.width !== 64 || img.height !== 64) {
+				alert(
+					`错误: Sprite Set 贴图尺寸必须为 64x64，当前为 ${img.width}x${img.height}`
+				);
+				return;
+			}
+
+			let filename = '';
+			if (field === 'mainSprite') {
+				const row = Math.floor(index / 3);
+				const col = index % 3;
+				filename = `Main_${row}, ${col}.png`;
+			} else {
+				const row = Math.floor(index / 4);
+				const col = index % 4;
+				filename = `Eyes_${row}, ${col}.png`;
+			}
+
+			const path = `assets/Character/${characterId}/Sprite/${filename}`;
+			updateAsset(path, file);
+			updateSpriteArray(field, index, path);
+		};
 	};
 
 	return (
@@ -95,28 +132,71 @@ export function SpriteSetEditor({
 						<label className="ml-1 text-sm font-bold opacity-70">
 							主身体贴图 (Main Sprites - 12张)
 						</label>
-						<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+						<div className="grid grid-cols-3 gap-3">
 							{spriteSet.mainSprite.map((path, i) => (
 								<div
 									key={i}
-									className="flex items-center gap-2 rounded-lg border border-white/5 bg-black/10 p-2"
+									className="group relative flex flex-col gap-2 rounded-lg border border-white/5 bg-black/10 p-2 transition-colors hover:bg-black/20"
 								>
-									<span className="w-4 text-center text-[10px] opacity-40">
-										{i}
-									</span>
-									<input
-										type="text"
-										value={path}
-										onChange={(e) =>
-											updateSpriteArray(
-												'mainSprite',
-												i,
-												e.target.value
-											)
-										}
-										placeholder={`assets/${label}/${label}_Main_...`}
-										className="w-full border-none bg-transparent p-0 text-xs focus:ring-0"
-									/>
+									<label
+										className="bg-checkerboard relative aspect-square cursor-pointer overflow-hidden rounded border border-white/10 hover:border-primary/50"
+										onDragOver={(e) => e.preventDefault()}
+										onDrop={(e) => {
+											e.preventDefault();
+											const file =
+												e.dataTransfer.files?.[0];
+											if (
+												file &&
+												file.type === 'image/png'
+											) {
+												handleUpload(
+													'mainSprite',
+													i,
+													file
+												);
+											}
+										}}
+									>
+										<span className="absolute left-1 top-1 z-10 rounded bg-black/50 px-1 text-[10px] text-white">
+											{i}
+										</span>
+										{getAssetUrl(path) ? (
+											<img
+												src={getAssetUrl(path)}
+												className="image-rendering-pixelated h-full w-full object-contain"
+												alt=""
+											/>
+										) : (
+											<div className="flex h-full w-full flex-col items-center justify-center text-black/30">
+												<span className="text-xs">
+													上传
+												</span>
+											</div>
+										)}
+										<div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+											<span className="text-xs font-bold text-white">
+												更换
+											</span>
+										</div>
+										<input
+											type="file"
+											accept="image/png"
+											className="hidden"
+											onChange={(e) => {
+												const file =
+													e.target.files?.[0];
+												if (file)
+													handleUpload(
+														'mainSprite',
+														i,
+														file
+													);
+											}}
+										/>
+									</label>
+									<p className="truncate text-center text-[10px] text-black">
+										{path.split('/').pop()}
+									</p>
 								</div>
 							))}
 						</div>
@@ -126,28 +206,71 @@ export function SpriteSetEditor({
 						<label className="ml-1 text-sm font-bold opacity-70">
 							眼睛贴图 (Eye Sprites - 24张)
 						</label>
-						<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+						<div className="grid grid-cols-4 gap-3">
 							{spriteSet.eyeSprite.map((path, i) => (
 								<div
 									key={i}
-									className="flex items-center gap-2 rounded-lg border border-white/5 bg-black/10 p-2"
+									className="group relative flex flex-col gap-2 rounded-lg border border-white/5 bg-black/10 p-2 transition-colors hover:bg-black/20"
 								>
-									<span className="w-4 text-center text-[10px] opacity-40">
-										{i}
-									</span>
-									<input
-										type="text"
-										value={path}
-										onChange={(e) =>
-											updateSpriteArray(
-												'eyeSprite',
-												i,
-												e.target.value
-											)
-										}
-										placeholder={`assets/${label}/${label}_Eyes_...`}
-										className="w-full border-none bg-transparent p-0 text-xs focus:ring-0"
-									/>
+									<label
+										className="bg-checkerboard relative aspect-square cursor-pointer overflow-hidden rounded border border-white/10 hover:border-primary/50"
+										onDragOver={(e) => e.preventDefault()}
+										onDrop={(e) => {
+											e.preventDefault();
+											const file =
+												e.dataTransfer.files?.[0];
+											if (
+												file &&
+												file.type === 'image/png'
+											) {
+												handleUpload(
+													'eyeSprite',
+													i,
+													file
+												);
+											}
+										}}
+									>
+										<span className="absolute left-1 top-1 z-10 rounded bg-black/50 px-1 text-[10px] text-white">
+											{i}
+										</span>
+										{getAssetUrl(path) ? (
+											<img
+												src={getAssetUrl(path)}
+												className="image-rendering-pixelated h-full w-full object-contain"
+												alt=""
+											/>
+										) : (
+											<div className="flex h-full w-full flex-col items-center justify-center text-black/30">
+												<span className="text-xs">
+													上传
+												</span>
+											</div>
+										)}
+										<div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+											<span className="text-xs font-bold text-white">
+												更换
+											</span>
+										</div>
+										<input
+											type="file"
+											accept="image/png"
+											className="hidden"
+											onChange={(e) => {
+												const file =
+													e.target.files?.[0];
+												if (file)
+													handleUpload(
+														'eyeSprite',
+														i,
+														file
+													);
+											}}
+										/>
+									</label>
+									<p className="truncate text-center text-[10px] text-black">
+										{path.split('/').pop()}
+									</p>
 								</div>
 							))}
 						</div>

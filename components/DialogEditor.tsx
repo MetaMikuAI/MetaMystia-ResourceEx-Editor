@@ -164,6 +164,7 @@ const DialogItem = memo<DialogItemProps>(function DialogItem({
 	const idPos = useId();
 	const idText = useId();
 	const idType = useId();
+	const { getAssetUrl } = useData();
 
 	const portraitPath = useMemo(() => {
 		if (dialog.characterType === 'Special') {
@@ -173,11 +174,33 @@ const DialogItem = memo<DialogItemProps>(function DialogItem({
 			);
 			if (specialPortrait?.filename) {
 				return `/assets/SpecialPortrait/${specialPortrait.filename}`;
+			} else {
+				const customChar = customCharacters.find(
+					({ id, type }) =>
+						id === dialog.characterId &&
+						type === dialog.characterType
+				);
+				if (customChar) {
+					const portrait = customChar.portraits?.find(
+						({ pid }) => pid === dialog.pid
+					);
+					if (portrait) {
+						return (
+							getAssetUrl(portrait.path) ?? `/${portrait.path}`
+						);
+					}
+				}
 			}
 		}
 
 		return null;
-	}, [dialog.characterId, dialog.characterType, dialog.pid]);
+	}, [
+		dialog.characterId,
+		dialog.characterType,
+		dialog.pid,
+		customCharacters,
+		getAssetUrl,
+	]);
 
 	const { charName, portraitName } = useMemo(() => {
 		let charName = '未知角色';
@@ -239,7 +262,7 @@ const DialogItem = memo<DialogItemProps>(function DialogItem({
 				<div className="w-full shrink-0 md:w-56">
 					{portraitPath ? (
 						<div className="group flex flex-col gap-2">
-							<div className="relative h-80 w-full overflow-hidden rounded-lg border border-black/10 bg-[conic-gradient(#f0f0f0_90deg,_#e5e5e5_90deg_180deg,_#f0f0f0_180deg_270deg,_#e5e5e5_270deg)] bg-[length:20px_20px] shadow-inner dark:bg-[conic-gradient(#2a2a2a_90deg,_#1f1f1f_90deg_180deg,_#2a2a2a_180deg_270deg,_#1f1f1f_270deg)]">
+							<div className="bg-checkerboard relative h-80 w-full overflow-hidden rounded-lg border border-black/10 shadow-inner">
 								<img
 									draggable="false"
 									src={portraitPath}

@@ -1,6 +1,6 @@
 'use client';
 
-import { type ChangeEvent, useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { useData } from '@/components/DataContext';
 
@@ -8,7 +8,7 @@ import { DialogEditor } from '@/components/DialogEditor';
 import { DialogPackageList } from '@/components/DialogPackageList';
 import { Header } from '@/components/Header';
 
-import type { Dialog, DialogPackage, ResourceEx } from '@/types/resource';
+import type { Dialog, DialogPackage } from '@/types/resource';
 
 const DEFAULT_DIALOG: Dialog = {
 	characterId: 0,
@@ -19,54 +19,8 @@ const DEFAULT_DIALOG: Dialog = {
 };
 
 export default function DialoguePage() {
-	const { data, setData, hasUnsavedChanges, setHasUnsavedChanges } =
-		useData();
+	const { data, setData, setHasUnsavedChanges } = useData();
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-
-	const handleFileUpload = useCallback(
-		(e: ChangeEvent<HTMLInputElement>) => {
-			if (
-				hasUnsavedChanges &&
-				!confirm('当前有未保存的更改，确定要覆盖吗？')
-			) {
-				return;
-			}
-
-			const file = e.target.files?.[0];
-			if (!file) {
-				return;
-			}
-
-			const reader = new FileReader();
-
-			reader.addEventListener('load', (event) => {
-				try {
-					const json = JSON.parse(
-						event.target?.result as string
-					) as ResourceEx;
-					setData(json);
-					setHasUnsavedChanges(false);
-				} catch {
-					alert('无法读取文件，请确保文件格式正确。');
-				}
-			});
-
-			reader.readAsText(file);
-		},
-		[hasUnsavedChanges, setData, setHasUnsavedChanges]
-	);
-
-	const handleCreateBlank = useCallback(() => {
-		if (
-			hasUnsavedChanges &&
-			!confirm('当前有未保存的更改，确定要清空吗？')
-		) {
-			return;
-		}
-		setData({ characters: [], dialogPackages: [] });
-		setSelectedIndex(null);
-		setHasUnsavedChanges(false);
-	}, [hasUnsavedChanges, setData, setHasUnsavedChanges]);
 
 	const addDialogPackage = useCallback(() => {
 		const newPkg: DialogPackage = {
@@ -208,52 +162,9 @@ export default function DialoguePage() {
 		[data, selectedIndex]
 	);
 
-	const downloadJson = useCallback(() => {
-		const exportData = {
-			...data,
-			characters: data.characters.map((char) => {
-				if (!char.guest) {
-					return char;
-				}
-				const activeLikeFoodTagIds = char.guest.likeFoodTag.map(
-					(t) => t.tagId
-				);
-				const activeLikeBevTagIds = char.guest.likeBevTag.map(
-					(t) => t.tagId
-				);
-				return {
-					...char,
-					guest: {
-						...char.guest,
-						foodRequests: char.guest.foodRequests.filter(
-							({ tagId }) => activeLikeFoodTagIds.includes(tagId)
-						),
-						bevRequests: (char.guest.bevRequests || []).filter(
-							({ tagId }) => activeLikeBevTagIds.includes(tagId)
-						),
-					},
-				};
-			}),
-		};
-		const blob = new Blob([JSON.stringify(exportData, null, 2)], {
-			type: 'application/json',
-		});
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = 'ResourceEx.json';
-		a.click();
-		URL.revokeObjectURL(url);
-		setHasUnsavedChanges(false);
-	}, [data, setHasUnsavedChanges]);
-
 	return (
 		<main className="flex min-h-screen flex-col">
-			<Header
-				onCreateBlank={handleCreateBlank}
-				onDownload={downloadJson}
-				onFileUpload={handleFileUpload}
-			/>
+			<Header />
 
 			<div className="container mx-auto w-full max-w-7xl px-6 py-8 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl">
 				<div className="relative grid grid-cols-1 gap-8 lg:grid-cols-3">

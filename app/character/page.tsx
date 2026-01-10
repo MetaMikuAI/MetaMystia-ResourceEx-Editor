@@ -1,6 +1,6 @@
 'use client';
 
-import { type ChangeEvent, useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { useData } from '@/components/DataContext';
 
@@ -8,7 +8,7 @@ import { CharacterEditor } from '@/components/CharacterEditor';
 import { CharacterList } from '@/components/CharacterList';
 import { Header } from '@/components/Header';
 
-import type { Character, CharacterType, ResourceEx } from '@/types/resource';
+import type { Character, CharacterType } from '@/types/resource';
 
 const DEFAULT_CHARACTER: Character = {
 	id: 0,
@@ -20,79 +20,8 @@ const DEFAULT_CHARACTER: Character = {
 };
 
 export default function CharacterPage() {
-	const { data, setData, hasUnsavedChanges, setHasUnsavedChanges } =
-		useData();
+	const { data, setData, setHasUnsavedChanges } = useData();
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-
-	const handleFileUpload = useCallback(
-		(e: ChangeEvent<HTMLInputElement>) => {
-			if (
-				hasUnsavedChanges &&
-				!confirm('当前有未保存的更改，确定要覆盖吗？')
-			) {
-				return;
-			}
-
-			const file = e.target.files?.[0];
-			if (!file) {
-				return;
-			}
-
-			const reader = new FileReader();
-
-			reader.addEventListener('load', (event) => {
-				try {
-					const json = JSON.parse(
-						event.target?.result as string
-					) as Partial<ResourceEx>;
-					if (json.characters) {
-						json.characters = json.characters.map((char) => ({
-							...char,
-							descriptions: char.descriptions
-								? [...char.descriptions, '', '', ''].slice(0, 3)
-								: ['', '', ''],
-							guest: char.guest
-								? {
-										...char.guest,
-										evaluation: char.guest.evaluation
-											? [
-													...char.guest.evaluation,
-													...Array(9).fill(''),
-												].slice(0, 9)
-											: Array(9).fill(''),
-										// 导入时，确保请求列表存在
-										foodRequests:
-											char.guest.foodRequests || [],
-										bevRequests:
-											char.guest.bevRequests || [],
-									}
-								: undefined,
-						}));
-					}
-					setData(json as ResourceEx);
-					setSelectedIndex(null);
-					setHasUnsavedChanges(false);
-				} catch {
-					alert('无法读取文件，请确保文件格式正确。');
-				}
-			});
-
-			reader.readAsText(file);
-		},
-		[hasUnsavedChanges, setData, setHasUnsavedChanges]
-	);
-
-	const handleCreateBlank = useCallback(() => {
-		if (
-			hasUnsavedChanges &&
-			!confirm('当前有未保存的更改，确定要清空吗？')
-		) {
-			return;
-		}
-		setData({ characters: [], dialogPackages: [] });
-		setSelectedIndex(null);
-		setHasUnsavedChanges(false);
-	}, [hasUnsavedChanges, setData, setHasUnsavedChanges]);
 
 	const sortCharacters = useCallback((chars: Character[]) => {
 		const typeOrder: Record<CharacterType, number> = {
@@ -167,45 +96,6 @@ export default function CharacterPage() {
 		[data, setData, setHasUnsavedChanges, sortCharacters]
 	);
 
-	const downloadJson = useCallback(() => {
-		const exportData = {
-			...data,
-			characters: data.characters.map((char) => {
-				if (!char.guest) {
-					return char;
-				}
-				const activeLikeFoodTagIds = char.guest.likeFoodTag.map(
-					(t) => t.tagId
-				);
-				const activeLikeBevTagIds = char.guest.likeBevTag.map(
-					(t) => t.tagId
-				);
-				return {
-					...char,
-					guest: {
-						...char.guest,
-						foodRequests: char.guest.foodRequests.filter(
-							({ tagId }) => activeLikeFoodTagIds.includes(tagId)
-						),
-						bevRequests: (char.guest.bevRequests || []).filter(
-							({ tagId }) => activeLikeBevTagIds.includes(tagId)
-						),
-					},
-				};
-			}),
-		};
-		const blob = new Blob([JSON.stringify(exportData, null, 2)], {
-			type: 'application/json',
-		});
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = 'ResourceEx.json';
-		a.click();
-		URL.revokeObjectURL(url);
-		setHasUnsavedChanges(false);
-	}, [data, setHasUnsavedChanges]);
-
 	const selectedChar = useMemo(() => {
 		if (selectedIndex === null) {
 			return null;
@@ -228,11 +118,7 @@ export default function CharacterPage() {
 
 	return (
 		<main className="flex min-h-screen flex-col">
-			<Header
-				onCreateBlank={handleCreateBlank}
-				onDownload={downloadJson}
-				onFileUpload={handleFileUpload}
-			/>
+			<Header />
 
 			<div className="container mx-auto w-full max-w-7xl px-6 py-8 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl">
 				<div className="relative grid grid-cols-1 gap-8 lg:grid-cols-3">

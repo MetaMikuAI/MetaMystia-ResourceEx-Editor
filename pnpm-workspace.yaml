@@ -1,2 +1,5 @@
+packages:
+  - .
+
 publicHoistPattern:
   - postcss-load-config

@@ -43,11 +43,14 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 				portraits.length > 0
 					? Math.max(...portraits.map((p) => p.pid)) + 1
 					: 0;
-			const label = character.label || 'Character';
 			onUpdate({
 				portraits: [
 					...portraits,
-					{ pid: nextPid, path: `assets/${label}_${nextPid}.png` },
+					// Use standard path format consistent with Portraits.tsx
+					{
+						pid: nextPid,
+						path: `assets/Character/${character.id}/Portrait/${nextPid}.png`,
+					},
 				],
 			});
 		}, [character, onUpdate]);
@@ -139,7 +142,7 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 			for (let row = 0; row < 4; row++) {
 				for (let col = 0; col < 3; col++) {
 					mainSprite.push(
-						`assets/${label}/${label}_Main_${row}, ${col}.png`
+						`assets/Character/${label}/Sprite/Main_${row}, ${col}.png`
 					);
 				}
 			}
@@ -147,7 +150,7 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 			for (let row = 0; row < 6; row++) {
 				for (let col = 0; col < 4; col++) {
 					eyeSprite.push(
-						`assets/${label}/${label}_Eyes_${row}, ${col}.png`
+						`assets/Character/${label}/Sprite/Eyes_${row}, ${col}.png`
 					);
 				}
 			}
@@ -167,7 +170,7 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 			for (let row = 0; row < 4; row++) {
 				for (let col = 0; col < 3; col++) {
 					mainSprite.push(
-						`assets/${label}/${label}_Main_${row}, ${col}.png`
+						`assets/Character/${label}/Sprite/Main_${row}, ${col}.png`
 					);
 				}
 			}
@@ -175,7 +178,7 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 			for (let row = 0; row < 6; row++) {
 				for (let col = 0; col < 4; col++) {
 					eyeSprite.push(
-						`assets/${label}/${label}_Eyes_${row}, ${col}.png`
+						`assets/Character/${label}/Sprite/Eyes_${row}, ${col}.png`
 					);
 				}
 			}
@@ -226,6 +229,7 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 				/>
 
 				<Portraits
+					characterId={character.id}
 					portraits={character.portraits ?? []}
 					onAdd={addPortrait}
 					onRemove={removePortrait}
@@ -240,6 +244,7 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 				/>
 
 				<SpriteSetEditor
+					characterId={character.id}
 					spriteSet={character.characterSpriteSetCompact}
 					label={character.label}
 					onUpdate={updateSpriteSet}

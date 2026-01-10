@@ -1,22 +1,24 @@
-import { type ChangeEvent, memo } from 'react';
+import { type ChangeEvent, memo, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 
 import Link from 'next/link';
 
 import { cn } from '@/lib';
+import { useData } from '@/components/DataContext';
 
-interface HeaderProps {
-	onCreateBlank: () => void;
-	onFileUpload: (e: ChangeEvent<HTMLInputElement>) => void;
-	onDownload: () => void;
-}
-
-export const Header = memo<HeaderProps>(function Header({
-	onCreateBlank,
-	onFileUpload,
-	onDownload,
-}) {
+export const Header = memo(function Header() {
 	const pathname = usePathname();
+	const { createBlank, loadResourcePack, saveResourcePack } = useData();
+
+	const handleFileUpload = useCallback(
+		(e: ChangeEvent<HTMLInputElement>) => {
+			const file = e.target.files?.[0];
+			if (file) {
+				loadResourcePack(file);
+			}
+		},
+		[loadResourcePack]
+	);
 
 	return (
 		<header className="sticky top-0 z-50 w-full border-b border-gray-300/95 bg-white/5 backdrop-blur-lg dark:border-gray-800/95">
@@ -60,25 +62,25 @@ export const Header = memo<HeaderProps>(function Header({
 				</div>
 				<div className="flex items-center gap-1 text-center">
 					<button
-						onClick={onCreateBlank}
+						onClick={createBlank}
 						className="btn-mystia text-sm hover:underline hover:underline-offset-2"
 					>
 						全新创建
 					</button>
 					<label className="btn-mystia text-sm hover:underline hover:underline-offset-2">
-						上传JSON
+						上传资源包(ZIP)
 						<input
 							type="file"
-							accept=".json"
-							onChange={onFileUpload}
+							accept=".zip"
+							onChange={handleFileUpload}
 							className="hidden"
 						/>
 					</label>
 					<button
-						onClick={onDownload}
+						onClick={() => saveResourcePack()}
 						className="btn-mystia text-sm hover:underline hover:underline-offset-2"
 					>
-						导出JSON
+						导出资源包(ZIP)
 					</button>
 				</div>
 			</div>
