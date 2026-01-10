@@ -69,6 +69,28 @@ export const Header = memo(function Header() {
 						>
 							原料编辑
 						</Link>
+						<Link
+							href="/food"
+							className={cn(
+								'btn-mystia',
+								pathname === '/food'
+									? 'bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10'
+									: 'hover:bg-black/5 dark:hover:bg-white/5'
+							)}
+						>
+							食物编辑
+						</Link>
+						<Link
+							href="/recipe"
+							className={cn(
+								'btn-mystia',
+								pathname === '/recipe'
+									? 'bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10'
+									: 'hover:bg-black/5 dark:hover:bg-white/5'
+							)}
+						>
+							食谱编辑
+						</Link>
 					</nav>
 				</div>
 				<div className="flex items-center gap-1 text-center">

@@ -8,7 +8,6 @@ import {
 	useCallback,
 	useRef,
 	type PropsWithChildren,
-	memo,
 } from 'react';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
@@ -36,13 +35,13 @@ interface DataContextType {
 
 const DataContext = createContext<DataContextType | null>(null);
 
-export const DataProvider = memo<PropsWithChildren>(function DataProvider({
-	children,
-}) {
+export function DataProvider({ children }: PropsWithChildren) {
 	const [data, setData] = useState<ResourceEx>({
 		characters: [],
 		dialogPackages: [],
 		ingredients: [],
+		foods: [],
+		recipes: [],
 	});
 	const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
@@ -195,7 +194,11 @@ export const DataProvider = memo<PropsWithChildren>(function DataProvider({
 				}
 
 				setAssetUrls(newAssetUrls);
-				setData(jsonData);
+				setData({
+					...jsonData,
+					foods: jsonData.foods || [],
+					recipes: jsonData.recipes || [],
+				});
 				setHasUnsavedChanges(false);
 			} catch (e) {
 				console.error(e);
@@ -252,6 +255,11 @@ export const DataProvider = memo<PropsWithChildren>(function DataProvider({
 				if (ing.spritePath) usedPaths.add(ing.spritePath);
 			});
 
+			// 1.5 Foods
+			exportData.foods?.forEach((food) => {
+				if (food.spritePath) usedPaths.add(food.spritePath);
+			});
+
 			// 2. Characters
 			exportData.characters.forEach((char) => {
 				// Portraits
@@ -292,7 +300,13 @@ export const DataProvider = memo<PropsWithChildren>(function DataProvider({
 			return;
 		}
 		// Clear data
-		setData({ characters: [], dialogPackages: [], ingredients: [] });
+		setData({
+			characters: [],
+			dialogPackages: [],
+			ingredients: [],
+			foods: [],
+			recipes: [],
+		});
 		// Clear assets
 		Object.values(assetUrls).forEach((url) => revokeUrl(url));
 		assetsRef.current = new Map();
@@ -319,7 +333,7 @@ export const DataProvider = memo<PropsWithChildren>(function DataProvider({
 			{children}
 		</DataContext.Provider>
 	);
-});
+}
 
 export function useData() {
 	const context = useContext(DataContext);

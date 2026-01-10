@@ -80,8 +80,31 @@ export interface Ingredient {
 	spritePath: string;
 }
 
+export interface Food {
+	id: number;
+	name: string;
+	description: string;
+	level: number;
+	baseValue: number;
+	tags: number[];
+	banTags: number[];
+	spritePath: string;
+}
+
+export type CookerType = 'Pot' | 'Grill' | 'Fryer' | 'Steamer' | 'CuttingBoard';
+
+export interface Recipe {
+	id: number;
+	foodId: number;
+	ingredients: number[];
+	cookTime: number;
+	cookerType: CookerType;
+}
+
 export interface ResourceEx {
 	characters: Character[];
 	dialogPackages: DialogPackage[];
 	ingredients: Ingredient[];
+	foods: Food[];
+	recipes: Recipe[];
 }
