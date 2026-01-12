@@ -42,6 +42,7 @@ export function DataProvider({ children }: PropsWithChildren) {
 		ingredients: [],
 		foods: [],
 		recipes: [],
+		missionNodes: [],
 	});
 	const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
@@ -198,6 +199,24 @@ export function DataProvider({ children }: PropsWithChildren) {
 					...jsonData,
 					foods: jsonData.foods || [],
 					recipes: jsonData.recipes || [],
+					missionNodes: (jsonData.missionNodes || []).map((node) => ({
+						...node,
+						title: (node as any).title ?? (node as any).name ?? '',
+						name: undefined, // Explicitly remove name
+						rewards: node.rewards || [],
+						finishConditions: node.finishConditions || [],
+						label:
+							(node as any).label ??
+							(node as any).title ??
+							(node as any).name ??
+							'',
+						description: (node as any).description ?? '',
+						sender: (node as any).sender ?? '',
+						reciever:
+							(node as any).reciever ??
+							(node as any).receiver ??
+							'',
+					})),
 				});
 				setHasUnsavedChanges(false);
 			} catch (e) {
@@ -306,6 +325,7 @@ export function DataProvider({ children }: PropsWithChildren) {
 			ingredients: [],
 			foods: [],
 			recipes: [],
+			missionNodes: [],
 		});
 		// Clear assets
 		Object.values(assetUrls).forEach((url) => revokeUrl(url));

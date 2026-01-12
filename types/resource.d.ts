@@ -101,10 +101,114 @@ export interface Recipe {
 	cookerType: CookerType;
 }
 
+export type MissionType = 'Main' | 'Side' | 'Kitsuna';
+
+export type RewardType =
+	| 'UnlockNPC'
+	| 'ScheduleNews'
+	| 'DismissNews'
+	| 'ModifyPopSystem'
+	| 'ToggleResourcePoint'
+	| 'SetGlobalGuestFundModifier'
+	| 'SetObjectPriceModifier'
+	| 'DismissEvents'
+	| 'RequestNPC'
+	| 'DismissNPC'
+	| 'AddNPCDialog'
+	| 'RemoveNPCDialog'
+	| 'ToggleInteractableEntity'
+	| 'UnlockMap'
+	| 'SetEnableInteractablesUI'
+	| 'SetIzakayaIndex'
+	| 'GiveItem'
+	| 'SetDaySpecialNPCVisibility'
+	| 'SetNPCDialog'
+	| 'UpgradeKizunaLevel'
+	| 'SetCanHaveLevel5Kizuna'
+	| 'GetFund'
+	| 'ToggleSwitchEntity'
+	| 'SetLevelCap'
+	| 'CouldSpawnTewi'
+	| 'TewiSpawnTonight'
+	| 'AskReimuProtectYou'
+	| 'AddToKourindoStaticMerchandise'
+	| 'EnableMultiPartnerMode'
+	| 'SetPartnerCount'
+	| 'MoveToChallenge'
+	| 'CancelEvent'
+	| 'MoveToStaff'
+	| 'EnableSpecialGuestSpawnInNight'
+	| 'EnableSGuestSpawnInTargetIzakayaById'
+	| 'EnableSGuestSpawnInTargetIzakayaByMap'
+	| 'UnlockSGuestInNotebook'
+	| 'SetTargetMissionFulfilled'
+	| 'UnlockMusicGameChapter'
+	| 'RemoveKourindouMerchandise'
+	| 'FinishFakeMission'
+	| 'ForceCompleteMission'
+	| 'RefreshRandomSpawnNpc'
+	| 'AddLockedRecipe'
+	| 'ClearLockedRecipe'
+	| 'AddEffectiveSGuestMapping'
+	| 'RemoveEffectiveSGuestMapping'
+	| 'FinishEvent'
+	| 'StartOrContinueRogueLike'
+	| 'ControlSpecialGuestScheduled'
+	| 'CancelControlSpecialGuestScheduled'
+	| 'IgnoreSpecialGuest'
+	| 'AddDLCLock'
+	| 'RemoveDLCLock'
+	| 'StopAllUnmanagedMovingProcess'
+	| 'NotifySpecialGuestSpawnInNight'
+	| 'SetAndSavePlayerPref';
+
+export type ConditionType =
+	| 'BillRepayment'
+	| 'TalkWithCharacter'
+	| 'InspectInteractable'
+	| 'SubmitItem'
+	| 'ServeInWork'
+	| 'SubmitByTag'
+	| 'SubmitByTags'
+	| 'SellInWork'
+	| 'SubmitByIngredients'
+	| 'CompleteSpecifiedFollowingTasks'
+	| 'CompleteSpecifiedFollowingTasksSubCondition'
+	| 'ReachTargetCharacterKisunaLevel'
+	| 'FakeMission'
+	| 'SubmitByAnyOneTag'
+	| 'CompleteSpecifiedFollowingEvents'
+	| 'SubmitByLevel';
+
+export interface MissionCondition {
+	conditionType: ConditionType;
+	amount?: number;
+	sellableType?: 'Food' | 'Beverage';
+	label?: string;
+}
+
+export interface MissionReward {
+	rewardType: RewardType;
+	rewardId?: string;
+}
+
+export interface MissionNode {
+	title: string;
+	description: string;
+	label: string;
+	debugLabel: string;
+	missionType: MissionType;
+	sender: string;
+	reciever: string;
+	rewards: MissionReward[];
+	finishConditions: MissionCondition[];
+}
+
 export interface ResourceEx {
 	characters: Character[];
 	dialogPackages: DialogPackage[];
 	ingredients: Ingredient[];
 	foods: Food[];
 	recipes: Recipe[];
+	missionNodes: MissionNode[];
 }
