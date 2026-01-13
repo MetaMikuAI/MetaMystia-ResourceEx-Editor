@@ -69,7 +69,7 @@ export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
 		return (
 			<div className="col-span-2 flex h-96 items-center justify-center rounded-lg bg-white/10 p-4 shadow-md backdrop-blur">
 				<p className="text-center text-black/40 dark:text-white/40">
-					请从左侧选择一个食谱进行编辑
+					请从左侧选择一个菜谱进行编辑
 				</p>
 			</div>
 		);
@@ -78,7 +78,7 @@ export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
 	return (
 		<div className="col-span-2 flex flex-col gap-6 overflow-y-auto rounded-lg bg-white/10 p-6 shadow-md backdrop-blur">
 			<div className="flex items-center justify-between border-b border-black/5 pb-4 dark:border-white/5">
-				<h2 className="text-2xl font-bold">食谱编辑</h2>
+				<h2 className="text-2xl font-bold">菜谱编辑</h2>
 			</div>
 
 			{/* 基本信息 */}
@@ -93,7 +93,7 @@ export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
 								htmlFor={idId}
 								className="text-xs font-medium uppercase opacity-60"
 							>
-								食谱ID
+								菜谱ID
 							</label>
 							{isIdTooSmall && (
 								<span className="rounded bg-danger px-1.5 py-0.5 text-[10px] font-medium text-white">
@@ -122,7 +122,7 @@ export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
 							htmlFor={idFoodId}
 							className="text-xs font-medium uppercase opacity-60"
 						>
-							食物ID (Food ID)
+							料理ID (Food ID)
 						</label>
 						<select
 							id={idFoodId}
@@ -132,7 +132,7 @@ export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
 							}
 							className="h-9 w-full rounded-lg border border-black/10 bg-white/40 px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:border-white/10 dark:bg-black/10 dark:focus:border-white/10 dark:focus:ring-white/10"
 						>
-							<optgroup label="游戏内食物">
+							<optgroup label="游戏内料理">
 								{FOOD_NAMES.map((food) => (
 									<option key={food.id} value={food.id}>
 										[{food.id}] {food.name}
@@ -140,7 +140,7 @@ export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
 								))}
 							</optgroup>
 							{customFoods.length > 0 && (
-								<optgroup label="自定义食物">
+								<optgroup label="自定义料理">
 									{customFoods.map((food) => (
 										<option key={food.id} value={food.id}>
 											[{food.id}] {food.name}

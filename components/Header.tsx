@@ -78,7 +78,7 @@ export const Header = memo(function Header() {
 									: 'hover:bg-black/5 dark:hover:bg-white/5'
 							)}
 						>
-							食物编辑
+							料理编辑
 						</Link>
 						<Link
 							href="/recipe"
@@ -89,7 +89,7 @@ export const Header = memo(function Header() {
 									: 'hover:bg-black/5 dark:hover:bg-white/5'
 							)}
 						>
-							食谱编辑
+							菜谱编辑
 						</Link>
 						<Link
 							href="/mission"

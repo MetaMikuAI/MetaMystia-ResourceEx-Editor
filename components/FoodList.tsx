@@ -28,7 +28,7 @@ export const FoodList = memo<FoodListProps>(function FoodList({
 	return (
 		<div className="flex h-min flex-col gap-4 overflow-y-auto rounded-lg bg-white/10 p-4 shadow-md backdrop-blur lg:sticky lg:top-24">
 			<div className="flex items-center justify-between">
-				<h2 className="text-xl font-semibold">食物列表</h2>
+				<h2 className="text-xl font-semibold">料理列表</h2>
 				<button
 					onClick={onAdd}
 					className="btn-mystia h-8 w-8 text-lg hover:bg-black/5 dark:hover:bg-white/5"
@@ -77,7 +77,7 @@ export const FoodList = memo<FoodListProps>(function FoodList({
 								<button
 									onClick={(e) => {
 										e.stopPropagation();
-										if (confirm('确定要删除这个食物吗？')) {
+										if (confirm('确定要删除这个料理吗？')) {
 											onRemove(index);
 										}
 									}}
@@ -92,7 +92,7 @@ export const FoodList = memo<FoodListProps>(function FoodList({
 				{foods.length === 0 && (
 					<div className="rounded-lg border border-dashed border-black/10 p-8 text-center dark:border-white/10">
 						<p className="text-sm text-black/40 dark:text-white/40">
-							暂无食物
+							暂无料理
 						</p>
 						<p className="mt-1 text-xs text-black/30 dark:text-white/30">
 							点击上方 + 按钮创建

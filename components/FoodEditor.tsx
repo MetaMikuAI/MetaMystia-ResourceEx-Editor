@@ -88,7 +88,7 @@ export const FoodEditor = memo<FoodEditorProps>(function FoodEditor({
 		return (
 			<div className="col-span-2 flex h-96 items-center justify-center rounded-lg bg-white/10 p-4 shadow-md backdrop-blur">
 				<p className="text-center text-black/40 dark:text-white/40">
-					请从左侧选择一个食物进行编辑
+					请从左侧选择一个料理进行编辑
 				</p>
 			</div>
 		);
@@ -99,7 +99,7 @@ export const FoodEditor = memo<FoodEditorProps>(function FoodEditor({
 	return (
 		<div className="col-span-2 flex flex-col gap-6 overflow-y-auto rounded-lg bg-white/10 p-6 shadow-md backdrop-blur">
 			<div className="flex items-center justify-between border-b border-black/5 pb-4 dark:border-white/5">
-				<h2 className="text-2xl font-bold">食物编辑</h2>
+				<h2 className="text-2xl font-bold">料理编辑</h2>
 			</div>
 
 			{/* 基本信息 */}
@@ -311,7 +311,7 @@ export const FoodEditor = memo<FoodEditorProps>(function FoodEditor({
 							<>
 								<img
 									src={spriteUrl}
-									alt="食物贴图"
+									alt="料理贴图"
 									className="image-rendering-pixelated h-16 w-16 object-contain"
 									draggable="false"
 								/>

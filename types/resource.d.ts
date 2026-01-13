@@ -187,9 +187,22 @@ export interface MissionCondition {
 	label?: string;
 }
 
+export type ObjectType =
+	| 'Food'
+	| 'Ingredient'
+	| 'Beverage'
+	| 'Item'
+	| 'Recipe'
+	| 'Izakaya'
+	| 'Partner'
+	| 'Badge'
+	| 'Cooker';
+
 export interface MissionReward {
 	rewardType: RewardType;
 	rewardId?: string;
+	objectType?: ObjectType;
+	rewardIntArray?: number[];
 }
 
 export interface MissionNode {

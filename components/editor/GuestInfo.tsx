@@ -224,7 +224,7 @@ export function GuestInfoEditor({
 					) && (
 						<div className="flex animate-pulse items-center gap-3 rounded-xl border border-danger/50 bg-danger/20 p-3 text-xs font-bold text-danger">
 							<span className="text-lg">⚠️</span>
-							检测到标签冲突：某些食物标签同时存在于“喜爱”和“厌恶”列表中。
+							检测到标签冲突：某些料理标签同时存在于“喜爱”和“厌恶”列表中。
 						</div>
 					)}
 					<div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -343,7 +343,7 @@ export function GuestInfoEditor({
 						<div className="flex flex-col gap-3">
 							<div className="ml-1 flex items-center justify-between">
 								<label className="text-sm font-bold opacity-70">
-									喜爱食物标签 (Like Food Tags)
+									喜爱料理标签 (Like Food Tags)
 								</label>
 							</div>
 							<div className="flex flex-wrap gap-2 rounded-xl border border-white/10 bg-black/20 p-4">
@@ -401,7 +401,7 @@ export function GuestInfoEditor({
 
 						<div className="flex flex-col gap-3">
 							<label className="ml-1 text-sm font-bold text-danger opacity-70">
-								厌恶食物标签 (Hate Food Tags)
+								厌恶料理标签 (Hate Food Tags)
 							</label>
 							<div className="flex flex-wrap gap-2 rounded-xl border border-white/10 bg-black/20 p-4">
 								{FOOD_TAGS.map((tag) => {
@@ -500,10 +500,10 @@ export function GuestInfoEditor({
 					<div className="flex flex-col gap-4">
 						<div className="ml-1 flex items-center justify-between">
 							<label className="text-sm font-bold opacity-70">
-								食物点单请求 (Food Requests)
+								料理点单请求 (Food Requests)
 							</label>
 							<span className="text-[10px] italic opacity-40">
-								根据上方喜爱食物自动同步
+								根据上方喜爱料理自动同步
 							</span>
 						</div>
 						<div className="grid grid-cols-1 gap-3">
@@ -586,7 +586,7 @@ export function GuestInfoEditor({
 							{(!guest?.likeFoodTag ||
 								guest.likeFoodTag.length === 0) && (
 								<div className="rounded-xl border-2 border-dashed border-white/5 py-4 text-center text-sm opacity-30">
-									请先在上方选择喜爱食物标签
+									请先在上方选择喜爱料理标签
 								</div>
 							)}
 						</div>

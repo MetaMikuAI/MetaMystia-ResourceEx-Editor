@@ -17,7 +17,7 @@ export default function FoodPage() {
 	const addFood = useCallback(() => {
 		const newFood: Food = {
 			id: 11000 + (data.foods?.length || 0),
-			name: `新食物${(data.foods?.length || 0) + 1}`,
+			name: `新料理${(data.foods?.length || 0) + 1}`,
 			description: '',
 			level: 1,
 			baseValue: 1,

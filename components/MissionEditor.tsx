@@ -2,130 +2,190 @@
 
 import { memo, useCallback, useMemo } from 'react';
 import { FOOD_NAMES } from '@/data/foods';
+import { INGREDIENT_NAMES } from '@/data/ingredients';
+import { BEVERAGE_NAMES } from '@/data/beverages';
+import { RECIPE_NAMES } from '@/data/recipes';
+import { SPECIAL_GUESTS } from '@/data/specialGuest';
 import type {
 	Character,
 	Food,
+	Ingredient,
+	Recipe,
 	MissionCondition,
 	MissionNode,
 	MissionReward,
 	MissionType,
 	RewardType,
 	ConditionType,
+	ObjectType,
 } from '@/types/resource';
 
 const CONDITION_TYPES: { type: ConditionType; label: string }[] = [
-	{ type: 'BillRepayment', label: '还债' },
-	{ type: 'TalkWithCharacter', label: '和角色交谈' },
-	{ type: 'InspectInteractable', label: '调查白天交互物品' },
-	{ type: 'SubmitItem', label: '交付目标物品' },
+	{ type: 'BillRepayment', label: '【未实现】还债' },
+	{ type: 'TalkWithCharacter', label: '【未实现】和角色交谈' },
+	{ type: 'InspectInteractable', label: '【未实现】调查白天交互物品' },
+	{ type: 'SubmitItem', label: '【未实现】交付目标物品' },
 	{ type: 'ServeInWork', label: '请角色品尝料理' },
-	{ type: 'SubmitByTag', label: '交付包含Tag的对应物品' },
-	{ type: 'SubmitByTags', label: '交付包含多个Tag的对应物品' },
-	{ type: 'SellInWork', label: '在工作中售卖料理' },
-	{ type: 'SubmitByIngredients', label: '交付包含食材的料理' },
-	{ type: 'CompleteSpecifiedFollowingTasks', label: '完成以下任务中的几个' },
+	{ type: 'SubmitByTag', label: '【未实现】交付包含Tag的对应物品' },
+	{ type: 'SubmitByTags', label: '【未实现】交付包含多个Tag的对应物品' },
+	{ type: 'SellInWork', label: '【未实现】在工作中售卖料理' },
+	{ type: 'SubmitByIngredients', label: '【未实现】交付包含食材的料理' },
+	{
+		type: 'CompleteSpecifiedFollowingTasks',
+		label: '【未实现】完成以下任务中的几个',
+	},
 	{
 		type: 'CompleteSpecifiedFollowingTasksSubCondition',
-		label: '(完成以下任务中的几个)操作的任务条件',
+		label: '【未实现】(完成以下任务中的几个)操作的任务条件',
 	},
 	{
 		type: 'ReachTargetCharacterKisunaLevel',
-		label: '达到目标角色的羁绊等级LV',
+		label: '【未实现】达到目标角色的羁绊等级LV',
 	},
 	{
 		type: 'FakeMission',
-		label: '表示某种事情发生(不会自动完成，需要手动完成或者取消计划)',
+		label: '【未实现】表示某种事情发生(不会自动完成，需要手动完成或者取消计划)',
 	},
-	{ type: 'SubmitByAnyOneTag', label: '交付包含任意一个Tag的对应物品' },
+	{
+		type: 'SubmitByAnyOneTag',
+		label: '【未实现】交付包含任意一个Tag的对应物品',
+	},
 	{
 		type: 'CompleteSpecifiedFollowingEvents',
-		label: '完成以下事件中的X(指定数量)个',
+		label: '【未实现】完成以下事件中的X(指定数量)个',
 	},
-	{ type: 'SubmitByLevel', label: '交付指定Level的对应物品' },
+	{ type: 'SubmitByLevel', label: '【未实现】交付指定Level的对应物品' },
 ];
 
 const REWARD_TYPES: { type: RewardType; label: string }[] = [
-	{ type: 'UpgradeKizunaLevel', label: '将稀客的羁绊等级提升一级' },
-	{ type: 'UnlockNPC', label: '解锁NPC' },
-	{ type: 'ScheduleNews', label: '计划新闻' },
-	{ type: 'DismissNews', label: '取消被计划的新闻' },
-	{ type: 'ModifyPopSystem', label: '修改流行系统' },
-	{ type: 'ToggleResourcePoint', label: '开关采集点' },
-	{ type: 'SetGlobalGuestFundModifier', label: '设置全局客人携带金额因子' },
-	{ type: 'SetObjectPriceModifier', label: '设置具体物品价格因子' },
-	{ type: 'DismissEvents', label: '【已弃用】取消被计划的事件' },
-	{ type: 'RequestNPC', label: '移动NPC到给定位置' },
-	{ type: 'DismissNPC', label: '将NPC移动回原位置' },
-	{ type: 'AddNPCDialog', label: '将目标对话加入给定NPC的对话池' },
-	{ type: 'RemoveNPCDialog', label: '将目标对话从给定NPC的对话池移除' },
-	{ type: 'ToggleInteractableEntity', label: '设置可互动物品的可用性' },
-	{ type: 'UnlockMap', label: '解锁地图' },
-	{ type: 'SetEnableInteractablesUI', label: '设置按钮是否可以互动' },
-	{ type: 'SetIzakayaIndex', label: '【已弃用】设置覆写雀食堂的ID' },
+	{ type: 'UnlockNPC', label: '【未实现】解锁NPC' },
+	{ type: 'ScheduleNews', label: '【未实现】计划新闻' },
+	{ type: 'DismissNews', label: '【未实现】取消被计划的新闻' },
+	{ type: 'ModifyPopSystem', label: '【未实现】修改流行系统' },
+	{ type: 'ToggleResourcePoint', label: '【未实现】开关采集点' },
+	{
+		type: 'SetGlobalGuestFundModifier',
+		label: '【未实现】设置全局客人携带金额因子',
+	},
+	{ type: 'SetObjectPriceModifier', label: '【未实现】设置具体物品价格因子' },
+	{ type: 'DismissEvents', label: '【未实现】【已弃用】取消被计划的事件' },
+	{ type: 'RequestNPC', label: '【未实现】移动NPC到给定位置' },
+	{ type: 'DismissNPC', label: '【未实现】将NPC移动回原位置' },
+	{ type: 'AddNPCDialog', label: '【未实现】将目标对话加入给定NPC的对话池' },
+	{
+		type: 'RemoveNPCDialog',
+		label: '【未实现】将目标对话从给定NPC的对话池移除',
+	},
+	{
+		type: 'ToggleInteractableEntity',
+		label: '【未实现】设置可互动物品的可用性',
+	},
+	{ type: 'UnlockMap', label: '【未实现】解锁地图' },
+	{
+		type: 'SetEnableInteractablesUI',
+		label: '【未实现】设置按钮是否可以互动',
+	},
+	{
+		type: 'SetIzakayaIndex',
+		label: '【未实现】【已弃用】设置覆写雀食堂的ID',
+	},
 	{ type: 'GiveItem', label: '获得给定物品' },
-	{ type: 'SetDaySpecialNPCVisibility', label: '设置白天稀有NPC的' },
-	{ type: 'SetNPCDialog', label: '设置NPC的对话池' },
+	{
+		type: 'SetDaySpecialNPCVisibility',
+		label: '【未实现】设置白天稀有NPC的',
+	},
+	{ type: 'SetNPCDialog', label: '【未实现】设置NPC的对话池' },
+	{ type: 'UpgradeKizunaLevel', label: '将稀客的羁绊等级提升一级' },
 	{
 		type: 'SetCanHaveLevel5Kizuna',
-		label: '设置玩家是否能让稀客达到5级羁绊',
+		label: '【未实现】设置玩家是否能让稀客达到5级羁绊',
 	},
-	{ type: 'GetFund', label: '获得目标数量的金钱' },
-	{ type: 'ToggleSwitchEntity', label: '设置任务切换物品的开启状态' },
-	{ type: 'SetLevelCap', label: '设置等级限制' },
-	{ type: 'CouldSpawnTewi', label: '设置是否会生成因幡帝' },
-	{ type: 'TewiSpawnTonight', label: '设置当天晚上因幡帝是否会被生成' },
-	{ type: 'AskReimuProtectYou', label: '获得灵梦的保护' },
-	{ type: 'AddToKourindoStaticMerchandise', label: '将目标物品加入香霖堂' },
-	{ type: 'EnableMultiPartnerMode', label: '开启多伙伴模式' },
-	{ type: 'SetPartnerCount', label: '设置可用的最大伙伴数量' },
-	{ type: 'MoveToChallenge', label: '前往给定的挑战模式' },
-	{ type: 'CancelEvent', label: '取消被计划的目标事件' },
-	{ type: 'MoveToStaff', label: '前往制作人员名单场景' },
-	{ type: 'EnableSpecialGuestSpawnInNight', label: '设置稀客是否生成' },
+	{ type: 'GetFund', label: '【未实现】获得目标数量的金钱' },
+	{
+		type: 'ToggleSwitchEntity',
+		label: '【未实现】设置任务切换物品的开启状态',
+	},
+	{ type: 'SetLevelCap', label: '【未实现】设置等级限制' },
+	{ type: 'CouldSpawnTewi', label: '【未实现】设置是否会生成因幡帝' },
+	{
+		type: 'TewiSpawnTonight',
+		label: '【未实现】设置当天晚上因幡帝是否会被生成',
+	},
+	{ type: 'AskReimuProtectYou', label: '【未实现】获得灵梦的保护' },
+	{
+		type: 'AddToKourindoStaticMerchandise',
+		label: '【未实现】将目标物品加入香霖堂',
+	},
+	{ type: 'EnableMultiPartnerMode', label: '【未实现】开启多伙伴模式' },
+	{ type: 'SetPartnerCount', label: '【未实现】设置可用的最大伙伴数量' },
+	{ type: 'MoveToChallenge', label: '【未实现】前往给定的挑战模式' },
+	{ type: 'CancelEvent', label: '【未实现】取消被计划的目标事件' },
+	{ type: 'MoveToStaff', label: '【未实现】前往制作人员名单场景' },
+	{
+		type: 'EnableSpecialGuestSpawnInNight',
+		label: '【未实现】设置稀客是否生成',
+	},
 	{
 		type: 'EnableSGuestSpawnInTargetIzakayaById',
-		label: '设置稀客在指定雀食堂生成（通过雀食堂Id）',
+		label: '【未实现】设置稀客在指定雀食堂生成（通过雀食堂Id）',
 	},
 	{
 		type: 'EnableSGuestSpawnInTargetIzakayaByMap',
-		label: '设置稀客在指定地图对应的雀食堂生成（通过地图Label）',
+		label: '【未实现】设置稀客在指定地图对应的雀食堂生成（通过地图Label）',
 	},
-	{ type: 'UnlockSGuestInNotebook', label: '解锁对应稀客的笔记本图鉴' },
-	{ type: 'SetTargetMissionFulfilled', label: '使对应任务的全部条件完成' },
-	{ type: 'UnlockMusicGameChapter', label: '解锁音游章节' },
-	{ type: 'RemoveKourindouMerchandise', label: '尝试移除香霖堂的货物' },
-	{ type: 'FinishFakeMission', label: '完成伪造任务' },
-	{ type: 'ForceCompleteMission', label: '强制完成计划中的任务' },
-	{ type: 'RefreshRandomSpawnNpc', label: '刷新随机生成的NPC' },
-	{ type: 'AddLockedRecipe', label: '添加固定菜谱' },
-	{ type: 'ClearLockedRecipe', label: '移除固定菜谱' },
-	{ type: 'AddEffectiveSGuestMapping', label: '添加稀客映射' },
-	{ type: 'RemoveEffectiveSGuestMapping', label: '移除稀客映射' },
-	{ type: 'FinishEvent', label: '完成目标事件' },
-	{ type: 'StartOrContinueRogueLike', label: '仅白天：开始或继续RogueLike' },
+	{
+		type: 'UnlockSGuestInNotebook',
+		label: '【未实现】解锁对应稀客的笔记本图鉴',
+	},
+	{
+		type: 'SetTargetMissionFulfilled',
+		label: '【未实现】使对应任务的全部条件完成',
+	},
+	{ type: 'UnlockMusicGameChapter', label: '【未实现】解锁音游章节' },
+	{
+		type: 'RemoveKourindouMerchandise',
+		label: '【未实现】尝试移除香霖堂的货物',
+	},
+	{ type: 'FinishFakeMission', label: '【未实现】完成伪造任务' },
+	{ type: 'ForceCompleteMission', label: '【未实现】强制完成计划中的任务' },
+	{ type: 'RefreshRandomSpawnNpc', label: '【未实现】刷新随机生成的NPC' },
+	{ type: 'AddLockedRecipe', label: '【未实现】添加固定菜谱' },
+	{ type: 'ClearLockedRecipe', label: '【未实现】移除固定菜谱' },
+	{ type: 'AddEffectiveSGuestMapping', label: '【未实现】添加稀客映射' },
+	{ type: 'RemoveEffectiveSGuestMapping', label: '【未实现】移除稀客映射' },
+	{ type: 'FinishEvent', label: '【未实现】完成目标事件' },
+	{
+		type: 'StartOrContinueRogueLike',
+		label: '【未实现】仅白天：开始或继续RogueLike',
+	},
 	{
 		type: 'ControlSpecialGuestScheduled',
-		label: '随机选取一位稀客加入控制计划',
+		label: '【未实现】随机选取一位稀客加入控制计划',
 	},
 	{
 		type: 'CancelControlSpecialGuestScheduled',
-		label: '移除控制计划中尚未被控制的稀客',
+		label: '【未实现】移除控制计划中尚未被控制的稀客',
 	},
-	{ type: 'IgnoreSpecialGuest', label: '指定一位稀客今晚不会到店' },
-	{ type: 'AddDLCLock', label: '添加DLC锁' },
-	{ type: 'RemoveDLCLock', label: '移除DLC锁' },
+	{ type: 'IgnoreSpecialGuest', label: '【未实现】指定一位稀客今晚不会到店' },
+	{ type: 'AddDLCLock', label: '【未实现】添加DLC锁' },
+	{ type: 'RemoveDLCLock', label: '【未实现】移除DLC锁' },
 	{
 		type: 'StopAllUnmanagedMovingProcess',
-		label: '停止SceneDirector中所有非托管的协程',
+		label: '【未实现】停止SceneDirector中所有非托管的协程',
 	},
-	{ type: 'NotifySpecialGuestSpawnInNight', label: '提示稀客开始全图刷新' },
-	{ type: 'SetAndSavePlayerPref', label: '设置PlayerPref' },
+	{
+		type: 'NotifySpecialGuestSpawnInNight',
+		label: '【未实现】提示稀客开始全图刷新',
+	},
+	{ type: 'SetAndSavePlayerPref', label: '【未实现】设置PlayerPref' },
 ];
 
 interface MissionEditorProps {
 	mission: MissionNode | null;
 	characters: Character[];
 	foods: Food[];
+	ingredients: Ingredient[];
+	recipes: Recipe[];
 	onRemove: () => void;
 	onUpdate: (updates: Partial<MissionNode>) => void;
 }
@@ -134,6 +194,8 @@ export default memo<MissionEditorProps>(function MissionEditor({
 	mission,
 	characters,
 	foods,
+	ingredients,
+	recipes,
 	onRemove,
 	onUpdate,
 }) {
@@ -146,6 +208,47 @@ export default memo<MissionEditorProps>(function MissionEditor({
 		});
 		return result.sort((a, b) => a.id - b.id);
 	}, [foods]);
+
+	const allIngredients = useMemo(() => {
+		const result = [...INGREDIENT_NAMES];
+		ingredients.forEach((i) => {
+			if (!result.find((r) => r.id === i.id)) {
+				result.push({ id: i.id, name: i.name });
+			}
+		});
+		return result.sort((a, b) => a.id - b.id);
+	}, [ingredients]);
+
+	const allRecipes = useMemo(() => {
+		const result = [...RECIPE_NAMES];
+		recipes.forEach((r) => {
+			if (!result.find((existing) => existing.id === r.id)) {
+				const targetFood = allFoods.find((f) => f.id === r.foodId);
+				const name = targetFood ? targetFood.name : `Food_${r.foodId}`;
+				result.push({ id: r.id, name });
+			}
+		});
+		return result.sort((a, b) => a.id - b.id);
+	}, [recipes, allFoods]);
+
+	const characterOptions = useMemo(() => {
+		const options: { value: string; label: string }[] = [];
+		// Add built-in special guests
+		SPECIAL_GUESTS.forEach((g) => {
+			options.push({
+				value: g.label,
+				label: `[${g.id}] ${g.name} (${g.label})`,
+			});
+		});
+		// Add custom characters
+		characters.forEach((c) => {
+			options.push({
+				value: c.label,
+				label: `[${c.id}] ${c.name} (${c.label})`,
+			});
+		});
+		return options;
+	}, [characters]);
 
 	const addCondition = useCallback(() => {
 		if (!mission) return;
@@ -325,7 +428,7 @@ export default memo<MissionEditorProps>(function MissionEditor({
 
 				<div className="flex flex-col gap-2">
 					<label className="font-medium text-foreground">
-						Sender
+						委托自(Sender)
 					</label>
 					<select
 						value={mission.sender || ''}
@@ -333,9 +436,9 @@ export default memo<MissionEditorProps>(function MissionEditor({
 						className="rounded-lg border border-black/10 bg-black/5 px-4 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-white/10 dark:bg-white/5"
 					>
 						<option value="">请选择角色...</option>
-						{characters.map((char) => (
-							<option key={char.id} value={char.label}>
-								[{char.id}] {char.label} ({char.name})
+						{characterOptions.map((opt) => (
+							<option key={opt.value} value={opt.value}>
+								{opt.label}
 							</option>
 						))}
 					</select>
@@ -343,7 +446,7 @@ export default memo<MissionEditorProps>(function MissionEditor({
 
 				<div className="flex flex-col gap-2">
 					<label className="font-medium text-foreground">
-						Receiver (Reciever)
+						交付至(Receiver)
 					</label>
 					<select
 						value={mission.reciever || ''}
@@ -351,9 +454,9 @@ export default memo<MissionEditorProps>(function MissionEditor({
 						className="rounded-lg border border-black/10 bg-black/5 px-4 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-white/10 dark:bg-white/5"
 					>
 						<option value="">请选择角色...</option>
-						{characters.map((char) => (
-							<option key={char.id} value={char.label}>
-								[{char.id}] {char.label} ({char.name})
+						{characterOptions.map((opt) => (
+							<option key={opt.value} value={opt.value}>
+								{opt.label}
 							</option>
 						))}
 					</select>
@@ -452,16 +555,18 @@ export default memo<MissionEditorProps>(function MissionEditor({
 													<option value="">
 														请选择角色...
 													</option>
-													{characters.map((char) => (
-														<option
-															key={char.id}
-															value={char.label}
-														>
-															[{char.id}]{' '}
-															{char.label} (
-															{char.name})
-														</option>
-													))}
+													{characterOptions.map(
+														(opt) => (
+															<option
+																key={opt.value}
+																value={
+																	opt.value
+																}
+															>
+																{opt.label}
+															</option>
+														)
+													)}
 												</select>
 											</div>
 
@@ -560,6 +665,265 @@ export default memo<MissionEditorProps>(function MissionEditor({
 									</button>
 								</div>
 
+								{reward.rewardType === 'GiveItem' && (
+									<div className="flex flex-col gap-3 rounded bg-black/5 p-2 dark:bg-white/5">
+										<div className="flex flex-col gap-1">
+											<label className="text-xs font-medium opacity-70">
+												物品类型 (Object Type)
+											</label>
+											<select
+												value={
+													reward.objectType || 'Food'
+												}
+												onChange={(e) =>
+													updateReward(index, {
+														objectType: e.target
+															.value as ObjectType,
+														rewardIntArray: [],
+													})
+												}
+												className="rounded border border-black/10 bg-white/50 px-2 py-1 text-sm focus:border-primary focus:outline-none dark:border-white/10 dark:bg-black/50"
+											>
+												{[
+													'Food',
+													'Ingredient',
+													'Beverage',
+													'Recipe',
+													'Item',
+													'Izakaya',
+													'Partner',
+													'Badge',
+													'Cooker',
+												].map((type) => (
+													<option
+														key={type}
+														value={type}
+													>
+														{type}
+													</option>
+												))}
+											</select>
+											{![
+												'Food',
+												'Ingredient',
+												'Beverage',
+												'Recipe',
+											].includes(
+												reward.objectType || 'Food'
+											) && (
+												<div className="text-xs text-yellow-600 dark:text-yellow-400">
+													⚠{' '}
+													此类型尚未完全支持，可能会出现不可预期的行为
+												</div>
+											)}
+										</div>
+
+										<div className="flex flex-col gap-1">
+											<label className="text-xs font-medium opacity-70">
+												物品列表 (Item List)
+											</label>
+											<div className="flex flex-wrap gap-2 text-xs">
+												{(
+													reward.rewardIntArray || []
+												).map((itemId, i) => {
+													let name = `ID: ${itemId}`;
+													const type =
+														reward.objectType ||
+														'Food';
+													if (type === 'Food') {
+														name =
+															allFoods.find(
+																(f) =>
+																	f.id ===
+																	itemId
+															)?.name || name;
+													} else if (
+														type === 'Ingredient'
+													) {
+														name =
+															allIngredients.find(
+																(ing) =>
+																	ing.id ===
+																	itemId
+															)?.name || name;
+													} else if (
+														type === 'Beverage'
+													) {
+														name =
+															BEVERAGE_NAMES.find(
+																(bev) =>
+																	bev.id ===
+																	itemId
+															)?.name || name;
+													} else if (
+														type === 'Recipe'
+													) {
+														const r =
+															allRecipes.find(
+																(x) =>
+																	x.id ===
+																	itemId
+															);
+														if (r) {
+															name = `菜谱: ${r.name}`;
+														}
+													}
+
+													return (
+														<span
+															key={i}
+															className="flex items-center gap-1 rounded bg-primary/10 px-2 py-1 text-primary"
+														>
+															{name}
+															<button
+																onClick={() => {
+																	const newArray =
+																		[
+																			...(reward.rewardIntArray ||
+																				[]),
+																		];
+																	newArray.splice(
+																		i,
+																		1
+																	);
+																	updateReward(
+																		index,
+																		{
+																			rewardIntArray:
+																				newArray,
+																		}
+																	);
+																}}
+																className="ml-1 text-xs opacity-50 hover:opacity-100"
+															>
+																×
+															</button>
+														</span>
+													);
+												})}
+											</div>
+											<div className="mt-2 flex items-center gap-2">
+												<select
+													id={`add-item-select-${index}`}
+													className="flex-1 rounded border border-black/10 bg-white/50 px-2 py-1 text-sm focus:border-primary focus:outline-none dark:border-white/10 dark:bg-black/50"
+												>
+													<option value="">
+														选择物品...
+													</option>
+													{(reward.objectType ===
+														'Food' ||
+														!reward.objectType) &&
+														allFoods.map((f) => (
+															<option
+																key={f.id}
+																value={f.id}
+															>
+																[{f.id}]{' '}
+																{f.name}
+															</option>
+														))}
+													{reward.objectType ===
+														'Ingredient' &&
+														allIngredients.map(
+															(ing) => (
+																<option
+																	key={ing.id}
+																	value={
+																		ing.id
+																	}
+																>
+																	[{ing.id}]{' '}
+																	{ing.name}
+																</option>
+															)
+														)}
+													{reward.objectType ===
+														'Beverage' &&
+														BEVERAGE_NAMES.map(
+															(bev) => (
+																<option
+																	key={bev.id}
+																	value={
+																		bev.id
+																	}
+																>
+																	[{bev.id}]{' '}
+																	{bev.name}
+																</option>
+															)
+														)}
+													{reward.objectType ===
+														'Recipe' &&
+														allRecipes.map(
+															(rec) => (
+																<option
+																	key={rec.id}
+																	value={
+																		rec.id
+																	}
+																>
+																	[{rec.id}]{' '}
+																	{rec.name}
+																</option>
+															)
+														)}
+												</select>
+												<input
+													type="number"
+													id={`add-item-count-${index}`}
+													className="w-16 rounded border border-black/10 bg-white/50 px-2 py-1 text-sm focus:border-primary focus:outline-none dark:border-white/10 dark:bg-black/50"
+													placeholder="数量"
+													defaultValue={1}
+													min={1}
+												/>
+												<button
+													onClick={() => {
+														const select =
+															document.getElementById(
+																`add-item-select-${index}`
+															) as HTMLSelectElement;
+														const countInput =
+															document.getElementById(
+																`add-item-count-${index}`
+															) as HTMLInputElement;
+														const val = parseInt(
+															select.value
+														);
+														const count =
+															parseInt(
+																countInput.value
+															) || 1;
+
+														if (!isNaN(val)) {
+															const newItems =
+																Array(
+																	count
+																).fill(val);
+															updateReward(
+																index,
+																{
+																	rewardIntArray:
+																		[
+																			...(reward.rewardIntArray ||
+																				[]),
+																			...newItems,
+																		],
+																}
+															);
+															// Reset count to 1 for convenience
+															countInput.value =
+																'1';
+														}
+													}}
+													className="btn-mystia h-full px-3 text-sm"
+												>
+													添加
+												</button>
+											</div>
+										</div>
+									</div>
+								)}
+
 								{reward.rewardType === 'UpgradeKizunaLevel' && (
 									<div className="flex flex-col gap-1">
 										<label className="text-xs font-medium opacity-70">
@@ -577,25 +941,25 @@ export default memo<MissionEditorProps>(function MissionEditor({
 											<option value="">
 												请选择角色...
 											</option>
-											{characters.map((char) => (
+											{characterOptions.map((opt) => (
 												<option
-													key={char.id}
-													value={char.label}
+													key={opt.value}
+													value={opt.value}
 												>
-													[{char.id}] {char.label} (
-													{char.name})
+													{opt.label}
 												</option>
 											))}
 										</select>
 									</div>
 								)}
 
-								{reward.rewardType !== 'UpgradeKizunaLevel' && (
-									<div className="rounded bg-yellow-500/10 p-2 text-xs text-yellow-600 dark:text-yellow-400">
-										⚠
-										当前编辑器尚未支持配置此奖励类型的详细参数
-									</div>
-								)}
+								{reward.rewardType !== 'UpgradeKizunaLevel' &&
+									reward.rewardType !== 'GiveItem' && (
+										<div className="rounded bg-yellow-500/10 p-2 text-xs text-yellow-600 dark:text-yellow-400">
+											⚠
+											当前编辑器尚未支持配置此奖励类型的详细参数
+										</div>
+									)}
 							</div>
 						))}
 						{(!mission.rewards || mission.rewards.length === 0) && (
