@@ -37,6 +37,13 @@ const DataContext = createContext<DataContextType | null>(null);
 
 export function DataProvider({ children }: PropsWithChildren) {
 	const [data, setData] = useState<ResourceEx>({
+		packInfo: {
+			name: 'New Resource Pack',
+			label: 'NewPack',
+			authors: [],
+			description: '',
+			version: '1.0.0',
+		},
 		characters: [],
 		dialogPackages: [],
 		ingredients: [],
@@ -195,28 +202,37 @@ export function DataProvider({ children }: PropsWithChildren) {
 				}
 
 				setAssetUrls(newAssetUrls);
+				// Migration for flat properties to packInfo
+				const packInfo = jsonData.packInfo || {
+					name: (jsonData as any).name,
+					label: (jsonData as any).label,
+					authors: (jsonData as any).authors,
+					description: (jsonData as any).description,
+					version: (jsonData as any).version,
+				};
 				setData({
-					...jsonData,
+					packInfo,
+					characters: jsonData.characters || [],
+					dialogPackages: jsonData.dialogPackages || [],
+					ingredients: jsonData.ingredients || [],
 					foods: jsonData.foods || [],
 					recipes: jsonData.recipes || [],
-					missionNodes: (jsonData.missionNodes || []).map((node) => ({
-						...node,
-						title: (node as any).title ?? (node as any).name ?? '',
-						name: undefined, // Explicitly remove name
-						rewards: node.rewards || [],
-						finishConditions: node.finishConditions || [],
-						label:
-							(node as any).label ??
-							(node as any).title ??
-							(node as any).name ??
-							'',
-						description: (node as any).description ?? '',
-						sender: (node as any).sender ?? '',
-						reciever:
-							(node as any).reciever ??
-							(node as any).receiver ??
-							'',
-					})),
+					missionNodes: (jsonData.missionNodes || []).map(
+						(node: any) => {
+							const { name, ...rest } = node;
+							return {
+								...rest,
+								title: node.title ?? node.name ?? '',
+								rewards: node.rewards || [],
+								finishConditions: node.finishConditions || [],
+								label:
+									node.label ?? node.title ?? node.name ?? '',
+								description: node.description ?? '',
+								sender: node.sender ?? '',
+								reciever: node.reciever ?? node.receiver ?? '',
+							};
+						}
+					),
 				});
 				setHasUnsavedChanges(false);
 			} catch (e) {
@@ -231,7 +247,7 @@ export function DataProvider({ children }: PropsWithChildren) {
 	);
 
 	const saveResourcePack = useCallback(
-		async (filename = 'ResourceExPack.zip') => {
+		async (filename?: string) => {
 			const zip = new JSZip();
 
 			// Sanitize data before export
@@ -305,7 +321,15 @@ export function DataProvider({ children }: PropsWithChildren) {
 			});
 
 			const content = await zip.generateAsync({ type: 'blob' });
-			saveAs(content, filename);
+
+			let finalName = filename;
+			if (!finalName) {
+				const label = data.packInfo?.label || 'ResourceEx';
+				const version = data.packInfo?.version || '1.0.0';
+				finalName = `${label}-v${version}.zip`;
+			}
+
+			saveAs(content, finalName);
 			setHasUnsavedChanges(false);
 		},
 		[data]
@@ -320,6 +344,13 @@ export function DataProvider({ children }: PropsWithChildren) {
 		}
 		// Clear data
 		setData({
+			packInfo: {
+				name: 'New Resource Pack',
+				label: 'NewPack',
+				authors: [],
+				description: '',
+				version: '1.0.0',
+			},
 			characters: [],
 			dialogPackages: [],
 			ingredients: [],

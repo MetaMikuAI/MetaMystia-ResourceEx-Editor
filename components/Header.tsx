@@ -37,6 +37,17 @@ export const Header = memo(function Header() {
 					</div>
 					<nav className="flex items-center gap-2 text-center">
 						<Link
+							href="/info"
+							className={cn(
+								'btn-mystia',
+								pathname === '/info'
+									? 'bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10'
+									: 'hover:bg-black/5 dark:hover:bg-white/5'
+							)}
+						>
+							基础信息
+						</Link>
+						<Link
 							href="/character"
 							className={cn(
 								'btn-mystia',

@@ -217,7 +217,17 @@ export interface MissionNode {
 	finishConditions: MissionCondition[];
 }
 
+export interface PackInfo {
+	name?: string;
+	label?: string;
+	authors?: string[];
+	description?: string;
+	version?: string;
+}
+
 export interface ResourceEx {
+	packInfo: PackInfo;
+
 	characters: Character[];
 	dialogPackages: DialogPackage[];
 	ingredients: Ingredient[];
