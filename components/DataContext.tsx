@@ -225,6 +225,8 @@ export function DataProvider({ children }: PropsWithChildren) {
 								title: node.title ?? node.name ?? '',
 								rewards: node.rewards || [],
 								finishConditions: node.finishConditions || [],
+								postMissionsAfterPerformance:
+									node.postMissionsAfterPerformance || [],
 								label:
 									node.label ?? node.title ?? node.name ?? '',
 								description: node.description ?? '',

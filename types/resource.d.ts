@@ -215,6 +215,7 @@ export interface MissionNode {
 	reciever: string;
 	rewards: MissionReward[];
 	finishConditions: MissionCondition[];
+	postMissionsAfterPerformance?: string[];
 }
 
 export interface PackInfo {
