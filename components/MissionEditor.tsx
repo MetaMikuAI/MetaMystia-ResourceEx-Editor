@@ -11,11 +11,13 @@ import type {
 	Ingredient,
 	Recipe,
 	MissionNode,
+	EventNode,
 } from '@/types/resource';
 import { MissionBasicInfo } from './mission/MissionBasicInfo';
 import { MissionConditionList } from './mission/MissionConditionList';
 import { MissionRewardList } from './mission/MissionRewardList';
-import { MissionPostMissionList } from './mission/MissionPostMissionList';
+import { PostMissionList } from './PostMissionList';
+import { PostEventList } from './PostEventList';
 
 interface MissionEditorProps {
 	mission: MissionNode | null;
@@ -24,6 +26,7 @@ interface MissionEditorProps {
 	ingredients: Ingredient[];
 	recipes: Recipe[];
 	allMissions: MissionNode[];
+	allEvents: EventNode[];
 	onRemove: () => void;
 	onUpdate: (updates: Partial<MissionNode>) => void;
 }
@@ -35,6 +38,7 @@ export default memo<MissionEditorProps>(function MissionEditor({
 	ingredients,
 	recipes,
 	allMissions,
+	allEvents,
 	onRemove,
 	onUpdate,
 }) {
@@ -135,10 +139,18 @@ export default memo<MissionEditorProps>(function MissionEditor({
 				onUpdate={onUpdate}
 			/>
 
-			<MissionPostMissionList
-				mission={mission}
+			<PostMissionList
+				postMissions={mission.postMissionsAfterPerformance}
 				allMissions={allMissions}
-				onUpdate={onUpdate}
+				onUpdate={(pms) =>
+					onUpdate({ postMissionsAfterPerformance: pms })
+				}
+			/>
+
+			<PostEventList
+				postEvents={mission.postEvents}
+				allEvents={allEvents}
+				onUpdate={(events) => onUpdate({ postEvents: events })}
 			/>
 		</div>
 	);

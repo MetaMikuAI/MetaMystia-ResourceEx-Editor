@@ -84,6 +84,7 @@ export default function MissionPage() {
 							ingredients={data.ingredients || []}
 							recipes={data.recipes || []}
 							allMissions={data.missionNodes || []}
+							allEvents={data.eventNodes || []}
 							onRemove={() => removeMission(selectedIndex)}
 							onUpdate={(updates) =>
 								updateMission(selectedIndex, updates)

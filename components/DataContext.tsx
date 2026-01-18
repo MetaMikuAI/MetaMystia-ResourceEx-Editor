@@ -50,6 +50,7 @@ export function DataProvider({ children }: PropsWithChildren) {
 		foods: [],
 		recipes: [],
 		missionNodes: [],
+		eventNodes: [],
 	});
 	const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
@@ -227,6 +228,7 @@ export function DataProvider({ children }: PropsWithChildren) {
 								finishConditions: node.finishConditions || [],
 								postMissionsAfterPerformance:
 									node.postMissionsAfterPerformance || [],
+								postEvents: node.postEvents || [],
 								label:
 									node.label ?? node.title ?? node.name ?? '',
 								description: node.description ?? '',
@@ -234,6 +236,15 @@ export function DataProvider({ children }: PropsWithChildren) {
 								reciever: node.reciever ?? node.receiver ?? '',
 							};
 						}
+					),
+					eventNodes: (jsonData.eventNodes || []).map(
+						(node: any) => ({
+							label: node.label || '',
+							debugLabel: node.debugLabel || '',
+							postMissionsAfterPerformance:
+								node.postMissionsAfterPerformance || [],
+							postEvents: node.postEvents || [],
+						})
 					),
 				});
 				setHasUnsavedChanges(false);

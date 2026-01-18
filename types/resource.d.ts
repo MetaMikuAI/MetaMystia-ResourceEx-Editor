@@ -216,6 +216,14 @@ export interface MissionNode {
 	rewards: MissionReward[];
 	finishConditions: MissionCondition[];
 	postMissionsAfterPerformance?: string[];
+	postEvents?: string[];
+}
+
+export interface EventNode {
+	label: string;
+	debugLabel: string;
+	postMissionsAfterPerformance?: string[];
+	postEvents?: string[];
 }
 
 export interface PackInfo {
@@ -235,4 +243,5 @@ export interface ResourceEx {
 	foods: Food[];
 	recipes: Recipe[];
 	missionNodes: MissionNode[];
+	eventNodes?: EventNode[];
 }

@@ -113,6 +113,17 @@ export const Header = memo(function Header() {
 						>
 							任务节点编辑
 						</Link>
+						<Link
+							href="/event"
+							className={cn(
+								'btn-mystia',
+								pathname === '/event'
+									? 'bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10'
+									: 'hover:bg-black/5 dark:hover:bg-white/5'
+							)}
+						>
+							事件节点编辑
+						</Link>
 					</nav>
 				</div>
 				<div className="flex items-center gap-1 text-center">
