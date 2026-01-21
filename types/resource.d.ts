@@ -42,6 +42,13 @@ export interface CharacterSpriteSet {
 	eyeSprite: string[];
 }
 
+export interface KizunaInfo {
+	lv1UpgradePrerequisiteEvent?: string; // event label
+	lv2UpgradePrerequisiteEvent?: string;
+	lv3UpgradePrerequisiteEvent?: string;
+	lv4UpgradePrerequisiteEvent?: string;
+}
+
 export interface Character {
 	id: number;
 	name: string;
@@ -50,6 +57,7 @@ export interface Character {
 	type: CharacterType;
 	portraits?: CharacterPortrait[] | undefined;
 	guest?: GuestInfo | undefined;
+	kizuna?: KizunaInfo | undefined;
 	characterSpriteSetCompact?: CharacterSpriteSet | undefined;
 }
 
@@ -219,9 +227,15 @@ export interface MissionNode {
 	postEvents?: string[];
 }
 
+export interface EventNodeTrigger {
+	triggerType: string;
+	triggerId?: string;
+}
+
 export interface EventNode {
 	label: string;
 	debugLabel: string;
+	trigger?: EventNodeTrigger;
 	postMissionsAfterPerformance?: string[];
 	postEvents?: string[];
 }

@@ -3,6 +3,7 @@ import { memo, useCallback } from 'react';
 import { BasicInfo } from './editor/BasicInfo';
 import { Descriptions } from './editor/Descriptions';
 import { GuestInfoEditor } from './editor/GuestInfo';
+import { KizunaInfoEditor } from './editor/KizunaInfo';
 import { Portraits } from './editor/Portraits';
 import { SpriteSetEditor } from './editor/SpriteSet';
 
@@ -10,18 +11,27 @@ import type {
 	Character,
 	CharacterPortrait,
 	CharacterSpriteSet,
+	EventNode,
 	GuestInfo,
+	KizunaInfo,
 } from '@/types/resource';
 
 interface CharacterEditorProps {
 	character: Character | null;
+	allEvents: EventNode[];
 	isIdDuplicate: boolean;
 	onRemove: () => void;
 	onUpdate: (updates: Partial<Character>) => void;
 }
 
 export const CharacterEditor = memo<CharacterEditorProps>(
-	function CharacterEditor({ character, isIdDuplicate, onRemove, onUpdate }) {
+	function CharacterEditor({
+		character,
+		allEvents,
+		isIdDuplicate,
+		onRemove,
+		onUpdate,
+	}) {
 		const updateDescription = useCallback(
 			(index: number, value: string) => {
 				if (!character) {
@@ -114,6 +124,30 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 
 		const disableGuest = useCallback(() => {
 			onUpdate({ guest: undefined });
+		}, [onUpdate]);
+
+		const updateKizuna = useCallback(
+			(updates: Partial<KizunaInfo>) => {
+				if (!character) {
+					return;
+				}
+				const currentKizuna = character.kizuna || {
+					lv1UpgradePrerequisiteEvent: '',
+					lv2UpgradePrerequisiteEvent: '',
+					lv3UpgradePrerequisiteEvent: '',
+					lv4UpgradePrerequisiteEvent: '',
+				};
+				onUpdate({ kizuna: { ...currentKizuna, ...updates } });
+			},
+			[character, onUpdate]
+		);
+
+		const enableKizuna = useCallback(() => {
+			updateKizuna({});
+		}, [updateKizuna]);
+
+		const disableKizuna = useCallback(() => {
+			onUpdate({ kizuna: undefined });
 		}, [onUpdate]);
 
 		const updateSpriteSet = useCallback(
@@ -241,6 +275,14 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 					onUpdate={updateGuest}
 					onEnable={enableGuest}
 					onDisable={disableGuest}
+				/>
+
+				<KizunaInfoEditor
+					kizuna={character.kizuna}
+					allEvents={allEvents}
+					onUpdate={updateKizuna}
+					onEnable={enableKizuna}
+					onDisable={disableKizuna}
 				/>
 
 				<SpriteSetEditor

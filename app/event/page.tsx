@@ -76,6 +76,7 @@ export default function EventPage() {
 							eventNode={selectedEvent}
 							allMissions={data.missionNodes || []}
 							allEvents={data.eventNodes || []}
+							allCharacters={data.characters || []}
 							onRemove={() => removeEvent(selectedIndex)}
 							onUpdate={(updates) =>
 								updateEvent(selectedIndex, updates)
