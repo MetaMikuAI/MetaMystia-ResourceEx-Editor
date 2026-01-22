@@ -9,7 +9,7 @@ const CONDITION_TYPES: { type: ConditionType; label: string }[] = [
 	{ type: 'BillRepayment', label: '【未实现】还债' },
 	{ type: 'TalkWithCharacter', label: '【未实现】和角色交谈' },
 	{ type: 'InspectInteractable', label: '【未实现】调查白天交互物品' },
-	{ type: 'SubmitItem', label: '【未实现】交付目标物品' },
+	{ type: 'SubmitItem', label: '交付目标物品' },
 	{ type: 'ServeInWork', label: '请角色品尝料理' },
 	{ type: 'SubmitByTag', label: '【未实现】交付包含Tag的对应物品' },
 	{ type: 'SubmitByTags', label: '【未实现】交付包含多个Tag的对应物品' },
@@ -42,10 +42,27 @@ const CONDITION_TYPES: { type: ConditionType; label: string }[] = [
 	{ type: 'SubmitByLevel', label: '【未实现】交付指定Level的对应物品' },
 ];
 
+const PRODUCT_TYPES = [
+	{ value: 'Food', label: '料理 Food' },
+	{ value: 'Ingredient', label: '原料 Ingredient' },
+	{ value: 'Beverage', label: '酒水 Beverage' },
+	{ value: 'Money', label: 'Money' },
+	{ value: 'Mission', label: 'Mission' },
+	{ value: 'Item', label: 'Item' },
+	{ value: 'Recipe', label: 'Recipe' },
+	{ value: 'Izakaya', label: 'Izakaya' },
+	{ value: 'Cooker', label: 'Cooker' },
+	{ value: 'Partner', label: 'Partner' },
+	{ value: 'Badge', label: 'Badge' },
+	{ value: 'Trophy', label: 'Trophy' },
+];
+
 interface MissionConditionListProps {
 	mission: MissionNode;
 	characterOptions: { value: string; label: string }[];
 	allFoods: { id: number; name: string }[];
+	allIngredients: { id: number; name: string }[];
+	allBeverages: { id: number; name: string }[];
 	onUpdate: (updates: Partial<MissionNode>) => void;
 }
 
@@ -54,6 +71,8 @@ export const MissionConditionList = memo<MissionConditionListProps>(
 		mission,
 		characterOptions,
 		allFoods,
+		allIngredients,
+		allBeverages,
 		onUpdate,
 	}) {
 		const addCondition = useCallback(() => {
@@ -133,6 +152,203 @@ export const MissionConditionList = memo<MissionConditionListProps>(
 									</button>
 								</div>
 
+								{condition.conditionType === 'SubmitItem' && (
+									<div className="flex flex-col gap-3">
+										<div className="flex flex-col gap-1">
+											<label className="text-xs font-medium opacity-70">
+												Product Type
+											</label>
+											<select
+												value={
+													condition.productType || ''
+												}
+												onChange={(e) =>
+													updateCondition(index, {
+														productType:
+															e.target.value,
+													})
+												}
+												className="rounded border border-black/10 bg-white/50 px-2 py-1 text-sm focus:border-primary focus:outline-none dark:border-white/10 dark:bg-black/50"
+											>
+												<option value="">
+													请选择类型...
+												</option>
+												{PRODUCT_TYPES.map((t) => (
+													<option
+														key={t.value}
+														value={t.value}
+													>
+														{t.label}
+													</option>
+												))}
+											</select>
+										</div>
+
+										{condition.productType &&
+											![
+												'Food',
+												'Ingredient',
+												'Beverage',
+											].includes(
+												condition.productType
+											) && (
+												<div className="rounded bg-yellow-500/10 p-2 text-xs text-yellow-600 dark:text-yellow-400">
+													⚠
+													当前编辑器尚未支持配置此条件的详细参数
+												</div>
+											)}
+
+										{(condition.productType === 'Food' ||
+											!condition.productType) && (
+											<div className="flex flex-col gap-1">
+												<label className="text-xs font-medium opacity-70">
+													Product ID (Food)
+												</label>
+												<select
+													value={
+														condition.productId ??
+														''
+													}
+													onChange={(e) =>
+														updateCondition(index, {
+															productId: (e.target
+																.value === ''
+																? undefined
+																: Number(
+																		e.target
+																			.value
+																	)) as any,
+														})
+													}
+													className="rounded border border-black/10 bg-white/50 px-2 py-1 text-sm focus:border-primary focus:outline-none dark:border-white/10 dark:bg-black/50"
+												>
+													<option value="">
+														请选择料理...
+													</option>
+													{allFoods.map((f) => (
+														<option
+															key={f.id}
+															value={f.id}
+														>
+															[{f.id}] {f.name}
+														</option>
+													))}
+												</select>
+											</div>
+										)}
+
+										{condition.productType ===
+											'Ingredient' && (
+											<div className="flex flex-col gap-1">
+												<label className="text-xs font-medium opacity-70">
+													Product ID (Ingredient)
+												</label>
+												<select
+													value={
+														condition.productId ??
+														''
+													}
+													onChange={(e) =>
+														updateCondition(index, {
+															productId: (e.target
+																.value === ''
+																? undefined
+																: Number(
+																		e.target
+																			.value
+																	)) as any,
+														})
+													}
+													className="rounded border border-black/10 bg-white/50 px-2 py-1 text-sm focus:border-primary focus:outline-none dark:border-white/10 dark:bg-black/50"
+												>
+													<option value="">
+														请选择食材...
+													</option>
+													{allIngredients.map((i) => (
+														<option
+															key={i.id}
+															value={i.id}
+														>
+															[{i.id}] {i.name}
+														</option>
+													))}
+												</select>
+											</div>
+										)}
+
+										{condition.productType ===
+											'Beverage' && (
+											<div className="flex flex-col gap-1">
+												<label className="text-xs font-medium opacity-70">
+													Product ID (Beverage)
+												</label>
+												<select
+													value={
+														condition.productId ??
+														''
+													}
+													onChange={(e) =>
+														updateCondition(index, {
+															productId: (e.target
+																.value === ''
+																? undefined
+																: Number(
+																		e.target
+																			.value
+																	)) as any,
+														})
+													}
+													className="rounded border border-black/10 bg-white/50 px-2 py-1 text-sm focus:border-primary focus:outline-none dark:border-white/10 dark:bg-black/50"
+												>
+													<option value="">
+														请选择酒水...
+													</option>
+													{allBeverages.map((b) => (
+														<option
+															key={b.id}
+															value={b.id}
+														>
+															[{b.id}] {b.name}
+														</option>
+													))}
+												</select>
+											</div>
+										)}
+
+										{[
+											'Food',
+											'Ingredient',
+											'Beverage',
+										].includes(
+											condition.productType || 'Food'
+										) && (
+											<div className="flex flex-col gap-1">
+												<label className="text-xs font-medium opacity-70">
+													Amount
+												</label>
+												<input
+													type="number"
+													min="1"
+													value={
+														condition.productAmount ||
+														1
+													}
+													onChange={(e) =>
+														updateCondition(index, {
+															productAmount:
+																Number(
+																	e.target
+																		.value
+																),
+														})
+													}
+													className="rounded border border-black/10 bg-white/50 px-2 py-1 text-sm focus:border-primary focus:outline-none dark:border-white/10 dark:bg-black/50"
+												/>
+											</div>
+										)}
+									</div>
+								)}
+
 								{condition.conditionType === 'ServeInWork' && (
 									<div className="flex flex-col gap-3">
 										<div className="flex flex-col gap-1">
@@ -188,12 +404,16 @@ export const MissionConditionList = memo<MissionConditionListProps>(
 												指定料理 (Food ID)
 											</label>
 											<select
-												value={condition.amount || ''}
+												value={condition.amount ?? ''}
 												onChange={(e) =>
 													updateCondition(index, {
-														amount: Number(
-															e.target.value
-														),
+														amount: (e.target
+															.value === ''
+															? undefined
+															: Number(
+																	e.target
+																		.value
+																)) as any,
 													})
 												}
 												className="rounded border border-black/10 bg-white/50 px-2 py-1 text-sm focus:border-primary focus:outline-none dark:border-white/10 dark:bg-black/50"
@@ -214,11 +434,14 @@ export const MissionConditionList = memo<MissionConditionListProps>(
 									</div>
 								)}
 
-								{condition.conditionType !== 'ServeInWork' && (
-									<div className="rounded bg-yellow-500/10 p-2 text-xs text-yellow-600 dark:text-yellow-400">
-										⚠ 当前编辑器尚未支持配置此条件的详细参数
-									</div>
-								)}
+								{condition.conditionType !== 'ServeInWork' &&
+									condition.conditionType !==
+										'SubmitItem' && (
+										<div className="rounded bg-yellow-500/10 p-2 text-xs text-yellow-600 dark:text-yellow-400">
+											⚠
+											当前编辑器尚未支持配置此条件的详细参数
+										</div>
+									)}
 							</div>
 						)
 					)}

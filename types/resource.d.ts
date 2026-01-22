@@ -193,6 +193,9 @@ export interface MissionCondition {
 	amount?: number;
 	sellableType?: 'Food' | 'Beverage';
 	label?: string;
+	productType?: string;
+	productId?: number;
+	productAmount?: number;
 }
 
 export type ObjectType =

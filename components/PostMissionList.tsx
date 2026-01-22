@@ -70,9 +70,9 @@ export const PostMissionList = memo<PostMissionListProps>(
 										className="rounded border border-black/10 bg-transparent px-2 py-1 text-sm focus:border-primary focus:outline-none dark:border-white/10"
 									>
 										<option value="">请选择任务...</option>
-										{allMissions.map((m) => (
+										{allMissions.map((m, i) => (
 											<option
-												key={m.label}
+												key={`${m.label}-${i}`}
 												value={m.label}
 											>
 												{m.title || m.label} ({m.label})

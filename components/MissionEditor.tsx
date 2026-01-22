@@ -1,6 +1,7 @@
 'use client';
 
 import { memo, useMemo } from 'react';
+import { BEVERAGE_NAMES } from '@/data/beverages';
 import { FOOD_NAMES } from '@/data/foods';
 import { INGREDIENT_NAMES } from '@/data/ingredients';
 import { RECIPE_NAMES } from '@/data/recipes';
@@ -127,6 +128,8 @@ export default memo<MissionEditorProps>(function MissionEditor({
 				mission={mission}
 				characterOptions={characterOptions}
 				allFoods={allFoods}
+				allIngredients={allIngredients}
+				allBeverages={BEVERAGE_NAMES}
 				onUpdate={onUpdate}
 			/>
 
