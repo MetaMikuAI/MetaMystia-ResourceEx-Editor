@@ -1,10 +1,80 @@
-import { type ChangeEvent, memo, useCallback } from 'react';
+import { type ChangeEvent, memo, useCallback, useState } from 'react';
 import { usePathname } from 'next/navigation';
 
 import Link from 'next/link';
 
 import { cn } from '@/lib';
 import { useData } from '@/components/DataContext';
+
+interface NavDropdownProps {
+	label: string;
+	active: boolean;
+	items: { href: string; label: string }[];
+}
+
+const NavDropdown = memo(function NavDropdown({
+	label,
+	active,
+	items,
+}: NavDropdownProps) {
+	const [isOpen, setIsOpen] = useState(false);
+	const pathname = usePathname();
+
+	return (
+		<div
+			className="relative"
+			onMouseEnter={() => setIsOpen(true)}
+			onMouseLeave={() => setIsOpen(false)}
+		>
+			<button
+				className={cn(
+					'btn-mystia flex items-center gap-1 transition-colors',
+					active
+						? 'bg-black/5 dark:bg-white/5'
+						: 'hover:bg-black/5 dark:hover:bg-white/5',
+					isOpen && 'bg-black/5 dark:bg-white/5'
+				)}
+			>
+				{label}
+				<svg
+					className={cn(
+						'h-3 w-3 transition-transform duration-200',
+						isOpen && 'rotate-180'
+					)}
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+				>
+					<path
+						strokeLinecap="round"
+						strokeLinejoin="round"
+						strokeWidth={2}
+						d="M19 9l-7 7-7-7"
+					/>
+				</svg>
+			</button>
+
+			{isOpen && (
+				<div className="absolute left-0 top-full flex w-40 flex-col gap-1 rounded-lg border border-gray-300/95 bg-white/95 p-1 shadow-lg backdrop-blur-lg dark:border-gray-800/95 dark:bg-gray-900/95">
+					{items.map((item) => (
+						<Link
+							key={item.href}
+							href={item.href}
+							className={cn(
+								'rounded px-3 py-2 text-left text-sm transition-colors',
+								pathname === item.href
+									? 'bg-primary/10 text-primary'
+									: 'hover:bg-black/5 dark:hover:bg-white/5'
+							)}
+						>
+							{item.label}
+						</Link>
+					))}
+				</div>
+			)}
+		</div>
+	);
+});
 
 export const Header = memo(function Header() {
 	const pathname = usePathname();
@@ -19,6 +89,11 @@ export const Header = memo(function Header() {
 		},
 		[loadResourcePack]
 	);
+
+	const isItemsActive = ['/ingredient', '/food', '/recipe'].includes(
+		pathname
+	);
+	const isNodesActive = ['/mission', '/event'].includes(pathname);
 
 	return (
 		<header className="sticky top-0 z-50 w-full border-b border-gray-300/95 bg-white/5 backdrop-blur-lg dark:border-gray-800/95">
@@ -69,61 +144,25 @@ export const Header = memo(function Header() {
 						>
 							对话编辑
 						</Link>
-						<Link
-							href="/ingredient"
-							className={cn(
-								'btn-mystia',
-								pathname === '/ingredient'
-									? 'bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10'
-									: 'hover:bg-black/5 dark:hover:bg-white/5'
-							)}
-						>
-							原料编辑
-						</Link>
-						<Link
-							href="/food"
-							className={cn(
-								'btn-mystia',
-								pathname === '/food'
-									? 'bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10'
-									: 'hover:bg-black/5 dark:hover:bg-white/5'
-							)}
-						>
-							料理编辑
-						</Link>
-						<Link
-							href="/recipe"
-							className={cn(
-								'btn-mystia',
-								pathname === '/recipe'
-									? 'bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10'
-									: 'hover:bg-black/5 dark:hover:bg-white/5'
-							)}
-						>
-							菜谱编辑
-						</Link>
-						<Link
-							href="/mission"
-							className={cn(
-								'btn-mystia',
-								pathname === '/mission'
-									? 'bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10'
-									: 'hover:bg-black/5 dark:hover:bg-white/5'
-							)}
-						>
-							任务节点编辑
-						</Link>
-						<Link
-							href="/event"
-							className={cn(
-								'btn-mystia',
-								pathname === '/event'
-									? 'bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10'
-									: 'hover:bg-black/5 dark:hover:bg-white/5'
-							)}
-						>
-							事件节点编辑
-						</Link>
+
+						<NavDropdown
+							label="物品编辑"
+							active={isItemsActive}
+							items={[
+								{ href: '/ingredient', label: '原料编辑' },
+								{ href: '/food', label: '料理编辑' },
+								{ href: '/recipe', label: '菜谱编辑' },
+							]}
+						/>
+
+						<NavDropdown
+							label="计划节点编辑"
+							active={isNodesActive}
+							items={[
+								{ href: '/mission', label: '任务节点编辑' },
+								{ href: '/event', label: '事件节点编辑' },
+							]}
+						/>
 					</nav>
 				</div>
 				<div className="flex items-center gap-1 text-center">
