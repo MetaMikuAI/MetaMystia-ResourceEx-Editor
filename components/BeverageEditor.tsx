@@ -1,44 +1,40 @@
-import { memo, useCallback, useId } from 'react';
+import { memo, useCallback, useId, useState } from 'react';
 
 import { useData } from '@/components/DataContext';
-import { FOOD_TAGS } from '@/data/tags';
+import { BEVERAGE_TAGS } from '@/data/tags';
 
 import { cn } from '@/lib';
-import type { Ingredient } from '@/types/resource';
+import type { Beverage } from '@/types/resource';
 
-interface IngredientEditorProps {
-	ingredient: Ingredient | null;
-	ingredientIndex: number | null;
-	onUpdate: (updates: Partial<Ingredient>) => void;
+interface BeverageEditorProps {
+	beverage: Beverage | null;
+	beverageIndex: number | null;
+	onUpdate: (updates: Partial<Beverage>) => void;
 }
 
-export const IngredientEditor = memo<IngredientEditorProps>(
-	function IngredientEditor({ ingredient, onUpdate }) {
+export const BeverageEditor = memo<BeverageEditorProps>(
+	function BeverageEditor({ beverage, onUpdate }) {
 		const idId = useId();
 		const idName = useId();
 		const idDescription = useId();
 		const idLevel = useId();
-		const idPrefix = useId();
 		const idBaseValue = useId();
-		const idSpritePath = useId();
 
-		const isIdTooSmall = ingredient && ingredient.id < 9000;
+		const [isDragging, setIsDragging] = useState(false);
+
+		const isIdTooSmall = beverage && beverage.id < 11000;
 
 		const { getAssetUrl, updateAsset } = useData();
 
-		const handleSpriteUpload = useCallback(
-			async (e: React.ChangeEvent<HTMLInputElement>) => {
-				if (!ingredient) return;
+		const processFile = useCallback(
+			async (file: File) => {
+				if (!beverage) return;
 
-				const file = e.target.files?.[0];
-				if (!file) return;
-
-				// Validate image dimensions - recommend 26x26 but allow other sizes
 				const img = new Image();
 				const url = URL.createObjectURL(file);
 				img.src = url;
 
-				await new Promise<void>((resolve) => {
+				await new Promise<void>((resolve, reject) => {
 					img.onload = () => {
 						if (img.width !== 26 || img.height !== 26) {
 							const proceed = confirm(
@@ -46,6 +42,7 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 							);
 							if (!proceed) {
 								URL.revokeObjectURL(url);
+								reject(new Error('Cancelled'));
 								return;
 							}
 						}
@@ -59,16 +56,56 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 				const blob = new Blob([await file.arrayBuffer()], {
 					type: file.type,
 				});
-				updateAsset(ingredient.spritePath, blob);
+				updateAsset(beverage.spritePath, blob);
 			},
-			[ingredient, updateAsset]
+			[beverage, updateAsset]
 		);
+
+		const handleSpriteUpload = useCallback(
+			async (e: React.ChangeEvent<HTMLInputElement>) => {
+				const file = e.target.files?.[0];
+				if (!file) return;
+				try {
+					await processFile(file);
+				} catch {}
+				e.target.value = '';
+			},
+			[processFile]
+		);
+
+		const handleDrop = useCallback(
+			async (e: React.DragEvent) => {
+				e.preventDefault();
+				e.stopPropagation();
+				setIsDragging(false);
+
+				const file = e.dataTransfer.files?.[0];
+				if (file && file.type.startsWith('image/')) {
+					try {
+						await processFile(file);
+					} catch {}
+				}
+			},
+			[processFile]
+		);
+
+		const handleDragOver = useCallback((e: React.DragEvent) => {
+			e.preventDefault();
+			e.stopPropagation();
+			setIsDragging(true);
+		}, []);
+
+		const handleDragLeave = useCallback((e: React.DragEvent) => {
+			e.preventDefault();
+			e.stopPropagation();
+			setIsDragging(false);
+		}, []);
 
 		const toggleTag = useCallback(
 			(tagId: number) => {
-				if (!ingredient) return;
+				if (!beverage) return;
 
-				const currentTags = ingredient.tags || [];
+				const currentTags = beverage.tags || [];
 				const exists = currentTags.includes(tagId);
 
 				let newTags;
@@ -80,25 +117,25 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 
 				onUpdate({ tags: newTags });
 			},
-			[ingredient, onUpdate]
+			[beverage, onUpdate]
 		);
 
-		if (!ingredient) {
+		if (!beverage) {
 			return (
 				<div className="col-span-2 flex h-96 items-center justify-center rounded-lg bg-white/10 p-4 shadow-md backdrop-blur">
 					<p className="text-center text-black/40 dark:text-white/40">
-						请从左侧选择一个原料进行编辑
+						请从左侧选择一个酒水进行编辑
 					</p>
 				</div>
 			);
 		}
 
-		const spriteUrl = getAssetUrl(ingredient.spritePath);
+		const spriteUrl = getAssetUrl(beverage.spritePath);
 
 		return (
-			<div className="col-span-2 flex flex-col gap-6 overflow-y-auto rounded-lg bg-white/10 p-6 shadow-md backdrop-blur">
+			<div className="col-span-2 flex flex-col gap-6 overflow-y-auto rounded-lg bg-white/10 p-6 font-sans shadow-md backdrop-blur">
 				<div className="flex items-center justify-between border-b border-black/5 pb-4 dark:border-white/5">
-					<h2 className="text-2xl font-bold">原料编辑</h2>
+					<h2 className="text-2xl font-bold">酒水编辑</h2>
 				</div>
 
 				{/* 基本信息 */}
@@ -117,14 +154,14 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 								</label>
 								{isIdTooSmall && (
 									<span className="rounded bg-danger px-1.5 py-0.5 text-[10px] font-medium text-white">
-										ID需&ge;9000
+										ID需&ge;11000
 									</span>
 								)}
 							</div>
 							<input
 								id={idId}
 								type="number"
-								value={ingredient.id}
+								value={beverage.id}
 								onChange={(e) =>
 									onUpdate({ id: parseInt(e.target.value) })
 								}
@@ -147,7 +184,7 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 							<input
 								id={idName}
 								type="text"
-								value={ingredient.name}
+								value={beverage.name}
 								onChange={(e) =>
 									onUpdate({ name: e.target.value })
 								}
@@ -164,7 +201,7 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 							</label>
 							<textarea
 								id={idDescription}
-								value={ingredient.description}
+								value={beverage.description}
 								onChange={(e) =>
 									onUpdate({ description: e.target.value })
 								}
@@ -180,7 +217,7 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 					<h3 className="text-sm font-bold uppercase tracking-wider opacity-60">
 						属性
 					</h3>
-					<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+					<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 						<div className="flex flex-col gap-1">
 							<label
 								htmlFor={idLevel}
@@ -191,7 +228,9 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 							<input
 								id={idLevel}
 								type="number"
-								value={ingredient.level}
+								value={beverage.level}
+								min={1}
+								max={5}
 								onChange={(e) =>
 									onUpdate({
 										level: parseInt(e.target.value),
@@ -203,35 +242,15 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 
 						<div className="flex flex-col gap-1">
 							<label
-								htmlFor={idPrefix}
-								className="text-xs font-medium uppercase opacity-60"
-							>
-								前缀 (Prefix)
-							</label>
-							<input
-								id={idPrefix}
-								type="number"
-								value={ingredient.prefix}
-								onChange={(e) =>
-									onUpdate({
-										prefix: parseInt(e.target.value),
-									})
-								}
-								className="h-9 w-full rounded-lg border border-black/10 bg-white/40 px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:border-white/10 dark:bg-black/10 dark:focus:border-white/10 dark:focus:ring-white/10"
-							/>
-						</div>
-
-						<div className="flex flex-col gap-1">
-							<label
 								htmlFor={idBaseValue}
 								className="text-xs font-medium uppercase opacity-60"
 							>
-								价值 (BaseValue)
+								单价 (BaseValue)
 							</label>
 							<input
 								id={idBaseValue}
 								type="number"
-								value={ingredient.baseValue}
+								value={beverage.baseValue}
 								onChange={(e) =>
 									onUpdate({
 										baseValue: parseInt(e.target.value),
@@ -241,53 +260,16 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 							/>
 						</div>
 					</div>
-
-					{/* 类型复选框 */}
-					<div className="flex flex-wrap gap-4">
-						<label className="flex items-center gap-2">
-							<input
-								type="checkbox"
-								checked={ingredient.isFish}
-								onChange={(e) =>
-									onUpdate({ isFish: e.target.checked })
-								}
-								className="h-4 w-4 rounded border-black/20 text-primary focus:ring-2 focus:ring-primary dark:border-white/20"
-							/>
-							<span className="text-sm">鱼类</span>
-						</label>
-						<label className="flex items-center gap-2">
-							<input
-								type="checkbox"
-								checked={ingredient.isMeat}
-								onChange={(e) =>
-									onUpdate({ isMeat: e.target.checked })
-								}
-								className="h-4 w-4 rounded border-black/20 text-primary focus:ring-2 focus:ring-primary dark:border-white/20"
-							/>
-							<span className="text-sm">肉类</span>
-						</label>
-						<label className="flex items-center gap-2">
-							<input
-								type="checkbox"
-								checked={ingredient.isVeg}
-								onChange={(e) =>
-									onUpdate({ isVeg: e.target.checked })
-								}
-								className="h-4 w-4 rounded border-black/20 text-primary focus:ring-2 focus:ring-primary dark:border-white/20"
-							/>
-							<span className="text-sm">蔬菜</span>
-						</label>
-					</div>
 				</div>
 
 				{/* 标签 */}
 				<div className="flex flex-col gap-4 rounded-lg bg-white/20 p-4 dark:bg-white/5">
 					<h3 className="text-sm font-bold uppercase tracking-wider opacity-60">
-						标签 (Food Tags)
+						标签 (Beverage Tags)
 					</h3>
 					<div className="flex flex-wrap gap-2 rounded-xl border border-black/10 bg-white/40 p-4 dark:border-white/10 dark:bg-black/10">
-						{FOOD_TAGS.map((tag) => {
-							const isSelected = ingredient.tags.includes(tag.id);
+						{BEVERAGE_TAGS.map((tag) => {
+							const isSelected = beverage.tags?.includes(tag.id);
 							return (
 								<button
 									key={tag.id}
@@ -319,23 +301,28 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 				{/* 贴图 */}
 				<div className="flex flex-col gap-4 rounded-lg bg-white/20 p-4 dark:bg-white/5">
 					<h3 className="text-sm font-bold uppercase tracking-wider opacity-60">
-						贴图 (预期 26×26)
+						资源 (Assets)
 					</h3>
 					<div className="flex flex-col gap-4 md:flex-row">
 						{/* 预览/上传区 */}
 						<label
+							onDrop={handleDrop}
+							onDragOver={handleDragOver}
+							onDragLeave={handleDragLeave}
 							className={cn(
 								'bg-checkerboard group relative flex h-32 w-32 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed transition-all',
-								spriteUrl
-									? 'border-primary/30 hover:border-primary/50'
-									: 'border-black/10 hover:border-black/30 dark:border-white/10 dark:hover:border-white/30'
+								isDragging
+									? 'border-primary bg-primary/10'
+									: spriteUrl
+										? 'border-primary/30 hover:border-primary/50'
+										: 'border-black/10 hover:border-black/30 dark:border-white/10 dark:hover:border-white/30'
 							)}
 						>
 							{spriteUrl ? (
 								<>
 									<img
 										src={spriteUrl}
-										alt="原料贴图"
+										alt="酒水贴图"
 										className="image-rendering-pixelated h-16 w-16 object-contain"
 										draggable="false"
 									/>
@@ -348,7 +335,9 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 							) : (
 								<div className="flex flex-col items-center gap-2 text-black/40 dark:text-white/40">
 									<span className="text-2xl">️</span>
-									<span className="text-xs">点击上传</span>
+									<span className="text-xs font-medium">
+										点击设置贴图
+									</span>
 								</div>
 							)}
 							<input
@@ -358,26 +347,12 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 								className="hidden"
 							/>
 						</label>
-
-						{/* 路径编辑 */}
-						<div className="flex flex-1 flex-col gap-1">
-							<label
-								htmlFor={idSpritePath}
-								className="text-xs font-medium uppercase opacity-60"
-							>
-								贴图路径
-							</label>
-							<input
-								id={idSpritePath}
-								type="text"
-								value={ingredient.spritePath}
-								onChange={(e) =>
-									onUpdate({ spritePath: e.target.value })
-								}
-								className="h-9 w-full rounded-lg border border-black/10 bg-white/40 px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:border-white/10 dark:bg-black/10 dark:focus:border-white/10 dark:focus:ring-white/10"
-							/>
-							<p className="text-xs text-black/40 dark:text-white/40">
-								上传图片会自动使用此路径保存
+						<div className="flex flex-col justify-end gap-1 pb-1">
+							<p className="text-xs font-medium opacity-60">
+								贴图建议尺寸: 26 × 26 像素
+							</p>
+							<p className="text-[10px] opacity-40">
+								资源路径: {beverage.spritePath}
 							</p>
 						</div>
 					</div>

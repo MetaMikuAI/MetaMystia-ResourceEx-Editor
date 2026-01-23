@@ -90,9 +90,12 @@ export const Header = memo(function Header() {
 		[loadResourcePack]
 	);
 
-	const isItemsActive = ['/ingredient', '/food', '/recipe'].includes(
-		pathname
-	);
+	const isItemsActive = [
+		'/ingredient',
+		'/food',
+		'/recipe',
+		'/beverage',
+	].includes(pathname);
 	const isNodesActive = ['/mission', '/event'].includes(pathname);
 
 	return (
@@ -152,6 +155,7 @@ export const Header = memo(function Header() {
 								{ href: '/ingredient', label: '原料编辑' },
 								{ href: '/food', label: '料理编辑' },
 								{ href: '/recipe', label: '菜谱编辑' },
+								{ href: '/beverage', label: '酒水编辑' },
 							]}
 						/>
 

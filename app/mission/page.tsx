@@ -82,6 +82,7 @@ export default function MissionPage() {
 							characters={data.characters || []}
 							foods={data.foods || []}
 							ingredients={data.ingredients || []}
+							beverages={data.beverages || []}
 							recipes={data.recipes || []}
 							allMissions={data.missionNodes || []}
 							allEvents={data.eventNodes || []}

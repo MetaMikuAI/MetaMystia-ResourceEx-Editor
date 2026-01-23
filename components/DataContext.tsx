@@ -48,6 +48,7 @@ export function DataProvider({ children }: PropsWithChildren) {
 		dialogPackages: [],
 		ingredients: [],
 		foods: [],
+		beverages: [],
 		recipes: [],
 		missionNodes: [],
 		eventNodes: [],
@@ -308,6 +309,11 @@ export function DataProvider({ children }: PropsWithChildren) {
 				if (food.spritePath) usedPaths.add(food.spritePath);
 			});
 
+			// 1.6 Beverages
+			exportData.beverages?.forEach((bev) => {
+				if (bev.spritePath) usedPaths.add(bev.spritePath);
+			});
+
 			// 2. Characters
 			exportData.characters.forEach((char) => {
 				// Portraits
@@ -368,8 +374,10 @@ export function DataProvider({ children }: PropsWithChildren) {
 			dialogPackages: [],
 			ingredients: [],
 			foods: [],
+			beverages: [],
 			recipes: [],
 			missionNodes: [],
+			eventNodes: [],
 		});
 		// Clear assets
 		Object.values(assetUrls).forEach((url) => revokeUrl(url));

@@ -1,4 +1,4 @@
-import { memo, useCallback, useId } from 'react';
+import { memo, useCallback, useId, useState } from 'react';
 
 import { useData } from '@/components/DataContext';
 import { FOOD_TAGS } from '@/data/tags';
@@ -21,25 +21,23 @@ export const FoodEditor = memo<FoodEditorProps>(function FoodEditor({
 	const idDescription = useId();
 	const idLevel = useId();
 	const idBaseValue = useId();
-	const idSpritePath = useId();
+
+	const [isDragging, setIsDragging] = useState(false);
 
 	const isIdTooSmall = food && food.id < 9000;
 
 	const { getAssetUrl, updateAsset } = useData();
 
-	const handleSpriteUpload = useCallback(
-		async (e: React.ChangeEvent<HTMLInputElement>) => {
+	const processFile = useCallback(
+		async (file: File) => {
 			if (!food) return;
-
-			const file = e.target.files?.[0];
-			if (!file) return;
 
 			// Validate image dimensions - recommend 26x26 but allow other sizes
 			const img = new Image();
 			const url = URL.createObjectURL(file);
 			img.src = url;
 
-			await new Promise<void>((resolve) => {
+			await new Promise<void>((resolve, reject) => {
 				img.onload = () => {
 					if (img.width !== 26 || img.height !== 26) {
 						const proceed = confirm(
@@ -47,6 +45,7 @@ export const FoodEditor = memo<FoodEditorProps>(function FoodEditor({
 						);
 						if (!proceed) {
 							URL.revokeObjectURL(url);
+							reject(new Error('Cancelled'));
 							return;
 						}
 					}
@@ -64,6 +63,46 @@ export const FoodEditor = memo<FoodEditorProps>(function FoodEditor({
 		},
 		[food, updateAsset]
 	);
+
+	const handleSpriteUpload = useCallback(
+		async (e: React.ChangeEvent<HTMLInputElement>) => {
+			const file = e.target.files?.[0];
+			if (!file) return;
+			try {
+				await processFile(file);
+			} catch {}
+			e.target.value = '';
+		},
+		[processFile]
+	);
+
+	const handleDrop = useCallback(
+		async (e: React.DragEvent) => {
+			e.preventDefault();
+			e.stopPropagation();
+			setIsDragging(false);
+
+			const file = e.dataTransfer.files?.[0];
+			if (file && file.type.startsWith('image/')) {
+				try {
+					await processFile(file);
+				} catch {}
+			}
+		},
+		[processFile]
+	);
+
+	const handleDragOver = useCallback((e: React.DragEvent) => {
+		e.preventDefault();
+		e.stopPropagation();
+		setIsDragging(true);
+	}, []);
+
+	const handleDragLeave = useCallback((e: React.DragEvent) => {
+		e.preventDefault();
+		e.stopPropagation();
+		setIsDragging(false);
+	}, []);
 
 	const toggleTag = useCallback(
 		(tagId: number, field: 'tags' | 'banTags') => {
@@ -300,11 +339,16 @@ export const FoodEditor = memo<FoodEditorProps>(function FoodEditor({
 				<div className="flex flex-col gap-4 md:flex-row">
 					{/* 预览/上传区 */}
 					<label
+						onDrop={handleDrop}
+						onDragOver={handleDragOver}
+						onDragLeave={handleDragLeave}
 						className={cn(
 							'bg-checkerboard group relative flex h-32 w-32 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed transition-all',
-							spriteUrl
-								? 'border-primary/30 hover:border-primary/50'
-								: 'border-black/10 hover:border-black/30 dark:border-white/10 dark:hover:border-white/30'
+							isDragging
+								? 'border-primary bg-primary/10'
+								: spriteUrl
+									? 'border-primary/30 hover:border-primary/50'
+									: 'border-black/10 hover:border-black/30 dark:border-white/10 dark:hover:border-white/30'
 						)}
 					>
 						{spriteUrl ? (
@@ -335,25 +379,13 @@ export const FoodEditor = memo<FoodEditorProps>(function FoodEditor({
 						/>
 					</label>
 
-					{/* 路径编辑 */}
-					<div className="flex flex-1 flex-col gap-1">
-						<label
-							htmlFor={idSpritePath}
-							className="text-xs font-medium uppercase opacity-60"
-						>
-							贴图路径
-						</label>
-						<input
-							id={idSpritePath}
-							type="text"
-							value={food.spritePath}
-							onChange={(e) =>
-								onUpdate({ spritePath: e.target.value })
-							}
-							className="h-9 w-full rounded-lg border border-black/10 bg-white/40 px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:border-white/10 dark:bg-black/10 dark:focus:border-white/10 dark:focus:ring-white/10"
-						/>
-						<p className="text-xs text-black/40 dark:text-white/40">
-							上传图片会自动使用此路径保存
+					{/* 路径信息 */}
+					<div className="flex flex-1 flex-col justify-end gap-1 pb-1">
+						<p className="text-xs font-medium opacity-60">
+							贴图建议尺寸: 26 × 26 像素
+						</p>
+						<p className="text-xs opacity-40">
+							资源路径: {food.spritePath}
 						</p>
 					</div>
 				</div>

@@ -99,6 +99,17 @@ export interface Food {
 	spritePath: string;
 }
 
+export interface Beverage {
+	id: number;
+	name: string;
+	description: string;
+	level: number;
+	baseValue: number;
+	tags: number[];
+	spritePath: string;
+	modRoot?: string;
+}
+
 export type CookerType = 'Pot' | 'Grill' | 'Fryer' | 'Steamer' | 'CuttingBoard';
 
 export interface Recipe {
@@ -258,6 +269,7 @@ export interface ResourceEx {
 	dialogPackages: DialogPackage[];
 	ingredients: Ingredient[];
 	foods: Food[];
+	beverages?: Beverage[];
 	recipes: Recipe[];
 	missionNodes: MissionNode[];
 	eventNodes?: EventNode[];

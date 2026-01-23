@@ -10,6 +10,7 @@ import type {
 	Character,
 	Food,
 	Ingredient,
+	Beverage,
 	Recipe,
 	MissionNode,
 	EventNode,
@@ -25,6 +26,7 @@ interface MissionEditorProps {
 	characters: Character[];
 	foods: Food[];
 	ingredients: Ingredient[];
+	beverages: Beverage[];
 	recipes: Recipe[];
 	allMissions: MissionNode[];
 	allEvents: EventNode[];
@@ -37,6 +39,7 @@ export default memo<MissionEditorProps>(function MissionEditor({
 	characters,
 	foods,
 	ingredients,
+	beverages,
 	recipes,
 	allMissions,
 	allEvents,
@@ -62,6 +65,16 @@ export default memo<MissionEditorProps>(function MissionEditor({
 		});
 		return result.sort((a, b) => a.id - b.id);
 	}, [ingredients]);
+
+	const allBeverages = useMemo(() => {
+		const result = [...BEVERAGE_NAMES];
+		beverages.forEach((b) => {
+			if (!result.find((r) => r.id === b.id)) {
+				result.push({ id: b.id, name: b.name });
+			}
+		});
+		return result.sort((a, b) => a.id - b.id);
+	}, [beverages]);
 
 	const allRecipes = useMemo(() => {
 		const result = [...RECIPE_NAMES];
@@ -129,7 +142,7 @@ export default memo<MissionEditorProps>(function MissionEditor({
 				characterOptions={characterOptions}
 				allFoods={allFoods}
 				allIngredients={allIngredients}
-				allBeverages={BEVERAGE_NAMES}
+				allBeverages={allBeverages}
 				onUpdate={onUpdate}
 			/>
 
