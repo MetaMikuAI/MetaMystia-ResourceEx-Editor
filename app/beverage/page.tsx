@@ -15,14 +15,15 @@ export default function BeveragePage() {
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
 	const addBeverage = useCallback(() => {
+		const newId = 11000 + (data.beverages?.length || 0);
 		const newBeverage: Beverage = {
-			id: 11000 + (data.beverages?.length || 0),
+			id: newId,
 			name: `新酒水${(data.beverages?.length || 0) + 1}`,
 			description: '',
 			level: 1,
 			baseValue: 1,
 			tags: [],
-			spritePath: `assets/Beverage/${11000 + (data.beverages?.length || 0)}.png`,
+			spritePath: `assets/Beverage/${newId}.png`,
 		};
 		const newBeverages = [...(data.beverages || []), newBeverage];
 		setData({ ...data, beverages: newBeverages });

@@ -218,6 +218,7 @@ export function DataProvider({ children }: PropsWithChildren) {
 					dialogPackages: jsonData.dialogPackages || [],
 					ingredients: jsonData.ingredients || [],
 					foods: jsonData.foods || [],
+					beverages: jsonData.beverages || [],
 					recipes: jsonData.recipes || [],
 					missionNodes: (jsonData.missionNodes || []).map(
 						(node: any) => {

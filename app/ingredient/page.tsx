@@ -15,8 +15,9 @@ export default function IngredientPage() {
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
 	const addIngredient = useCallback(() => {
+		const newId = 11000 + data.ingredients.length;
 		const newIngredient: Ingredient = {
-			id: 11000 + data.ingredients.length,
+			id: newId,
 			name: `新原料${data.ingredients.length + 1}`,
 			description: '',
 			level: 1,
@@ -26,7 +27,7 @@ export default function IngredientPage() {
 			isVeg: false,
 			baseValue: 1,
 			tags: [],
-			spritePath: `assets/Ingredient/${11000 + data.ingredients.length}.png`,
+			spritePath: `assets/Ingredient/${newId}.png`,
 		};
 		const newIngredients = [...data.ingredients, newIngredient];
 		setData({ ...data, ingredients: newIngredients });

@@ -164,10 +164,18 @@ export const FoodEditor = memo<FoodEditorProps>(function FoodEditor({
 						<input
 							id={idId}
 							type="number"
-							value={food.id}
-							onChange={(e) =>
-								onUpdate({ id: parseInt(e.target.value) })
-							}
+							value={isNaN(food.id) ? '' : food.id}
+							onChange={(e) => {
+								const val = parseInt(e.target.value);
+								if (isNaN(val)) {
+									onUpdate({ id: val });
+								} else {
+									onUpdate({
+										id: val,
+										spritePath: `assets/Food/${val}.png`,
+									});
+								}
+							}}
 							className={cn(
 								'h-9 w-full rounded-lg border bg-white/40 px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:bg-black/10 dark:focus:border-white/30 dark:focus:ring-white/10',
 								isIdTooSmall
@@ -229,7 +237,7 @@ export const FoodEditor = memo<FoodEditorProps>(function FoodEditor({
 						<input
 							id={idLevel}
 							type="number"
-							value={food.level}
+							value={isNaN(food.level) ? '' : food.level}
 							onChange={(e) =>
 								onUpdate({ level: parseInt(e.target.value) })
 							}
@@ -247,7 +255,7 @@ export const FoodEditor = memo<FoodEditorProps>(function FoodEditor({
 						<input
 							id={idBaseValue}
 							type="number"
-							value={food.baseValue}
+							value={isNaN(food.baseValue) ? '' : food.baseValue}
 							onChange={(e) =>
 								onUpdate({
 									baseValue: parseInt(e.target.value),

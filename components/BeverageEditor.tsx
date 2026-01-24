@@ -22,7 +22,7 @@ export const BeverageEditor = memo<BeverageEditorProps>(
 
 		const [isDragging, setIsDragging] = useState(false);
 
-		const isIdTooSmall = beverage && beverage.id < 11000;
+		const isIdTooSmall = beverage && beverage.id < 9000;
 
 		const { getAssetUrl, updateAsset } = useData();
 
@@ -154,17 +154,25 @@ export const BeverageEditor = memo<BeverageEditorProps>(
 								</label>
 								{isIdTooSmall && (
 									<span className="rounded bg-danger px-1.5 py-0.5 text-[10px] font-medium text-white">
-										ID需&ge;11000
+										ID需&ge;9000
 									</span>
 								)}
 							</div>
 							<input
 								id={idId}
 								type="number"
-								value={beverage.id}
-								onChange={(e) =>
-									onUpdate({ id: parseInt(e.target.value) })
-								}
+								value={isNaN(beverage.id) ? '' : beverage.id}
+								onChange={(e) => {
+									const val = parseInt(e.target.value);
+									if (isNaN(val)) {
+										onUpdate({ id: val });
+									} else {
+										onUpdate({
+											id: val,
+											spritePath: `assets/Beverage/${val}.png`,
+										});
+									}
+								}}
 								className={cn(
 									'h-9 w-full rounded-lg border bg-white/40 px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:bg-black/10 dark:focus:border-white/30 dark:focus:ring-white/10',
 									isIdTooSmall
@@ -228,7 +236,9 @@ export const BeverageEditor = memo<BeverageEditorProps>(
 							<input
 								id={idLevel}
 								type="number"
-								value={beverage.level}
+								value={
+									isNaN(beverage.level) ? '' : beverage.level
+								}
 								min={1}
 								max={5}
 								onChange={(e) =>
@@ -250,7 +260,11 @@ export const BeverageEditor = memo<BeverageEditorProps>(
 							<input
 								id={idBaseValue}
 								type="number"
-								value={beverage.baseValue}
+								value={
+									isNaN(beverage.baseValue)
+										? ''
+										: beverage.baseValue
+								}
 								onChange={(e) =>
 									onUpdate({
 										baseValue: parseInt(e.target.value),

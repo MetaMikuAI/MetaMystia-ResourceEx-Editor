@@ -97,14 +97,14 @@ export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
 							</label>
 							{isIdTooSmall && (
 								<span className="rounded bg-danger px-1.5 py-0.5 text-[10px] font-medium text-white">
-									ID需≥9000
+									ID需&ge;9000
 								</span>
 							)}
 						</div>
 						<input
 							id={idId}
 							type="number"
-							value={recipe.id}
+							value={isNaN(recipe.id) ? '' : recipe.id}
 							onChange={(e) =>
 								onUpdate({ id: parseInt(e.target.value) })
 							}
@@ -161,7 +161,9 @@ export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
 						<input
 							id={idCookTime}
 							type="number"
-							value={recipe.cookTime}
+							value={
+								isNaN(recipe.cookTime) ? '' : recipe.cookTime
+							}
 							onChange={(e) =>
 								onUpdate({ cookTime: parseInt(e.target.value) })
 							}

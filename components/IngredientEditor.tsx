@@ -1,4 +1,4 @@
-import { memo, useCallback, useId } from 'react';
+import { memo, useCallback, useId, useState } from 'react';
 
 import { useData } from '@/components/DataContext';
 import { FOOD_TAGS } from '@/data/tags';
@@ -20,25 +20,23 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 		const idLevel = useId();
 		const idPrefix = useId();
 		const idBaseValue = useId();
-		const idSpritePath = useId();
+
+		const [isDragging, setIsDragging] = useState(false);
 
 		const isIdTooSmall = ingredient && ingredient.id < 9000;
 
 		const { getAssetUrl, updateAsset } = useData();
 
-		const handleSpriteUpload = useCallback(
-			async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const processFile = useCallback(
+			async (file: File) => {
 				if (!ingredient) return;
-
-				const file = e.target.files?.[0];
-				if (!file) return;
 
 				// Validate image dimensions - recommend 26x26 but allow other sizes
 				const img = new Image();
 				const url = URL.createObjectURL(file);
 				img.src = url;
 
-				await new Promise<void>((resolve) => {
+				await new Promise<void>((resolve, reject) => {
 					img.onload = () => {
 						if (img.width !== 26 || img.height !== 26) {
 							const proceed = confirm(
@@ -46,6 +44,7 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 							);
 							if (!proceed) {
 								URL.revokeObjectURL(url);
+								reject(new Error('Cancelled'));
 								return;
 							}
 						}
@@ -63,6 +62,46 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 			},
 			[ingredient, updateAsset]
 		);
+
+		const handleSpriteUpload = useCallback(
+			async (e: React.ChangeEvent<HTMLInputElement>) => {
+				const file = e.target.files?.[0];
+				if (!file) return;
+				try {
+					await processFile(file);
+				} catch {}
+				e.target.value = '';
+			},
+			[processFile]
+		);
+
+		const handleDrop = useCallback(
+			async (e: React.DragEvent) => {
+				e.preventDefault();
+				e.stopPropagation();
+				setIsDragging(false);
+
+				const file = e.dataTransfer.files?.[0];
+				if (file && file.type.startsWith('image/')) {
+					try {
+						await processFile(file);
+					} catch {}
+				}
+			},
+			[processFile]
+		);
+
+		const handleDragOver = useCallback((e: React.DragEvent) => {
+			e.preventDefault();
+			e.stopPropagation();
+			setIsDragging(true);
+		}, []);
+
+		const handleDragLeave = useCallback((e: React.DragEvent) => {
+			e.preventDefault();
+			e.stopPropagation();
+			setIsDragging(false);
+		}, []);
 
 		const toggleTag = useCallback(
 			(tagId: number) => {
@@ -124,10 +163,20 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 							<input
 								id={idId}
 								type="number"
-								value={ingredient.id}
-								onChange={(e) =>
-									onUpdate({ id: parseInt(e.target.value) })
+								value={
+									isNaN(ingredient.id) ? '' : ingredient.id
 								}
+								onChange={(e) => {
+									const val = parseInt(e.target.value);
+									if (isNaN(val)) {
+										onUpdate({ id: val });
+									} else {
+										onUpdate({
+											id: val,
+											spritePath: `assets/Ingredient/${val}.png`,
+										});
+									}
+								}}
 								className={cn(
 									'h-9 w-full rounded-lg border bg-white/40 px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:bg-black/10 dark:focus:border-white/30 dark:focus:ring-white/10',
 									isIdTooSmall
@@ -191,7 +240,11 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 							<input
 								id={idLevel}
 								type="number"
-								value={ingredient.level}
+								value={
+									isNaN(ingredient.level)
+										? ''
+										: ingredient.level
+								}
 								onChange={(e) =>
 									onUpdate({
 										level: parseInt(e.target.value),
@@ -211,7 +264,11 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 							<input
 								id={idPrefix}
 								type="number"
-								value={ingredient.prefix}
+								value={
+									isNaN(ingredient.prefix)
+										? ''
+										: ingredient.prefix
+								}
 								onChange={(e) =>
 									onUpdate({
 										prefix: parseInt(e.target.value),
@@ -231,7 +288,11 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 							<input
 								id={idBaseValue}
 								type="number"
-								value={ingredient.baseValue}
+								value={
+									isNaN(ingredient.baseValue)
+										? ''
+										: ingredient.baseValue
+								}
 								onChange={(e) =>
 									onUpdate({
 										baseValue: parseInt(e.target.value),
@@ -324,11 +385,16 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 					<div className="flex flex-col gap-4 md:flex-row">
 						{/* 预览/上传区 */}
 						<label
+							onDrop={handleDrop}
+							onDragOver={handleDragOver}
+							onDragLeave={handleDragLeave}
 							className={cn(
 								'bg-checkerboard group relative flex h-32 w-32 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed transition-all',
-								spriteUrl
-									? 'border-primary/30 hover:border-primary/50'
-									: 'border-black/10 hover:border-black/30 dark:border-white/10 dark:hover:border-white/30'
+								isDragging
+									? 'border-primary bg-primary/10'
+									: spriteUrl
+										? 'border-primary/30 hover:border-primary/50'
+										: 'border-black/10 hover:border-black/30 dark:border-white/10 dark:hover:border-white/30'
 							)}
 						>
 							{spriteUrl ? (
@@ -359,25 +425,13 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 							/>
 						</label>
 
-						{/* 路径编辑 */}
-						<div className="flex flex-1 flex-col gap-1">
-							<label
-								htmlFor={idSpritePath}
-								className="text-xs font-medium uppercase opacity-60"
-							>
-								贴图路径
-							</label>
-							<input
-								id={idSpritePath}
-								type="text"
-								value={ingredient.spritePath}
-								onChange={(e) =>
-									onUpdate({ spritePath: e.target.value })
-								}
-								className="h-9 w-full rounded-lg border border-black/10 bg-white/40 px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:border-white/10 dark:bg-black/10 dark:focus:border-white/10 dark:focus:ring-white/10"
-							/>
-							<p className="text-xs text-black/40 dark:text-white/40">
-								上传图片会自动使用此路径保存
+						{/* 路径信息 */}
+						<div className="flex flex-1 flex-col justify-end gap-1 pb-1">
+							<p className="text-xs font-medium opacity-60">
+								贴图建议尺寸: 26 × 26 像素
+							</p>
+							<p className="text-xs opacity-40">
+								资源路径: {ingredient.spritePath}
 							</p>
 						</div>
 					</div>

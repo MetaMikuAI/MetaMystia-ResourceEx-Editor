@@ -15,15 +15,16 @@ export default function FoodPage() {
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
 	const addFood = useCallback(() => {
+		const newId = 11000 + (data.foods?.length || 0);
 		const newFood: Food = {
-			id: 11000 + (data.foods?.length || 0),
+			id: newId,
 			name: `新料理${(data.foods?.length || 0) + 1}`,
 			description: '',
 			level: 1,
 			baseValue: 1,
 			tags: [],
 			banTags: [],
-			spritePath: `assets/Food/${11000 + (data.foods?.length || 0)}.png`,
+			spritePath: `assets/Food/${newId}.png`,
 		};
 		const newFoods = [...(data.foods || []), newFood];
 		setData({ ...data, foods: newFoods });
