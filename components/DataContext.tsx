@@ -243,7 +243,10 @@ export function DataProvider({ children }: PropsWithChildren) {
 						(node: any) => ({
 							label: node.label || '',
 							debugLabel: node.debugLabel || '',
-							trigger: node.trigger || [],
+							scheduledEvent: node.scheduledEvent || {
+								trigger: node.trigger, // Backward compatibility or migration if needed
+								eventData: node.eventData,
+							},
 							postMissionsAfterPerformance:
 								node.postMissionsAfterPerformance || [],
 							postEvents: node.postEvents || [],

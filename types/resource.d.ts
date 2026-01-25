@@ -246,10 +246,22 @@ export interface EventNodeTrigger {
 	triggerId?: string;
 }
 
+export type EventType = 'Null' | 'Timeline' | 'Dialog';
+
+export interface EventData {
+	eventType: EventType;
+	dialogPackageName?: string;
+}
+
+export interface ScheduledEvent {
+	trigger?: EventNodeTrigger;
+	eventData?: EventData;
+}
+
 export interface EventNode {
 	label: string;
 	debugLabel: string;
-	trigger?: EventNodeTrigger;
+	scheduledEvent?: ScheduledEvent;
 	postMissionsAfterPerformance?: string[];
 	postEvents?: string[];
 }

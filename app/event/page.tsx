@@ -10,6 +10,7 @@ import type { EventNode } from '@/types/resource';
 const DEFAULT_EVENT: EventNode = {
 	label: '',
 	debugLabel: '新事件',
+	scheduledEvent: { eventData: { eventType: 'Null' } },
 	postMissionsAfterPerformance: [],
 };
 
@@ -77,6 +78,7 @@ export default function EventPage() {
 							allMissions={data.missionNodes || []}
 							allEvents={data.eventNodes || []}
 							allCharacters={data.characters || []}
+							allDialogPackages={data.dialogPackages || []}
 							onRemove={() => removeEvent(selectedIndex)}
 							onUpdate={(updates) =>
 								updateEvent(selectedIndex, updates)
