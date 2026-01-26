@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useEffect } from 'react';
 
 import { BasicInfo } from './editor/BasicInfo';
 import { Descriptions } from './editor/Descriptions';
@@ -32,6 +32,25 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 		onRemove,
 		onUpdate,
 	}) {
+		// Ensure default portrait is set if portraits exist
+		useEffect(() => {
+			const portraits = character?.portraits;
+			if (
+				portraits &&
+				portraits.length > 0 &&
+				character?.faceInNoteBook === undefined
+			) {
+				const hasPid0 = portraits.some((p) => p.pid === 0);
+				const targetPid = hasPid0 ? 0 : portraits[0]!.pid;
+				onUpdate({ faceInNoteBook: targetPid });
+			}
+		}, [
+			character?.portraits,
+			character?.faceInNoteBook,
+			onUpdate,
+			character?.id,
+		]);
+
 		const updateDescription = useCallback(
 			(index: number, value: string) => {
 				if (!character) {
@@ -53,7 +72,8 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 				portraits.length > 0
 					? Math.max(...portraits.map((p) => p.pid)) + 1
 					: 0;
-			onUpdate({
+
+			const updates: Partial<Character> = {
 				portraits: [
 					...portraits,
 					// Use standard path format consistent with Portraits.tsx
@@ -62,7 +82,13 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 						path: `assets/Character/${character.id}/Portrait/${nextPid}.png`,
 					},
 				],
-			});
+			};
+
+			if (!portraits.length) {
+				updates.faceInNoteBook = nextPid;
+			}
+
+			onUpdate(updates);
 		}, [character, onUpdate]);
 
 		const removePortrait = useCallback(
@@ -71,10 +97,28 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 					return;
 				}
 				const portraits = [...(character.portraits ?? [])];
+				const removedPortrait = portraits[index];
+				if (!removedPortrait) return;
+
 				portraits.splice(index, 1);
-				onUpdate({ portraits });
+
+				const updates: Partial<Character> = { portraits };
+
+				if (character.faceInNoteBook === removedPortrait.pid) {
+					if (portraits.length > 0) {
+						// Fallback to first available portrait, preferring 0
+						const hasPid0 = portraits.some((p) => p.pid === 0);
+						updates.faceInNoteBook = hasPid0
+							? 0
+							: portraits[0]?.pid;
+					} else {
+						updates.faceInNoteBook = undefined;
+					}
+				}
+
+				onUpdate(updates);
 			},
-			[character?.portraits, onUpdate]
+			[character?.portraits, character?.faceInNoteBook, onUpdate]
 		);
 
 		const updatePortrait = useCallback(
@@ -90,6 +134,16 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 				onUpdate({ portraits });
 			},
 			[character?.portraits, onUpdate]
+		);
+
+		const updateDefaultPortrait = useCallback(
+			(pid: number) => {
+				if (!character) {
+					return;
+				}
+				onUpdate({ faceInNoteBook: pid });
+			},
+			[character, onUpdate]
 		);
 
 		const updateGuest = useCallback(
@@ -265,9 +319,11 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 				<Portraits
 					characterId={character.id}
 					portraits={character.portraits ?? []}
+					faceInNoteBook={character.faceInNoteBook}
 					onAdd={addPortrait}
 					onRemove={removePortrait}
 					onUpdate={updatePortrait}
+					onSetDefault={updateDefaultPortrait}
 				/>
 
 				<GuestInfoEditor

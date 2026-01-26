@@ -6,17 +6,21 @@ import { useData } from '@/components/DataContext';
 interface PortraitsProps {
 	characterId: number;
 	portraits: CharacterPortrait[];
+	faceInNoteBook: number | undefined;
 	onAdd: () => void;
 	onUpdate: (index: number, updates: Partial<CharacterPortrait>) => void;
 	onRemove: (index: number) => void;
+	onSetDefault: (pid: number) => void;
 }
 
 export function Portraits({
 	characterId,
 	portraits,
+	faceInNoteBook,
 	onAdd,
 	onUpdate,
 	onRemove,
+	onSetDefault,
 }: PortraitsProps) {
 	const [isExpanded, setIsExpanded] = useState(true);
 	const { updateAsset, getAssetUrl } = useData();
@@ -59,7 +63,9 @@ export function Portraits({
 		checkImageSize(file, 256, 359, path);
 
 		updateAsset(path, file);
-		onUpdate(index, { path });
+		// Auto-fill label with filename (without extension)
+		const label = file.name.replace(/\.[^/.]+$/, '');
+		onUpdate(index, { path, label });
 	};
 
 	return (
@@ -138,17 +144,43 @@ export function Portraits({
 									<label className="ml-1 text-[10px] font-bold opacity-50">
 										备注标签
 									</label>
-									<input
-										type="text"
-										value={portrait.label || ''}
-										onChange={(e) =>
-											onUpdate(i, {
-												label: e.target.value,
-											})
-										}
-										placeholder="例如：大妖精 低沉"
-										className="rounded-lg border border-white/10 bg-black/20 p-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50"
-									/>
+									<div className="flex gap-2">
+										<input
+											type="text"
+											value={portrait.label || ''}
+											onChange={(e) =>
+												onUpdate(i, {
+													label: e.target.value,
+												})
+											}
+											placeholder="例如：大妖精 低沉"
+											className="flex-1 rounded-lg border border-white/10 bg-black/20 p-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50"
+										/>
+										<label
+											className={cn(
+												'flex cursor-pointer items-center gap-2 rounded px-3 py-1 transition-colors',
+												faceInNoteBook === portrait.pid
+													? 'bg-primary/20 text-primary'
+													: 'bg-black/20 text-white/50 hover:bg-black/30 hover:text-white/70'
+											)}
+										>
+											<input
+												type="radio"
+												name={`default-portrait-${characterId}`}
+												checked={
+													faceInNoteBook ===
+													portrait.pid
+												}
+												onChange={() =>
+													onSetDefault(portrait.pid)
+												}
+												className="accent-primary"
+											/>
+											<span className="whitespace-nowrap text-xs font-bold">
+												设为默认
+											</span>
+										</label>
+									</div>
 								</div>
 								<div className="flex flex-col gap-1">
 									<div className="flex items-center justify-between">

@@ -55,6 +55,7 @@ export interface Character {
 	label: string;
 	descriptions?: string[];
 	type: CharacterType;
+	faceInNoteBook?: number | undefined;
 	portraits?: CharacterPortrait[] | undefined;
 	guest?: GuestInfo | undefined;
 	kizuna?: KizunaInfo | undefined;
