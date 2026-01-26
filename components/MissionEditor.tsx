@@ -14,12 +14,14 @@ import type {
 	Recipe,
 	MissionNode,
 	EventNode,
+	DialogPackage,
 } from '@/types/resource';
 import { MissionBasicInfo } from './mission/MissionBasicInfo';
 import { MissionConditionList } from './mission/MissionConditionList';
 import { MissionRewardList } from './mission/MissionRewardList';
 import { PostMissionList } from './PostMissionList';
 import { PostEventList } from './PostEventList';
+import { EventDataEditor } from './ScheduledEvent/EventDataEditor';
 
 interface MissionEditorProps {
 	mission: MissionNode | null;
@@ -30,6 +32,7 @@ interface MissionEditorProps {
 	recipes: Recipe[];
 	allMissions: MissionNode[];
 	allEvents: EventNode[];
+	allDialogPackages: DialogPackage[];
 	onRemove: () => void;
 	onUpdate: (updates: Partial<MissionNode>) => void;
 }
@@ -43,6 +46,7 @@ export default memo<MissionEditorProps>(function MissionEditor({
 	recipes,
 	allMissions,
 	allEvents,
+	allDialogPackages,
 	onRemove,
 	onUpdate,
 }) {
@@ -153,6 +157,15 @@ export default memo<MissionEditorProps>(function MissionEditor({
 				allIngredients={allIngredients}
 				allRecipes={allRecipes}
 				onUpdate={onUpdate}
+			/>
+
+			<label className="font-medium text-foreground">
+				Mission Finish Event
+			</label>
+			<EventDataEditor
+				eventData={mission.missionFinishEvent}
+				allDialogPackages={allDialogPackages}
+				onChange={(event) => onUpdate({ missionFinishEvent: event })}
 			/>
 
 			<PostMissionList

@@ -86,6 +86,7 @@ export default function MissionPage() {
 							recipes={data.recipes || []}
 							allMissions={data.missionNodes || []}
 							allEvents={data.eventNodes || []}
+							allDialogPackages={data.dialogPackages || []}
 							onRemove={() => removeMission(selectedIndex)}
 							onUpdate={(updates) =>
 								updateMission(selectedIndex, updates)

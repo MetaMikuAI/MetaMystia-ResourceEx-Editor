@@ -238,6 +238,7 @@ export interface MissionNode {
 	reciever: string;
 	rewards: MissionReward[];
 	finishConditions: MissionCondition[];
+	missionFinishEvent?: EventData;
 	postMissionsAfterPerformance?: string[];
 	postEvents?: string[];
 }
