@@ -235,8 +235,9 @@ export interface MissionNode {
 	debugLabel: string;
 	missionType: MissionType;
 	sender: string;
-	reciever: string;
-	rewards: MissionReward[];
+	reciever: string; // ignore typo
+	rewards?: MissionReward[];
+	postRewards?: MissionReward[];
 	finishConditions: MissionCondition[];
 	missionFinishEvent?: EventData;
 	postMissionsAfterPerformance?: string[];

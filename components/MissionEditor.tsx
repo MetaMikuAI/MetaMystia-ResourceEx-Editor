@@ -151,12 +151,23 @@ export default memo<MissionEditorProps>(function MissionEditor({
 			/>
 
 			<MissionRewardList
-				rewards={mission.rewards}
+				title="Rewards"
+				rewards={mission.rewards || []}
 				characterOptions={characterOptions}
 				allFoods={allFoods}
 				allIngredients={allIngredients}
 				allRecipes={allRecipes}
 				onUpdate={(rewards) => onUpdate({ rewards })}
+			/>
+
+			<MissionRewardList
+				title="Post Rewards"
+				rewards={mission.postRewards || []}
+				characterOptions={characterOptions}
+				allFoods={allFoods}
+				allIngredients={allIngredients}
+				allRecipes={allRecipes}
+				onUpdate={(postRewards) => onUpdate({ postRewards })}
 			/>
 
 			<label className="font-medium text-foreground">
