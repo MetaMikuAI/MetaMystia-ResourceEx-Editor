@@ -1,10 +1,5 @@
 import { memo, useCallback } from 'react';
-import type {
-	MissionNode,
-	MissionReward,
-	ObjectType,
-	RewardType,
-} from '@/types/resource';
+import type { MissionReward, ObjectType, RewardType } from '@/types/resource';
 import { BEVERAGE_NAMES } from '@/data/beverages';
 
 const REWARD_TYPES: { type: RewardType; label: string }[] = [
@@ -131,17 +126,19 @@ const REWARD_TYPES: { type: RewardType; label: string }[] = [
 ];
 
 interface MissionRewardListProps {
-	mission: MissionNode;
+	title?: string;
+	rewards: MissionReward[];
 	characterOptions: { value: string; label: string }[];
 	allFoods: { id: number; name: string }[];
 	allIngredients: { id: number; name: string }[];
 	allRecipes: { id: number; name: string }[];
-	onUpdate: (updates: Partial<MissionNode>) => void;
+	onUpdate: (rewards: MissionReward[]) => void;
 }
 
 export const MissionRewardList = memo<MissionRewardListProps>(
 	function MissionRewardList({
-		mission,
+		title = 'Rewards',
+		rewards,
 		characterOptions,
 		allFoods,
 		allIngredients,
@@ -150,40 +147,40 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 	}) {
 		const addReward = useCallback(() => {
 			const newRewards: MissionReward[] = [
-				...(mission.rewards || []),
+				...(rewards || []),
 				{ rewardType: 'UpgradeKizunaLevel' },
 			];
-			onUpdate({ rewards: newRewards });
-		}, [mission, onUpdate]);
+			onUpdate(newRewards);
+		}, [rewards, onUpdate]);
 
 		const removeReward = useCallback(
 			(index: number) => {
-				if (!mission.rewards) return;
-				const newRewards = [...mission.rewards];
+				if (!rewards) return;
+				const newRewards = [...rewards];
 				newRewards.splice(index, 1);
-				onUpdate({ rewards: newRewards });
+				onUpdate(newRewards);
 			},
-			[mission, onUpdate]
+			[rewards, onUpdate]
 		);
 
 		const updateReward = useCallback(
 			(index: number, updates: Partial<MissionReward>) => {
-				if (!mission.rewards) return;
-				const newRewards = [...mission.rewards];
+				if (!rewards) return;
+				const newRewards = [...rewards];
 				newRewards[index] = {
 					...newRewards[index],
 					...updates,
 				} as MissionReward;
-				onUpdate({ rewards: newRewards });
+				onUpdate(newRewards);
 			},
-			[mission, onUpdate]
+			[rewards, onUpdate]
 		);
 
 		return (
 			<div className="flex flex-col gap-4">
 				<div className="flex items-center justify-between">
 					<label className="font-medium text-foreground">
-						Rewards ({mission.rewards?.length || 0})
+						{title} ({rewards?.length || 0})
 					</label>
 					<button
 						onClick={addReward}
@@ -193,7 +190,7 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 					</button>
 				</div>
 				<div className="flex flex-col gap-3">
-					{(mission.rewards || []).map((reward, index) => (
+					{(rewards || []).map((reward, index) => (
 						<div
 							key={index}
 							className="flex flex-col gap-3 rounded-lg border border-black/5 bg-black/5 p-4 dark:border-white/5 dark:bg-white/5"
@@ -499,7 +496,7 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 								)}
 						</div>
 					))}
-					{(!mission.rewards || mission.rewards.length === 0) && (
+					{(!rewards || rewards.length === 0) && (
 						<p className="text-center text-sm text-black/40 dark:text-white/40">
 							暂无奖励配置
 						</p>

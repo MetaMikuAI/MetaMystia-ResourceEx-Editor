@@ -1,12 +1,20 @@
 'use client';
 
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
+import { FOOD_NAMES } from '@/data/foods';
+import { INGREDIENT_NAMES } from '@/data/ingredients';
+import { RECIPE_NAMES } from '@/data/recipes';
+import { SPECIAL_GUESTS } from '@/data/specialGuest';
 import type {
 	EventNode,
 	MissionNode,
 	Character,
 	DialogPackage,
+	Food,
+	Ingredient,
+	Recipe,
 } from '@/types/resource';
+import { MissionRewardList } from './mission/MissionRewardList';
 import { PostEventList } from './PostEventList';
 import { PostMissionList } from './PostMissionList';
 import { ScheduledEventEditor } from './ScheduledEventEditor';
@@ -17,6 +25,9 @@ interface EventEditorProps {
 	allEvents: EventNode[];
 	allCharacters: Character[];
 	allDialogPackages: DialogPackage[];
+	foods: Food[];
+	ingredients: Ingredient[];
+	recipes: Recipe[];
 	onRemove: () => void;
 	onUpdate: (updates: Partial<EventNode>) => void;
 }
@@ -27,9 +38,63 @@ export default memo<EventEditorProps>(function EventEditor({
 	allEvents,
 	allCharacters,
 	allDialogPackages,
+	foods,
+	ingredients,
+	recipes,
 	onRemove,
 	onUpdate,
 }) {
+	const allFoods = useMemo(() => {
+		const result = [...FOOD_NAMES];
+		foods.forEach((f) => {
+			if (!result.find((r) => r.id === f.id)) {
+				result.push({ id: f.id, name: f.name });
+			}
+		});
+		return result.sort((a, b) => a.id - b.id);
+	}, [foods]);
+
+	const allIngredients = useMemo(() => {
+		const result = [...INGREDIENT_NAMES];
+		ingredients.forEach((i) => {
+			if (!result.find((r) => r.id === i.id)) {
+				result.push({ id: i.id, name: i.name });
+			}
+		});
+		return result.sort((a, b) => a.id - b.id);
+	}, [ingredients]);
+
+	const allRecipes = useMemo(() => {
+		const result = [...RECIPE_NAMES];
+		recipes.forEach((r) => {
+			if (!result.find((existing) => existing.id === r.id)) {
+				const targetFood = allFoods.find((f) => f.id === r.foodId);
+				const name = targetFood ? targetFood.name : `Food_${r.foodId}`;
+				result.push({ id: r.id, name });
+			}
+		});
+		return result.sort((a, b) => a.id - b.id);
+	}, [recipes, allFoods]);
+
+	const characterOptions = useMemo(() => {
+		const options: { value: string; label: string }[] = [];
+		// Add built-in special guests
+		SPECIAL_GUESTS.forEach((g) => {
+			options.push({
+				value: g.label,
+				label: `[${g.id}] ${g.name} (${g.label})`,
+			});
+		});
+		// Add custom characters
+		allCharacters.forEach((c) => {
+			options.push({
+				value: c.label,
+				label: `[${c.id}] ${c.name} (${c.label})`,
+			});
+		});
+		return options;
+	}, [allCharacters]);
+
 	if (!eventNode) {
 		return (
 			<div className="flex h-full items-center justify-center rounded-lg bg-white/5 p-8 text-center backdrop-blur">
@@ -92,6 +157,26 @@ export default memo<EventEditorProps>(function EventEditor({
 						}
 					/>
 				</div>
+
+				<MissionRewardList
+					title="Rewards"
+					rewards={eventNode.rewards || []}
+					characterOptions={characterOptions}
+					allFoods={allFoods}
+					allIngredients={allIngredients}
+					allRecipes={allRecipes}
+					onUpdate={(rewards) => onUpdate({ rewards })}
+				/>
+
+				<MissionRewardList
+					title="Post Rewards"
+					rewards={eventNode.postRewards || []}
+					characterOptions={characterOptions}
+					allFoods={allFoods}
+					allIngredients={allIngredients}
+					allRecipes={allRecipes}
+					onUpdate={(postRewards) => onUpdate({ postRewards })}
+				/>
 
 				<PostMissionList
 					postMissions={eventNode.postMissionsAfterPerformance}

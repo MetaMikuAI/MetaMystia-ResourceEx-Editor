@@ -78,6 +78,9 @@ export default function EventPage() {
 							allMissions={data.missionNodes || []}
 							allEvents={data.eventNodes || []}
 							allCharacters={data.characters || []}
+							foods={data.foods || []}
+							ingredients={data.ingredients || []}
+							recipes={data.recipes || []}
 							allDialogPackages={data.dialogPackages || []}
 							onRemove={() => removeEvent(selectedIndex)}
 							onUpdate={(updates) =>

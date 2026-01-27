@@ -124,7 +124,7 @@ export default memo<MissionEditorProps>(function MissionEditor({
 	return (
 		<div className="flex flex-col gap-6 rounded-lg bg-white/10 p-6 shadow-md backdrop-blur">
 			<div className="flex items-center justify-between border-b border-black/10 pb-4 dark:border-white/10">
-				<h2 className="text-2xl font-bold">任务节点编辑(尚未完成)</h2>
+				<h2 className="text-2xl font-bold">任务节点编辑</h2>
 				<button
 					onClick={onRemove}
 					className="btn-mystia-secondary bg-danger text-white hover:bg-danger/80"
@@ -151,12 +151,12 @@ export default memo<MissionEditorProps>(function MissionEditor({
 			/>
 
 			<MissionRewardList
-				mission={mission}
+				rewards={mission.rewards}
 				characterOptions={characterOptions}
 				allFoods={allFoods}
 				allIngredients={allIngredients}
 				allRecipes={allRecipes}
-				onUpdate={onUpdate}
+				onUpdate={(rewards) => onUpdate({ rewards })}
 			/>
 
 			<label className="font-medium text-foreground">

@@ -264,6 +264,8 @@ export interface EventNode {
 	label: string;
 	debugLabel: string;
 	scheduledEvent?: ScheduledEvent;
+	rewards?: MissionReward[];
+	postRewards?: MissionReward[];
 	postMissionsAfterPerformance?: string[];
 	postEvents?: string[];
 }
