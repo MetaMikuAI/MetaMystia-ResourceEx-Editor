@@ -14,6 +14,7 @@ import type {
 	Ingredient,
 	Recipe,
 } from '@/types/resource';
+import { EditorField } from './EditorField';
 import { MissionRewardList } from './mission/MissionRewardList';
 import { PostEventList } from './PostEventList';
 import { PostMissionList } from './PostMissionList';
@@ -118,10 +119,7 @@ export default memo<EventEditorProps>(function EventEditor({
 			</div>
 
 			<div className="grid grid-cols-1 gap-6">
-				<div className="flex flex-col gap-2">
-					<label className="font-medium text-foreground">
-						Debug Label
-					</label>
+				<EditorField label="Debug Label">
 					<input
 						type="text"
 						value={eventNode.debugLabel || ''}
@@ -131,10 +129,9 @@ export default memo<EventEditorProps>(function EventEditor({
 						className="rounded-lg border border-black/10 bg-black/5 px-4 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-white/10 dark:bg-white/5"
 						placeholder="用于显示在编辑器左侧列表的名称"
 					/>
-				</div>
+				</EditorField>
 
-				<div className="flex flex-col gap-2">
-					<label className="font-medium text-foreground">Label</label>
+				<EditorField label="Label">
 					<input
 						type="text"
 						value={eventNode.label || ''}
@@ -142,12 +139,9 @@ export default memo<EventEditorProps>(function EventEditor({
 						className="rounded-lg border border-black/10 bg-black/5 px-4 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-white/10 dark:bg-white/5"
 						placeholder="游戏内唯一标识符"
 					/>
-				</div>
+				</EditorField>
 
-				<div className="flex flex-col gap-2">
-					<label className="font-medium text-foreground">
-						Scheduled Event
-					</label>
+				<EditorField label="Scheduled Event">
 					<ScheduledEventEditor
 						scheduledEvent={eventNode.scheduledEvent || {}}
 						allCharacters={allCharacters}
@@ -156,8 +150,7 @@ export default memo<EventEditorProps>(function EventEditor({
 							onUpdate({ scheduledEvent: updatedScheduledEvent })
 						}
 					/>
-				</div>
-
+				</EditorField>
 				<MissionRewardList
 					title="Rewards"
 					rewards={eventNode.rewards || []}
