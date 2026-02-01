@@ -285,6 +285,7 @@ export interface PackInfo {
 	authors?: string[];
 	description?: string;
 	version?: string;
+	license?: string;
 }
 
 export interface ResourceEx {

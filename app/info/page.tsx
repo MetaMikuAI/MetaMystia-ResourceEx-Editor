@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useRef, useEffect } from 'react';
 
 import { useData } from '@/components/DataContext';
 import { Header } from '@/components/Header';
@@ -17,6 +17,15 @@ export default function InfoPage() {
 			/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
 		return semVerRegex.test(packInfo.version);
 	}, [packInfo.version]);
+
+	// Auto-resize license textarea
+	const licenseRef = useRef<HTMLTextAreaElement>(null);
+	useEffect(() => {
+		if (licenseRef.current) {
+			licenseRef.current.style.height = 'auto';
+			licenseRef.current.style.height = `${licenseRef.current.scrollHeight}px`;
+		}
+	}, [packInfo.license]);
 
 	// Handlers
 	const updatePackInfo = (updates: Partial<PackInfo>) => {
@@ -164,6 +173,22 @@ export default function InfoPage() {
 								updatePackInfo({ description: e.target.value })
 							}
 							placeholder="资源包的详细描述..."
+						/>
+					</div>
+
+					{/* License */}
+					<div className="flex flex-col gap-1">
+						<label className="text-xs font-medium uppercase opacity-60">
+							许可证 (License)
+						</label>
+						<textarea
+							ref={licenseRef}
+							className="min-h-[120px] w-full rounded-lg border border-black/10 bg-white/40 px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:border-white/10 dark:bg-black/10 dark:focus:border-white/30 dark:focus:ring-white/10"
+							value={packInfo.license || ''}
+							onChange={(e) =>
+								updatePackInfo({ license: e.target.value })
+							}
+							placeholder="在此处粘贴许可证文本..."
 						/>
 					</div>
 				</div>
