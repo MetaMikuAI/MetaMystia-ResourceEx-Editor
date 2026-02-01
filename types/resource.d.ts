@@ -49,12 +49,20 @@ export interface KizunaInfo {
 	lv4UpgradePrerequisiteEvent?: string;
 }
 
+export interface SpawnMarker {
+	mapLabel: string;
+	x: number;
+	y: number;
+	rotation: 'Down' | 'Up' | 'Left' | 'Right';
+}
+
 export interface Character {
 	id: number;
 	name: string;
 	label: string;
 	descriptions?: string[];
 	type: CharacterType;
+	spawnMarker?: SpawnMarker;
 	faceInNoteBook?: number | undefined;
 	portraits?: CharacterPortrait[] | undefined;
 	guest?: GuestInfo | undefined;

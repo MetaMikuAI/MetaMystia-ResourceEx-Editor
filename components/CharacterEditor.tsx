@@ -2,6 +2,7 @@ import { memo, useCallback, useEffect } from 'react';
 
 import { BasicInfo } from './editor/BasicInfo';
 import { Descriptions } from './editor/Descriptions';
+import { SpawnMarkerEditor } from './editor/SpawnMarker';
 import { GuestInfoEditor } from './editor/GuestInfo';
 import { KizunaInfoEditor } from './editor/KizunaInfo';
 import { Portraits } from './editor/Portraits';
@@ -14,6 +15,7 @@ import type {
 	EventNode,
 	GuestInfo,
 	KizunaInfo,
+	SpawnMarker,
 } from '@/types/resource';
 
 interface CharacterEditorProps {
@@ -51,6 +53,20 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 			character?.id,
 		]);
 
+		// Ensure spawnMarker exists
+		useEffect(() => {
+			if (character && !character.spawnMarker) {
+				onUpdate({
+					spawnMarker: {
+						mapLabel: 'BeastForest',
+						x: 0,
+						y: 0,
+						rotation: 'Down',
+					},
+				});
+			}
+		}, [character?.spawnMarker, onUpdate, character]);
+
 		const updateDescription = useCallback(
 			(index: number, value: string) => {
 				if (!character) {
@@ -61,6 +77,13 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 				onUpdate({ descriptions: newDescriptions });
 			},
 			[character?.descriptions, onUpdate]
+		);
+
+		const updateSpawnMarker = useCallback(
+			(spawnMarker: SpawnMarker) => {
+				onUpdate({ spawnMarker });
+			},
+			[onUpdate]
 		);
 
 		const addPortrait = useCallback(() => {
@@ -314,6 +337,18 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 				<Descriptions
 					descriptions={character.descriptions ?? []}
 					onUpdate={updateDescription}
+				/>
+
+				<SpawnMarkerEditor
+					spawnMarker={
+						character.spawnMarker ?? {
+							mapLabel: 'BeastForest',
+							x: 0,
+							y: 0,
+							rotation: 'Down',
+						}
+					}
+					onUpdate={updateSpawnMarker}
 				/>
 
 				<Portraits
