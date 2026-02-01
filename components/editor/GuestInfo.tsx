@@ -8,6 +8,7 @@ import {
 } from '@/data/tags';
 import { IZAKAYAS } from '@/data/izakayas';
 import { cn } from '@/lib';
+import { ChevronRight } from '@/components/icons/ChevronRight';
 
 interface GuestInfoProps {
 	guest: GuestInfo | undefined;
@@ -188,14 +189,12 @@ export function GuestInfoEditor({
 					className="flex cursor-pointer select-none items-center gap-2"
 					onClick={() => setIsExpanded(!isExpanded)}
 				>
-					<span
+					<ChevronRight
 						className={cn(
 							'transition-transform duration-200',
 							isExpanded && 'rotate-90'
 						)}
-					>
-						▶
-					</span>
+					/>
 					<label className="cursor-pointer font-semibold">
 						顾客配置（Guest Info）
 					</label>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { CharacterPortrait } from '@/types/resource';
 import { cn } from '@/lib';
+import { ChevronRight } from '@/components/icons/ChevronRight';
 import { useData } from '@/components/DataContext';
 
 interface PortraitsProps {
@@ -75,14 +76,12 @@ export function Portraits({
 					className="flex cursor-pointer select-none items-center gap-2"
 					onClick={() => setIsExpanded(!isExpanded)}
 				>
-					<span
+					<ChevronRight
 						className={cn(
 							'transition-transform duration-200',
 							isExpanded && 'rotate-90'
 						)}
-					>
-						▶
-					</span>
+					/>
 					<label className="cursor-pointer font-semibold">
 						立绘配置（Portraits）
 						{portraits?.length ? `(${portraits.length})` : ''}

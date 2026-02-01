@@ -1,6 +1,7 @@
 import { memo, useState } from 'react';
 import type { KizunaInfo, EventNode } from '@/types/resource';
 import { cn } from '@/lib';
+import { ChevronRight } from '@/components/icons/ChevronRight';
 
 interface KizunaInfoEditorProps {
 	kizuna: KizunaInfo | undefined;
@@ -46,14 +47,12 @@ export const KizunaInfoEditor = memo<KizunaInfoEditorProps>(
 						className="flex cursor-pointer select-none items-center gap-2"
 						onClick={() => setIsExpanded(!isExpanded)}
 					>
-						<span
+						<ChevronRight
 							className={cn(
 								'transition-transform duration-200',
 								isExpanded && 'rotate-90'
 							)}
-						>
-							▶
-						</span>
+						/>
 						<label className="cursor-pointer font-semibold">
 							羁绊配置 (Kizuna Info)
 						</label>

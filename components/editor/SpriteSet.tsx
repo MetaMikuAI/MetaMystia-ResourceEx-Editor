@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { CharacterSpriteSet } from '@/types/resource';
+import { ChevronRight } from '@/components/icons/ChevronRight';
 import { cn } from '@/lib';
 import { useData } from '@/components/DataContext';
 
@@ -76,14 +77,12 @@ export function SpriteSetEditor({
 					className="flex cursor-pointer select-none items-center gap-2"
 					onClick={() => setIsExpanded(!isExpanded)}
 				>
-					<span
+					<ChevronRight
 						className={cn(
 							'transition-transform duration-200',
 							isExpanded && 'rotate-90'
 						)}
-					>
-						▶
-					</span>
+					/>
 					<label className="cursor-pointer font-semibold">
 						角色小人配置（Sprite Set）
 					</label>
