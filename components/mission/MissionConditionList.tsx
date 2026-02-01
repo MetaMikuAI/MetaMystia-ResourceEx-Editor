@@ -1,4 +1,5 @@
 import { memo, useCallback } from 'react';
+import { EditorField } from '@/components/EditorField';
 import type {
 	ConditionType,
 	MissionCondition,
@@ -107,19 +108,20 @@ export const MissionConditionList = memo<MissionConditionListProps>(
 		);
 
 		return (
-			<div className="flex flex-col gap-4">
-				<div className="flex items-center justify-between">
-					<label className="font-medium text-foreground">
-						Finish Conditions (
-						{mission.finishConditions?.length || 0})
-					</label>
+			<EditorField
+				className="gap-4"
+				label={`Finish Conditions (${
+					mission.finishConditions?.length || 0
+				})`}
+				actions={
 					<button
 						onClick={addCondition}
 						className="btn-mystia-primary h-8 px-3 text-sm"
 					>
 						+ 添加完成条件
 					</button>
-				</div>
+				}
+			>
 				<div className="flex flex-col gap-3">
 					{(mission.finishConditions || []).map(
 						(condition, index) => (
@@ -452,7 +454,7 @@ export const MissionConditionList = memo<MissionConditionListProps>(
 						</p>
 					)}
 				</div>
-			</div>
+			</EditorField>
 		);
 	}
 );

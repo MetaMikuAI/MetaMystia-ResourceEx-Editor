@@ -7,6 +7,7 @@ import type {
 	DialogPackage,
 } from '@/types/resource';
 import { TriggerEditor } from '@/components/ScheduledEvent/TriggerEditor';
+import { EditorField } from '@/components/EditorField';
 import { EventDataEditor } from '@/components/ScheduledEvent/EventDataEditor';
 
 interface ScheduledEventEditorProps {
@@ -25,10 +26,7 @@ export const ScheduledEventEditor = memo<ScheduledEventEditorProps>(
 	}) {
 		return (
 			<div className="flex flex-col gap-4 rounded-lg border border-black/10 bg-black/5 p-4 dark:border-white/10 dark:bg-white/5">
-				<div className="flex flex-col gap-2">
-					<label className="font-medium text-foreground">
-						Trigger
-					</label>
+				<EditorField label="Trigger">
 					<TriggerEditor
 						trigger={scheduledEvent?.trigger}
 						allCharacters={allCharacters}
@@ -39,12 +37,9 @@ export const ScheduledEventEditor = memo<ScheduledEventEditorProps>(
 							})
 						}
 					/>
-				</div>
+				</EditorField>
 
-				<div className="flex flex-col gap-2">
-					<label className="font-medium text-foreground">
-						Event Data
-					</label>
+				<EditorField label="Event Data">
 					<EventDataEditor
 						eventData={scheduledEvent?.eventData}
 						allDialogPackages={allDialogPackages}
@@ -55,7 +50,7 @@ export const ScheduledEventEditor = memo<ScheduledEventEditorProps>(
 							})
 						}
 					/>
-				</div>
+				</EditorField>
 			</div>
 		);
 	}

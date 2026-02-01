@@ -1,4 +1,5 @@
 import { memo, useCallback } from 'react';
+import { EditorField } from '@/components/EditorField';
 import type { MissionNode } from '@/types/resource';
 
 interface PostMissionListProps {
@@ -35,19 +36,20 @@ export const PostMissionList = memo<PostMissionListProps>(
 		);
 
 		return (
-			<div className="flex flex-col gap-4">
-				<div className="flex items-center justify-between">
-					<label className="font-medium text-foreground">
-						后继任务(postMissionsAfterPerformance) (
-						{postMissions?.length || 0})
-					</label>
+			<EditorField
+				className="gap-4"
+				label={`后继任务(postMissionsAfterPerformance) (${
+					postMissions?.length || 0
+				})`}
+				actions={
 					<button
 						onClick={addPostMission}
 						className="btn-mystia-primary h-8 px-3 text-sm"
 					>
 						+ 添加后继任务
 					</button>
-				</div>
+				}
+			>
 				<div className="flex flex-col gap-3">
 					{(postMissions || []).map((pm, index) => (
 						<div
@@ -95,7 +97,7 @@ export const PostMissionList = memo<PostMissionListProps>(
 						</p>
 					)}
 				</div>
-			</div>
+			</EditorField>
 		);
 	}
 );

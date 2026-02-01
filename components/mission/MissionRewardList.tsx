@@ -1,4 +1,5 @@
 import { memo, useCallback } from 'react';
+import { EditorField } from '@/components/EditorField';
 import type { MissionReward, ObjectType, RewardType } from '@/types/resource';
 import { BEVERAGE_NAMES } from '@/data/beverages';
 
@@ -177,18 +178,18 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 		);
 
 		return (
-			<div className="flex flex-col gap-4">
-				<div className="flex items-center justify-between">
-					<label className="font-medium text-foreground">
-						{title} ({rewards?.length || 0})
-					</label>
+			<EditorField
+				className="gap-4"
+				label={`${title} (${rewards?.length || 0})`}
+				actions={
 					<button
 						onClick={addReward}
 						className="btn-mystia-primary h-8 px-3 text-sm"
 					>
 						+ 添加奖励
 					</button>
-				</div>
+				}
+			>
 				<div className="flex flex-col gap-3">
 					{(rewards || []).map((reward, index) => (
 						<div
@@ -502,7 +503,7 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 						</p>
 					)}
 				</div>
-			</div>
+			</EditorField>
 		);
 	}
 );

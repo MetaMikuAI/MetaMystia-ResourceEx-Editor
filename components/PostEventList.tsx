@@ -1,4 +1,5 @@
 import { memo, useCallback } from 'react';
+import { EditorField } from '@/components/EditorField';
 import type { EventNode } from '@/types/resource';
 
 interface PostEventListProps {
@@ -38,18 +39,18 @@ export const PostEventList = memo<PostEventListProps>(function PostEventList({
 	);
 
 	return (
-		<div className="flex flex-col gap-4">
-			<div className="flex items-center justify-between">
-				<label className="font-medium text-foreground">
-					后继事件(postEvents) ({postEvents?.length || 0})
-				</label>
+		<EditorField
+			className="gap-4"
+			label={`后继事件(postEvents) (${postEvents?.length || 0})`}
+			actions={
 				<button
 					onClick={addPostEvent}
 					className="btn-mystia-primary h-8 px-3 text-sm"
 				>
 					+ 添加后继事件
 				</button>
-			</div>
+			}
+		>
 			<div className="flex flex-col gap-3">
 				{(postEvents || []).map((pe, index) => (
 					<div
@@ -92,6 +93,6 @@ export const PostEventList = memo<PostEventListProps>(function PostEventList({
 					</p>
 				)}
 			</div>
-		</div>
+		</EditorField>
 	);
 });

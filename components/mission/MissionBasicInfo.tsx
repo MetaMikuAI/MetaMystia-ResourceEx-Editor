@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { EditorField } from '@/components/EditorField';
 import type { Character, MissionNode, MissionType } from '@/types/resource';
 
 interface MissionBasicInfoProps {
@@ -19,8 +20,7 @@ export const MissionBasicInfo = memo<MissionBasicInfoProps>(
 	}) {
 		return (
 			<div className="grid grid-cols-1 gap-6">
-				<div className="flex flex-col gap-2">
-					<label className="font-medium text-foreground">Title</label>
+				<EditorField label="Title">
 					<div className="flex items-center gap-2">
 						<input
 							type="text"
@@ -61,12 +61,9 @@ export const MissionBasicInfo = memo<MissionBasicInfoProps>(
 							🔄
 						</button>
 					</div>
-				</div>
+				</EditorField>
 
-				<div className="flex flex-col gap-2">
-					<label className="font-medium text-foreground">
-						Description
-					</label>
+				<EditorField label="Description">
 					<textarea
 						rows={3}
 						value={mission.description || ''}
@@ -76,10 +73,9 @@ export const MissionBasicInfo = memo<MissionBasicInfoProps>(
 						className="rounded-lg border border-black/10 bg-black/5 px-4 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-white/10 dark:bg-white/5"
 						placeholder="任务描述（可选）"
 					/>
-				</div>
+				</EditorField>
 
-				<div className="flex flex-col gap-2">
-					<label className="font-medium text-foreground">Label</label>
+				<EditorField label="Label">
 					<input
 						type="text"
 						value={mission.label || ''}
@@ -87,12 +83,9 @@ export const MissionBasicInfo = memo<MissionBasicInfoProps>(
 						className="rounded-lg border border-black/10 bg-black/5 px-4 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-white/10 dark:bg-white/5"
 						placeholder="例如：Kizuna_Rumia_LV3_Upgrade_001_Mission"
 					/>
-				</div>
+				</EditorField>
 
-				<div className="flex flex-col gap-2">
-					<label className="font-medium text-foreground">
-						Mission Type
-					</label>
+				<EditorField label="Mission Type">
 					<select
 						value={mission.missionType}
 						onChange={(e) =>
@@ -106,12 +99,9 @@ export const MissionBasicInfo = memo<MissionBasicInfoProps>(
 						<option value="Main">Main</option>
 						<option value="Side">Side</option>
 					</select>
-				</div>
+				</EditorField>
 
-				<div className="flex flex-col gap-2">
-					<label className="font-medium text-foreground">
-						委托自(Sender)
-					</label>
+				<EditorField label="委托自(Sender)">
 					<select
 						value={mission.sender || ''}
 						onChange={(e) => onUpdate({ sender: e.target.value })}
@@ -124,12 +114,9 @@ export const MissionBasicInfo = memo<MissionBasicInfoProps>(
 							</option>
 						))}
 					</select>
-				</div>
+				</EditorField>
 
-				<div className="flex flex-col gap-2">
-					<label className="font-medium text-foreground">
-						交付至(Receiver)
-					</label>
+				<EditorField label="交付至(Receiver)">
 					<select
 						value={mission.reciever || ''}
 						onChange={(e) => onUpdate({ reciever: e.target.value })} // ignore: typo
@@ -142,7 +129,7 @@ export const MissionBasicInfo = memo<MissionBasicInfoProps>(
 							</option>
 						))}
 					</select>
-				</div>
+				</EditorField>
 			</div>
 		);
 	}

@@ -20,6 +20,7 @@ import { MissionBasicInfo } from './mission/MissionBasicInfo';
 import { MissionConditionList } from './mission/MissionConditionList';
 import { MissionRewardList } from './mission/MissionRewardList';
 import { PostMissionList } from './PostMissionList';
+import { EditorField } from './EditorField';
 import { PostEventList } from './PostEventList';
 import { EventDataEditor } from './ScheduledEvent/EventDataEditor';
 
@@ -170,14 +171,15 @@ export default memo<MissionEditorProps>(function MissionEditor({
 				onUpdate={(postRewards) => onUpdate({ postRewards })}
 			/>
 
-			<label className="font-medium text-foreground">
-				Mission Finish Event
-			</label>
-			<EventDataEditor
-				eventData={mission.missionFinishEvent}
-				allDialogPackages={allDialogPackages}
-				onChange={(event) => onUpdate({ missionFinishEvent: event })}
-			/>
+			<EditorField label="Mission Finish Event">
+				<EventDataEditor
+					eventData={mission.missionFinishEvent}
+					allDialogPackages={allDialogPackages}
+					onChange={(event) =>
+						onUpdate({ missionFinishEvent: event })
+					}
+				/>
+			</EditorField>
 
 			<PostMissionList
 				postMissions={mission.postMissionsAfterPerformance}
