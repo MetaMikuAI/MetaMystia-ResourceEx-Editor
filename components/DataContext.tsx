@@ -247,6 +247,8 @@ export function DataProvider({ children }: PropsWithChildren) {
 								trigger: node.trigger, // Backward compatibility or migration if needed
 								eventData: node.eventData,
 							},
+							rewards: node.rewards || [],
+							postRewards: node.postRewards || [],
 							postMissionsAfterPerformance:
 								node.postMissionsAfterPerformance || [],
 							postEvents: node.postEvents || [],
