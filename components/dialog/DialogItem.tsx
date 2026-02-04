@@ -169,9 +169,48 @@ export const DialogItem = memo<DialogItemProps>(function DialogItem({
 							customCharacters={customCharacters}
 							value={dialog.characterId}
 							onChange={(id, type) => {
+								let newPid = dialog.pid;
+								// 检查新角色的立绘列表
+								if (type === 'Special') {
+									const hasPortrait = SPECIAL_PORTRAITS.some(
+										(p) =>
+											p.characterId === id &&
+											p.pid === newPid
+									);
+									if (!hasPortrait) {
+										// 如果当前pid不可用，尝试获取第一个可用立绘
+										const firstPortrait =
+											SPECIAL_PORTRAITS.find(
+												(p) => p.characterId === id
+											);
+										newPid = firstPortrait
+											? firstPortrait.pid
+											: 0;
+									}
+								} else {
+									const customChar = customCharacters.find(
+										(c) => c.id === id && c.type === type
+									);
+									if (customChar) {
+										const hasPortrait =
+											customChar.portraits?.some(
+												(p) => p.pid === newPid
+											);
+										if (!hasPortrait) {
+											// 如果当前pid不可用，尝试获取第一个可用立绘
+											newPid =
+												customChar.portraits?.[0]
+													?.pid ?? 0;
+										}
+									} else {
+										newPid = 0;
+									}
+								}
+
 								onUpdate({
 									characterId: id,
 									characterType: type,
+									pid: newPid,
 								});
 							}}
 						/>
