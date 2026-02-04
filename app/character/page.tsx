@@ -132,6 +132,7 @@ export default function CharacterPage() {
 					<CharacterEditor
 						character={selectedChar}
 						allEvents={data.eventNodes || []}
+						allDialogPackages={data.dialogPackages || []}
 						isIdDuplicate={
 							selectedChar
 								? isIdDuplicate(selectedChar.id, selectedIndex)

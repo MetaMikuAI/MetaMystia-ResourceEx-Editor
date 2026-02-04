@@ -12,6 +12,7 @@ import type {
 	Character,
 	CharacterPortrait,
 	CharacterSpriteSet,
+	DialogPackage,
 	EventNode,
 	GuestInfo,
 	KizunaInfo,
@@ -21,6 +22,7 @@ import type {
 interface CharacterEditorProps {
 	character: Character | null;
 	allEvents: EventNode[];
+	allDialogPackages: DialogPackage[];
 	isIdDuplicate: boolean;
 	onRemove: () => void;
 	onUpdate: (updates: Partial<Character>) => void;
@@ -30,6 +32,7 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 	function CharacterEditor({
 		character,
 		allEvents,
+		allDialogPackages,
 		isIdDuplicate,
 		onRemove,
 		onUpdate,
@@ -213,6 +216,34 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 					lv2UpgradePrerequisiteEvent: '',
 					lv3UpgradePrerequisiteEvent: '',
 					lv4UpgradePrerequisiteEvent: '',
+					lv1Welcome: [],
+					lv2Welcome: [],
+					lv3Welcome: [],
+					lv4Welcome: [],
+					lv5Welcome: [],
+					lv1ChatData: [],
+					lv2ChatData: [],
+					lv3ChatData: [],
+					lv4ChatData: [],
+					lv5ChatData: [],
+					lv1InviteSucceed: [],
+					lv1InviteFailed: [],
+					lv2InviteSucceed: [],
+					lv2InviteFailed: [],
+					lv3InviteSucceed: [],
+					lv3InviteFailed: [],
+					lv4InviteSucceed: [],
+					lv4InviteFailed: [],
+					lv5InviteSucceed: [],
+					lv5InviteFailed: [],
+					lv3RequestIngerdient: [],
+					lv4RequestIngerdient: [],
+					lv5RequestIngerdient: [],
+					lv4RequestBeverage: [],
+					lv5RequestBeverage: [],
+					lv5Commision: [],
+					lv5CommisionFinish: [],
+					commisionAreaLabel: '',
 				};
 				onUpdate({ kizuna: { ...currentKizuna, ...updates } });
 			},
@@ -371,6 +402,7 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 				<KizunaInfoEditor
 					kizuna={character.kizuna}
 					allEvents={allEvents}
+					allDialogPackages={allDialogPackages}
 					onUpdate={updateKizuna}
 					onEnable={enableKizuna}
 					onDisable={disableKizuna}

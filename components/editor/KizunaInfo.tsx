@@ -1,44 +1,49 @@
-import { memo, useState } from 'react';
-import type { KizunaInfo, EventNode } from '@/types/resource';
+import { memo, useState, useCallback } from 'react';
+import type { KizunaInfo, EventNode, DialogPackage } from '@/types/resource';
 import { cn } from '@/lib';
 import { ChevronRight } from '@/components/icons/ChevronRight';
+import { EventFieldEditor } from './kizuna/EventFieldEditor';
+import { DialogArrayField } from './kizuna/DialogArrayField';
+import { MapFieldEditor } from './kizuna/MapFieldEditor';
+import { EVENT_FIELDS, DIALOG_FIELDS, MAP_FIELD } from './kizuna/constants';
 
 interface KizunaInfoEditorProps {
 	kizuna: KizunaInfo | undefined;
 	allEvents: EventNode[];
+	allDialogPackages: DialogPackage[];
 	onUpdate: (updates: Partial<KizunaInfo>) => void;
 	onEnable: () => void;
 	onDisable: () => void;
 }
 
-const KIZUNA_FIELDS = [
-	{
-		key: 'lv1UpgradePrerequisiteEvent',
-		label: 'LV1 升级任务前置 (Event Label)',
-	},
-	{
-		key: 'lv2UpgradePrerequisiteEvent',
-		label: 'LV2 升级任务前置 (Event Label)',
-	},
-	{
-		key: 'lv3UpgradePrerequisiteEvent',
-		label: 'LV3 升级任务前置 (Event Label)',
-	},
-	{
-		key: 'lv4UpgradePrerequisiteEvent',
-		label: 'LV4 升级任务前置 (Event Label)',
-	},
-] as const;
-
 export const KizunaInfoEditor = memo<KizunaInfoEditorProps>(
 	function KizunaInfoEditor({
 		kizuna,
 		allEvents,
+		allDialogPackages,
 		onUpdate,
 		onEnable,
 		onDisable,
 	}) {
 		const [isExpanded, setIsExpanded] = useState(false);
+
+		const handleDialogAdd = useCallback(
+			(field: keyof KizunaInfo, dialogName: string) => {
+				if (!dialogName) return;
+				const current = (kizuna?.[field] as string[]) || [];
+				if (current.includes(dialogName)) return;
+				onUpdate({ [field]: [...current, dialogName] });
+			},
+			[kizuna, onUpdate]
+		);
+
+		const handleDialogRemove = useCallback(
+			(field: keyof KizunaInfo, index: number) => {
+				const current = (kizuna?.[field] as string[]) || [];
+				onUpdate({ [field]: current.filter((_, i) => i !== index) });
+			},
+			[kizuna, onUpdate]
+		);
 
 		return (
 			<div className="flex flex-col gap-4">
@@ -76,36 +81,52 @@ export const KizunaInfoEditor = memo<KizunaInfoEditorProps>(
 
 				{isExpanded && kizuna && (
 					<div className="animate-in fade-in slide-in-from-top-2 flex flex-col gap-6 rounded-2xl border border-white/5 bg-black/5 p-6 duration-200">
+						{/* Event Prerequisites Section */}
 						<div className="flex flex-col gap-4">
-							{KIZUNA_FIELDS.map((field) => (
-								<div
+							<h3 className="text-sm font-bold uppercase opacity-60">
+								升级前置事件
+							</h3>
+							{EVENT_FIELDS.map((field) => (
+								<EventFieldEditor
 									key={field.key}
-									className="flex flex-col gap-2"
-								>
-									<label className="text-sm font-bold opacity-70">
-										{field.label}
-									</label>
-									<select
-										value={kizuna[field.key] || ''}
-										onChange={(e) =>
-											onUpdate({
-												[field.key]: e.target.value,
-											})
-										}
-										className="rounded-xl border border-white/10 bg-black/20 p-3 transition-all focus:outline-none focus:ring-2 focus:ring-primary/50"
-									>
-										<option value="">请选择事件...</option>
-										{allEvents.map((e) => (
-											<option
-												key={e.label}
-												value={e.label}
-											>
-												{e.label} ({e.debugLabel})
-											</option>
-										))}
-									</select>
-								</div>
+									label={field.label}
+									value={kizuna[field.key]}
+									allEvents={allEvents}
+									onChange={(value) =>
+										onUpdate({ [field.key]: value })
+									}
+								/>
 							))}
+						</div>
+
+						{/* Dialog Packages Section */}
+						<div className="flex flex-col gap-4">
+							<h3 className="text-sm font-bold uppercase opacity-60">
+								对话包配置
+							</h3>
+							{DIALOG_FIELDS.map((field) => (
+								<DialogArrayField
+									key={field.key}
+									label={field.label}
+									dialogs={
+										(kizuna[field.key] as string[]) || []
+									}
+									allDialogPackages={allDialogPackages}
+									onAdd={(dialogName) =>
+										handleDialogAdd(field.key, dialogName)
+									}
+									onRemove={(index) =>
+										handleDialogRemove(field.key, index)
+									}
+								/>
+							))}
+							<MapFieldEditor
+								label={MAP_FIELD.label}
+								value={kizuna[MAP_FIELD.key]}
+								onChange={(value) =>
+									onUpdate({ [MAP_FIELD.key]: value })
+								}
+							/>
 						</div>
 					</div>
 				)}

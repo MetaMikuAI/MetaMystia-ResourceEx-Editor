@@ -47,6 +47,35 @@ export interface KizunaInfo {
 	lv2UpgradePrerequisiteEvent?: string;
 	lv3UpgradePrerequisiteEvent?: string;
 	lv4UpgradePrerequisiteEvent?: string;
+
+	lv1Welcome?: string[]; // dialog package names
+	lv2Welcome?: string[];
+	lv3Welcome?: string[];
+	lv4Welcome?: string[];
+	lv5Welcome?: string[];
+
+	lv1ChatData?: string[];
+	lv2ChatData?: string[];
+	lv3ChatData?: string[];
+	lv4ChatData?: string[];
+	lv5ChatData?: string[];
+
+	lv2InviteSucceed?: string[];
+	lv2InviteFailed?: string[];
+	lv3InviteSucceed?: string[];
+	lv3InviteFailed?: string[];
+	lv4InviteSucceed?: string[];
+	lv4InviteFailed?: string[];
+	lv5InviteSucceed?: string[];
+
+	lv3RequestIngerdient?: string[]; // ignore typo
+	lv4RequestIngerdient?: string[]; // ignore typo
+	lv5RequestIngerdient?: string[]; // ignore typo
+	lv4RequestBeverage?: string[];
+	lv5RequestBeverage?: string[];
+	lv5Commision?: string[];
+	lv5CommisionFinish?: string[];
+	commisionAreaLabel?: string; // map label for commission area
 }
 
 export interface SpawnMarker {
