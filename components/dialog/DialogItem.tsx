@@ -108,11 +108,31 @@ export const DialogItem = memo<DialogItemProps>(function DialogItem({
 	]);
 
 	return (
-		<div className="flex flex-col gap-4 rounded-lg bg-white/40 p-4 shadow-sm dark:bg-white/5">
+		<div className="relative flex flex-col gap-4 rounded-lg bg-white/40 p-4 shadow-sm dark:bg-white/5">
+			{/* Position indicator stripe */}
+			<div
+				className={`absolute top-0 h-full w-1 ${
+					dialog.position === 'Left'
+						? 'left-0 rounded-l-lg bg-blue-500'
+						: 'right-0 rounded-r-lg bg-orange-500'
+				}`}
+				title={`位置: ${dialog.position === 'Left' ? '左侧' : '右侧'}`}
+			/>
 			<div className="flex items-center justify-between border-b border-black/5 pb-2 dark:border-white/5">
-				<span className="text-xs font-bold uppercase tracking-wider opacity-60">
-					对话条目#{index + 1}
-				</span>
+				<div className="flex items-center gap-2">
+					<span className="text-xs font-bold uppercase tracking-wider opacity-60">
+						对话条目#{index + 1}
+					</span>
+					<span
+						className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
+							dialog.position === 'Left'
+								? 'bg-blue-500/20 text-blue-700 dark:text-blue-300'
+								: 'bg-orange-500/20 text-orange-700 dark:text-orange-300'
+						}`}
+					>
+						{dialog.position === 'Left' ? '← 左侧' : '右侧 →'}
+					</span>
+				</div>
 				<button
 					onClick={onRemove}
 					className="btn-mystia-danger px-3 py-1 text-xs"
