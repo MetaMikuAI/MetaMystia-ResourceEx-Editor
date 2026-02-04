@@ -123,15 +123,24 @@ export const DialogItem = memo<DialogItemProps>(function DialogItem({
 					<span className="text-xs font-bold uppercase tracking-wider opacity-60">
 						对话条目#{index + 1}
 					</span>
-					<span
-						className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
+					<button
+						onClick={() => {
+							onUpdate({
+								position:
+									dialog.position === 'Left'
+										? 'Right'
+										: 'Left',
+							});
+						}}
+						className={`rounded px-1.5 py-0.5 text-[10px] font-medium transition-all hover:scale-105 active:scale-95 ${
 							dialog.position === 'Left'
-								? 'bg-blue-500/20 text-blue-700 dark:text-blue-300'
-								: 'bg-orange-500/20 text-orange-700 dark:text-orange-300'
+								? 'bg-blue-500/20 text-blue-700 hover:bg-blue-500/30 dark:text-blue-300'
+								: 'bg-orange-500/20 text-orange-700 hover:bg-orange-500/30 dark:text-orange-300'
 						}`}
+						title="点击切换左右位置"
 					>
 						{dialog.position === 'Left' ? '← 左侧' : '右侧 →'}
-					</span>
+					</button>
 				</div>
 				<button
 					onClick={onRemove}
