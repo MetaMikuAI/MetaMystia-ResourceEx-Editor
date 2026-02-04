@@ -66,7 +66,10 @@ export default function DialoguePage() {
 	);
 
 	const addDialog = useCallback(
-		(insertIndex?: number) => {
+		(
+			insertIndex?: number,
+			searchPosition?: Dialog['position'] | 'recent'
+		) => {
 			if (selectedIndex === null) {
 				return;
 			}
@@ -77,18 +80,39 @@ export default function DialoguePage() {
 				return;
 			}
 
-			let refDialogIndex: number | null = null;
-			if (insertIndex !== undefined) {
-				refDialogIndex = insertIndex > 0 ? insertIndex - 1 : null;
+			let refDialog: Dialog | null = null;
+
+			// 根据 searchPosition 查找模板对话
+			if (searchPosition && searchPosition !== 'recent') {
+				// 搜索指定位置的最近对话
+				const searchStart =
+					insertIndex !== undefined
+						? insertIndex - 1
+						: pkg.dialogList.length - 1;
+				for (let i = searchStart; i >= 0; i--) {
+					const dialog = pkg.dialogList[i];
+					if (dialog?.position === searchPosition) {
+						refDialog = dialog;
+						break;
+					}
+				}
 			} else {
-				refDialogIndex =
-					pkg.dialogList.length > 0
-						? pkg.dialogList.length - 1
+				// 默认行为：使用最近的对话
+				let refDialogIndex: number | null = null;
+				if (insertIndex !== undefined) {
+					refDialogIndex = insertIndex > 0 ? insertIndex - 1 : null;
+				} else {
+					refDialogIndex =
+						pkg.dialogList.length > 0
+							? pkg.dialogList.length - 1
+							: null;
+				}
+				refDialog =
+					refDialogIndex !== null
+						? (pkg.dialogList[refDialogIndex] ?? null)
 						: null;
 			}
 
-			const refDialog =
-				refDialogIndex !== null ? pkg.dialogList[refDialogIndex] : null;
 			const newDialog: Dialog = refDialog
 				? {
 						characterId: refDialog.characterId,
@@ -97,7 +121,13 @@ export default function DialoguePage() {
 						position: refDialog.position,
 						text: '',
 					}
-				: { ...DEFAULT_DIALOG };
+				: {
+						...DEFAULT_DIALOG,
+						position:
+							searchPosition && searchPosition !== 'recent'
+								? searchPosition
+								: DEFAULT_DIALOG.position,
+					};
 
 			if (insertIndex !== undefined) {
 				pkg.dialogList.splice(insertIndex, 0, newDialog);

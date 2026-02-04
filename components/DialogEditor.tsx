@@ -8,7 +8,10 @@ interface DialogEditorProps {
 	allPackages: DialogPackage[];
 	dialogPackage: DialogPackage | null;
 	packageIndex: number | null;
-	onAddDialog: (insertIndex?: number) => void;
+	onAddDialog: (
+		insertIndex?: number,
+		searchPosition?: Dialog['position'] | 'recent'
+	) => void;
 	onRemoveDialog: (index: number) => void;
 	onUpdate: (updates: Partial<DialogPackage>) => void;
 	onUpdateDialog: (index: number, updates: Partial<Dialog>) => void;
@@ -112,14 +115,35 @@ export const DialogEditor = memo<DialogEditorProps>(function DialogEditor({
 								onUpdateDialog(index, updates)
 							}
 						/>
-						<button
-							onClick={() => {
-								onAddDialog(index + 1);
-							}}
-							className="btn-mystia w-full rounded-lg border border-dashed border-black/10 text-xs hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
-						>
-							在此处插入对话
-						</button>
+						<div className="flex w-full gap-1">
+							<button
+								onClick={() => {
+									onAddDialog(index + 1, 'Left');
+								}}
+								className="btn-mystia flex-1 rounded-lg border border-dashed border-black/10 text-xs hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
+								title="使用上方最近的左侧角色"
+							>
+								↑ 左
+							</button>
+							<button
+								onClick={() => {
+									onAddDialog(index + 1, 'recent');
+								}}
+								className="btn-mystia flex-[2] rounded-lg border border-dashed border-black/10 text-xs hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
+								title="使用上方最近的对话"
+							>
+								在此处插入对话
+							</button>
+							<button
+								onClick={() => {
+									onAddDialog(index + 1, 'Right');
+								}}
+								className="btn-mystia flex-1 rounded-lg border border-dashed border-black/10 text-xs hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
+								title="使用上方最近的右侧角色"
+							>
+								右 ↑
+							</button>
+						</div>
 					</div>
 				))}
 				{dialogPackage.dialogList.length === 0 && (
