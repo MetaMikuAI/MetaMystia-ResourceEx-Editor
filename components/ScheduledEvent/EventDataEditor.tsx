@@ -1,6 +1,7 @@
 'use client';
 
 import { memo } from 'react';
+import { WarningNotice } from '@/components/WarningNotice';
 import type { ScheduledEvent, DialogPackage } from '@/types/resource';
 
 interface EventDataEditorProps {
@@ -65,9 +66,7 @@ export const EventDataEditor = memo<EventDataEditorProps>(
 				)}
 
 				{eventData?.eventType === 'Timeline' && (
-					<div className="rounded bg-yellow-500/10 p-2 text-xs text-yellow-600 dark:text-yellow-400">
-						⚠ 暂不支持配置 Timeline
-					</div>
+					<WarningNotice>⚠ 暂不支持配置 Timeline</WarningNotice>
 				)}
 			</div>
 		);

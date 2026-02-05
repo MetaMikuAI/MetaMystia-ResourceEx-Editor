@@ -1,5 +1,6 @@
 import { memo, useCallback } from 'react';
 import { EditorField } from '@/components/EditorField';
+import { WarningNotice } from '@/components/WarningNotice';
 import type {
 	ConditionType,
 	MissionCondition,
@@ -185,7 +186,6 @@ export const MissionConditionList = memo<MissionConditionListProps>(
 												))}
 											</select>
 										</div>
-
 										{condition.productType &&
 											![
 												'Food',
@@ -194,12 +194,11 @@ export const MissionConditionList = memo<MissionConditionListProps>(
 											].includes(
 												condition.productType
 											) && (
-												<div className="rounded bg-yellow-500/10 p-2 text-xs text-yellow-600 dark:text-yellow-400">
+												<WarningNotice>
 													⚠
 													当前编辑器尚未支持配置此条件的详细参数
-												</div>
-											)}
-
+												</WarningNotice>
+											)}{' '}
 										{(condition.productType === 'Food' ||
 											!condition.productType) && (
 											<div className="flex flex-col gap-1">
@@ -238,7 +237,6 @@ export const MissionConditionList = memo<MissionConditionListProps>(
 												</select>
 											</div>
 										)}
-
 										{condition.productType ===
 											'Ingredient' && (
 											<div className="flex flex-col gap-1">
@@ -277,7 +275,6 @@ export const MissionConditionList = memo<MissionConditionListProps>(
 												</select>
 											</div>
 										)}
-
 										{condition.productType ===
 											'Beverage' && (
 											<div className="flex flex-col gap-1">
@@ -316,7 +313,6 @@ export const MissionConditionList = memo<MissionConditionListProps>(
 												</select>
 											</div>
 										)}
-
 										{[
 											'Food',
 											'Ingredient',
@@ -439,10 +435,10 @@ export const MissionConditionList = memo<MissionConditionListProps>(
 								{condition.conditionType !== 'ServeInWork' &&
 									condition.conditionType !==
 										'SubmitItem' && (
-										<div className="rounded bg-yellow-500/10 p-2 text-xs text-yellow-600 dark:text-yellow-400">
+										<WarningNotice>
 											⚠
 											当前编辑器尚未支持配置此条件的详细参数
-										</div>
+										</WarningNotice>
 									)}
 							</div>
 						)

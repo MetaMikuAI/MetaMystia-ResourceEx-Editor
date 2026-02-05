@@ -1,5 +1,6 @@
 import { memo, useCallback } from 'react';
 import { EditorField } from '@/components/EditorField';
+import { WarningNotice } from '@/components/WarningNotice';
 import type { MissionReward, ObjectType, RewardType } from '@/types/resource';
 import { BEVERAGE_NAMES } from '@/data/beverages';
 
@@ -490,10 +491,10 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 
 							{reward.rewardType !== 'UpgradeKizunaLevel' &&
 								reward.rewardType !== 'GiveItem' && (
-									<div className="rounded bg-yellow-500/10 p-2 text-xs text-yellow-600 dark:text-yellow-400">
+									<WarningNotice>
 										⚠
 										当前编辑器尚未支持配置此奖励类型的详细参数
-									</div>
+									</WarningNotice>
 								)}
 						</div>
 					))}

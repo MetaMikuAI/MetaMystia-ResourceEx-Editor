@@ -1,6 +1,7 @@
 'use client';
 
 import { memo, useMemo } from 'react';
+import { WarningNotice } from '@/components/WarningNotice';
 import type { ScheduledEvent, Character } from '@/types/resource';
 import { SPECIAL_GUESTS } from '@/data/specialGuest';
 
@@ -178,9 +179,9 @@ export const TriggerEditor = memo<TriggerEditorProps>(function TriggerEditor({
 
 			{trigger?.triggerType &&
 				trigger.triggerType !== 'KizunaCheckPoint' && (
-					<div className="rounded bg-yellow-500/10 p-2 text-xs text-yellow-600 dark:text-yellow-400">
+					<WarningNotice>
 						⚠ 当前编辑器尚未支持配置此条件的详细参数
-					</div>
+					</WarningNotice>
 				)}
 		</div>
 	);
