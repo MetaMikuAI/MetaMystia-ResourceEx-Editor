@@ -1,5 +1,6 @@
 import { memo, useCallback, useMemo } from 'react';
 
+import { EmptyState } from '@/components/EmptyState';
 import { cn } from '@/lib';
 import { ErrorBadge } from '@/components/ErrorBadge';
 import type { Recipe } from '@/types/resource';
@@ -107,14 +108,10 @@ export const RecipeList = memo<RecipeListProps>(function RecipeList({
 					);
 				})}
 				{recipes.length === 0 && (
-					<div className="rounded-lg border border-dashed border-black/10 p-8 text-center dark:border-white/10">
-						<p className="text-sm text-black/40 dark:text-white/40">
-							暂无菜谱
-						</p>
-						<p className="mt-1 text-xs text-black/30 dark:text-white/30">
-							点击上方 + 按钮创建
-						</p>
-					</div>
+					<EmptyState
+						title="暂无菜谱"
+						description="点击上方 + 按钮创建"
+					/>
 				)}
 			</div>
 		</div>

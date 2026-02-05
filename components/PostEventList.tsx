@@ -1,4 +1,5 @@
 import { memo, useCallback } from 'react';
+import { EmptyState } from '@/components/EmptyState';
 import { EditorField } from '@/components/EditorField';
 import type { EventNode } from '@/types/resource';
 
@@ -88,9 +89,7 @@ export const PostEventList = memo<PostEventListProps>(function PostEventList({
 					</div>
 				))}
 				{(!postEvents || postEvents.length === 0) && (
-					<p className="text-center text-sm text-black/40 dark:text-white/40">
-						暂无后继事件配置
-					</p>
+					<EmptyState variant="text" title="暂无后继事件配置" />
 				)}
 			</div>
 		</EditorField>

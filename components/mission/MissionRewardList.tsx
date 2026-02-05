@@ -3,6 +3,7 @@ import { EditorField } from '@/components/EditorField';
 import { WarningNotice } from '@/components/WarningNotice';
 import type { MissionReward, ObjectType, RewardType } from '@/types/resource';
 import { BEVERAGE_NAMES } from '@/data/beverages';
+import { EmptyState } from '../EmptyState';
 
 const REWARD_TYPES: { type: RewardType; label: string }[] = [
 	{ type: 'UnlockNPC', label: '【未实现】解锁NPC' },
@@ -499,9 +500,7 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 						</div>
 					))}
 					{(!rewards || rewards.length === 0) && (
-						<p className="text-center text-sm text-black/40 dark:text-white/40">
-							暂无奖励配置
-						</p>
+						<EmptyState variant="text" title="暂无奖励配置" />
 					)}
 				</div>
 			</EditorField>

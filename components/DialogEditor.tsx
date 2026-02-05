@@ -1,5 +1,6 @@
 import { memo, useCallback, useId } from 'react';
 
+import { EmptyState } from '@/components/EmptyState';
 import { DialogItemWrapper } from '@/components/dialog/DialogItem';
 import { ErrorBadge } from '@/components/ErrorBadge';
 import { cn } from '@/lib';
@@ -146,14 +147,10 @@ export const DialogEditor = memo<DialogEditorProps>(function DialogEditor({
 					</div>
 				))}
 				{dialogPackage.dialogList.length === 0 && (
-					<div className="rounded-lg border border-dashed border-black/10 p-8 text-center dark:border-white/10">
-						<p className="text-sm text-black/40 dark:text-white/40">
-							暂无对话
-						</p>
-						<p className="mt-1 text-xs text-black/30 dark:text-white/30">
-							点击上方按钮添加
-						</p>
-					</div>
+					<EmptyState
+						title="暂无对话"
+						description="点击上方按钮添加"
+					/>
 				)}
 			</div>
 		</div>

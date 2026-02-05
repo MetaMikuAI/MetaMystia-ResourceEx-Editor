@@ -1,4 +1,5 @@
 import { memo, useCallback } from 'react';
+import { EmptyState } from '@/components/EmptyState';
 import { EditorField } from '@/components/EditorField';
 import type { MissionNode } from '@/types/resource';
 
@@ -92,9 +93,7 @@ export const PostMissionList = memo<PostMissionListProps>(
 						</div>
 					))}
 					{(!postMissions || postMissions.length === 0) && (
-						<p className="text-center text-sm text-black/40 dark:text-white/40">
-							暂无后继任务配置
-						</p>
+						<EmptyState variant="text" title="暂无后继任务配置" />
 					)}
 				</div>
 			</EditorField>

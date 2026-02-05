@@ -1,4 +1,5 @@
 import { memo, useState, useCallback } from 'react';
+import { EmptyState } from '@/components/EmptyState';
 import type { KizunaInfo, EventNode, DialogPackage } from '@/types/resource';
 import { cn } from '@/lib';
 import { ChevronRight } from '@/components/icons/ChevronRight';
@@ -132,14 +133,10 @@ export const KizunaInfoEditor = memo<KizunaInfoEditorProps>(
 				)}
 
 				{isExpanded && !kizuna && (
-					<div className="rounded-lg border border-dashed border-black/10 p-8 text-center dark:border-white/10">
-						<p className="text-sm text-black/40 dark:text-white/40">
-							暂未启用羁绊配置
-						</p>
-						<p className="mt-1 text-xs text-black/30 dark:text-white/30">
-							点击右侧按钮启用
-						</p>
-					</div>
+					<EmptyState
+						title="暂未启用羁绊配置"
+						description="点击右侧按钮启用"
+					/>
 				)}
 			</div>
 		);

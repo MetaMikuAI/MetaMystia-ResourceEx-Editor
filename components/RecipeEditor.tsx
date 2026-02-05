@@ -1,5 +1,6 @@
 import { memo, useCallback, useId } from 'react';
 
+import { EmptyState } from '@/components/EmptyState';
 import { cn } from '@/lib';
 import { ErrorBadge } from '@/components/ErrorBadge';
 import type { Recipe, CookerType } from '@/types/resource';
@@ -264,14 +265,10 @@ export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
 						</div>
 					))}
 					{recipe.ingredients.length === 0 && (
-						<div className="rounded-lg border border-dashed border-black/10 p-8 text-center dark:border-white/10">
-							<p className="text-sm text-black/40 dark:text-white/40">
-								暂无原料配置
-							</p>
-							<p className="mt-1 text-xs text-black/30 dark:text-white/30">
-								点击"添加原料"按钮开始配置
-							</p>
-						</div>
+						<EmptyState
+							title="暂无原料配置"
+							description='点击"添加原料"按钮开始配置'
+						/>
 					)}
 				</div>
 			</div>

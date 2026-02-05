@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { EmptyState } from '@/components/EmptyState';
 import { CharacterPortrait } from '@/types/resource';
 import { cn } from '@/lib';
 import { ChevronRight } from '@/components/icons/ChevronRight';
@@ -291,14 +292,10 @@ export function Portraits({
 						</div>
 					)}
 					{(!portraits || portraits.length === 0) && (
-						<div className="rounded-lg border border-dashed border-black/10 p-8 text-center dark:border-white/10">
-							<p className="text-sm text-black/40 dark:text-white/40">
-								暂无立绘配置
-							</p>
-							<p className="mt-1 text-xs text-black/30 dark:text-white/30">
-								点击右侧按钮添加
-							</p>
-						</div>
+						<EmptyState
+							title="暂无立绘配置"
+							description="点击右侧按钮添加"
+						/>
 					)}
 				</div>
 			)}

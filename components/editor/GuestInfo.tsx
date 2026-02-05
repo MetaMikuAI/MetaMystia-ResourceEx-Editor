@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { EmptyState } from '@/components/EmptyState';
 import { GuestInfo, Request, SpawnConfig } from '@/types/resource';
 import {
 	BEVERAGE_TAGS,
@@ -584,9 +585,10 @@ export function GuestInfoEditor({
 								})}
 							{(!guest?.likeFoodTag ||
 								guest.likeFoodTag.length === 0) && (
-								<div className="rounded-xl border-2 border-dashed border-white/5 py-4 text-center text-sm opacity-30">
-									请先在上方选择喜爱料理标签
-								</div>
+								<EmptyState
+									variant="text"
+									title="请先在上方选择喜爱料理标签"
+								/>
 							)}
 						</div>
 					</div>
@@ -679,9 +681,10 @@ export function GuestInfoEditor({
 								})}
 							{(!guest?.likeBevTag ||
 								guest.likeBevTag.length === 0) && (
-								<div className="rounded-xl border-2 border-dashed border-white/5 py-4 text-center text-sm opacity-30">
-									请先在上方选择喜爱酒水标签
-								</div>
+								<EmptyState
+									variant="text"
+									title="请先在上方选择喜爱酒水标签"
+								/>
 							)}
 						</div>
 					</div>
@@ -855,14 +858,10 @@ export function GuestInfoEditor({
 				</div>
 			)}
 			{isExpanded && !guest && (
-				<div className="rounded-lg border border-dashed border-black/10 p-8 text-center dark:border-white/10">
-					<p className="text-sm text-black/40 dark:text-white/40">
-						暂未启用顾客配置
-					</p>
-					<p className="mt-1 text-xs text-black/30 dark:text-white/30">
-						点击右侧按钮启用
-					</p>
-				</div>
+				<EmptyState
+					title="暂未启用顾客配置"
+					description="点击右侧按钮启用"
+				/>
 			)}
 		</div>
 	);

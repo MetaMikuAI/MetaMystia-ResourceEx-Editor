@@ -6,6 +6,7 @@ import type {
 	MissionCondition,
 	MissionNode,
 } from '@/types/resource';
+import { EmptyState } from '../EmptyState';
 
 const CONDITION_TYPES: { type: ConditionType; label: string }[] = [
 	{ type: 'BillRepayment', label: '【未实现】还债' },
@@ -445,9 +446,7 @@ export const MissionConditionList = memo<MissionConditionListProps>(
 					)}
 					{(!mission.finishConditions ||
 						mission.finishConditions.length === 0) && (
-						<p className="text-center text-sm text-black/40 dark:text-white/40">
-							暂无完成条件
-						</p>
+						<EmptyState variant="text" title="暂无完成条件" />
 					)}
 				</div>
 			</EditorField>
