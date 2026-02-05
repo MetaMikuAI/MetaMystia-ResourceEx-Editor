@@ -1,12 +1,12 @@
 import { memo, useCallback } from 'react';
-import { EditorField } from '@/components/EditorField';
-import { WarningNotice } from '@/components/WarningNotice';
+import { EditorField } from '@/components/common/EditorField';
+import { WarningNotice } from '@/components/common/WarningNotice';
 import type {
 	ConditionType,
 	MissionCondition,
 	MissionNode,
 } from '@/types/resource';
-import { EmptyState } from '../EmptyState';
+import { EmptyState } from '@/components/common/EmptyState';
 
 const CONDITION_TYPES: { type: ConditionType; label: string }[] = [
 	{ type: 'BillRepayment', label: '【未实现】还债' },

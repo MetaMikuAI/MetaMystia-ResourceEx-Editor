@@ -2,8 +2,8 @@
 
 import { useMemo, useRef, useEffect } from 'react';
 
-import { useData } from '@/components/DataContext';
-import { Header } from '@/components/Header';
+import { useData } from '@/components/context/DataContext';
+import { Header } from '@/components/common/Header';
 import { cn } from '@/lib';
 import type { PackInfo } from '@/types/resource';
 

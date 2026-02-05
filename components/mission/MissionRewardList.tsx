@@ -1,9 +1,9 @@
 import { memo, useCallback } from 'react';
-import { EditorField } from '@/components/EditorField';
-import { WarningNotice } from '@/components/WarningNotice';
+import { EditorField } from '@/components/common/EditorField';
+import { WarningNotice } from '@/components/common/WarningNotice';
 import type { MissionReward, ObjectType, RewardType } from '@/types/resource';
 import { BEVERAGE_NAMES } from '@/data/beverages';
-import { EmptyState } from '../EmptyState';
+import { EmptyState } from '@/components/common/EmptyState';
 
 const REWARD_TYPES: { type: RewardType; label: string }[] = [
 	{ type: 'UnlockNPC', label: '【未实现】解锁NPC' },

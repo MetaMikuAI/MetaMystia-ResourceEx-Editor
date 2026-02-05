@@ -2,11 +2,11 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
-import { useData } from '@/components/DataContext';
+import { useData } from '@/components/context/DataContext';
 
-import { DialogEditor } from '@/components/DialogEditor';
-import { DialogPackageList } from '@/components/DialogPackageList';
-import { Header } from '@/components/Header';
+import { DialogEditor } from '@/components/dialog/DialogEditor';
+import { DialogPackageList } from '@/components/dialog/DialogPackageList';
+import { Header } from '@/components/common/Header';
 
 import type { Dialog, DialogPackage } from '@/types/resource';
 

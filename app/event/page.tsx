@@ -1,10 +1,10 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { useData } from '@/components/DataContext';
-import { Header } from '@/components/Header';
-import { EventList } from '@/components/EventList';
-import EventEditor from '@/components/EventEditor';
+import { useData } from '@/components/context/DataContext';
+import { Header } from '@/components/common/Header';
+import { EventList } from '@/components/event/EventList';
+import EventEditor from '@/components/event/EventEditor';
 import type { EventNode } from '@/types/resource';
 
 const DEFAULT_EVENT: EventNode = {

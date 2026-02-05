@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { useData } from '@/components/DataContext';
+import { useData } from '@/components/context/DataContext';
 import { SPECIAL_GUESTS } from '@/data/specialGuest';
 import { SPECIAL_PORTRAITS } from '@/data/specialPortraits';
 import type { Character, Dialog } from '@/types/resource';

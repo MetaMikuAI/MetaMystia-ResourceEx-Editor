@@ -1,10 +1,10 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { useData } from '@/components/DataContext';
-import { Header } from '@/components/Header';
-import { MissionList } from '@/components/MissionList';
-import MissionEditor from '@/components/MissionEditor';
+import { useData } from '@/components/context/DataContext';
+import { Header } from '@/components/common/Header';
+import { MissionList } from '@/components/mission/MissionList';
+import MissionEditor from '@/components/mission/MissionEditor';
 import type { MissionNode } from '@/types/resource';
 
 const DEFAULT_MISSION: MissionNode = {

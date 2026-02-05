@@ -2,11 +2,11 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
-import { useData } from '@/components/DataContext';
+import { useData } from '@/components/context/DataContext';
 
-import { IngredientEditor } from '@/components/IngredientEditor';
-import { IngredientList } from '@/components/IngredientList';
-import { Header } from '@/components/Header';
+import { IngredientEditor } from '@/components/ingredient/IngredientEditor';
+import { IngredientList } from '@/components/ingredient/IngredientList';
+import { Header } from '@/components/common/Header';
 
 import type { Ingredient } from '@/types/resource';
 

@@ -2,11 +2,11 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
-import { useData } from '@/components/DataContext';
+import { useData } from '@/components/context/DataContext';
 
-import { BeverageEditor } from '@/components/BeverageEditor';
-import { BeverageList } from '@/components/BeverageList';
-import { Header } from '@/components/Header';
+import { BeverageEditor } from '@/components/beverage/BeverageEditor';
+import { BeverageList } from '@/components/beverage/BeverageList';
+import { Header } from '@/components/common/Header';
 
 import type { Beverage } from '@/types/resource';
 

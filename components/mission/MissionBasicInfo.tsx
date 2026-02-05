@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { EditorField } from '@/components/EditorField';
+import { EditorField } from '@/components/common/EditorField';
 import type { Character, MissionNode, MissionType } from '@/types/resource';
 
 interface MissionBasicInfoProps {

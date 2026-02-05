@@ -1,10 +1,10 @@
 import { memo } from 'react';
 
-import { useData } from '@/components/DataContext';
-import { DialogFormFields } from '@/components/dialog/DialogFormFields';
-import { DialogItemHeader } from '@/components/dialog/DialogItemHeader';
-import { PortraitPreview } from '@/components/dialog/PortraitPreview';
-import { useDialogDisplay } from '@/components/dialog/useDialogDisplay';
+import { useData } from '@/components/context/DataContext';
+import { DialogFormFields } from './DialogFormFields';
+import { DialogItemHeader } from './DialogItemHeader';
+import { PortraitPreview } from './PortraitPreview';
+import { useDialogDisplay } from './useDialogDisplay';
 
 import type { Character, Dialog } from '@/types/resource';
 

@@ -2,11 +2,11 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
-import { useData } from '@/components/DataContext';
+import { useData } from '@/components/context/DataContext';
 
-import { CharacterEditor } from '@/components/CharacterEditor';
-import { CharacterList } from '@/components/CharacterList';
-import { Header } from '@/components/Header';
+import { CharacterEditor } from '@/components/character/CharacterEditor';
+import { CharacterList } from '@/components/character/CharacterList';
+import { Header } from '@/components/common/Header';
 
 import type { Character, CharacterType } from '@/types/resource';
 
