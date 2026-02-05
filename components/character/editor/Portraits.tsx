@@ -4,6 +4,7 @@ import { CharacterPortrait } from '@/types/resource';
 import { cn } from '@/lib';
 import { ChevronRight } from '@/components/icons/ChevronRight';
 import { useData } from '@/components/context/DataContext';
+import { Label } from '@/components/common/Label';
 
 interface PortraitsProps {
 	characterId: number;
@@ -83,10 +84,13 @@ export function Portraits({
 							isExpanded && 'rotate-90'
 						)}
 					/>
-					<label className="cursor-pointer font-semibold">
+					<Label
+						className="cursor-pointer text-base font-semibold normal-case opacity-100"
+						tip="为角色配置不同的立绘表情，可用于对话系统和小碎骨笔记本图鉴"
+					>
 						立绘配置（Portraits）
 						{portraits?.length ? `(${portraits.length})` : ''}
-					</label>
+					</Label>
 				</div>
 				<button
 					onClick={onAdd}
@@ -113,9 +117,15 @@ export function Portraits({
 							>
 								<div className="flex w-20 flex-col gap-1">
 									<div className="ml-1 flex items-center justify-between">
-										<label className="text-[10px] font-bold opacity-50">
+										<Label
+											size="sm"
+											className="ml-1"
+											tip={
+												'角色立绘的唯一标识符，用于在对话系统中调用对应立绘。'
+											}
+										>
 											PID
-										</label>
+										</Label>
 										{duplicatePid && (
 											<span className="text-[8px] font-bold text-danger">
 												重复
@@ -141,9 +151,13 @@ export function Portraits({
 									/>
 								</div>
 								<div className="flex flex-1 flex-col gap-1">
-									<label className="ml-1 text-[10px] font-bold opacity-50">
+									<Label
+										size="sm"
+										className="ml-1"
+										tip="用于给立绘添加备注，但不会注入游戏"
+									>
 										备注标签
-									</label>
+									</Label>
 									<div className="flex gap-2">
 										<input
 											type="text"
@@ -177,7 +191,7 @@ export function Portraits({
 												className="accent-primary"
 											/>
 											<span className="whitespace-nowrap text-xs font-bold">
-												设为默认
+												设为图鉴立绘
 											</span>
 										</label>
 									</div>

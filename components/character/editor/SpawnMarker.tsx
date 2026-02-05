@@ -21,12 +21,19 @@ export const SpawnMarkerEditor = memo<SpawnMarkerEditorProps>(
 
 		return (
 			<div className="flex flex-col gap-2">
-				<Label>出没地点 (Spawn Marker)</Label>
+				<Label tip={'稀客在白天的出没地点'}>
+					出没地点 (Spawn Marker)
+				</Label>
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 					<div className="flex flex-col gap-1">
-						<label className="text-[10px] font-medium uppercase opacity-40">
+						<Label
+							size="sm"
+							tip={
+								'您可以自由选择地图，包括"舞台"等特殊地图，不过 MetaMiku 可不保证功能正常哦'
+							}
+						>
 							地图 (Map)
-						</label>
+						</Label>
 						<select
 							className={inputClass}
 							value={spawnMarker.mapLabel}
@@ -50,9 +57,9 @@ export const SpawnMarkerEditor = memo<SpawnMarkerEditorProps>(
 					</div>
 					<div className="flex gap-4">
 						<div className="flex flex-1 flex-col gap-1">
-							<label className="text-[10px] font-medium uppercase opacity-40">
+							<Label size="sm" tip="朝向，上下左右">
 								朝向 (Rotation)
-							</label>
+							</Label>
 							<select
 								className={inputClass}
 								value={spawnMarker.rotation || 'Down'}
@@ -90,9 +97,12 @@ export const SpawnMarkerEditor = memo<SpawnMarkerEditorProps>(
 							</select>
 						</div>
 						<div className="flex flex-1 flex-col gap-1">
-							<label className="text-[10px] font-medium uppercase opacity-40">
+							<Label
+								size="sm"
+								tip="x坐标，可以在游戏中使用 /whereami 命令获取坐标"
+							>
 								X 坐标
-							</label>
+							</Label>
 							<input
 								type="number"
 								step="0.1"
@@ -107,9 +117,12 @@ export const SpawnMarkerEditor = memo<SpawnMarkerEditorProps>(
 							/>
 						</div>
 						<div className="flex flex-1 flex-col gap-1">
-							<label className="text-[10px] font-medium uppercase opacity-40">
+							<Label
+								size="sm"
+								tip="y坐标，可以在游戏中使用 /whereami 命令获取坐标"
+							>
 								Y 坐标
-							</label>
+							</Label>
 							<input
 								type="number"
 								step="0.1"

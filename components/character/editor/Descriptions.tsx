@@ -12,7 +12,7 @@ export const Descriptions = memo<DescriptionsProps>(function Descriptions({
 }) {
 	return (
 		<div className="flex flex-col gap-3">
-			<Label info="稀客羁绊分别提升至 LV1, LV3, LV5 时出现在玩家的笔记本图鉴">
+			<Label tip="稀客羁绊分别提升至 LV1, LV3, LV5 时出现在小碎骨的笔记本图鉴">
 				角色图鉴描述
 			</Label>
 			{descriptions.map((desc, i) => (

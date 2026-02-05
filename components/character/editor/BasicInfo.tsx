@@ -28,7 +28,14 @@ export const BasicInfo = memo<BasicInfoProps>(function BasicInfo({
 		<div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
 			<div className="flex flex-col gap-1">
 				<div className="flex items-center justify-between">
-					<Label htmlFor={idId}>角色ID</Label>
+					<Label
+						htmlFor={idId}
+						tip={
+							'必须保证全局唯一\n0-5999为游戏原有稀客，6000-8999为游戏保留段，9000-11999为MetaMystia使用段，其他资源包请使用12000及以上的ID\n全局：游戏以及全部资源包'
+						}
+					>
+						角色ID
+					</Label>
 					<div className="flex gap-2">
 						{isIdDuplicate && <ErrorBadge>ID重复</ErrorBadge>}
 						{isIdTooSmall && <ErrorBadge>ID需&ge;9000</ErrorBadge>}
@@ -50,7 +57,9 @@ export const BasicInfo = memo<BasicInfoProps>(function BasicInfo({
 				/>
 			</div>
 			<div className="flex flex-col gap-1">
-				<Label htmlFor={idType}>角色类型（固定）</Label>
+				<Label htmlFor={idType} tip="角色类型，固定为Special">
+					角色类型（固定）
+				</Label>
 				<input
 					disabled
 					id={idType}
@@ -60,7 +69,9 @@ export const BasicInfo = memo<BasicInfoProps>(function BasicInfo({
 				/>
 			</div>
 			<div className="flex flex-col gap-1">
-				<Label htmlFor={idName}>角色名称</Label>
+				<Label htmlFor={idName} tip="角色名称，例如：大妖精">
+					角色名称
+				</Label>
 				<input
 					id={idName}
 					type="text"
@@ -73,7 +84,14 @@ export const BasicInfo = memo<BasicInfoProps>(function BasicInfo({
 			</div>
 			<div className="flex flex-col gap-1">
 				<div className="flex items-center justify-between">
-					<Label htmlFor={idLabel}>内部标签（Label）</Label>
+					<Label
+						htmlFor={idLabel}
+						tip={
+							'必须保证全局唯一\n必须以下划线_开头\n通常可以是英文名，例如：_Daiyousei\n全局：游戏以及全部资源包'
+						}
+					>
+						标签（Label）
+					</Label>
 					{isLabelInvalid && <ErrorBadge>必须以_开头</ErrorBadge>}
 				</div>
 				<input

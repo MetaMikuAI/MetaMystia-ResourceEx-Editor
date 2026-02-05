@@ -22,10 +22,7 @@ export const InfoTip = memo<InfoTipProps>(function InfoTip({
 		const el = btnRef.current;
 		if (!el) return setCoords(null);
 		const r = el.getBoundingClientRect();
-		setCoords({
-			left: r.left + r.width / 2 + window.scrollX,
-			top: r.top + window.scrollY,
-		});
+		setCoords({ left: r.left + r.width / 2, top: r.top });
 	};
 
 	useEffect(() => {
@@ -46,7 +43,7 @@ export const InfoTip = memo<InfoTipProps>(function InfoTip({
 			className="pointer-events-none"
 		>
 			<div
-				className="fixed z-[9999] -translate-x-1/2 transform whitespace-nowrap rounded-lg border border-blue-500/20 bg-blue-50 px-3 py-2 text-xs text-blue-900 shadow-lg dark:border-blue-400/20 dark:bg-blue-950 dark:text-blue-100"
+				className="fixed z-[9999] max-w-xs -translate-x-1/2 transform whitespace-pre-wrap rounded-lg border border-blue-500/20 bg-blue-50 px-3 py-2 text-left text-xs text-blue-900 shadow-lg dark:border-blue-400/20 dark:bg-blue-950 dark:text-blue-100"
 				style={{
 					left: coords.left,
 					top: coords.top - 8,
