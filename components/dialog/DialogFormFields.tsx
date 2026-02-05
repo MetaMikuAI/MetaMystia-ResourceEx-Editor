@@ -4,6 +4,7 @@ import { CharacterSelector } from '@/components/dialog/CharacterSelector';
 import { PortraitSelector } from '@/components/dialog/PortraitSelector';
 import { SPECIAL_PORTRAITS } from '@/data/specialPortraits';
 import type { Character, Dialog } from '@/types/resource';
+import { Label } from '@/components/common/Label';
 
 interface DialogFormFieldsProps {
 	dialog: Dialog;
@@ -69,12 +70,7 @@ export const DialogFormFields = memo<DialogFormFieldsProps>(
 						onChange={(pid) => onUpdate({ pid })}
 					/>
 					<div className="flex flex-col gap-1">
-						<label
-							htmlFor={idPos}
-							className="text-xs font-medium uppercase opacity-60"
-						>
-							显示位置
-						</label>
+						<Label htmlFor={idPos}>显示位置</Label>
 						<select
 							id={idPos}
 							value={dialog.position}
@@ -96,12 +92,7 @@ export const DialogFormFields = memo<DialogFormFieldsProps>(
 					</div>
 
 					<div className="flex flex-col gap-1">
-						<label
-							htmlFor={idType}
-							className="text-xs font-medium uppercase opacity-60"
-						>
-							角色类型
-						</label>
+						<Label htmlFor={idType}>角色类型</Label>
 						<input
 							disabled
 							id={idType}
@@ -113,12 +104,7 @@ export const DialogFormFields = memo<DialogFormFieldsProps>(
 				</div>
 
 				<div className="flex flex-1 flex-col gap-1">
-					<label
-						htmlFor={idText}
-						className="text-xs font-medium uppercase opacity-60"
-					>
-						对话内容
-					</label>
+					<Label htmlFor={idText}>对话内容</Label>
 					<textarea
 						id={idText}
 						placeholder="在此输入对话文本..."

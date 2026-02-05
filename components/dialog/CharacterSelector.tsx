@@ -2,6 +2,7 @@ import { memo, useId } from 'react';
 
 import { SPECIAL_GUESTS } from '@/data/specialGuest';
 import type { Character, CharacterType } from '@/types/resource';
+import { Label } from '@/components/common/Label';
 
 interface CharacterSelectorProps {
 	characterType: CharacterType;
@@ -21,12 +22,7 @@ export const CharacterSelector = memo<CharacterSelectorProps>(
 
 		return (
 			<div className="flex flex-col gap-1">
-				<label
-					htmlFor={id}
-					className="text-xs font-medium uppercase opacity-60"
-				>
-					角色
-				</label>
+				<Label htmlFor={id}>角色</Label>
 				<select
 					id={id}
 					value={`${characterType}:${value}`}

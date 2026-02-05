@@ -2,6 +2,7 @@ import { memo, useId, useMemo } from 'react';
 
 import { SPECIAL_PORTRAITS } from '@/data/specialPortraits';
 import type { Character, CharacterType } from '@/types/resource';
+import { Label } from '@/components/common/Label';
 
 interface PortraitSelectorProps {
 	characterId: number;
@@ -43,12 +44,7 @@ export const PortraitSelector = memo<PortraitSelectorProps>(
 
 		return (
 			<div className="flex flex-col gap-1">
-				<label
-					htmlFor={id}
-					className="text-xs font-medium uppercase opacity-60"
-				>
-					表情/立绘
-				</label>
+				<Label htmlFor={id}>表情/立绘</Label>
 				<select
 					id={id}
 					value={value}

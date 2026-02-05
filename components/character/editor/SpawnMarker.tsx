@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { DAYSCENEMAP } from '@/data/daySceneMap';
 import type { SpawnMarker } from '@/types/resource';
 import { cn } from '@/lib';
+import { Label } from '@/components/common/Label';
 
 interface SpawnMarkerEditorProps {
 	spawnMarker: SpawnMarker;
@@ -20,9 +21,7 @@ export const SpawnMarkerEditor = memo<SpawnMarkerEditorProps>(
 
 		return (
 			<div className="flex flex-col gap-2">
-				<span className="text-xs font-medium uppercase opacity-60">
-					出没地点 (Spawn Marker)
-				</span>
+				<Label>出没地点 (Spawn Marker)</Label>
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 					<div className="flex flex-col gap-1">
 						<label className="text-[10px] font-medium uppercase opacity-40">

@@ -5,6 +5,7 @@ import { useMemo, useRef, useEffect } from 'react';
 import { useData } from '@/components/context/DataContext';
 import { Header } from '@/components/common/Header';
 import { cn } from '@/lib';
+import { Label } from '@/components/common/Label';
 import type { PackInfo } from '@/types/resource';
 
 export default function InfoPage() {
@@ -65,9 +66,7 @@ export default function InfoPage() {
 					<div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
 						{/* Name */}
 						<div className="flex flex-col gap-1">
-							<label className="text-xs font-medium uppercase opacity-60">
-								资源包名称 (Name)
-							</label>
+							<Label>资源包名称 (Name)</Label>
 							<input
 								className="h-9 w-full rounded-lg border border-black/10 bg-white/40 px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:border-white/10 dark:bg-black/10 dark:focus:border-white/30 dark:focus:ring-white/10"
 								value={packInfo.name || ''}
@@ -80,9 +79,7 @@ export default function InfoPage() {
 
 						{/* Label */}
 						<div className="flex flex-col gap-1">
-							<label className="text-xs font-medium uppercase opacity-60">
-								资源包唯一标识符 (Label)
-							</label>
+							<Label>资源包唯一标识符 (Label)</Label>
 							<input
 								className="h-9 w-full rounded-lg border border-black/10 bg-white/40 px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:border-white/10 dark:bg-black/10 dark:focus:border-white/30 dark:focus:ring-white/10"
 								value={packInfo.label || ''}
@@ -97,9 +94,7 @@ export default function InfoPage() {
 					{/* Version */}
 					<div className="flex flex-col gap-1">
 						<div className="flex items-center justify-between">
-							<label className="text-xs font-medium uppercase opacity-60">
-								版本 (Version)
-							</label>
+							<Label>版本 (Version)</Label>
 							{!isVersionValid && (
 								<span className="text-[10px] text-danger">
 									版本格式不符合语义化版本规范 (例如: 1.0.0)
@@ -124,9 +119,7 @@ export default function InfoPage() {
 					{/* Authors */}
 					<div className="flex flex-col gap-2">
 						<div className="flex items-center justify-between">
-							<label className="text-xs font-medium uppercase opacity-60">
-								作者列表 (Authors)
-							</label>
+							<Label>作者列表 (Authors)</Label>
 							<button
 								onClick={addAuthor}
 								className="btn-mystia h-6 px-2 text-xs"
@@ -163,9 +156,7 @@ export default function InfoPage() {
 
 					{/* Description */}
 					<div className="flex flex-col gap-1">
-						<label className="text-xs font-medium uppercase opacity-60">
-							描述 (Description)
-						</label>
+						<Label>描述 (Description)</Label>
 						<textarea
 							className="min-h-[120px] w-full rounded-lg border border-black/10 bg-white/40 px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:border-white/10 dark:bg-black/10 dark:focus:border-white/30 dark:focus:ring-white/10"
 							value={packInfo.description || ''}
@@ -178,9 +169,7 @@ export default function InfoPage() {
 
 					{/* License */}
 					<div className="flex flex-col gap-1">
-						<label className="text-xs font-medium uppercase opacity-60">
-							许可证 (License)
-						</label>
+						<Label>许可证 (License)</Label>
 						<textarea
 							ref={licenseRef}
 							className="min-h-[120px] w-full rounded-lg border border-black/10 bg-white/40 px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:border-white/10 dark:bg-black/10 dark:focus:border-white/30 dark:focus:ring-white/10"

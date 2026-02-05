@@ -2,6 +2,7 @@ import { memo, useId } from 'react';
 
 import { cn } from '@/lib';
 import { ErrorBadge } from '@/components/common/ErrorBadge';
+import { Label } from '@/components/common/Label';
 import type { Character } from '@/types/resource';
 
 interface BasicInfoProps {
@@ -27,12 +28,7 @@ export const BasicInfo = memo<BasicInfoProps>(function BasicInfo({
 		<div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
 			<div className="flex flex-col gap-1">
 				<div className="flex items-center justify-between">
-					<label
-						htmlFor={idId}
-						className="text-xs font-medium uppercase opacity-60"
-					>
-						角色ID
-					</label>
+					<Label htmlFor={idId}>角色ID</Label>
 					<div className="flex gap-2">
 						{isIdDuplicate && <ErrorBadge>ID重复</ErrorBadge>}
 						{isIdTooSmall && <ErrorBadge>ID需&ge;9000</ErrorBadge>}
@@ -54,12 +50,7 @@ export const BasicInfo = memo<BasicInfoProps>(function BasicInfo({
 				/>
 			</div>
 			<div className="flex flex-col gap-1">
-				<label
-					htmlFor={idType}
-					className="text-xs font-medium uppercase opacity-60"
-				>
-					角色类型（固定）
-				</label>
+				<Label htmlFor={idType}>角色类型（固定）</Label>
 				<input
 					disabled
 					id={idType}
@@ -69,12 +60,7 @@ export const BasicInfo = memo<BasicInfoProps>(function BasicInfo({
 				/>
 			</div>
 			<div className="flex flex-col gap-1">
-				<label
-					htmlFor={idName}
-					className="text-xs font-medium uppercase opacity-60"
-				>
-					角色名称
-				</label>
+				<Label htmlFor={idName}>角色名称</Label>
 				<input
 					id={idName}
 					type="text"
@@ -87,12 +73,7 @@ export const BasicInfo = memo<BasicInfoProps>(function BasicInfo({
 			</div>
 			<div className="flex flex-col gap-1">
 				<div className="flex items-center justify-between">
-					<label
-						htmlFor={idLabel}
-						className="text-xs font-medium uppercase opacity-60"
-					>
-						内部标签（Label）
-					</label>
+					<Label htmlFor={idLabel}>内部标签（Label）</Label>
 					{isLabelInvalid && <ErrorBadge>必须以_开头</ErrorBadge>}
 				</div>
 				<input

@@ -3,6 +3,7 @@ import { memo, useCallback, useId } from 'react';
 import { useData } from '@/components/context/DataContext';
 import { ErrorBadge } from '@/components/common/ErrorBadge';
 import { SpriteUploader } from '@/components/common/SpriteUploader';
+import { Label } from '@/components/common/Label';
 import { BEVERAGE_TAGS } from '@/data/tags';
 
 import { cn } from '@/lib';
@@ -79,12 +80,7 @@ export const BeverageEditor = memo<BeverageEditorProps>(
 					<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 						<div className="flex flex-col gap-1">
 							<div className="flex items-center justify-between">
-								<label
-									htmlFor={idId}
-									className="text-xs font-medium uppercase opacity-60"
-								>
-									ID
-								</label>
+								<Label htmlFor={idId}>ID</Label>
 								{isIdTooSmall && (
 									<ErrorBadge>ID需&ge;9000</ErrorBadge>
 								)}
@@ -114,12 +110,7 @@ export const BeverageEditor = memo<BeverageEditorProps>(
 						</div>
 
 						<div className="flex flex-col gap-1">
-							<label
-								htmlFor={idName}
-								className="text-xs font-medium uppercase opacity-60"
-							>
-								名称 (Name)
-							</label>
+							<Label htmlFor={idName}>名称 (Name)</Label>
 							<input
 								id={idName}
 								type="text"
@@ -132,12 +123,9 @@ export const BeverageEditor = memo<BeverageEditorProps>(
 						</div>
 
 						<div className="col-span-full flex flex-col gap-1">
-							<label
-								htmlFor={idDescription}
-								className="text-xs font-medium uppercase opacity-60"
-							>
+							<Label htmlFor={idDescription}>
 								描述 (Description)
-							</label>
+							</Label>
 							<textarea
 								id={idDescription}
 								value={beverage.description}
@@ -158,12 +146,7 @@ export const BeverageEditor = memo<BeverageEditorProps>(
 					</h3>
 					<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 						<div className="flex flex-col gap-1">
-							<label
-								htmlFor={idLevel}
-								className="text-xs font-medium uppercase opacity-60"
-							>
-								等级 (Level)
-							</label>
+							<Label htmlFor={idLevel}>等级 (Level)</Label>
 							<input
 								id={idLevel}
 								type="number"
@@ -182,12 +165,9 @@ export const BeverageEditor = memo<BeverageEditorProps>(
 						</div>
 
 						<div className="flex flex-col gap-1">
-							<label
-								htmlFor={idBaseValue}
-								className="text-xs font-medium uppercase opacity-60"
-							>
+							<Label htmlFor={idBaseValue}>
 								单价 (BaseValue)
-							</label>
+							</Label>
 							<input
 								id={idBaseValue}
 								type="number"

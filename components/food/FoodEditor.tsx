@@ -4,6 +4,7 @@ import { useData } from '@/components/context/DataContext';
 import { ErrorBadge } from '@/components/common/ErrorBadge';
 import { SpriteUploader } from '@/components/common/SpriteUploader';
 import { FOOD_TAGS } from '@/data/tags';
+import { Label } from '@/components/common/Label';
 
 import { cn } from '@/lib';
 import type { Food } from '@/types/resource';
@@ -81,12 +82,7 @@ export const FoodEditor = memo<FoodEditorProps>(function FoodEditor({
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 					<div className="flex flex-col gap-1">
 						<div className="flex items-center justify-between">
-							<label
-								htmlFor={idId}
-								className="text-xs font-medium uppercase opacity-60"
-							>
-								ID
-							</label>
+							<Label htmlFor={idId}>ID</Label>
 							{isIdTooSmall && (
 								<ErrorBadge>ID需&ge;9000</ErrorBadge>
 							)}
@@ -116,12 +112,7 @@ export const FoodEditor = memo<FoodEditorProps>(function FoodEditor({
 					</div>
 
 					<div className="flex flex-col gap-1">
-						<label
-							htmlFor={idName}
-							className="text-xs font-medium uppercase opacity-60"
-						>
-							名称 (Name)
-						</label>
+						<Label htmlFor={idName}>名称 (Name)</Label>
 						<input
 							id={idName}
 							type="text"
@@ -132,12 +123,9 @@ export const FoodEditor = memo<FoodEditorProps>(function FoodEditor({
 					</div>
 
 					<div className="col-span-full flex flex-col gap-1">
-						<label
-							htmlFor={idDescription}
-							className="text-xs font-medium uppercase opacity-60"
-						>
+						<Label htmlFor={idDescription}>
 							描述 (Description)
-						</label>
+						</Label>
 						<textarea
 							id={idDescription}
 							value={food.description}
@@ -158,12 +146,7 @@ export const FoodEditor = memo<FoodEditorProps>(function FoodEditor({
 				</h3>
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 					<div className="flex flex-col gap-1">
-						<label
-							htmlFor={idLevel}
-							className="text-xs font-medium uppercase opacity-60"
-						>
-							等级 (Level)
-						</label>
+						<Label htmlFor={idLevel}>等级 (Level)</Label>
 						<input
 							id={idLevel}
 							type="number"
@@ -176,12 +159,7 @@ export const FoodEditor = memo<FoodEditorProps>(function FoodEditor({
 					</div>
 
 					<div className="flex flex-col gap-1">
-						<label
-							htmlFor={idBaseValue}
-							className="text-xs font-medium uppercase opacity-60"
-						>
-							价值 (BaseValue)
-						</label>
+						<Label htmlFor={idBaseValue}>价值 (BaseValue)</Label>
 						<input
 							id={idBaseValue}
 							type="number"

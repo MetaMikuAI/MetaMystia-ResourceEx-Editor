@@ -3,6 +3,7 @@ import { memo, useCallback, useId } from 'react';
 import { EmptyState } from '@/components/common/EmptyState';
 import { cn } from '@/lib';
 import { ErrorBadge } from '@/components/common/ErrorBadge';
+import { Label } from '@/components/common/Label';
 import type { Recipe, CookerType } from '@/types/resource';
 import { INGREDIENT_NAMES } from '@/data/ingredients';
 import { FOOD_NAMES } from '@/data/foods';
@@ -91,12 +92,7 @@ export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 					<div className="flex flex-col gap-1">
 						<div className="flex items-center justify-between">
-							<label
-								htmlFor={idId}
-								className="text-xs font-medium uppercase opacity-60"
-							>
-								菜谱ID
-							</label>
+							<Label htmlFor={idId}>菜谱ID</Label>
 							{isIdTooSmall && (
 								<ErrorBadge>ID需&ge;9000</ErrorBadge>
 							)}
@@ -118,12 +114,7 @@ export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
 					</div>
 
 					<div className="flex flex-col gap-1">
-						<label
-							htmlFor={idFoodId}
-							className="text-xs font-medium uppercase opacity-60"
-						>
-							料理ID (Food ID)
-						</label>
+						<Label htmlFor={idFoodId}>料理ID (Food ID)</Label>
 						<select
 							id={idFoodId}
 							value={recipe.foodId}
@@ -152,12 +143,7 @@ export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
 					</div>
 
 					<div className="flex flex-col gap-1">
-						<label
-							htmlFor={idCookTime}
-							className="text-xs font-medium uppercase opacity-60"
-						>
-							烹饪时间 (Cook Time)
-						</label>
+						<Label htmlFor={idCookTime}>烹饪时间 (Cook Time)</Label>
 						<input
 							id={idCookTime}
 							type="number"
@@ -172,12 +158,9 @@ export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
 					</div>
 
 					<div className="flex flex-col gap-1">
-						<label
-							htmlFor={idCookerType}
-							className="text-xs font-medium uppercase opacity-60"
-						>
+						<Label htmlFor={idCookerType}>
 							厨具类型 (Cooker Type)
-						</label>
+						</Label>
 						<select
 							id={idCookerType}
 							value={recipe.cookerType}
