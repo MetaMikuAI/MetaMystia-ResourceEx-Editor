@@ -1,6 +1,7 @@
 import { memo, useId } from 'react';
 
 import { cn } from '@/lib';
+import { ErrorBadge } from '@/components/ErrorBadge';
 import type { Character } from '@/types/resource';
 
 interface BasicInfoProps {
@@ -33,16 +34,8 @@ export const BasicInfo = memo<BasicInfoProps>(function BasicInfo({
 						角色ID
 					</label>
 					<div className="flex gap-2">
-						{isIdDuplicate && (
-							<span className="rounded bg-danger px-1.5 py-0.5 text-[10px] font-medium text-white">
-								ID重复
-							</span>
-						)}
-						{isIdTooSmall && (
-							<span className="rounded bg-danger px-1.5 py-0.5 text-[10px] font-medium text-white">
-								ID需&ge;9000
-							</span>
-						)}
+						{isIdDuplicate && <ErrorBadge>ID重复</ErrorBadge>}
+						{isIdTooSmall && <ErrorBadge>ID需&ge;9000</ErrorBadge>}
 					</div>
 				</div>
 				<input
@@ -100,11 +93,7 @@ export const BasicInfo = memo<BasicInfoProps>(function BasicInfo({
 					>
 						内部标签（Label）
 					</label>
-					{isLabelInvalid && (
-						<span className="rounded bg-danger px-1.5 py-0.5 text-[10px] font-medium text-white">
-							必须以_开头
-						</span>
-					)}
+					{isLabelInvalid && <ErrorBadge>必须以_开头</ErrorBadge>}
 				</div>
 				<input
 					id={idLabel}

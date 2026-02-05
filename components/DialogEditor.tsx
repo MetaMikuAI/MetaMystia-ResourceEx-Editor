@@ -1,6 +1,7 @@
 import { memo, useCallback, useId } from 'react';
 
 import { DialogItemWrapper } from '@/components/dialog/DialogItem';
+import { ErrorBadge } from '@/components/ErrorBadge';
 import { cn } from '@/lib';
 import type { Dialog, DialogPackage } from '@/types/resource';
 
@@ -58,9 +59,7 @@ export const DialogEditor = memo<DialogEditorProps>(function DialogEditor({
 						对话包名称
 					</label>
 					{isNameDuplicate(dialogPackage.name, packageIndex) && (
-						<span className="rounded bg-danger px-1.5 py-0.5 text-[10px] font-medium text-white">
-							命名重复
-						</span>
+						<ErrorBadge>命名重复</ErrorBadge>
 					)}
 				</div>
 				<input

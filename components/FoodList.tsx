@@ -1,6 +1,7 @@
 import { memo, useCallback } from 'react';
 
 import { cn } from '@/lib';
+import { ErrorBadge } from '@/components/ErrorBadge';
 import type { Food } from '@/types/resource';
 
 interface FoodListProps {
@@ -65,9 +66,7 @@ export const FoodList = memo<FoodListProps>(function FoodList({
 											{food.name}
 										</span>
 										{isDuplicate && (
-											<span className="rounded bg-danger px-1.5 py-0.5 text-[10px] font-medium text-white">
-												ID重复
-											</span>
+											<ErrorBadge>ID重复</ErrorBadge>
 										)}
 									</div>
 									<div className="font-mono text-xs text-foreground opacity-80">

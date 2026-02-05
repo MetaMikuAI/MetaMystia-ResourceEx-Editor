@@ -1,6 +1,7 @@
 import { memo, useCallback, useId, useState } from 'react';
 
 import { useData } from '@/components/DataContext';
+import { ErrorBadge } from '@/components/ErrorBadge';
 import { BEVERAGE_TAGS } from '@/data/tags';
 
 import { cn } from '@/lib';
@@ -153,9 +154,7 @@ export const BeverageEditor = memo<BeverageEditorProps>(
 									ID
 								</label>
 								{isIdTooSmall && (
-									<span className="rounded bg-danger px-1.5 py-0.5 text-[10px] font-medium text-white">
-										ID需&ge;9000
-									</span>
+									<ErrorBadge>ID需&ge;9000</ErrorBadge>
 								)}
 							</div>
 							<input
