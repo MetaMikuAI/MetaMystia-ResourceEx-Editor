@@ -188,7 +188,7 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 
 						<div className="flex flex-col gap-1">
 							<Label htmlFor={idBaseValue}>
-								价值 (BaseValue)
+								价格 (BaseValue)
 							</Label>
 							<input
 								id={idBaseValue}

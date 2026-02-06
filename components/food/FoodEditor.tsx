@@ -159,7 +159,7 @@ export const FoodEditor = memo<FoodEditorProps>(function FoodEditor({
 					</div>
 
 					<div className="flex flex-col gap-1">
-						<Label htmlFor={idBaseValue}>价值 (BaseValue)</Label>
+						<Label htmlFor={idBaseValue}>价格 (BaseValue)</Label>
 						<input
 							id={idBaseValue}
 							type="number"

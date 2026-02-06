@@ -166,7 +166,7 @@ export const BeverageEditor = memo<BeverageEditorProps>(
 
 						<div className="flex flex-col gap-1">
 							<Label htmlFor={idBaseValue}>
-								单价 (BaseValue)
+								价格 (BaseValue)
 							</Label>
 							<input
 								id={idBaseValue}

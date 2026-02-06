@@ -4,6 +4,8 @@ import { CharacterSpriteSet } from '@/types/resource';
 import { ChevronRight } from '@/components/icons/ChevronRight';
 import { cn } from '@/lib';
 import { useData } from '@/components/context/DataContext';
+import { InfoTip } from '@/components/common/InfoTip';
+import { Label } from '@/components/common/Label';
 
 interface SpriteSetProps {
 	characterId: number;
@@ -86,6 +88,12 @@ export function SpriteSetEditor({
 					/>
 					<label className="cursor-pointer font-semibold">
 						角色小人配置（Sprite Set）
+						<InfoTip>
+							配置角色的小人贴图，包括主身体和眼睛的贴图。贴图大小为
+							64x64。主身体为 12 张，一共 4 个方向，每个方向 3
+							张。如需尝试创作，可以在群文件中找到游戏原始资源，或使用
+							MetaMystia 提供的资源包
+						</InfoTip>
 					</label>
 				</div>
 				<button
@@ -109,9 +117,12 @@ export function SpriteSetEditor({
 				<div className="animate-in fade-in slide-in-from-top-2 flex flex-col gap-6 rounded-2xl border border-white/5 bg-black/5 p-6 duration-200">
 					<div className="flex flex-col gap-2">
 						<div className="ml-1 flex items-center justify-between">
-							<label className="text-sm font-bold opacity-70">
-								小人名称 (Name)
-							</label>
+							<Label
+								className="text-sm font-bold opacity-70"
+								tip="角色小人名称，请保证为角色的 Label，如：_Daiyousei"
+							>
+								角色小人名称 (Name)
+							</Label>
 							<button
 								onClick={onGenerateDefaults}
 								className="rounded border border-white/10 bg-white/10 px-2 py-0.5 text-[10px] transition-all hover:bg-white/20 active:scale-95"
@@ -124,7 +135,7 @@ export function SpriteSetEditor({
 							value={spriteSet.name}
 							onChange={(e) => onUpdate({ name: e.target.value })}
 							placeholder="默认为角色 Label"
-							className="rounded-xl border border-white/10 bg-black/20 p-3 transition-all focus:outline-none focus:ring-2 focus:ring-primary/50"
+							className="rounded-xl border border-white/10 bg-black/10 p-3 transition-all focus:outline-none focus:ring-2 focus:ring-primary/50"
 						/>
 					</div>
 

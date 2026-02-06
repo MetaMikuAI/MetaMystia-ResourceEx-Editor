@@ -7,6 +7,7 @@ import { EventFieldEditor } from './kizuna/EventFieldEditor';
 import { DialogArrayField } from './kizuna/DialogArrayField';
 import { MapFieldEditor } from './kizuna/MapFieldEditor';
 import { EVENT_FIELDS, DIALOG_FIELDS, MAP_FIELD } from './kizuna/constants';
+import { InfoTip } from '@/components/common/InfoTip';
 
 interface KizunaInfoEditorProps {
 	kizuna: KizunaInfo | undefined;
@@ -62,6 +63,9 @@ export const KizunaInfoEditor = memo<KizunaInfoEditorProps>(
 						<label className="cursor-pointer font-semibold">
 							羁绊配置 (Kizuna Info)
 						</label>
+						<InfoTip>
+							配置角色的羁绊相关信息，包括事件前置条件、对话包等
+						</InfoTip>
 					</div>
 					<button
 						onClick={() => {
@@ -86,6 +90,10 @@ export const KizunaInfoEditor = memo<KizunaInfoEditorProps>(
 						<div className="flex flex-col gap-4">
 							<h3 className="text-sm font-bold uppercase opacity-60">
 								升级前置事件
+								<InfoTip>
+									“升级前置事件”用于检测稀客的羁绊进度是否已满。ResourceEx
+									会检测稀客等级并自动触发对应的事件节点。您需要在“事件节点编辑”中设计羁绊事件
+								</InfoTip>
 							</h3>
 							{EVENT_FIELDS.map((field) => (
 								<EventFieldEditor
@@ -104,6 +112,9 @@ export const KizunaInfoEditor = memo<KizunaInfoEditorProps>(
 						<div className="flex flex-col gap-4">
 							<h3 className="text-sm font-bold uppercase opacity-60">
 								对话包配置
+								<InfoTip>
+									配置与稀客相关的对话包，这些对话包会在与稀客对话时触发
+								</InfoTip>
 							</h3>
 							{DIALOG_FIELDS.map((field) => (
 								<DialogArrayField

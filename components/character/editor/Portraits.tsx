@@ -143,7 +143,7 @@ export function Portraits({
 											})
 										}
 										className={cn(
-											'rounded-lg border bg-black/20 p-2 text-sm transition-all focus:outline-none focus:ring-1',
+											'rounded-lg border bg-black/10 p-2 text-sm transition-all focus:outline-none focus:ring-1',
 											duplicatePid
 												? 'border-danger focus:ring-danger/50'
 												: 'border-white/10 focus:ring-primary/50'
@@ -168,14 +168,14 @@ export function Portraits({
 												})
 											}
 											placeholder="例如：大妖精 低沉"
-											className="flex-1 rounded-lg border border-white/10 bg-black/20 p-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50"
+											className="flex-1 rounded-lg border border-white/10 bg-black/10 p-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50"
 										/>
 										<label
 											className={cn(
 												'flex cursor-pointer items-center gap-2 rounded px-3 py-1 transition-colors',
 												faceInNoteBook === portrait.pid
 													? 'bg-primary/20 text-primary'
-													: 'bg-black/20 text-white/50 hover:bg-black/30 hover:text-white/70'
+													: 'bg-black/10 text-white/50 hover:bg-black/20 hover:text-white/70'
 											)}
 										>
 											<input

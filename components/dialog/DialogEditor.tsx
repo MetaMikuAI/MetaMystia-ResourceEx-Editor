@@ -5,6 +5,7 @@ import { DialogItemWrapper } from './DialogItem';
 import { ErrorBadge } from '@/components/common/ErrorBadge';
 import { cn } from '@/lib';
 import type { Dialog, DialogPackage } from '@/types/resource';
+import { Label } from '../common/Label';
 
 interface DialogEditorProps {
 	allPackages: DialogPackage[];
@@ -53,12 +54,15 @@ export const DialogEditor = memo<DialogEditorProps>(function DialogEditor({
 		<div className="flex flex-col gap-8 overflow-y-auto rounded-lg bg-white/10 p-4 shadow-md backdrop-blur lg:col-span-2">
 			<div className="flex flex-col gap-2">
 				<div className="flex items-center justify-between">
-					<label
+					<Label
 						htmlFor={id}
 						className="block w-full text-sm font-medium opacity-80"
+						tip={
+							'必须保证全局唯一\n必须以下划线_开头\n通常可以是英文名，例如：_Kizuna_Daiyousei_LV1_001\n修改此 label 需要对应修改引用此对话包的地方\n全局：游戏以及全部资源包'
+						}
 					>
 						对话包名称
-					</label>
+					</Label>
 					{isNameDuplicate(dialogPackage.name, packageIndex) && (
 						<ErrorBadge>命名重复</ErrorBadge>
 					)}
