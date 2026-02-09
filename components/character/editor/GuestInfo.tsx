@@ -50,7 +50,7 @@ export function GuestInfoEditor({
 					(r) => r.tagId === tagId
 				);
 				if (!existingReq) {
-					newFoodRequests.push({ tagId, request: '' });
+					newFoodRequests.push({ tagId, request: '', enable: true });
 				}
 			}
 			// Beverage requests are "closed" by default, so we don't add them to bevRequests here
@@ -101,10 +101,13 @@ export function GuestInfoEditor({
 		const currentRequests = [...(guest[field] || [])];
 		const index = currentRequests.findIndex((r) => r.tagId === tagId);
 
-		if (enabled && index === -1) {
-			currentRequests.push({ tagId, request: '' });
-		} else if (!enabled && index !== -1) {
-			currentRequests.splice(index, 1);
+		if (index === -1) {
+			currentRequests.push({ tagId, request: '', enable: enabled });
+		} else {
+			currentRequests[index] = {
+				...currentRequests[index],
+				enable: enabled,
+			} as Request;
 		}
 
 		onUpdate({ [field]: currentRequests });
@@ -557,7 +560,7 @@ export function GuestInfoEditor({
 									const req = guest?.foodRequests?.find(
 										(r) => r.tagId === tag.tagId
 									);
-									const isEnabled = !!req;
+									const isEnabled = req?.enable ?? false;
 									return (
 										<div
 											key={tag.tagId}
@@ -656,7 +659,7 @@ export function GuestInfoEditor({
 									const req = guest?.bevRequests?.find(
 										(r) => r.tagId === tag.tagId
 									);
-									const isEnabled = !!req;
+									const isEnabled = req?.enable ?? false;
 									return (
 										<div
 											key={tag.tagId}

@@ -171,8 +171,18 @@ export function DataProvider({ children }: PropsWithChildren) {
 												...Array(9).fill(''),
 											].slice(0, 9)
 										: Array(9).fill(''),
-									foodRequests: char.guest.foodRequests || [],
-									bevRequests: char.guest.bevRequests || [],
+									foodRequests: (
+										char.guest.foodRequests || []
+									).map((r: any) => ({
+										...r,
+										enable: r.enable ?? true,
+									})),
+									bevRequests: (
+										char.guest.bevRequests || []
+									).map((r: any) => ({
+										...r,
+										enable: r.enable ?? true,
+									})),
 								}
 							: undefined,
 					}));

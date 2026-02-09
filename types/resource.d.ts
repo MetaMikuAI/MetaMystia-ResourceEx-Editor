@@ -9,6 +9,7 @@ export interface CharacterPortrait {
 export interface Request {
 	tagId: number;
 	request: string;
+	enable: boolean;
 }
 
 export interface LikeTag {
