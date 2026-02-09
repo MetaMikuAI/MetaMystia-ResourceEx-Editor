@@ -97,6 +97,7 @@ export const Header = memo(function Header() {
 		'/beverage',
 	].includes(pathname);
 	const isNodesActive = ['/mission', '/event'].includes(pathname);
+	const isMerchantActive = pathname === '/merchant';
 
 	return (
 		<header className="sticky top-0 z-50 w-full border-b border-gray-300/95 bg-white/5 backdrop-blur-lg dark:border-gray-800/95">
@@ -167,6 +168,18 @@ export const Header = memo(function Header() {
 								{ href: '/event', label: '事件节点编辑' },
 							]}
 						/>
+
+						<Link
+							href="/merchant"
+							className={cn(
+								'btn-mystia',
+								isMerchantActive
+									? 'bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10'
+									: 'hover:bg-black/5 dark:hover:bg-white/5'
+							)}
+						>
+							商人编辑
+						</Link>
 					</nav>
 				</div>
 				<div className="flex items-center gap-1 text-center">

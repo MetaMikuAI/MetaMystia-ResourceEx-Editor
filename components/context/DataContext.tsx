@@ -52,6 +52,7 @@ export function DataProvider({ children }: PropsWithChildren) {
 		recipes: [],
 		missionNodes: [],
 		eventNodes: [],
+		merchants: [],
 	});
 	const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
@@ -239,6 +240,7 @@ export function DataProvider({ children }: PropsWithChildren) {
 							};
 						}
 					),
+					merchants: jsonData.merchants || [],
 					eventNodes: (jsonData.eventNodes || []).map(
 						(node: any) => ({
 							label: node.label || '',
@@ -385,6 +387,7 @@ export function DataProvider({ children }: PropsWithChildren) {
 			recipes: [],
 			missionNodes: [],
 			eventNodes: [],
+			merchants: [],
 		});
 		// Clear assets
 		Object.values(assetUrls).forEach((url) => revokeUrl(url));
