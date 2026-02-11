@@ -173,16 +173,41 @@ export function DataProvider({ children }: PropsWithChildren) {
 										: Array(9).fill(''),
 									foodRequests: (
 										char.guest.foodRequests || []
-									).map((r: any) => ({
-										...r,
-										enable: r.enable ?? true,
-									})),
-									bevRequests: (
-										char.guest.bevRequests || []
-									).map((r: any) => ({
-										...r,
-										enable: r.enable ?? true,
-									})),
+									)
+										.map((r: any) => ({
+											...r,
+											enable: r.enable ?? true,
+										}))
+										.sort(
+											(a: any, b: any) =>
+												a.tagId - b.tagId
+										),
+									bevRequests: (char.guest.bevRequests || [])
+										.map((r: any) => ({
+											...r,
+											enable: r.enable ?? true,
+										}))
+										.sort(
+											(a: any, b: any) =>
+												a.tagId - b.tagId
+										),
+									likeFoodTag: [
+										...(char.guest.likeFoodTag || []),
+									].sort(
+										(a: any, b: any) => a.tagId - b.tagId
+									),
+									likeBevTag: [
+										...(char.guest.likeBevTag || []),
+									].sort(
+										(a: any, b: any) => a.tagId - b.tagId
+									),
+									hateFoodTag: [
+										...(char.guest.hateFoodTag || []),
+									].sort((a: number, b: number) => a - b),
+									spawn: [...(char.guest.spawn || [])].sort(
+										(a: any, b: any) =>
+											a.izakayaId - b.izakayaId
+									),
 								}
 							: undefined,
 					}));
@@ -228,8 +253,21 @@ export function DataProvider({ children }: PropsWithChildren) {
 					characters: jsonData.characters || [],
 					dialogPackages: jsonData.dialogPackages || [],
 					ingredients: jsonData.ingredients || [],
-					foods: jsonData.foods || [],
-					beverages: jsonData.beverages || [],
+					foods: (jsonData.foods || []).map((f: any) => ({
+						...f,
+						tags: [...(f.tags || [])].sort(
+							(a: number, b: number) => a - b
+						),
+						banTags: [...(f.banTags || [])].sort(
+							(a: number, b: number) => a - b
+						),
+					})),
+					beverages: (jsonData.beverages || []).map((b: any) => ({
+						...b,
+						tags: [...(b.tags || [])].sort(
+							(a: number, b: number) => a - b
+						),
+					})),
 					recipes: jsonData.recipes || [],
 					missionNodes: (jsonData.missionNodes || []).map(
 						(node: any) => {
@@ -300,14 +338,30 @@ export function DataProvider({ children }: PropsWithChildren) {
 						...char,
 						guest: {
 							...char.guest,
-							foodRequests: char.guest.foodRequests.filter(
-								({ tagId }) =>
+							foodRequests: char.guest.foodRequests
+								.filter(({ tagId }) =>
 									activeLikeFoodTagIds.includes(tagId)
-							),
-							bevRequests: (char.guest.bevRequests || []).filter(
-								({ tagId }) =>
+								)
+								.sort((a, b) => a.tagId - b.tagId),
+							bevRequests: (char.guest.bevRequests || [])
+								.filter(({ tagId }) =>
 									activeLikeBevTagIds.includes(tagId)
+								)
+								.sort((a, b) => a.tagId - b.tagId),
+							likeFoodTag: [...char.guest.likeFoodTag].sort(
+								(a, b) => a.tagId - b.tagId
 							),
+							likeBevTag: [...char.guest.likeBevTag].sort(
+								(a, b) => a.tagId - b.tagId
+							),
+							hateFoodTag: [...char.guest.hateFoodTag].sort(
+								(a, b) => a - b
+							),
+							spawn: char.guest.spawn
+								? [...char.guest.spawn].sort(
+										(a, b) => a.izakayaId - b.izakayaId
+									)
+								: undefined,
 						},
 					};
 				}),

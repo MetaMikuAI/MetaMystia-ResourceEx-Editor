@@ -56,6 +56,10 @@ export function GuestInfoEditor({
 			// Beverage requests are "closed" by default, so we don't add them to bevRequests here
 		}
 
+		newTags.sort((a, b) => a.tagId - b.tagId);
+		newFoodRequests.sort((a, b) => a.tagId - b.tagId);
+		newBevRequests.sort((a, b) => a.tagId - b.tagId);
+
 		onUpdate({
 			[field]: newTags,
 			foodRequests: newFoodRequests,
@@ -75,6 +79,8 @@ export function GuestInfoEditor({
 		} else {
 			newTags = [...currentTags, tagId];
 		}
+
+		newTags.sort((a, b) => a - b);
 
 		onUpdate({ hateFoodTag: newTags });
 	};
@@ -109,6 +115,8 @@ export function GuestInfoEditor({
 				enable: enabled,
 			} as Request;
 		}
+
+		currentRequests.sort((a, b) => a.tagId - b.tagId);
 
 		onUpdate({ [field]: currentRequests });
 	};
@@ -174,6 +182,8 @@ export function GuestInfoEditor({
 				},
 			];
 		}
+
+		newSpawns.sort((a, b) => a.izakayaId - b.izakayaId);
 
 		onUpdate({ spawn: newSpawns });
 	};

@@ -51,6 +51,8 @@ export const FoodEditor = memo<FoodEditorProps>(function FoodEditor({
 				newTags = [...currentTags, tagId];
 			}
 
+			newTags.sort((a, b) => a - b);
+
 			onUpdate({ [field]: newTags });
 		},
 		[food, onUpdate]

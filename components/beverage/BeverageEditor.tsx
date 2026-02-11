@@ -49,6 +49,8 @@ export const BeverageEditor = memo<BeverageEditorProps>(
 					newTags = [...currentTags, tagId];
 				}
 
+				newTags.sort((a, b) => a - b);
+
 				onUpdate({ tags: newTags });
 			},
 			[beverage, onUpdate]
