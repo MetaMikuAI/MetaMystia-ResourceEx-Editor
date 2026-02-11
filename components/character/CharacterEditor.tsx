@@ -7,6 +7,7 @@ import { GuestInfoEditor } from './editor/GuestInfo';
 import { KizunaInfoEditor } from './editor/KizunaInfo';
 import { Portraits } from './editor/Portraits';
 import { SpriteSetEditor } from './editor/SpriteSet';
+import { SpellCardEditor } from './editor/SpellCardEditor';
 
 import type {
 	Character,
@@ -23,6 +24,7 @@ interface CharacterEditorProps {
 	character: Character | null;
 	allEvents: EventNode[];
 	allDialogPackages: DialogPackage[];
+	allCharacters: Character[];
 	isIdDuplicate: boolean;
 	onRemove: () => void;
 	onUpdate: (updates: Partial<Character>) => void;
@@ -33,6 +35,7 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 		character,
 		allEvents,
 		allDialogPackages,
+		allCharacters,
 		isIdDuplicate,
 		onRemove,
 		onUpdate,
@@ -303,6 +306,33 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 			onUpdate({ characterSpriteSetCompact: undefined });
 		}, [onUpdate]);
 
+		const enableSpellCard = useCallback(() => {
+			if (!character) {
+				return;
+			}
+			const spellCardType = character.label.replace(/^_/, '') || 'Custom';
+			onUpdate({
+				spellCard: {
+					spellCardType,
+					positiveSpell: {
+						name: '',
+						description: '',
+						spritePath: `assets/Character/${character.id}/Spell/Positive.png`,
+						overrideSpell: -1,
+					},
+					negativeSpell: {
+						name: '',
+						description: '',
+						spritePath: `assets/Character/${character.id}/Spell/Negative.png`,
+						overrideSpell: -1,
+					},
+				},
+			});
+		}, [character, onUpdate]);
+		const disableSpellCard = useCallback(() => {
+			onUpdate({ spellCard: undefined });
+		}, [onUpdate]);
+
 		const generateDefaultSprites = useCallback(() => {
 			if (!character) {
 				return;
@@ -416,6 +446,15 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 					onEnable={enableSpriteSet}
 					onDisable={disableSpriteSet}
 					onGenerateDefaults={generateDefaultSprites}
+				/>
+
+				<SpellCardEditor
+					character={character}
+					spellCard={character.spellCard}
+					onUpdate={onUpdate}
+					onEnable={enableSpellCard}
+					onDisable={disableSpellCard}
+					allCharacters={allCharacters}
 				/>
 			</div>
 		);

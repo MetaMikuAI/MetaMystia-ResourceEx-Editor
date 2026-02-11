@@ -86,6 +86,29 @@ export interface SpawnMarker {
 	rotation: 'Down' | 'Up' | 'Left' | 'Right';
 }
 
+export interface Spell {
+	name: string;
+	description: string;
+	spritePath: string;
+	overrideSpell: number;
+}
+
+export interface Buff {
+	type: string;
+	name: string;
+	description: string;
+	spritePath: string;
+	spriteFallback: string;
+}
+
+export interface SpellCard {
+	spellCardType: string;
+	positiveSpell: Spell;
+	negativeSpell: Spell;
+	positiveBuff?: Buff;
+	negativeBuff?: Buff;
+}
+
 export interface Character {
 	id: number;
 	name: string;
@@ -98,6 +121,7 @@ export interface Character {
 	guest?: GuestInfo | undefined;
 	kizuna?: KizunaInfo | undefined;
 	characterSpriteSetCompact?: CharacterSpriteSet | undefined;
+	spellCard?: SpellCard | undefined;
 }
 
 export interface Dialog {
