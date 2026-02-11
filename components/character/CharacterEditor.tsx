@@ -8,6 +8,7 @@ import { KizunaInfoEditor } from './editor/KizunaInfo';
 import { Portraits } from './editor/Portraits';
 import { SpriteSetEditor } from './editor/SpriteSet';
 import { SpellCardEditor } from './editor/SpellCardEditor';
+import { SPECIAL_PORTRAITS } from '@/data/specialPortraits';
 
 import type {
 	Character,
@@ -311,19 +312,33 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 				return;
 			}
 			const spellCardType = character.label.replace(/^_/, '') || 'Custom';
+
+			// Get default pid from available portraits
+			let defaultPid = 0;
+			if (character.type === 'Special' && character.id < 9000) {
+				// For built-in special guests, get first portrait from SPECIAL_PORTRAITS
+				const firstPortrait = SPECIAL_PORTRAITS.find(
+					(p) => p.characterId === character.id
+				);
+				defaultPid = firstPortrait?.pid ?? 0;
+			} else {
+				// For custom characters, get first portrait from character.portraits
+				defaultPid = character.portraits?.[0]?.pid ?? 0;
+			}
+
 			onUpdate({
 				spellCard: {
 					spellCardType,
 					positiveSpell: {
 						name: '',
 						description: '',
-						spritePath: `assets/Character/${character.id}/Spell/Positive.png`,
+						pid: defaultPid,
 						overrideSpell: -1,
 					},
 					negativeSpell: {
 						name: '',
 						description: '',
-						spritePath: `assets/Character/${character.id}/Spell/Negative.png`,
+						pid: defaultPid,
 						overrideSpell: -1,
 					},
 				},

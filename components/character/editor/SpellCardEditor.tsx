@@ -2,10 +2,11 @@ import { useState, useCallback, useMemo } from 'react';
 import { cn } from '@/lib';
 import { ChevronRight } from '@/components/icons/ChevronRight';
 import { Label } from '@/components/common/Label';
-import { PortraitUploader } from '@/components/common/PortraitUploader';
 import { useData } from '@/components/context/DataContext';
 import type { SpellCard, Character } from '@/types/resource';
 import { SPECIAL_GUESTS } from '@/data/specialGuest';
+import { SPECIAL_PORTRAITS } from '@/data/specialPortraits';
+import { PortraitPreview } from '@/components/dialog/PortraitPreview';
 
 interface SpellCardEditorProps {
 	character: Character;
@@ -25,7 +26,7 @@ export function SpellCardEditor({
 	allCharacters,
 }: SpellCardEditorProps) {
 	const [isExpanded, setIsExpanded] = useState(false);
-	const { updateAsset } = useData();
+	const { getAssetUrl } = useData();
 
 	const updateSpellCard = useCallback(
 		(updates: Partial<SpellCard>) => {
@@ -90,20 +91,43 @@ export function SpellCardEditor({
 		[spellCard, updateSpellCard]
 	);
 
-	const handlePositiveSpriteUpdate = useCallback(
-		(file: File) => {
-			if (!spellCard) return;
-			updateAsset(spellCard.positiveSpell.spritePath, file);
+	// Get available portraits for this character
+	const availablePortraits = useMemo(() => {
+		if (character.type === 'Special' && character.id < 9000) {
+			return SPECIAL_PORTRAITS.filter(
+				(p) => p.characterId === character.id
+			).map(({ name, pid }) => ({ name, pid }));
+		}
+		return (character.portraits ?? []).map(({ label, pid }) => ({
+			name: label || `立绘${pid}`,
+			pid,
+		}));
+	}, [character]);
+
+	// Get portrait path for preview
+	const getPortraitPath = useCallback(
+		(pid: number): string | null => {
+			if (character.type === 'Special' && character.id < 9000) {
+				const portrait = SPECIAL_PORTRAITS.find(
+					(p) => p.characterId === character.id && p.pid === pid
+				);
+				return portrait
+					? `/assets/SpecialPortrait/${portrait.filename}`
+					: null;
+			}
+			const portrait = character.portraits?.find((p) => p.pid === pid);
+			return portrait ? (getAssetUrl(portrait.path) ?? null) : null;
 		},
-		[spellCard, updateAsset]
+		[character, getAssetUrl]
 	);
 
-	const handleNegativeSpriteUpdate = useCallback(
-		(file: File) => {
-			if (!spellCard) return;
-			updateAsset(spellCard.negativeSpell.spritePath, file);
+	// Get portrait name
+	const getPortraitName = useCallback(
+		(pid: number): string => {
+			const portrait = availablePortraits.find((p) => p.pid === pid);
+			return portrait?.name || `立绘${pid}`;
 		},
-		[spellCard, updateAsset]
+		[availablePortraits]
 	);
 
 	// Get all special guest characters: game guests + custom guests
@@ -244,7 +268,42 @@ export function SpellCardEditor({
 								当且仅当 Spell Card Type 为 "Custom" 时有效
 							</p>
 						</div>
+						<div className="flex flex-col gap-1">
+							<Label>符卡立绘</Label>
+							<select
+								className="h-9 w-full rounded-lg border border-black/10 bg-white/40 px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:border-white/10 dark:bg-black/10 dark:focus:border-white/10 dark:focus:ring-white/10"
+								value={spellCard.positiveSpell.pid}
+								onChange={(e) =>
+									updateSpell('positiveSpell', {
+										pid: parseInt(e.target.value),
+									})
+								}
+							>
+								{availablePortraits.length > 0 ? (
+									availablePortraits.map(({ name, pid }) => (
+										<option key={pid} value={pid}>
+											（{pid}）{name}
+										</option>
+									))
+								) : (
+									<option value={0}>无可用立绘</option>
+								)}
+							</select>
+						</div>
 
+						<div className="flex flex-col gap-1">
+							<PortraitPreview
+								portraitPath={getPortraitPath(
+									spellCard.positiveSpell.pid
+								)}
+								characterId={character.id}
+								charName={character.name}
+								pid={spellCard.positiveSpell.pid}
+								portraitName={getPortraitName(
+									spellCard.positiveSpell.pid
+								)}
+							/>
+						</div>
 						{/* Positive Buff Toggle */}
 						<div className="flex flex-col gap-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
 							<label className="flex cursor-pointer items-center gap-2">
@@ -408,7 +467,42 @@ export function SpellCardEditor({
 								当且仅当 Spell Card Type 为 "Custom" 时有效
 							</p>
 						</div>
+						<div className="flex flex-col gap-1">
+							<Label>符卡立绘</Label>
+							<select
+								className="h-9 w-full rounded-lg border border-black/10 bg-white/40 px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:border-white/10 dark:bg-black/10 dark:focus:border-white/10 dark:focus:ring-white/10"
+								value={spellCard.negativeSpell.pid}
+								onChange={(e) =>
+									updateSpell('negativeSpell', {
+										pid: parseInt(e.target.value),
+									})
+								}
+							>
+								{availablePortraits.length > 0 ? (
+									availablePortraits.map(({ name, pid }) => (
+										<option key={pid} value={pid}>
+											（{pid}）{name}
+										</option>
+									))
+								) : (
+									<option value={0}>无可用立绘</option>
+								)}
+							</select>
+						</div>
 
+						<div className="flex flex-col gap-1">
+							<PortraitPreview
+								portraitPath={getPortraitPath(
+									spellCard.negativeSpell.pid
+								)}
+								characterId={character.id}
+								charName={character.name}
+								pid={spellCard.negativeSpell.pid}
+								portraitName={getPortraitName(
+									spellCard.negativeSpell.pid
+								)}
+							/>
+						</div>
 						{/* Negative Buff Toggle */}
 						<div className="flex flex-col gap-2 rounded-lg border border-danger/20 bg-danger/5 p-3">
 							<label className="flex cursor-pointer items-center gap-2">
@@ -512,25 +606,6 @@ export function SpellCardEditor({
 									</div>
 								</div>
 							)}
-						</div>
-					</div>
-
-					{/* Sprite Uploaders */}
-					<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-						<div className="flex flex-col gap-1">
-							<Label>奖励符卡贴图</Label>
-							<PortraitUploader
-								spritePath={spellCard.positiveSpell.spritePath}
-								onUpload={handlePositiveSpriteUpdate}
-							/>
-						</div>
-
-						<div className="flex flex-col gap-1">
-							<Label>惩罚符卡贴图</Label>
-							<PortraitUploader
-								spritePath={spellCard.negativeSpell.spritePath}
-								onUpload={handleNegativeSpriteUpdate}
-							/>
 						</div>
 					</div>
 				</div>

@@ -89,7 +89,7 @@ export interface SpawnMarker {
 export interface Spell {
 	name: string;
 	description: string;
-	spritePath: string;
+	pid: number;
 	overrideSpell: number;
 }
 
