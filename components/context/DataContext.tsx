@@ -155,6 +155,13 @@ export function DataProvider({ children }: PropsWithChildren) {
 				const jsonStr = await jsonFile.async('string');
 				let jsonData = JSON.parse(jsonStr) as ResourceEx;
 
+				// Load LICENSE.md if exists
+				const licenseFile = zip.file('LICENSE.md');
+				let licenseContent = '';
+				if (licenseFile) {
+					licenseContent = await licenseFile.async('string');
+				}
+
 				// Data migration / normalization
 				if (jsonData.characters) {
 					jsonData.characters = jsonData.characters.map((char) => ({
@@ -248,6 +255,10 @@ export function DataProvider({ children }: PropsWithChildren) {
 					description: (jsonData as any).description,
 					version: (jsonData as any).version,
 				};
+				// Override license with LICENSE.md content if exists
+				if (licenseContent) {
+					packInfo.license = licenseContent;
+				}
 				setData({
 					packInfo,
 					characters: jsonData.characters || [],
@@ -368,6 +379,11 @@ export function DataProvider({ children }: PropsWithChildren) {
 			};
 
 			zip.file('ResourceEx.json', JSON.stringify(exportData, null, 2));
+
+			// Add LICENSE.md if license exists
+			if (data.packInfo?.license) {
+				zip.file('LICENSE.md', data.packInfo.license);
+			}
 
 			// Collect all used asset paths
 			const usedPaths = new Set<string>();
