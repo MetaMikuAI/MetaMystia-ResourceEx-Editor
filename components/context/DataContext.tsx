@@ -13,6 +13,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
 import type { ResourceEx } from '@/types/resource';
+import { sortValues, trimCRLF } from './utils';
 
 interface DataContextType {
 	data: ResourceEx;
@@ -378,7 +379,16 @@ export function DataProvider({ children }: PropsWithChildren) {
 				}),
 			};
 
-			zip.file('ResourceEx.json', JSON.stringify(exportData, null, 2));
+			// Sort object values for consistency
+			sortValues(exportData);
+
+			// Trim strings and replace CRLF with LF
+			trimCRLF(exportData);
+
+			zip.file(
+				'ResourceEx.json',
+				`${JSON.stringify(exportData, null, 2)}\n`
+			);
 
 			// Add LICENSE.md if license exists
 			if (data.packInfo?.license) {
