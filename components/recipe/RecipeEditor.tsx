@@ -3,6 +3,7 @@ import { memo, useCallback, useId } from 'react';
 import { EmptyState } from '@/components/common/EmptyState';
 import { cn } from '@/lib';
 import { ErrorBadge } from '@/components/common/ErrorBadge';
+import { IdRangeBadge } from '@/components/common/IdRangeBadge';
 import { Label } from '@/components/common/Label';
 import type { Recipe, CookerType } from '@/types/resource';
 import { INGREDIENT_NAMES } from '@/data/ingredients';
@@ -93,9 +94,12 @@ export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
 					<div className="flex flex-col gap-1">
 						<div className="flex items-center justify-between">
 							<Label htmlFor={idId}>菜谱ID</Label>
-							{isIdTooSmall && (
-								<ErrorBadge>ID需&ge;9000</ErrorBadge>
-							)}
+							<div className="flex gap-2">
+								{isIdTooSmall && (
+									<ErrorBadge>ID需&ge;9000</ErrorBadge>
+								)}
+								<IdRangeBadge id={recipe.id} />
+							</div>
 						</div>
 						<input
 							id={idId}

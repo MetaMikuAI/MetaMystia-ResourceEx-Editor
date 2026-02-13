@@ -7,6 +7,7 @@ import { TextInput } from '@/components/common/TextInput';
 import { TextArea } from '@/components/common/TextArea';
 import { ArrayFieldEditor } from '@/components/common/ArrayFieldEditor';
 import { useVersionValidation } from '@/components/common/useVersionValidation';
+import { IdRangeEditor } from '@/components/info/IdRangeEditor';
 import type { PackInfo } from '@/types/resource';
 
 export default function InfoPage() {
@@ -111,6 +112,12 @@ export default function InfoPage() {
 							emptyMessage="暂无作者"
 						/>
 					</EditorField>
+
+					{/* ID Range Allocation */}
+					<IdRangeEditor
+						packInfo={packInfo}
+						onUpdate={updatePackInfo}
+					/>
 
 					{/* Description */}
 					<EditorField label="描述 (Description)">

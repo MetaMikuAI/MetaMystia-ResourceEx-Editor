@@ -3,7 +3,7 @@ import { TextInput } from './TextInput';
 
 interface ArrayFieldEditorProps<T = string> {
 	items: T[];
-	onAdd: () => void;
+	onAdd?: () => void;
 	onUpdate: (index: number, value: T) => void;
 	onRemove: (index: number) => void;
 	renderItem?: (
@@ -18,13 +18,11 @@ interface ArrayFieldEditorProps<T = string> {
 
 export function ArrayFieldEditor<T = string>({
 	items,
-	onAdd,
 	onUpdate,
 	onRemove,
 	renderItem,
 	placeholder = '',
 	emptyMessage = '暂无项目',
-	addButtonText = '+ 添加',
 }: ArrayFieldEditorProps<T>) {
 	const defaultRenderItem = (
 		item: T,

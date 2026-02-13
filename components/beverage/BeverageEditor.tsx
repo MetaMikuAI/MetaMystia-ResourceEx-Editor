@@ -2,6 +2,7 @@ import { memo, useCallback, useId } from 'react';
 
 import { useData } from '@/components/context/DataContext';
 import { ErrorBadge } from '@/components/common/ErrorBadge';
+import { IdRangeBadge } from '@/components/common/IdRangeBadge';
 import { SpriteUploader } from '@/components/common/SpriteUploader';
 import { Label } from '@/components/common/Label';
 import { BEVERAGE_TAGS } from '@/data/tags';
@@ -83,9 +84,12 @@ export const BeverageEditor = memo<BeverageEditorProps>(
 						<div className="flex flex-col gap-1">
 							<div className="flex items-center justify-between">
 								<Label htmlFor={idId}>ID</Label>
-								{isIdTooSmall && (
-									<ErrorBadge>ID需&ge;9000</ErrorBadge>
-								)}
+								<div className="flex gap-2">
+									{isIdTooSmall && (
+										<ErrorBadge>ID需&ge;9000</ErrorBadge>
+									)}
+									<IdRangeBadge id={beverage.id} />
+								</div>
 							</div>
 							<input
 								id={idId}

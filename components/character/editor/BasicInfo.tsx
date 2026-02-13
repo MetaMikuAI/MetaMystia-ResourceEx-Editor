@@ -2,6 +2,7 @@ import { memo, useId } from 'react';
 
 import { cn } from '@/lib';
 import { ErrorBadge } from '@/components/common/ErrorBadge';
+import { IdRangeBadge } from '@/components/common/IdRangeBadge';
 import { Label } from '@/components/common/Label';
 import type { Character } from '@/types/resource';
 
@@ -39,6 +40,7 @@ export const BasicInfo = memo<BasicInfoProps>(function BasicInfo({
 					<div className="flex gap-2">
 						{isIdDuplicate && <ErrorBadge>ID重复</ErrorBadge>}
 						{isIdTooSmall && <ErrorBadge>ID需&ge;9000</ErrorBadge>}
+						<IdRangeBadge id={character.id} />
 					</div>
 				</div>
 				<input

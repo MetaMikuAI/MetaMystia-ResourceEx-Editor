@@ -378,6 +378,9 @@ export interface PackInfo {
 	description?: string;
 	version?: string;
 	license?: string;
+	idRangeStart?: number | undefined;
+	idRangeEnd?: number | undefined;
+	idSignature?: string | undefined;
 }
 
 export interface ResourceEx {
