@@ -131,7 +131,7 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 			<p className="text-xs leading-relaxed opacity-50">
 				签名是为了证明您拥有合法分配的 ID
 				段，保证您的资源包不会与其他资源包发生 ID
-				冲突。也可以使用不带签名的 ID
+				冲突。也可以使用无需签名的 ID
 				段，但这意味着您需要自行承担与其他资源包发生 ID 冲突的风险。
 			</p>
 			<p className="text-xs leading-relaxed opacity-50">
@@ -144,6 +144,11 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 				签名后除非修改了 ID 段或资源包唯一标识符
 				(Label)，否则签名将一直有效；如果修改了 ID 段或
 				Label，请务必重新签名以保证新的 ID 段合法有效。
+			</p>
+			<p className="text-xs leading-relaxed opacity-50">
+				开发期间可以临时修改 游戏目录/BepInEx/config/MetaMystia.cfg 中的
+				SignatureCheck 选项来关闭签名验证，以方便测试无需签名的 ID
+				段，但不建议长期关闭验证以避免潜在的 ID 冲突问题。
 			</p>
 
 			{/* Start / End */}
