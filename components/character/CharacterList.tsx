@@ -2,6 +2,8 @@ import { memo, useCallback } from 'react';
 
 import { cn } from '@/lib';
 import { EmptyState } from '@/components/common/EmptyState';
+import { WarningBadge } from '@/components/common/WarningBadge';
+import { usePackLabelPrefix } from '@/components/common/useLabelPrefixValidation';
 import type { Character } from '@/types/resource';
 
 interface CharacterListProps {
@@ -24,6 +26,8 @@ export const CharacterList = memo<CharacterListProps>(function CharacterList({
 		[characters]
 	);
 
+	const packLabelPrefix = usePackLabelPrefix();
+
 	return (
 		<div className="flex h-min flex-col gap-4 overflow-y-auto rounded-lg bg-white/10 p-4 shadow-md backdrop-blur lg:sticky lg:top-24">
 			<div className="flex items-center justify-between">
@@ -38,6 +42,11 @@ export const CharacterList = memo<CharacterListProps>(function CharacterList({
 			<div className="flex flex-col gap-2">
 				{characters.map((char, index) => {
 					const isDuplicate = isIdDuplicate(char.id, index);
+					const hasPrefixWarning =
+						packLabelPrefix &&
+						packLabelPrefix !== '_' &&
+						char.label &&
+						!char.label.startsWith(packLabelPrefix);
 					return (
 						<button
 							key={index}
@@ -59,11 +68,16 @@ export const CharacterList = memo<CharacterListProps>(function CharacterList({
 								<span className="text-lg font-bold text-foreground">
 									{char.name || '未命名角色'}
 								</span>
-								{isDuplicate && (
-									<span className="rounded bg-danger px-1.5 py-0.5 text-[10px] font-medium">
-										ID重复
-									</span>
-								)}
+								<div className="flex gap-2">
+									{isDuplicate && (
+										<span className="rounded bg-danger px-1.5 py-0.5 text-[10px] font-medium">
+											ID重复
+										</span>
+									)}
+									{hasPrefixWarning && (
+										<WarningBadge>前缀不规范</WarningBadge>
+									)}
+								</div>
 							</div>
 							<div className="font-mono text-xs text-foreground opacity-80">
 								ID: {char.id} | {char.type}

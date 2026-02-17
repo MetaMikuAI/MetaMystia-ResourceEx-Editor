@@ -1,5 +1,7 @@
 import { memo } from 'react';
 import { EditorField } from '@/components/common/EditorField';
+import { WarningBadge } from '@/components/common/WarningBadge';
+import { useLabelPrefixValidation } from '@/components/common/useLabelPrefixValidation';
 import type { Character, MissionNode, MissionType } from '@/types/resource';
 
 interface MissionBasicInfoProps {
@@ -18,6 +20,14 @@ export const MissionBasicInfo = memo<MissionBasicInfoProps>(
 		characterOptions,
 		onUpdate,
 	}) {
+		const {
+			isValid: isLabelPrefixValid,
+			prefix: expectedPrefix,
+			hasPackLabel,
+		} = useLabelPrefixValidation(mission.label || '');
+		const showPrefixWarning =
+			hasPackLabel && mission.label && !isLabelPrefixValid;
+
 		return (
 			<div className="grid grid-cols-1 gap-6">
 				<EditorField label="Title">
@@ -75,7 +85,16 @@ export const MissionBasicInfo = memo<MissionBasicInfoProps>(
 					/>
 				</EditorField>
 
-				<EditorField label="Label">
+				<EditorField
+					label="Label"
+					actions={
+						showPrefixWarning ? (
+							<WarningBadge>
+								建议以 {expectedPrefix} 开头
+							</WarningBadge>
+						) : undefined
+					}
+				>
 					<input
 						type="text"
 						value={mission.label || ''}

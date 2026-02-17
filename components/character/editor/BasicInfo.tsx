@@ -2,8 +2,10 @@ import { memo, useId } from 'react';
 
 import { cn } from '@/lib';
 import { ErrorBadge } from '@/components/common/ErrorBadge';
+import { WarningBadge } from '@/components/common/WarningBadge';
 import { IdRangeBadge } from '@/components/common/IdRangeBadge';
 import { Label } from '@/components/common/Label';
+import { useLabelPrefixValidation } from '@/components/common/useLabelPrefixValidation';
 import type { Character } from '@/types/resource';
 
 interface BasicInfoProps {
@@ -24,6 +26,13 @@ export const BasicInfo = memo<BasicInfoProps>(function BasicInfo({
 
 	const isIdTooSmall = character.id < 9000;
 	const isLabelInvalid = !character.label.startsWith('_');
+	const {
+		isValid: isLabelPrefixValid,
+		prefix: expectedPrefix,
+		hasPackLabel,
+	} = useLabelPrefixValidation(character.label);
+	const showPrefixWarning =
+		hasPackLabel && !isLabelPrefixValid && !isLabelInvalid;
 
 	return (
 		<div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -89,12 +98,19 @@ export const BasicInfo = memo<BasicInfoProps>(function BasicInfo({
 					<Label
 						htmlFor={idLabel}
 						tip={
-							'必须保证全局唯一\n必须以下划线_开头\n通常可以是英文名，例如：_Daiyousei\n全局：游戏以及全部资源包'
+							'必须保证全局唯一\n必须以下划线_开头\n建议以 _{资源包label}_ 开头，例如：_MyPack_Daiyousei\n全局：游戏以及全部资源包'
 						}
 					>
 						标签（Label）
 					</Label>
-					{isLabelInvalid && <ErrorBadge>必须以_开头</ErrorBadge>}
+					<div className="flex gap-2">
+						{isLabelInvalid && <ErrorBadge>必须以_开头</ErrorBadge>}
+						{showPrefixWarning && (
+							<WarningBadge>
+								建议以 {expectedPrefix} 开头
+							</WarningBadge>
+						)}
+					</div>
 				</div>
 				<input
 					id={idLabel}

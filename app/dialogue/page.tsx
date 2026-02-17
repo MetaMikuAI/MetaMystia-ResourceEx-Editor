@@ -23,8 +23,10 @@ export default function DialoguePage() {
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
 	const addDialogPackage = useCallback(() => {
+		const packLabel = data.packInfo.label;
+		const namePrefix = packLabel ? `_${packLabel}_` : '_';
 		const newPkg: DialogPackage = {
-			name: `新对话包${data.dialogPackages.length + 1}`,
+			name: `${namePrefix}Dialog_${data.dialogPackages.length + 1}`,
 			dialogList: [],
 		};
 		const newPackages = [...data.dialogPackages, newPkg];

@@ -3,9 +3,11 @@ import { memo, useCallback, useId } from 'react';
 import { EmptyState } from '@/components/common/EmptyState';
 import { DialogItemWrapper } from './DialogItem';
 import { ErrorBadge } from '@/components/common/ErrorBadge';
+import { WarningBadge } from '@/components/common/WarningBadge';
 import { cn } from '@/lib';
 import type { Dialog, DialogPackage } from '@/types/resource';
 import { Label } from '../common/Label';
+import { useLabelPrefixValidation } from '@/components/common/useLabelPrefixValidation';
 
 interface DialogEditorProps {
 	allPackages: DialogPackage[];
@@ -30,6 +32,13 @@ export const DialogEditor = memo<DialogEditorProps>(function DialogEditor({
 	onUpdateDialog,
 }) {
 	const id = useId();
+	const {
+		isValid: isNamePrefixValid,
+		prefix: expectedPrefix,
+		hasPackLabel,
+	} = useLabelPrefixValidation(dialogPackage?.name || '');
+	const showPrefixWarning =
+		hasPackLabel && dialogPackage && !isNamePrefixValid;
 
 	const isNameDuplicate = useCallback(
 		(name: string, index: number | null) => {
@@ -58,14 +67,21 @@ export const DialogEditor = memo<DialogEditorProps>(function DialogEditor({
 						htmlFor={id}
 						className="block w-full text-sm font-medium opacity-80"
 						tip={
-							'必须保证全局唯一\n必须以下划线_开头\n通常可以是英文名，例如：_Kizuna_Daiyousei_LV1_001\n修改此 label 需要对应修改引用此对话包的地方\n全局：游戏以及全部资源包'
+							'必须保证全局唯一\n建议以 _{资源包label}_ 开头\n例如：_MyPack_Kizuna_Daiyousei_LV1_001\n修改此名称需要对应修改引用此对话包的地方\n全局：游戏以及全部资源包'
 						}
 					>
 						对话包名称
 					</Label>
-					{isNameDuplicate(dialogPackage.name, packageIndex) && (
-						<ErrorBadge>命名重复</ErrorBadge>
-					)}
+					<div className="flex gap-2">
+						{isNameDuplicate(dialogPackage.name, packageIndex) && (
+							<ErrorBadge>命名重复</ErrorBadge>
+						)}
+						{showPrefixWarning && (
+							<WarningBadge>
+								建议以 {expectedPrefix} 开头
+							</WarningBadge>
+						)}
+					</div>
 				</div>
 				<input
 					id={id}

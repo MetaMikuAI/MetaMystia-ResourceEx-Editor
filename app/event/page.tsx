@@ -7,11 +7,10 @@ import { EventList } from '@/components/event/EventList';
 import EventEditor from '@/components/event/EventEditor';
 import type { EventNode } from '@/types/resource';
 
-const DEFAULT_EVENT: EventNode = {
-	label: '',
+const DEFAULT_EVENT = {
 	debugLabel: '新事件',
-	scheduledEvent: { eventData: { eventType: 'Null' } },
-	postMissionsAfterPerformance: [],
+	scheduledEvent: { eventData: { eventType: 'Null' as const } },
+	postMissionsAfterPerformance: [] as string[],
 };
 
 export default function EventPage() {
@@ -19,7 +18,9 @@ export default function EventPage() {
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
 	const addEvent = useCallback(() => {
-		const newEvent = { ...DEFAULT_EVENT };
+		const packLabel = data.packInfo.label;
+		const labelPrefix = packLabel ? `_${packLabel}_` : '_';
+		const newEvent: EventNode = { ...DEFAULT_EVENT, label: labelPrefix };
 		const newEvents = [...(data.eventNodes || []), newEvent];
 		setData({ ...data, eventNodes: newEvents });
 		setSelectedIndex(newEvents.length - 1);

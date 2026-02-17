@@ -10,12 +10,11 @@ import { Header } from '@/components/common/Header';
 
 import type { Character, CharacterType } from '@/types/resource';
 
-const DEFAULT_CHARACTER: Character = {
+const DEFAULT_CHARACTER = {
 	id: 0,
 	name: '',
-	label: '',
 	descriptions: ['', '', ''],
-	type: 'Special',
+	type: 'Special' as const,
 	portraits: [],
 };
 
@@ -44,7 +43,13 @@ export default function CharacterPage() {
 			data.characters.length > 0
 				? Math.max(...data.characters.map((c) => c.id)) + 1
 				: 9000;
-		const newChar = { ...DEFAULT_CHARACTER, id: newId };
+		const packLabel = data.packInfo.label;
+		const labelPrefix = packLabel ? `_${packLabel}_` : '_';
+		const newChar: Character = {
+			...DEFAULT_CHARACTER,
+			id: newId,
+			label: labelPrefix,
+		};
 		const newCharacters = sortCharacters([...data.characters, newChar]);
 		setData({ ...data, characters: newCharacters });
 		const newIndex = newCharacters.indexOf(newChar);

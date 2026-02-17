@@ -1,8 +1,10 @@
 import { memo, useCallback } from 'react';
 
 import { EmptyState } from '@/components/common/EmptyState';
+import { WarningBadge } from '@/components/common/WarningBadge';
 import { cn } from '@/lib';
 import type { DialogPackage } from '@/types/resource';
+import { usePackLabelPrefix } from '@/components/common/useLabelPrefixValidation';
 
 interface DialogPackageListProps {
 	packages: DialogPackage[];
@@ -20,6 +22,8 @@ export const DialogPackageList = memo<DialogPackageListProps>(
 		onAdd,
 		onRemove,
 	}) {
+		const packLabelPrefix = usePackLabelPrefix();
+
 		const isNameDuplicate = useCallback(
 			(name: string, index: number) => {
 				return packages.some(
@@ -27,6 +31,14 @@ export const DialogPackageList = memo<DialogPackageListProps>(
 				);
 			},
 			[packages]
+		);
+
+		const isNamePrefixInvalid = useCallback(
+			(name: string) => {
+				if (!packLabelPrefix || packLabelPrefix === '_') return false;
+				return !name.startsWith(packLabelPrefix);
+			},
+			[packLabelPrefix]
 		);
 
 		return (
@@ -43,6 +55,7 @@ export const DialogPackageList = memo<DialogPackageListProps>(
 				<div className="flex flex-col gap-2">
 					{packages.map((pkg, index) => {
 						const isDuplicate = isNameDuplicate(pkg.name, index);
+						const hasPrefixWarning = isNamePrefixInvalid(pkg.name);
 						return (
 							<div
 								key={index}
@@ -72,7 +85,12 @@ export const DialogPackageList = memo<DialogPackageListProps>(
 												<span className="rounded bg-danger px-1.5 py-0.5 text-[10px] font-medium">
 													命名重复
 												</span>
-											)}
+											)}{' '}
+											{hasPrefixWarning && (
+												<WarningBadge>
+													前缀不规范
+												</WarningBadge>
+											)}{' '}
 										</div>
 										<div className="font-mono text-xs text-foreground opacity-80">
 											{pkg.dialogList.length}条对话

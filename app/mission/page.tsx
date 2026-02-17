@@ -5,18 +5,21 @@ import { useData } from '@/components/context/DataContext';
 import { Header } from '@/components/common/Header';
 import { MissionList } from '@/components/mission/MissionList';
 import MissionEditor from '@/components/mission/MissionEditor';
-import type { MissionNode } from '@/types/resource';
+import type {
+	MissionNode,
+	MissionReward,
+	MissionCondition,
+} from '@/types/resource';
 
-const DEFAULT_MISSION: MissionNode = {
+const DEFAULT_MISSION = {
 	title: '',
 	description: '',
-	label: '',
 	debugLabel: '新任务',
-	missionType: 'Kitsuna',
+	missionType: 'Kitsuna' as MissionNode['missionType'],
 	sender: '',
 	reciever: '', // ignore: typo
-	rewards: [],
-	finishConditions: [],
+	rewards: [] as MissionReward[],
+	finishConditions: [] as MissionCondition[],
 };
 
 export default function MissionPage() {
@@ -24,7 +27,12 @@ export default function MissionPage() {
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
 	const addMission = useCallback(() => {
-		const newMission = { ...DEFAULT_MISSION };
+		const packLabel = data.packInfo.label;
+		const labelPrefix = packLabel ? `_${packLabel}_` : '_';
+		const newMission: MissionNode = {
+			...DEFAULT_MISSION,
+			label: labelPrefix,
+		};
 		const newMissions = [...data.missionNodes, newMission];
 		setData({ ...data, missionNodes: newMissions });
 		setSelectedIndex(newMissions.length - 1);

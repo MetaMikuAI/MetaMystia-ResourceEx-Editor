@@ -6,6 +6,8 @@ import { cn } from '@/lib';
 import { useData } from '@/components/context/DataContext';
 import { InfoTip } from '@/components/common/InfoTip';
 import { Label } from '@/components/common/Label';
+import { WarningBadge } from '@/components/common/WarningBadge';
+import { useLabelPrefixValidation } from '@/components/common/useLabelPrefixValidation';
 
 interface SpriteSetProps {
 	characterId: number;
@@ -27,6 +29,13 @@ export function SpriteSetEditor({
 }: SpriteSetProps) {
 	const [isExpanded, setIsExpanded] = useState(false);
 	const { updateAsset, getAssetUrl } = useData();
+	const {
+		isValid: isSpriteNamePrefixValid,
+		prefix: expectedPrefix,
+		hasPackLabel,
+	} = useLabelPrefixValidation(spriteSet?.name || '');
+	const showPrefixWarning =
+		hasPackLabel && spriteSet && !isSpriteNamePrefixValid;
 
 	const updateSpriteArray = (
 		field: 'mainSprite' | 'eyeSprite',
@@ -119,16 +128,23 @@ export function SpriteSetEditor({
 						<div className="ml-1 flex items-center justify-between">
 							<Label
 								className="text-sm font-bold opacity-70"
-								tip="角色小人名称，请保证为角色的 Label，如：_Daiyousei"
+								tip="角色小人名称，建议以 _{资源包label}_ 开头，如：_MyPack_Daiyousei"
 							>
 								角色小人名称 (Name)
 							</Label>
-							<button
-								onClick={onGenerateDefaults}
-								className="rounded border border-white/10 bg-white/10 px-2 py-0.5 text-[10px] transition-all hover:bg-white/20 active:scale-95"
-							>
-								刷新默认填充
-							</button>
+							<div className="flex items-center gap-2">
+								{showPrefixWarning && (
+									<WarningBadge>
+										建议以 {expectedPrefix} 开头
+									</WarningBadge>
+								)}
+								<button
+									onClick={onGenerateDefaults}
+									className="rounded border border-white/10 bg-white/10 px-2 py-0.5 text-[10px] transition-all hover:bg-white/20 active:scale-95"
+								>
+									刷新默认填充
+								</button>
+							</div>
 						</div>
 						<input
 							type="text"

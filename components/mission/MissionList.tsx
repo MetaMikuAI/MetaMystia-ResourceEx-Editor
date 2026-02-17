@@ -1,7 +1,9 @@
 import { memo } from 'react';
 import { EmptyState } from '@/components/common/EmptyState';
+import { WarningBadge } from '@/components/common/WarningBadge';
 import { cn } from '@/lib';
 import type { MissionNode } from '@/types/resource';
+import { usePackLabelPrefix } from '@/components/common/useLabelPrefixValidation';
 
 interface MissionListProps {
 	missions: MissionNode[];
@@ -16,6 +18,8 @@ export const MissionList = memo<MissionListProps>(function MissionList({
 	onAdd,
 	onSelect,
 }) {
+	const packLabelPrefix = usePackLabelPrefix();
+
 	return (
 		<div className="flex h-min flex-col gap-4 overflow-y-auto rounded-lg bg-white/10 p-4 shadow-md backdrop-blur lg:sticky lg:top-24">
 			<div className="flex items-center justify-between">
@@ -28,27 +32,39 @@ export const MissionList = memo<MissionListProps>(function MissionList({
 				</button>
 			</div>
 			<div className="flex flex-col gap-2">
-				{(missions || []).map((mission, index) => (
-					<button
-						key={index}
-						onClick={() => onSelect(index)}
-						className={cn(
-							'btn-mystia-primary flex-col items-start border p-4',
-							selectedIndex === index
-								? 'border-primary bg-primary/20 shadow-inner'
-								: 'border-transparent bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10'
-						)}
-					>
-						<span className="text-lg font-bold text-foreground">
-							{mission.title ||
-								mission.debugLabel ||
-								'未命名任务'}
-						</span>
-						<div className="font-mono text-xs text-foreground opacity-80">
-							{mission.label} | {mission.missionType}
-						</div>
-					</button>
-				))}
+				{(missions || []).map((mission, index) => {
+					const hasPrefixWarning =
+						packLabelPrefix &&
+						packLabelPrefix !== '_' &&
+						mission.label &&
+						!mission.label.startsWith(packLabelPrefix);
+					return (
+						<button
+							key={index}
+							onClick={() => onSelect(index)}
+							className={cn(
+								'btn-mystia-primary flex-col items-start border p-4',
+								selectedIndex === index
+									? 'border-primary bg-primary/20 shadow-inner'
+									: 'border-transparent bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10'
+							)}
+						>
+							<div className="flex items-center gap-2">
+								<span className="text-lg font-bold text-foreground">
+									{mission.title ||
+										mission.debugLabel ||
+										'未命名任务'}
+								</span>
+								{hasPrefixWarning && (
+									<WarningBadge>前缀不规范</WarningBadge>
+								)}
+							</div>
+							<div className="font-mono text-xs text-foreground opacity-80">
+								{mission.label} | {mission.missionType}
+							</div>
+						</button>
+					);
+				})}
 				{(!missions || missions.length === 0) && (
 					<EmptyState
 						title="暂无任务节点"

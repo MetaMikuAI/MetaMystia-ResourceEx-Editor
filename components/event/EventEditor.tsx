@@ -15,10 +15,12 @@ import type {
 	Recipe,
 } from '@/types/resource';
 import { EditorField } from '@/components/common/EditorField';
+import { WarningBadge } from '@/components/common/WarningBadge';
 import { MissionRewardList } from '@/components/mission/MissionRewardList';
 import { PostEventList } from './PostEventList';
 import { PostMissionList } from '@/components/mission/PostMissionList';
 import { ScheduledEventEditor } from './ScheduledEventEditor';
+import { useLabelPrefixValidation } from '@/components/common/useLabelPrefixValidation';
 
 interface EventEditorProps {
 	eventNode: EventNode | null;
@@ -96,6 +98,14 @@ export default memo<EventEditorProps>(function EventEditor({
 		return options;
 	}, [allCharacters]);
 
+	const {
+		isValid: isLabelPrefixValid,
+		prefix: expectedPrefix,
+		hasPackLabel,
+	} = useLabelPrefixValidation(eventNode?.label || '');
+	const showPrefixWarning =
+		hasPackLabel && eventNode && eventNode.label && !isLabelPrefixValid;
+
 	if (!eventNode) {
 		return (
 			<div className="flex h-full items-center justify-center rounded-lg bg-white/5 p-8 text-center backdrop-blur">
@@ -131,7 +141,16 @@ export default memo<EventEditorProps>(function EventEditor({
 					/>
 				</EditorField>
 
-				<EditorField label="Label">
+				<EditorField
+					label="Label"
+					actions={
+						showPrefixWarning ? (
+							<WarningBadge>
+								建议以 {expectedPrefix} 开头
+							</WarningBadge>
+						) : undefined
+					}
+				>
 					<input
 						type="text"
 						value={eventNode.label || ''}
