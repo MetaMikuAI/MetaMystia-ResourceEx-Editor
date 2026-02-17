@@ -173,6 +173,23 @@ export interface Beverage {
 	modRoot?: string;
 }
 
+export interface PixelFullConfig {
+	name: string;
+	mainSprite: string[];
+	eyeSprite: string[];
+	hairSprite: string[];
+	backSprite: string[];
+}
+
+export interface Clothes {
+	id: number;
+	name: string;
+	description: string;
+	spritePath: string;
+	portraitPath: string;
+	pixelFullConfig: PixelFullConfig;
+}
+
 export type CookerType = 'Pot' | 'Grill' | 'Fryer' | 'Steamer' | 'CuttingBoard';
 
 export interface Recipe {
@@ -395,4 +412,5 @@ export interface ResourceEx {
 	missionNodes: MissionNode[];
 	eventNodes?: EventNode[];
 	merchants?: MerchantConfig[];
+	clothes?: Clothes[];
 }

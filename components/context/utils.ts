@@ -115,4 +115,9 @@ export const sortValues = (data: TPlainObject) => {
 	if (isArray(data['recipes'])) {
 		data['recipes'].sort((a, b) => Number(a.id) - Number(b.id));
 	}
+
+	// 6) clothes (by id)
+	if (isArray(data['clothes'])) {
+		data['clothes'].sort((a, b) => Number(a.id) - Number(b.id));
+	}
 };

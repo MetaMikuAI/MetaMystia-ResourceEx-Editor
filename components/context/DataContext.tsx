@@ -54,6 +54,7 @@ export function DataProvider({ children }: PropsWithChildren) {
 		missionNodes: [],
 		eventNodes: [],
 		merchants: [],
+		clothes: [],
 	});
 	const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
@@ -301,6 +302,36 @@ export function DataProvider({ children }: PropsWithChildren) {
 						}
 					),
 					merchants: jsonData.merchants || [],
+					clothes: (jsonData.clothes || []).map((c: any) => ({
+						...c,
+						pixelFullConfig: c.pixelFullConfig || {
+							name: `_ResourceExample_Clothes_${c.id}`,
+							mainSprite: Array(12)
+								.fill('')
+								.map(
+									(_: string, i: number) =>
+										`assets/Clothes/${c.id}/Sprite/Main_${Math.floor(i / 3)}, ${i % 3}.png`
+								),
+							eyeSprite: Array(24)
+								.fill('')
+								.map(
+									(_: string, i: number) =>
+										`assets/Clothes/${c.id}/Sprite/Eyes_${Math.floor(i / 4)}, ${i % 4}.png`
+								),
+							hairSprite: Array(12)
+								.fill('')
+								.map(
+									(_: string, i: number) =>
+										`assets/Clothes/${c.id}/Sprite/Hair_${Math.floor(i / 3)}, ${i % 3}.png`
+								),
+							backSprite: Array(12)
+								.fill('')
+								.map(
+									(_: string, i: number) =>
+										`assets/Clothes/${c.id}/Sprite/Back_${Math.floor(i / 3)}, ${i % 3}.png`
+								),
+						},
+					})),
 					eventNodes: (jsonData.eventNodes || []).map(
 						(node: any) => ({
 							label: node.label || '',
@@ -413,6 +444,26 @@ export function DataProvider({ children }: PropsWithChildren) {
 				if (bev.spritePath) usedPaths.add(bev.spritePath);
 			});
 
+			// 1.7 Clothes
+			exportData.clothes?.forEach((clothes) => {
+				if (clothes.spritePath) usedPaths.add(clothes.spritePath);
+				if (clothes.portraitPath) usedPaths.add(clothes.portraitPath);
+				if (clothes.pixelFullConfig) {
+					clothes.pixelFullConfig.mainSprite.forEach((p) => {
+						if (p) usedPaths.add(p);
+					});
+					clothes.pixelFullConfig.eyeSprite.forEach((p) => {
+						if (p) usedPaths.add(p);
+					});
+					clothes.pixelFullConfig.hairSprite.forEach((p) => {
+						if (p) usedPaths.add(p);
+					});
+					clothes.pixelFullConfig.backSprite.forEach((p) => {
+						if (p) usedPaths.add(p);
+					});
+				}
+			});
+
 			// 2. Characters
 			exportData.characters.forEach((char) => {
 				// Portraits
@@ -478,6 +529,7 @@ export function DataProvider({ children }: PropsWithChildren) {
 			missionNodes: [],
 			eventNodes: [],
 			merchants: [],
+			clothes: [],
 		});
 		// Clear assets
 		Object.values(assetUrls).forEach((url) => revokeUrl(url));

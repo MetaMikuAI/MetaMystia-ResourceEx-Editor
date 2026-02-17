@@ -95,6 +95,7 @@ export const Header = memo(function Header() {
 		'/food',
 		'/recipe',
 		'/beverage',
+		'/clothes',
 	].includes(pathname);
 	const isNodesActive = ['/mission', '/event'].includes(pathname);
 	const isMerchantActive = pathname === '/merchant';
@@ -157,6 +158,7 @@ export const Header = memo(function Header() {
 								{ href: '/food', label: '料理编辑' },
 								{ href: '/recipe', label: '菜谱编辑' },
 								{ href: '/beverage', label: '酒水编辑' },
+								{ href: '/clothes', label: '服装编辑' },
 							]}
 						/>
 
