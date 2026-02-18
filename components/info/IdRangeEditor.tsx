@@ -23,7 +23,9 @@ type VerifyStatus = 'idle' | 'valid' | 'invalid' | 'verifying';
 export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 	const [verifyStatus, setVerifyStatus] = useState<VerifyStatus>('idle');
 	const [showKeyDialog, setShowKeyDialog] = useState(false);
+	const [dialogMode, setDialogMode] = useState<'sign' | 'paste'>('sign');
 	const [privateKey, setPrivateKey] = useState('');
+	const [pastedSignature, setPastedSignature] = useState('');
 	const [signing, setSigning] = useState(false);
 	const [signError, setSignError] = useState<string | null>(null);
 	const dialogRef = useRef<HTMLDialogElement>(null);
@@ -74,6 +76,8 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 	const openDialog = useCallback(() => {
 		setSignError(null);
 		setPrivateKey('');
+		setPastedSignature('');
+		setDialogMode('sign');
 		setShowKeyDialog(true);
 		requestAnimationFrame(() => dialogRef.current?.showModal());
 	}, []);
@@ -82,6 +86,7 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 		dialogRef.current?.close();
 		setShowKeyDialog(false);
 		setPrivateKey('');
+		setPastedSignature('');
 		setSignError(null);
 	}, []);
 
@@ -124,31 +129,15 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 			</div>
 
 			<p className="text-xs leading-relaxed opacity-50">
-				0–8999 为游戏占有ID，不可使用；9000–1073741823
-				为受管理区，需分配签名后使用；1073741824–2147483647
-				为不受管理区，可自由使用但冲突后果自负。负数与超出范围的ID不可使用。
-			</p>
-			<p className="text-xs leading-relaxed opacity-50">
-				签名是为了证明您拥有合法分配的 ID
-				段，保证您的资源包不会与其他资源包发生 ID
-				冲突。也可以使用无需签名的 ID
-				段，但这意味着您需要自行承担与其他资源包发生 ID 冲突的风险。
-			</p>
-			<p className="text-xs leading-relaxed opacity-50">
-				您可以联系 MetaMiku (MetaMiku@hotail.com) 或加 qq 群
-				(1034953242) 或在 MetaMystia 仓库
-				(https://github.com/MetaMikuAI/MetaMystia) 提 issue 以申请 ID
-				段分配与签名服务。
-			</p>
-			<p className="text-xs leading-relaxed opacity-50">
-				签名后除非修改了 ID 段或资源包唯一标识符
-				(Label)，否则签名将一直有效；如果修改了 ID 段或
-				Label，请务必重新签名以保证新的 ID 段合法有效。
-			</p>
-			<p className="text-xs leading-relaxed opacity-50">
-				开发期间可以临时修改 游戏目录/BepInEx/config/MetaMystia.cfg 中的
-				SignatureCheck 选项来关闭签名验证，以方便测试无需签名的 ID
-				段，但不建议长期关闭验证以避免潜在的 ID 冲突问题。
+				请务必参考
+				<a
+					href="https://doc.meta-mystia.izakaya.cc/resource_ex/why_add_signature_check.html"
+					target="_blank"
+					rel="noopener noreferrer"
+					className="text-primary underline"
+				>
+					有关ID签名校验机制的说明（资源包创作者请注意）
+				</a>
 			</p>
 
 			{/* Start / End */}
@@ -218,20 +207,71 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 					className="w-full max-w-lg rounded-lg border border-black/10 bg-white p-6 shadow-xl backdrop:bg-black/40 dark:border-white/10 dark:bg-zinc-900"
 					onClose={closeDialog}
 				>
-					<h4 className="mb-4 text-lg font-bold">输入私钥进行签名</h4>
-					<p className="mb-2 text-xs opacity-60">
-						待签名内容: {label}:{idRangeStart}-{idRangeEnd}
-					</p>
-					<p className="mb-4 text-xs text-danger">
-						私钥仅用于本次签名，不会被保存！
-					</p>
-					<textarea
-						value={privateKey}
-						onChange={(e) => setPrivateKey(e.target.value)}
-						placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"
-						rows={6}
-						className="mb-4 w-full rounded-lg border border-black/10 bg-white/40 px-3 py-2 font-mono text-xs text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:border-white/10 dark:bg-black/10 dark:focus:border-white/30 dark:focus:ring-white/10"
-					/>
+					<h4 className="mb-4 text-lg font-bold">设置签名</h4>
+
+					{/* Tab switcher */}
+					<div className="mb-4 flex gap-1 rounded-lg bg-black/5 p-1 dark:bg-white/5">
+						<button
+							onClick={() => {
+								setDialogMode('sign');
+								setSignError(null);
+							}}
+							className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+								dialogMode === 'sign'
+									? 'bg-white shadow dark:bg-zinc-700'
+									: 'opacity-60 hover:opacity-80'
+							}`}
+						>
+							使用私钥签名
+						</button>
+						<button
+							onClick={() => {
+								setDialogMode('paste');
+								setSignError(null);
+							}}
+							className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+								dialogMode === 'paste'
+									? 'bg-white shadow dark:bg-zinc-700'
+									: 'opacity-60 hover:opacity-80'
+							}`}
+						>
+							直接输入签名
+						</button>
+					</div>
+
+					{dialogMode === 'sign' ? (
+						<>
+							<p className="mb-2 text-xs opacity-60">
+								待签名内容: {label}:{idRangeStart}-{idRangeEnd}
+							</p>
+							<p className="mb-4 text-xs text-danger">
+								私钥仅用于本次签名，不会被保存！
+							</p>
+							<textarea
+								value={privateKey}
+								onChange={(e) => setPrivateKey(e.target.value)}
+								placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"
+								rows={6}
+								className="mb-4 w-full rounded-lg border border-black/10 bg-white/40 px-3 py-2 font-mono text-xs text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:border-white/10 dark:bg-black/10 dark:focus:border-white/30 dark:focus:ring-white/10"
+							/>
+						</>
+					) : (
+						<>
+							<p className="mb-4 text-xs opacity-60">
+								直接粘贴已有的 Base64 签名，提交后将自动验证。
+							</p>
+							<textarea
+								value={pastedSignature}
+								onChange={(e) =>
+									setPastedSignature(e.target.value)
+								}
+								placeholder="粘贴 Base64 编码的签名…"
+								rows={4}
+								className="mb-4 w-full rounded-lg border border-black/10 bg-white/40 px-3 py-2 font-mono text-xs text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:border-white/10 dark:bg-black/10 dark:focus:border-white/30 dark:focus:ring-white/10"
+							/>
+						</>
+					)}
+
 					{signError && (
 						<p className="mb-4 text-xs text-danger">{signError}</p>
 					)}
@@ -242,13 +282,28 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 						>
 							取消
 						</button>
-						<button
-							onClick={handleSign}
-							disabled={!privateKey.trim() || signing}
-							className="btn-mystia h-8 px-4 text-sm disabled:cursor-not-allowed disabled:opacity-40"
-						>
-							{signing ? '签名中…' : '确认签名'}
-						</button>
+						{dialogMode === 'sign' ? (
+							<button
+								onClick={handleSign}
+								disabled={!privateKey.trim() || signing}
+								className="btn-mystia h-8 px-4 text-sm disabled:cursor-not-allowed disabled:opacity-40"
+							>
+								{signing ? '签名中…' : '确认签名'}
+							</button>
+						) : (
+							<button
+								onClick={() => {
+									const trimmed = pastedSignature.trim();
+									if (!trimmed) return;
+									onUpdate({ idSignature: trimmed });
+									closeDialog();
+								}}
+								disabled={!pastedSignature.trim()}
+								className="btn-mystia h-8 px-4 text-sm disabled:cursor-not-allowed disabled:opacity-40"
+							>
+								应用签名
+							</button>
+						)}
 					</div>
 				</dialog>
 			)}
