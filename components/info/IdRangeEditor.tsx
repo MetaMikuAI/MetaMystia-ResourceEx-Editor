@@ -28,6 +28,7 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 	const [pastedSignature, setPastedSignature] = useState('');
 	const [signing, setSigning] = useState(false);
 	const [signError, setSignError] = useState<string | null>(null);
+	const [copied, setCopied] = useState(false);
 	const dialogRef = useRef<HTMLDialogElement>(null);
 
 	const { idRangeStart, idRangeEnd, idSignature, label } = packInfo;
@@ -77,7 +78,7 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 		setSignError(null);
 		setPrivateKey('');
 		setPastedSignature('');
-		setDialogMode('sign');
+		setDialogMode('paste');
 		setShowKeyDialog(true);
 		requestAnimationFrame(() => dialogRef.current?.showModal());
 	}, []);
@@ -192,12 +193,70 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 					</button>
 				}
 			>
-				<TextInput
-					value={idSignature || ''}
-					readOnly
-					placeholder={'点击「签名」按钮进行签名…'}
-					className="font-mono text-xs"
-				/>
+				<div className="flex items-center gap-2">
+					<TextInput
+						value={idSignature || ''}
+						readOnly
+						placeholder={'点击「签名」按钮进行签名…'}
+						className="font-mono text-xs"
+					/>
+					<button
+						onClick={() => {
+							if (!idSignature) return;
+							navigator.clipboard
+								.writeText(idSignature)
+								.then(() => {
+									setCopied(true);
+									setTimeout(() => setCopied(false), 2000);
+								});
+						}}
+						disabled={!idSignature}
+						title={copied ? '已复制' : '复制签名'}
+						className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border bg-white/40 transition-colors disabled:cursor-not-allowed disabled:opacity-30 dark:bg-black/10 ${
+							copied
+								? 'border-green-500 text-green-600 dark:text-green-400'
+								: 'border-black/10 hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5'
+						}`}
+					>
+						{copied ? (
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="14"
+								height="14"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="2.5"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+							>
+								<polyline points="20 6 9 17 4 12" />
+							</svg>
+						) : (
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="14"
+								height="14"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="2"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+							>
+								<rect
+									width="14"
+									height="14"
+									x="8"
+									y="8"
+									rx="2"
+									ry="2"
+								/>
+								<path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+							</svg>
+						)}
+					</button>
+				</div>
 			</EditorField>
 
 			{/* Signing dialog */}
@@ -213,19 +272,6 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 					<div className="mb-4 flex gap-1 rounded-lg bg-black/5 p-1 dark:bg-white/5">
 						<button
 							onClick={() => {
-								setDialogMode('sign');
-								setSignError(null);
-							}}
-							className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-								dialogMode === 'sign'
-									? 'bg-white shadow dark:bg-zinc-700'
-									: 'opacity-60 hover:opacity-80'
-							}`}
-						>
-							使用私钥签名
-						</button>
-						<button
-							onClick={() => {
 								setDialogMode('paste');
 								setSignError(null);
 							}}
@@ -236,6 +282,19 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 							}`}
 						>
 							直接输入签名
+						</button>
+						<button
+							onClick={() => {
+								setDialogMode('sign');
+								setSignError(null);
+							}}
+							className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+								dialogMode === 'sign'
+									? 'bg-white shadow dark:bg-zinc-700'
+									: 'opacity-60 hover:opacity-80'
+							}`}
+						>
+							使用私钥签名
 						</button>
 					</div>
 
