@@ -1,20 +1,12 @@
 /**
  * RSA-2048 (SHA-256) signature utilities for ID range allocation.
  *
- * The public key is embedded for client-side verification.
+ * The public key is loaded from an external PEM file for client-side verification.
  * Private keys are NEVER persisted — they are kept only in memory
  * for the duration of a single signing operation.
  */
 
-const PUBLIC_KEY_PEM = `-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvI3be1KGxa3ZAodaVWEr
-5DX3nKUHVw6fyPnEGDUse1PZOMeLauM/ZTJWa+wB+wc/vsJW59wBvy8Q7Tbal9cT
-8o1K6NQq6juR1tUxZXQUqsMeAYEZBykR5KmwAKXXQeWCHDP0ZQSOJ5A25ZxCJH+I
-1pVGx1VTPqWL7NpAAxsfZ3EbgOvsolc4YtFb9OqjYEeVXnCMR9TA3rmD7dNYPhO6
-Jy+lsZlCch9Y3GgGbLQ4Mdq3h0FuhkfHUuHsmHcibeNfV+AKatZsHoybG4meFG73
-4hgzy+khLGyZSEcx4CmP/izKuAgoLAnnINNqNiOTltlpRoLaPfGQX8swwmr7nQh1
-sQIDAQAB
------END PUBLIC KEY-----`;
+import PUBLIC_KEY_PEM from './keys/public.pem';
 
 /** ID range boundaries */
 export const GAME_ID_MAX = 8999;

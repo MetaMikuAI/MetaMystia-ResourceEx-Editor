@@ -10,6 +10,11 @@ const nextConfig: NextConfig = {
 	typescript: { ignoreBuildErrors: skipLint },
 
 	experimental: { webpackMemoryOptimizations: skipLint },
+
+	webpack(config) {
+		config.module.rules.push({ test: /\.pem$/, type: 'asset/source' });
+		return config;
+	},
 };
 
 export default nextConfig;
