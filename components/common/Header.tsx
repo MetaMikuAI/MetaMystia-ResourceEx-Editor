@@ -5,6 +5,9 @@ import Link from 'next/link';
 
 import { cn } from '@/lib';
 import { useData } from '@/components/context/DataContext';
+import { validateResourcePack } from './validateResourcePack';
+import { ExportValidationDialog } from './ExportValidationDialog';
+import type { ValidationIssue } from './validateResourcePack';
 
 interface NavDropdownProps {
 	label: string;
@@ -78,7 +81,10 @@ const NavDropdown = memo(function NavDropdown({
 
 export const Header = memo(function Header() {
 	const pathname = usePathname();
-	const { createBlank, loadResourcePack, saveResourcePack } = useData();
+	const { data, createBlank, loadResourcePack, saveResourcePack } = useData();
+	const [validationIssues, setValidationIssues] = useState<
+		ValidationIssue[] | null
+	>(null);
 
 	const handleFileUpload = useCallback(
 		(e: ChangeEvent<HTMLInputElement>) => {
@@ -89,6 +95,24 @@ export const Header = memo(function Header() {
 		},
 		[loadResourcePack]
 	);
+
+	const handleExport = useCallback(async () => {
+		const issues = await validateResourcePack(data);
+		if (issues.length > 0) {
+			setValidationIssues(issues);
+		} else {
+			saveResourcePack();
+		}
+	}, [data, saveResourcePack]);
+
+	const handleExportConfirm = useCallback(() => {
+		setValidationIssues(null);
+		saveResourcePack();
+	}, [saveResourcePack]);
+
+	const handleExportCancel = useCallback(() => {
+		setValidationIssues(null);
+	}, []);
 
 	const isItemsActive = [
 		'/ingredient',
@@ -201,13 +225,21 @@ export const Header = memo(function Header() {
 						/>
 					</label>
 					<button
-						onClick={() => saveResourcePack()}
+						onClick={handleExport}
 						className="btn-mystia text-sm hover:underline hover:underline-offset-2"
 					>
 						导出资源包(ZIP)
 					</button>
 				</div>
 			</div>
+
+			{validationIssues && (
+				<ExportValidationDialog
+					issues={validationIssues}
+					onConfirm={handleExportConfirm}
+					onCancel={handleExportCancel}
+				/>
+			)}
 		</header>
 	);
 });
