@@ -392,6 +392,7 @@ export interface PackInfo {
 	name?: string;
 	label?: string;
 	authors?: string[];
+	dependencies?: string[];
 	description?: string;
 	version?: string;
 	license?: string;

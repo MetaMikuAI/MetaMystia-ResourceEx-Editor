@@ -8,12 +8,17 @@ import { TextArea } from '@/components/common/TextArea';
 import { ArrayFieldEditor } from '@/components/common/ArrayFieldEditor';
 import { useVersionValidation } from '@/components/common/useVersionValidation';
 import { IdRangeEditor } from '@/components/info/IdRangeEditor';
+import { DependencySelector } from '@/components/info/DependencySelector';
 import type { PackInfo } from '@/types/resource';
+import { KNOWN_DEPENDENCIES } from '@/lib/constants';
 
 export default function InfoPage() {
 	const { data, setData, setHasUnsavedChanges } = useData();
 	const packInfo = data.packInfo || {};
 	const isVersionValid = useVersionValidation(packInfo.version);
+	const isLabelInvalid = KNOWN_DEPENDENCIES.includes(
+		(packInfo.label || '') as any
+	);
 
 	// Update handler
 	const updatePackInfo = (updates: Partial<PackInfo>) => {
@@ -61,13 +66,23 @@ export default function InfoPage() {
 						</EditorField>
 
 						{/* Label */}
-						<EditorField label="资源包唯一标识符 (Label)">
+						<EditorField
+							label="资源包唯一标识符 (Label)"
+							actions={
+								isLabelInvalid && (
+									<span className="text-[10px] text-danger">
+										不能使用保留关键字 (如 CORE, DLC1 等)
+									</span>
+								)
+							}
+						>
 							<TextInput
 								value={packInfo.label || ''}
 								onChange={(e) =>
 									updatePackInfo({ label: e.target.value })
 								}
 								placeholder="例如: ResourceEx"
+								error={isLabelInvalid}
 							/>
 						</EditorField>
 					</div>
@@ -118,6 +133,16 @@ export default function InfoPage() {
 						packInfo={packInfo}
 						onUpdate={updatePackInfo}
 					/>
+
+					{/* Dependencies */}
+					<EditorField label="依赖 (Dependencies)">
+						<DependencySelector
+							value={packInfo.dependencies || []}
+							onChange={(deps) =>
+								updatePackInfo({ dependencies: deps })
+							}
+						/>
+					</EditorField>
 
 					{/* Description */}
 					<EditorField label="描述 (Description)">

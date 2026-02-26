@@ -11,6 +11,7 @@ import {
 } from 'react';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
+import { KNOWN_DEPENDENCIES } from '@/lib/constants';
 
 import type { ResourceEx } from '@/types/resource';
 import { sortValues, trimCRLF } from './utils';
@@ -362,6 +363,16 @@ export function DataProvider({ children }: PropsWithChildren) {
 
 	const saveResourcePack = useCallback(
 		async (filename?: string) => {
+			if (
+				data.packInfo?.label &&
+				KNOWN_DEPENDENCIES.includes(data.packInfo.label as any)
+			) {
+				alert(
+					`导出失败: 资源包标识符 (Label) 不能使用保留关键字 "${data.packInfo.label}"`
+				);
+				return;
+			}
+
 			const zip = new JSZip();
 
 			// Sanitize data before export
