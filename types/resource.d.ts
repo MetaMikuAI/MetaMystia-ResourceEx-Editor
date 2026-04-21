@@ -303,6 +303,7 @@ export interface MissionCondition {
 	sellableType?: 'Food' | 'Beverage';
 	label?: string;
 	tag?: number;
+	tags?: number[];
 	productType?: string;
 	productId?: number;
 	productAmount?: number;
