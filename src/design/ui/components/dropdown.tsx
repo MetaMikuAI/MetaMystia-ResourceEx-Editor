@@ -31,7 +31,7 @@ export default memo<IProps>(function Dropdown({
 		<HeroUIDropdown
 			disableAnimation={disableAnimation ?? isReducedMotion}
 			motionProps={motionProps}
-			shouldBlockScroll={Boolean(shouldBlockScroll)}
+			shouldBlockScroll={shouldBlockScroll ?? true}
 			shouldCloseOnScroll={Boolean(shouldCloseOnScroll)}
 			showArrow={Boolean(showArrow)}
 			classNames={{
