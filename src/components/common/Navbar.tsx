@@ -275,16 +275,21 @@ export const Navbar = memo(function Navbar() {
 				{/* ── Right: Desktop actions (≥lg) ── */}
 				<NavbarContent justify="end" className="hidden gap-1 lg:flex">
 					<NavbarItem>
-						<a
-							href="https://github.com/MetaMystia/MetaMystia-ResourceEx-Editor"
-							target="_blank"
-							rel="noreferrer noopener"
+						<Button
+							isIconOnly
+							variant="light"
+							size="lg"
 							aria-label="GitHub"
+							onPress={() =>
+								window.open(
+									'https://github.com/MetaMystia/MetaMystia-ResourceEx-Editor',
+									'_blank',
+									'noopener,noreferrer'
+								)
+							}
 						>
-							<Button isIconOnly variant="light" size="lg">
-								<GitHubIcon />
-							</Button>
-						</a>
+							<GitHubIcon />
+						</Button>
 					</NavbarItem>
 
 					<div className="hidden gap-1 lg:flex">
@@ -295,16 +300,21 @@ export const Navbar = memo(function Navbar() {
 				{/* ── Right: Mobile actions (<lg) ── */}
 				<NavbarContent justify="end" className="gap-1 lg:hidden">
 					<NavbarItem>
-						<a
-							href="https://github.com/MetaMystia/MetaMystia-ResourceEx-Editor"
-							target="_blank"
-							rel="noreferrer noopener"
+						<Button
+							isIconOnly
+							variant="light"
+							size="lg"
 							aria-label="GitHub"
+							onPress={() =>
+								window.open(
+									'https://github.com/MetaMystia/MetaMystia-ResourceEx-Editor',
+									'_blank',
+									'noopener,noreferrer'
+								)
+							}
 						>
-							<Button isIconOnly variant="light" size="lg">
-								<GitHubIcon />
-							</Button>
-						</a>
+							<GitHubIcon />
+						</Button>
 					</NavbarItem>
 					<NavbarItem>
 						<Button
