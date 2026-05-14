@@ -77,39 +77,84 @@ export default function AssetPage() {
 		[activeKey]
 	);
 
+	const [isCollapsed, setIsCollapsed] = useState(false);
+
 	return (
 		<div className="flex flex-col">
 			<div className="container mx-auto w-full max-w-7xl px-6 py-8 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl">
 				<div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
 					<aside className="flex h-min flex-col gap-2 rounded-lg bg-white/10 p-4 shadow-md backdrop-blur lg:sticky lg:top-24 lg:max-h-[calc(100dvh-7rem)]">
-						<h2 className="mb-2 text-xl font-semibold">资产分类</h2>
-						{CATEGORIES.map((cat) => (
-							<button
-								key={cat.key}
-								onClick={() => setActiveKey(cat.key)}
-								className={cn(
-									'surface-pressable flex-col items-stretch border px-3 py-2 text-left text-foreground',
-									activeKey === cat.key
-										? 'border-primary bg-primary/20 shadow-inner'
-										: 'border-transparent bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10'
-								)}
+						<div className="flex items-center justify-between">
+							<h2 className="mb-2 text-xl font-semibold">
+								资产分类
+							</h2>
+							<Button
+								isIconOnly
+								variant="light"
+								size="sm"
+								className="mb-2 h-8 w-8 lg:hidden"
+								onPress={() => setIsCollapsed((v) => !v)}
+								aria-label={
+									isCollapsed ? '展开列表' : '折叠列表'
+								}
 							>
-								<div className="text-sm font-bold">
-									{cat.label}
-								</div>
-								<div className="font-mono text-[10px] opacity-60">
-									{cat.folder ?? 'assets/...'}
-								</div>
-							</button>
-						))}
-						<p className="mt-4 text-[11px] leading-relaxed opacity-60">
-							资产页是导出包内
-							<code className="mx-1 rounded bg-black/10 px-1 dark:bg-white/10">
-								assets/
-							</code>
-							子目录的文件浏览器。仅当资产被 dialog
-							等模块引用时，导出才会包含对应文件。
-						</p>
+								<svg
+									viewBox="0 0 24 24"
+									className={cn(
+										'h-4 w-4 transition-transform duration-200',
+										isCollapsed ? '-rotate-90' : 'rotate-0'
+									)}
+									fill="none"
+									stroke="currentColor"
+									strokeWidth={2}
+									strokeLinecap="round"
+									strokeLinejoin="round"
+								>
+									<path d="m9 18 6-6-6-6" />
+								</svg>
+							</Button>
+						</div>
+						<div
+							className={cn(
+								'grid transition-all duration-300',
+								isCollapsed
+									? 'grid-rows-[0fr] lg:grid-rows-[1fr]'
+									: 'grid-rows-[1fr]'
+							)}
+							style={{
+								overflow: isCollapsed ? 'hidden' : undefined,
+							}}
+						>
+							<div className="flex min-h-0 flex-col gap-2">
+								{CATEGORIES.map((cat) => (
+									<button
+										key={cat.key}
+										onClick={() => setActiveKey(cat.key)}
+										className={cn(
+											'surface-pressable flex-col items-stretch border px-3 py-2 text-left text-foreground',
+											activeKey === cat.key
+												? 'border-primary bg-primary/20 shadow-inner'
+												: 'border-transparent bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10'
+										)}
+									>
+										<div className="text-sm font-bold">
+											{cat.label}
+										</div>
+										<div className="font-mono text-[10px] opacity-60">
+											{cat.folder ?? 'assets/...'}
+										</div>
+									</button>
+								))}
+								<p className="mt-4 text-[11px] leading-relaxed opacity-60">
+									资产页是导出包内
+									<code className="mx-1 rounded bg-black/10 px-1 dark:bg-white/10">
+										assets/
+									</code>
+									子目录的文件浏览器。仅当资产被 dialog
+									等模块引用时，导出才会包含对应文件。
+								</p>
+							</div>
+						</div>
 					</aside>
 
 					<section className="lg:col-span-3">
