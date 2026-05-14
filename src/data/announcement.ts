@@ -1,4 +1,4 @@
-export const ANNOUNCEMENT_VERSION = 'v0.9.10-2026-05-14';
+export const ANNOUNCEMENT_VERSION = 'v0.9.11-2026-05-14';
 
 export const ANNOUNCEMENT_TITLE = 'MetaMystia ResourceEx Editor 公告';
 
@@ -19,6 +19,7 @@ export const ANNOUNCEMENT_SECTIONS: AnnouncementSection[] = [
 	{
 		title: '近期更新',
 		items: [
+			'添加列表页折叠功能，支持角色、料理、酒水、原料、任务和事件等列表',
 			'修复任务节点、事件节点列表的文本溢出和居中对齐问题',
 			'统一修复 Select 下拉菜单过宽及删除按钮错位问题，优化长文本显示。',
 			'允许为自定义稀客增加 hideInAlbum isParticular isCollabCharacter 配置项',
