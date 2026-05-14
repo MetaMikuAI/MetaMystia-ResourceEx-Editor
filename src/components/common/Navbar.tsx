@@ -260,8 +260,8 @@ export const Navbar = memo(function Navbar() {
 				>
 					<NavbarBrand className="max-w-fit">
 						<span className="image-rendering-pixelated h-10 w-10 shrink-0 rounded-full bg-logo bg-cover bg-no-repeat" />
-						{/* 品牌文字: 仅 ≥xl (1280px) 显示，以下仅保留图标 */}
-						<span className="ml-1 hidden whitespace-nowrap text-lg font-bold xl:inline-block">
+						{/* 品牌文字: ≥xl (1280px+) 或 ≤lg (1024px以下) 显示，中间隐藏省空间 */}
+						<span className="ml-1 hidden whitespace-nowrap text-lg font-bold max-lg:inline-block xl:inline-block">
 							ResourceEx Editor
 						</span>
 					</NavbarBrand>
