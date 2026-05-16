@@ -1,4 +1,4 @@
-export const ANNOUNCEMENT_VERSION = 'v0.10.1-2026-05-15';
+export const ANNOUNCEMENT_VERSION = 'v0.10.2-2026-05-16';
 
 export const ANNOUNCEMENT_TITLE = 'MetaMystia ResourceEx Editor 公告';
 
@@ -14,6 +14,7 @@ export const ANNOUNCEMENT_SECTIONS: AnnouncementSection[] = [
 		title: '近期更新',
 		items: [
 			'重构资产浏览器，允许自由编辑资产',
+			'添加长页面回顶按钮，滚动超过一定高度时显示',
 			'添加列表页折叠功能，支持角色、料理、酒水、原料、任务和事件等列表',
 			'修复任务节点、事件节点列表的文本溢出和居中对齐问题',
 			'统一修复 Select 下拉菜单过宽及删除按钮错位问题，优化长文本显示。',
