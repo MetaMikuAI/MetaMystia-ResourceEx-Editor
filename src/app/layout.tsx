@@ -4,6 +4,7 @@ import { Noto_Sans, Noto_Sans_Mono, Noto_Sans_SC } from 'next/font/google';
 
 import { ThemeScript } from '@/design/hooks';
 import { cn } from '@/design/ui/components';
+import { BackToTop } from '@/components/common/BackToTop';
 import { Navbar } from '@/components/common/Navbar';
 import Providers from './providers';
 
@@ -53,6 +54,7 @@ export default function RootLayout({ children }: PropsWithChildren) {
 						<Navbar />
 						<main className="grow">{children}</main>
 					</div>
+					<BackToTop />
 				</Providers>
 			</body>
 		</html>
