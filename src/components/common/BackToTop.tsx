@@ -23,9 +23,32 @@ const SCROLL_COOLDOWN_MS = 1200;
 export const BackToTop = memo(function BackToTop() {
 	const [show, setShow] = useState(false);
 	const [isAtTop, setIsAtTop] = useState(true);
+	const [bottomChrome, setBottomChrome] = useState(0);
 
 	const savedPositionRef = useRef<number | null>(null);
 	const isProgrammaticRef = useRef(false);
+
+	// -------------------------------------------------------------------------
+	// 浏览器底栏高度检测（Visual Viewport API）
+	// -------------------------------------------------------------------------
+
+	useEffect(() => {
+		const vv = window.visualViewport;
+		if (!vv) return;
+
+		const update = () => {
+			const chrome = window.innerHeight - vv.offsetTop - vv.height;
+			setBottomChrome(Math.max(0, Math.round(chrome)));
+		};
+
+		update();
+		vv.addEventListener('resize', update);
+		vv.addEventListener('scroll', update);
+		return () => {
+			vv.removeEventListener('resize', update);
+			vv.removeEventListener('scroll', update);
+		};
+	}, []);
 
 	// -------------------------------------------------------------------------
 	// 滚动监听
@@ -89,12 +112,13 @@ export const BackToTop = memo(function BackToTop() {
 	return (
 		<div
 			className={cn(
-				'fixed bottom-6 right-6 z-50',
+				'fixed right-6 z-50',
 				'transition-all duration-200',
 				visible
 					? 'translate-y-0 opacity-100'
 					: 'pointer-events-none translate-y-4 opacity-0'
 			)}
+			style={{ bottom: `calc(1.5rem + ${bottomChrome}px)` }}
 		>
 			<Button
 				isIconOnly
