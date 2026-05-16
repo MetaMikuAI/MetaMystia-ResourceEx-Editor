@@ -260,8 +260,13 @@ export const Navbar = memo(function Navbar() {
 				>
 					<NavbarBrand className="max-w-fit">
 						<span className="image-rendering-pixelated h-10 w-10 shrink-0 rounded-full bg-logo bg-cover bg-no-repeat" />
-						{/* 品牌文字: ≥xl (1280px+) 或 ≤lg (1024px以下) 显示，中间隐藏省空间 */}
-						<span className="ml-1 hidden whitespace-nowrap text-lg font-bold max-lg:inline-block xl:inline-block">
+						{/* 品牌文字: 小屏幕两行堆叠; ≥xl 单行; 中屏隐藏省空间 */}
+						<span className="ml-1 hidden text-xs font-bold leading-4 max-lg:inline-block xl:hidden">
+							ResourceEx
+							<br />
+							Editor
+						</span>
+						<span className="ml-1 hidden whitespace-nowrap text-lg font-bold max-lg:hidden xl:inline-block">
 							ResourceEx Editor
 						</span>
 					</NavbarBrand>
@@ -299,23 +304,6 @@ export const Navbar = memo(function Navbar() {
 
 				{/* ── Right: Mobile actions (<lg) ── */}
 				<NavbarContent justify="end" className="gap-1 lg:hidden">
-					<NavbarItem>
-						<Button
-							isIconOnly
-							variant="light"
-							size="lg"
-							aria-label="GitHub"
-							onPress={() =>
-								window.open(
-									'https://github.com/MetaMystia/MetaMystia-ResourceEx-Editor',
-									'_blank',
-									'noopener,noreferrer'
-								)
-							}
-						>
-							<GitHubIcon />
-						</Button>
-					</NavbarItem>
 					<NavbarItem>
 						<Button
 							variant="solid"
@@ -478,6 +466,20 @@ export const Navbar = memo(function Navbar() {
 						className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-foreground transition-colors hover:bg-default-100"
 					>
 						上传资源包(ZIP)
+					</button>
+					<button
+						onClick={() => {
+							setIsMenuOpened(false);
+							window.open(
+								'https://github.com/MetaMystia/MetaMystia-ResourceEx-Editor',
+								'_blank',
+								'noopener,noreferrer'
+							);
+						}}
+						className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-foreground transition-colors hover:bg-default-100"
+					>
+						<GitHubIcon />
+						本项目代码仓库
 					</button>
 				</div>
 			)}
