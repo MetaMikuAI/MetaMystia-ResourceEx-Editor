@@ -44,10 +44,7 @@ const CONDITION_TYPES: { type: ConditionType; label: string }[] = [
 		type: 'FakeMission',
 		label: '【未实现】表示某种事情发生(不会自动完成，需要手动完成或者取消计划)',
 	},
-	{
-		type: 'SubmitByAnyOneTag',
-		label: '【未实现】交付包含任意一个Tag的对应物品',
-	},
+	{ type: 'SubmitByAnyOneTag', label: '交付包含其中任意一个Tag的对应物品' },
 	{
 		type: 'CompleteSpecifiedFollowingEvents',
 		label: '【未实现】完成以下事件中的X(指定数量)个',
@@ -77,6 +74,7 @@ const SUPPORTED_CONDITION_TYPES = new Set<ConditionType>([
 	'ServeInWork',
 	'SubmitByTag',
 	'SubmitByTags',
+	'SubmitByAnyOneTag',
 ]);
 
 // -----------------------------------------------------------------------------
@@ -372,6 +370,7 @@ const CONDITION_EDITORS: Partial<
 	ServeInWork: ServeInWorkEditor,
 	SubmitByTag: SubmitByTagEditor,
 	SubmitByTags: SubmitByTagsEditor,
+	SubmitByAnyOneTag: SubmitByTagsEditor,
 };
 
 // -----------------------------------------------------------------------------
