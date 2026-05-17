@@ -27,7 +27,7 @@ const CONDITION_TYPES: { type: ConditionType; label: string }[] = [
 	{ type: 'SubmitByTag', label: '交付包含Tag的对应物品' },
 	{ type: 'SubmitByTags', label: '交付包含多个Tag的对应物品' },
 	{ type: 'SellInWork', label: '【未实现】在工作中售卖料理' },
-	{ type: 'SubmitByIngredients', label: '【未实现】交付包含食材的料理' },
+	{ type: 'SubmitByIngredients', label: '交付包含食材的料理' },
 	{
 		type: 'CompleteSpecifiedFollowingTasks',
 		label: '【未实现】完成以下任务中的几个',
@@ -75,6 +75,7 @@ const SUPPORTED_CONDITION_TYPES = new Set<ConditionType>([
 	'SubmitByTag',
 	'SubmitByTags',
 	'SubmitByAnyOneTag',
+	'SubmitByIngredients',
 ]);
 
 // -----------------------------------------------------------------------------
@@ -363,6 +364,28 @@ function SubmitByTagsEditor({ condition, onUpdate }: ConditionEditorProps) {
 	);
 }
 
+function SubmitByIngredientsEditor({
+	condition,
+	ctx,
+	onUpdate,
+}: ConditionEditorProps) {
+	return (
+		<div className="flex flex-col gap-3">
+			<TagsField
+				label={`所需食材 (已选 ${(condition.tags ?? []).length})`}
+				tags={condition.tags ?? []}
+				tagPool={ctx.allIngredients}
+				onChange={(newTags) => onUpdate({ tags: newTags })}
+			/>
+			<NumberField
+				label="Amount (需提交的料理份数)"
+				value={condition.amount}
+				onChange={(v) => onUpdate({ amount: v })}
+			/>
+		</div>
+	);
+}
+
 const CONDITION_EDITORS: Partial<
 	Record<ConditionType, (props: ConditionEditorProps) => ReactNode>
 > = {
@@ -371,6 +394,7 @@ const CONDITION_EDITORS: Partial<
 	SubmitByTag: SubmitByTagEditor,
 	SubmitByTags: SubmitByTagsEditor,
 	SubmitByAnyOneTag: SubmitByTagsEditor,
+	SubmitByIngredients: SubmitByIngredientsEditor,
 };
 
 // -----------------------------------------------------------------------------
