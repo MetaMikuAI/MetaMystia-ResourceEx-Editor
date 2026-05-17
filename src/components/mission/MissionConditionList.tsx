@@ -186,6 +186,45 @@ function patch(updates: Record<string, unknown>): Partial<MissionCondition> {
 	return updates as Partial<MissionCondition>;
 }
 
+/** 切换 conditionType 时，返回该类型「干净」的初始值，清除所有不相关字段。 */
+function getCleanCondition(type: ConditionType): Partial<MissionCondition> {
+	const base: Record<string, unknown> = {
+		conditionType: type,
+		amount: undefined,
+		sellableType: undefined,
+		label: undefined,
+		tag: undefined,
+		tags: undefined,
+		productType: undefined,
+		productId: undefined,
+		productAmount: undefined,
+	};
+	switch (type) {
+		case 'SubmitItem':
+			break;
+		case 'ServeInWork':
+			base['sellableType'] = 'Food';
+			break;
+		case 'SubmitByTag':
+			base['sellableType'] = 'Food';
+			base['tag'] = 0;
+			break;
+		case 'SubmitByTags':
+		case 'SubmitByAnyOneTag':
+			base['sellableType'] = 'Food';
+			base['tags'] = [];
+			break;
+		case 'SubmitByIngredients':
+			base['tags'] = [];
+			break;
+		case 'ReachTargetCharacterKisunaLevel':
+			break;
+		default:
+			break;
+	}
+	return patch(base);
+}
+
 // -----------------------------------------------------------------------------
 // 条件子编辑器
 // -----------------------------------------------------------------------------
@@ -455,7 +494,9 @@ function ConditionItem({
 					ariaLabel="Condition Type"
 					className="flex-1"
 					value={condition.conditionType}
-					onChange={(v) => onUpdate({ conditionType: v })}
+					onChange={(v) =>
+						onUpdate(getCleanCondition(v as ConditionType))
+					}
 					items={CONDITION_TYPES.map((t) => ({
 						value: t.type,
 						label: `${t.label} (${t.type})`,
