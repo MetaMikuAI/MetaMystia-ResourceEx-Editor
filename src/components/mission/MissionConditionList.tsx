@@ -38,7 +38,7 @@ const CONDITION_TYPES: { type: ConditionType; label: string }[] = [
 	},
 	{
 		type: 'ReachTargetCharacterKisunaLevel',
-		label: '【未实现】达到目标角色的羁绊等级LV',
+		label: '达到目标角色的羁绊等级LV',
 	},
 	{
 		type: 'FakeMission',
@@ -76,6 +76,7 @@ const SUPPORTED_CONDITION_TYPES = new Set<ConditionType>([
 	'SubmitByTags',
 	'SubmitByAnyOneTag',
 	'SubmitByIngredients',
+	'ReachTargetCharacterKisunaLevel',
 ]);
 
 // -----------------------------------------------------------------------------
@@ -142,6 +143,7 @@ interface NumberFieldProps {
 	label: string;
 	value: number | undefined;
 	min?: number;
+	max?: number;
 	defaultValue?: number;
 	onChange: (value: number) => void;
 }
@@ -150,6 +152,7 @@ function NumberField({
 	label,
 	value,
 	min = 0,
+	max,
 	defaultValue = 0,
 	onChange,
 }: NumberFieldProps) {
@@ -158,6 +161,7 @@ function NumberField({
 			<input
 				type="number"
 				min={min}
+				{...(max !== undefined ? { max } : {})}
 				value={value ?? defaultValue}
 				onChange={(e) => onChange(Number(e.target.value))}
 				className={FIELD_CLASS}
@@ -386,6 +390,32 @@ function SubmitByIngredientsEditor({
 	);
 }
 
+function ReachTargetCharacterKisunaLevelEditor({
+	condition,
+	ctx,
+	onUpdate,
+}: ConditionEditorProps) {
+	return (
+		<div className="flex flex-col gap-3">
+			<SelectField
+				label="目标角色"
+				value={condition.label}
+				placeholder="请选择角色..."
+				options={ctx.characterOptions}
+				onChange={(v) => onUpdate({ label: v })}
+			/>
+			<NumberField
+				label="羁绊等级 LV (0~5)"
+				value={condition.amount}
+				min={0}
+				max={5}
+				defaultValue={0}
+				onChange={(v) => onUpdate({ amount: v })}
+			/>
+		</div>
+	);
+}
+
 const CONDITION_EDITORS: Partial<
 	Record<ConditionType, (props: ConditionEditorProps) => ReactNode>
 > = {
@@ -395,6 +425,7 @@ const CONDITION_EDITORS: Partial<
 	SubmitByTags: SubmitByTagsEditor,
 	SubmitByAnyOneTag: SubmitByTagsEditor,
 	SubmitByIngredients: SubmitByIngredientsEditor,
+	ReachTargetCharacterKisunaLevel: ReachTargetCharacterKisunaLevelEditor,
 };
 
 // -----------------------------------------------------------------------------
