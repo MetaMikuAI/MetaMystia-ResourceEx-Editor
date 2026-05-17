@@ -1,4 +1,4 @@
-export const ANNOUNCEMENT_VERSION = 'v0.10.3-2026-05-16';
+export const ANNOUNCEMENT_VERSION = 'v0.10.4-2026-05-17';
 
 export const ANNOUNCEMENT_TITLE = 'MetaMystia ResourceEx Editor 公告';
 
@@ -13,6 +13,7 @@ export const ANNOUNCEMENT_SECTIONS: AnnouncementSection[] = [
 	{
 		title: '近期更新',
 		items: [
+			'允许在 Mission 中设计「交付包含食材的料理(SubmitByIngredients)」和「交交付包含其中任意一个Tag的对应物品(SubmitByAnyOneTag)」类型的条件触发器',
 			'重构资产浏览器，允许自由编辑资产',
 			'添加长页面回顶按钮，滚动超过一定高度时显示',
 			'添加列表页折叠功能，支持角色、料理、酒水、原料、任务和事件等列表',
