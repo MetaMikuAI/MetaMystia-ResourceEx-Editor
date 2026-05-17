@@ -20,7 +20,7 @@ import type {
 
 const CONDITION_TYPES: { type: ConditionType; label: string }[] = [
 	{ type: 'BillRepayment', label: '还债' },
-	{ type: 'TalkWithCharacter', label: '【未实现】和角色交谈' },
+	{ type: 'TalkWithCharacter', label: '和角色交谈' },
 	{ type: 'InspectInteractable', label: '【未实现】调查白天交互物品' },
 	{ type: 'SubmitItem', label: '交付目标物品' },
 	{ type: 'ServeInWork', label: '请角色品尝料理' },
@@ -78,6 +78,7 @@ const SUPPORTED_CONDITION_TYPES = new Set<ConditionType>([
 	'SubmitByIngredients',
 	'ReachTargetCharacterKisunaLevel',
 	'BillRepayment',
+	'TalkWithCharacter',
 ]);
 
 // -----------------------------------------------------------------------------
@@ -221,6 +222,8 @@ function getCleanCondition(type: ConditionType): Partial<MissionCondition> {
 		case 'ReachTargetCharacterKisunaLevel':
 			break;
 		case 'BillRepayment':
+			break;
+		case 'TalkWithCharacter':
 			break;
 		default:
 			break;
@@ -472,6 +475,24 @@ function BillRepaymentEditor({ condition, onUpdate }: ConditionEditorProps) {
 	);
 }
 
+function TalkWithCharacterEditor({
+	condition,
+	ctx,
+	onUpdate,
+}: ConditionEditorProps) {
+	return (
+		<div className="flex flex-col gap-3">
+			<SelectField
+				label="目标角色"
+				value={condition.label}
+				placeholder="请选择角色..."
+				options={ctx.characterOptions}
+				onChange={(v) => onUpdate({ label: v })}
+			/>
+		</div>
+	);
+}
+
 const CONDITION_EDITORS: Partial<
 	Record<ConditionType, (props: ConditionEditorProps) => ReactNode>
 > = {
@@ -483,6 +504,7 @@ const CONDITION_EDITORS: Partial<
 	SubmitByIngredients: SubmitByIngredientsEditor,
 	ReachTargetCharacterKisunaLevel: ReachTargetCharacterKisunaLevelEditor,
 	BillRepayment: BillRepaymentEditor,
+	TalkWithCharacter: TalkWithCharacterEditor,
 };
 
 // -----------------------------------------------------------------------------
