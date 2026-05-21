@@ -2313,44 +2313,8 @@ export const SPECIAL_PORTRAITS = [
 	{
 		characterId: 41,
 		pid: 0,
-		name: '十六夜咲夜 Default',
-		filename: 'Special_41_0_十六夜咲夜_Default.png',
-	},
-	{
-		characterId: 41,
-		pid: 1,
-		name: '咲夜 微笑',
-		filename: 'Special_41_1_咲夜_微笑.png',
-	},
-	{
-		characterId: 41,
-		pid: 2,
-		name: '咲夜 微笑张嘴',
-		filename: 'Special_41_2_咲夜_微笑张嘴.png',
-	},
-	{
-		characterId: 41,
-		pid: 3,
-		name: '咲夜 无表情',
-		filename: 'Special_41_3_咲夜_无表情.png',
-	},
-	{
-		characterId: 41,
-		pid: 4,
-		name: '咲夜 无表情张嘴',
-		filename: 'Special_41_4_咲夜_无表情张嘴.png',
-	},
-	{
-		characterId: 41,
-		pid: 5,
-		name: '咲夜 无表情闭眼',
-		filename: 'Special_41_5_咲夜_无表情闭眼.png',
-	},
-	{
-		characterId: 41,
-		pid: 6,
-		name: '咲夜 高冷',
-		filename: 'Special_41_6_咲夜_高冷.png',
+		name: '秦心',
+		filename: 'Special_41_0_秦心.png',
 	},
 	{
 		characterId: 1000,

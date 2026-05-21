@@ -40,6 +40,7 @@ export const SPECIAL_GUESTS = [
 	{ id: 38, label: 'Yuu', name: '时焉侑' },
 	{ id: 39, label: 'Youmu_Free', name: '魂魄妖梦' },
 	{ id: 40, label: 'Yuyuko_Free', name: '西行寺幽幽子' },
+	{ id: 41, label: 'TBS_Kokoro', name: '秦心' },
 	{ id: 1000, label: 'Nitori', name: '河城荷取' },
 	{ id: 1001, label: 'Momizi', name: '犬走椛' },
 	{ id: 1002, label: 'Alice', name: '爱丽丝' },
