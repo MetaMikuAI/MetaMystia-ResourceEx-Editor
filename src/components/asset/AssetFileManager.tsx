@@ -423,6 +423,13 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 			[]
 		);
 
+		const handleConfirmSelect = useCallback(() => {
+			const filePath = Array.from(selectedPaths).find(
+				(p) => !p.endsWith('/')
+			);
+			if (filePath) onSelectFile?.(filePath);
+		}, [selectedPaths, onSelectFile]);
+
 		const handleEntryOpen = useCallback(
 			(entry: AssetEntry) => {
 				if (entry.kind === 'folder') {
@@ -702,80 +709,78 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 								))}
 							</div>
 
-							{!isSelectOnly && (
-								<div className="flex shrink-0 flex-wrap items-center gap-2 xl:justify-end">
-									<Button
-										color={
-											isCreateFolderOpen
-												? 'primary'
-												: 'default'
-										}
-										variant={
-											isCreateFolderOpen
-												? 'flat'
-												: 'light'
-										}
-										size="sm"
-										startContent={
-											<PlusIcon className="h-3.5 w-3.5" />
-										}
-										onPress={() =>
-											setIsCreateFolderOpen((v) => !v)
-										}
-										className="h-8 rounded-md px-3 text-xs"
-									>
-										新建文件夹
-									</Button>
-									<Button
-										color="primary"
-										size="sm"
-										startContent={<UploadIcon />}
-										onPress={() =>
-											fileInputRef.current?.click()
-										}
-										className="h-8 rounded-md px-3 text-xs"
-									>
-										上传文件
-									</Button>
-									<Button
-										variant="flat"
-										size="sm"
-										onPress={() =>
-											folderInputRef.current?.click()
-										}
-										className="h-8 rounded-md px-3 text-xs"
-									>
-										上传目录
-									</Button>
-									<input
-										ref={fileInputRef}
-										type="file"
-										accept={acceptedFileTypes}
-										multiple
-										className="hidden"
-										onChange={(e) => {
-											uploadFiles(e.target.files);
-											e.target.value = '';
-										}}
-									/>
-									<input
-										ref={folderInputRef}
-										type="file"
-										multiple
-										className="hidden"
-										onChange={(e) => {
-											uploadFiles(e.target.files);
-											e.target.value = '';
-										}}
-										{...{
-											webkitdirectory: '',
-											directory: '',
-										}}
-									/>
-								</div>
-							)}
+							<div className="flex shrink-0 flex-wrap items-center gap-2 xl:justify-end">
+								<Button
+									color={
+										isCreateFolderOpen
+											? 'primary'
+											: 'default'
+									}
+									variant={
+										isCreateFolderOpen
+											? 'flat'
+											: 'light'
+									}
+									size="sm"
+									startContent={
+										<PlusIcon className="h-3.5 w-3.5" />
+									}
+									onPress={() =>
+										setIsCreateFolderOpen((v) => !v)
+									}
+									className="h-8 rounded-md px-3 text-xs"
+								>
+									新建文件夹
+								</Button>
+								<Button
+									color="primary"
+									size="sm"
+									startContent={<UploadIcon />}
+									onPress={() =>
+										fileInputRef.current?.click()
+									}
+									className="h-8 rounded-md px-3 text-xs"
+								>
+									上传文件
+								</Button>
+								<Button
+									variant="flat"
+									size="sm"
+									onPress={() =>
+										folderInputRef.current?.click()
+									}
+									className="h-8 rounded-md px-3 text-xs"
+								>
+									上传目录
+								</Button>
+								<input
+									ref={fileInputRef}
+									type="file"
+									accept={acceptedFileTypes}
+									multiple
+									className="hidden"
+									onChange={(e) => {
+										uploadFiles(e.target.files);
+										e.target.value = '';
+									}}
+								/>
+								<input
+									ref={folderInputRef}
+									type="file"
+									multiple
+									className="hidden"
+									onChange={(e) => {
+										uploadFiles(e.target.files);
+										e.target.value = '';
+									}}
+									{...{
+										webkitdirectory: '',
+										directory: '',
+									}}
+								/>
+							</div>
 						</div>
-						{isCreateFolderOpen && !isSelectOnly && (
+						{isCreateFolderOpen && (
 							<div className="flex flex-col gap-2 rounded-lg border border-dashed border-black/10 bg-black/5 p-3 sm:flex-row sm:items-end dark:border-white/10 dark:bg-white/5">
 								<div className="flex flex-1 flex-col gap-1">
 									<label
@@ -836,6 +841,20 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 							`，包含 ${selectedAssetPaths.length} 个文件`}
 					</div>
 					<div className="flex flex-wrap gap-1">
+						{isSelectOnly &&
+							selectedPaths.size === 1 &&
+							!Array.from(selectedPaths).some((p) =>
+								p.endsWith('/')
+							) && (
+								<Button
+									color="primary"
+									size="sm"
+									onPress={handleConfirmSelect}
+									className="h-7 rounded px-3 text-xs font-semibold"
+								>
+									确定选择
+								</Button>
+							)}
 						<Button
 							variant="light"
 							size="sm"
