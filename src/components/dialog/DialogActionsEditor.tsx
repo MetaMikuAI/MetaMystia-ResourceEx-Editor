@@ -1,7 +1,8 @@
-import { memo, useCallback, useId, useMemo } from 'react';
+import { memo, useCallback, useId, useMemo, useState } from 'react';
 
 import { Button, Select } from '@/design/ui/components';
 import type { SelectItemSpec } from '@/design/ui/components';
+import { AssetPickerDialog } from '@/components/asset/AssetPickerDialog';
 import { useData } from '@/components/context/DataContext';
 import { Label } from '@/components/common/Label';
 import { WarningBadge } from '@/components/common/WarningBadge';
@@ -271,6 +272,8 @@ const SpriteActionFields = memo<SpriteActionFieldsProps>(
 			return items;
 		}, [availableAssets, action.sprite, isMissing, folder]);
 
+		const [isPickerOpen, setIsPickerOpen] = useState(false);
+
 		const handleModeChange = (next: SpriteMode) => {
 			if (next === 'clear') {
 				onUpdate({ sprite: undefined, shouldSet: false });
@@ -330,18 +333,41 @@ const SpriteActionFields = memo<SpriteActionFieldsProps>(
 									<WarningBadge>资产未注册</WarningBadge>
 								)}
 							</div>
-							<Select<string>
-								id={selectId}
-								ariaLabel="资产路径"
-								size="sm"
-								isInvalid={isMissing}
-								placeholder="— 选择资产 —"
-								value={action.sprite ?? ''}
-								onChange={(v) =>
-									onUpdate({ sprite: v || undefined })
-								}
-								items={spriteItems}
-							/>
+							<div className="flex items-center gap-1">
+								<Select<string>
+									id={selectId}
+									ariaLabel="资产路径"
+									size="sm"
+									isInvalid={isMissing}
+									placeholder="— 选择资产 —"
+									value={action.sprite ?? ''}
+									onChange={(v) =>
+										onUpdate({ sprite: v || undefined })
+									}
+									items={spriteItems}
+									className="flex-1"
+								/>
+								<Button
+									variant="light"
+									size="sm"
+									isIconOnly
+									onPress={() => setIsPickerOpen(true)}
+									className="h-8 w-8 min-w-0 rounded-md"
+									title="浏览资产"
+								>
+									<svg
+										viewBox="0 0 24 24"
+										className="h-4 w-4"
+										fill="none"
+										stroke="currentColor"
+										strokeWidth={2}
+										strokeLinecap="round"
+										strokeLinejoin="round"
+									>
+										<path d="M3 6.5A2.5 2.5 0 0 1 5.5 4H10l2 2h6.5A2.5 2.5 0 0 1 21 8.5v9A2.5 2.5 0 0 1 18.5 20h-13A2.5 2.5 0 0 1 3 17.5z" />
+									</svg>
+								</Button>
+							</div>
 							{availableAssets.length === 0 && (
 								<p className="text-[10px] opacity-50">
 									{folder} 下暂无资源，请前往「资产」页上传。
@@ -350,6 +376,13 @@ const SpriteActionFields = memo<SpriteActionFieldsProps>(
 						</div>
 					</div>
 				)}
+
+				<AssetPickerDialog
+					open={isPickerOpen}
+					onClose={() => setIsPickerOpen(false)}
+					onSelect={(path) => onUpdate({ sprite: path })}
+					initialFolder={folder}
+				/>
 			</div>
 		);
 	}
@@ -367,6 +400,7 @@ const SoundActionFields = memo<SoundActionFieldsProps>(
 	function SoundActionFields({ action, onUpdate }) {
 		const folder = ACTION_FOLDER.Sound ?? 'assets/Audio/';
 		const selectId = useId();
+		const [isPickerOpen, setIsPickerOpen] = useState(false);
 
 		const { assetUrls, getAssetUrl } = useData();
 
@@ -409,16 +443,41 @@ const SoundActionFields = memo<SoundActionFieldsProps>(
 						</Label>
 						{isMissing && <WarningBadge>资产未注册</WarningBadge>}
 					</div>
-					<Select<string>
-						id={selectId}
-						ariaLabel="音频路径"
-						size="sm"
-						isInvalid={isMissing}
-						placeholder="— 选择音频 —"
-						value={action.sound ?? ''}
-						onChange={(v) => onUpdate({ sound: v || undefined })}
-						items={soundItems}
-					/>
+					<div className="flex items-center gap-1">
+						<Select<string>
+							id={selectId}
+							ariaLabel="音频路径"
+							size="sm"
+							isInvalid={isMissing}
+							placeholder="— 选择音频 —"
+							value={action.sound ?? ''}
+							onChange={(v) =>
+								onUpdate({ sound: v || undefined })
+							}
+							items={soundItems}
+							className="flex-1"
+						/>
+						<Button
+							variant="light"
+							size="sm"
+							isIconOnly
+							onPress={() => setIsPickerOpen(true)}
+							className="h-8 w-8 min-w-0 rounded-md"
+							title="浏览资产"
+						>
+							<svg
+								viewBox="0 0 24 24"
+								className="h-4 w-4"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth={2}
+								strokeLinecap="round"
+								strokeLinejoin="round"
+							>
+								<path d="M3 6.5A2.5 2.5 0 0 1 5.5 4H10l2 2h6.5A2.5 2.5 0 0 1 21 8.5v9A2.5 2.5 0 0 1 18.5 20h-13A2.5 2.5 0 0 1 3 17.5z" />
+							</svg>
+						</Button>
+					</div>
 					{availableAssets.length === 0 && (
 						<p className="text-[10px] opacity-50">
 							{folder} 下暂无音频，请前往「资产」页上传 .wav
@@ -434,6 +493,13 @@ const SoundActionFields = memo<SoundActionFieldsProps>(
 						preload="none"
 					/>
 				)}
+
+				<AssetPickerDialog
+					open={isPickerOpen}
+					onClose={() => setIsPickerOpen(false)}
+					onSelect={(path) => onUpdate({ sound: path })}
+					initialFolder={folder}
+				/>
 			</div>
 		);
 	}
