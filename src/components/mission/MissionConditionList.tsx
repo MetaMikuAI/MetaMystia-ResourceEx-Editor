@@ -19,7 +19,7 @@ import type {
 // -----------------------------------------------------------------------------
 
 const CONDITION_TYPES: { type: ConditionType; label: string }[] = [
-	{ type: 'BillRepayment', label: '【未实现】还债' },
+	{ type: 'BillRepayment', label: '还债' },
 	{ type: 'TalkWithCharacter', label: '【未实现】和角色交谈' },
 	{ type: 'InspectInteractable', label: '【未实现】调查白天交互物品' },
 	{ type: 'SubmitItem', label: '交付目标物品' },
@@ -77,6 +77,7 @@ const SUPPORTED_CONDITION_TYPES = new Set<ConditionType>([
 	'SubmitByAnyOneTag',
 	'SubmitByIngredients',
 	'ReachTargetCharacterKisunaLevel',
+	'BillRepayment',
 ]);
 
 // -----------------------------------------------------------------------------
@@ -218,6 +219,8 @@ function getCleanCondition(type: ConditionType): Partial<MissionCondition> {
 			base['tags'] = [];
 			break;
 		case 'ReachTargetCharacterKisunaLevel':
+			break;
+		case 'BillRepayment':
 			break;
 		default:
 			break;
@@ -455,6 +458,20 @@ function ReachTargetCharacterKisunaLevelEditor({
 	);
 }
 
+function BillRepaymentEditor({ condition, onUpdate }: ConditionEditorProps) {
+	return (
+		<div className="flex flex-col gap-3">
+			<NumberField
+				label="需偿还金额"
+				value={condition.amount}
+				min={1}
+				defaultValue={0}
+				onChange={(v) => onUpdate({ amount: v })}
+			/>
+		</div>
+	);
+}
+
 const CONDITION_EDITORS: Partial<
 	Record<ConditionType, (props: ConditionEditorProps) => ReactNode>
 > = {
@@ -465,6 +482,7 @@ const CONDITION_EDITORS: Partial<
 	SubmitByAnyOneTag: SubmitByTagsEditor,
 	SubmitByIngredients: SubmitByIngredientsEditor,
 	ReachTargetCharacterKisunaLevel: ReachTargetCharacterKisunaLevelEditor,
+	BillRepayment: BillRepaymentEditor,
 };
 
 // -----------------------------------------------------------------------------

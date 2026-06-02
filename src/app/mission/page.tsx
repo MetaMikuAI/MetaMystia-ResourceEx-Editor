@@ -18,7 +18,9 @@ const DEFAULT_MISSION = {
 	sender: '',
 	reciever: '', // ignore: typo
 	rewards: [] as MissionReward[],
+	postRewards: [] as MissionReward[],
 	finishConditions: [] as MissionCondition[],
+	missionFailedAction: 'None' as const,
 };
 
 export default function MissionPage() {
