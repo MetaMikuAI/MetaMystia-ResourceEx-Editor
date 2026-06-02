@@ -179,6 +179,16 @@ export default memo<MissionEditorProps>(function MissionEditor({
 				/>
 			</EditorField>
 
+			<EditorField label="Mission Failed Event">
+				<EventDataEditor
+					eventData={mission.missionFailedEvent}
+					allDialogPackages={allDialogPackages}
+					onChange={(event) =>
+						onUpdate({ missionFailedEvent: event })
+					}
+				/>
+			</EditorField>
+
 			<PostMissionList
 				postMissions={mission.postMissionsAfterPerformance}
 				allMissions={allMissions}

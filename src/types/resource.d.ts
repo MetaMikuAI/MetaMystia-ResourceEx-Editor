@@ -315,6 +315,8 @@ export interface MissionReward {
 	rewardIntArray?: number[];
 }
 
+export type MissionFailedAction = 'None' | 'BackToMainMenu' | 'Rewind';
+
 export interface MissionNode {
 	title: string;
 	description: string;
@@ -327,13 +329,28 @@ export interface MissionNode {
 	postRewards?: MissionReward[];
 	finishConditions: MissionCondition[];
 	missionFinishEvent?: EventData;
+	missionFailedEvent?: EventData;
 	postMissionsAfterPerformance?: string[];
 	postEvents?: string[];
+	isTimedMission?: boolean;
+	missionFailedAction?: MissionFailedAction;
+	missionTimeLimit?: EventNodeTrigger;
+}
+
+export interface DayConfig {
+	dayType: 'Relative' | 'Absolute';
+	dayCalcType: 'Constant' | 'Random';
+	day?: number;
+	dayRangeMin?: number;
+	dayRangeMax?: number;
 }
 
 export interface EventNodeTrigger {
 	triggerType: string;
 	triggerId?: string;
+	time?: DayConfig;
+	labels?: string[];
+	executeOrder?: number;
 }
 
 export type EventType = 'Null' | 'Timeline' | 'Dialog';
