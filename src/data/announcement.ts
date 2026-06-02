@@ -1,4 +1,4 @@
-export const ANNOUNCEMENT_VERSION = 'v0.10.6-2026-05-26';
+export const ANNOUNCEMENT_VERSION = 'v0.10.7-2026-06-02';
 
 export const ANNOUNCEMENT_TITLE = 'MetaMystia ResourceEx Editor 公告';
 
@@ -13,6 +13,7 @@ export const ANNOUNCEMENT_SECTIONS: AnnouncementSection[] = [
 	{
 		title: '近期更新',
 		items: [
+			'允许在 Mission 中设计「还债(BillRepayment)」类型的完成条件',
 			'对话编辑器中的 CG/BG/音效选择 新增资产管理器浏览按钮，点击可打开弹窗以选择资产文件。',
 			'角色列表增加特殊顾客「秦心」',
 			'允许在 Mission 中设计「交付包含食材的料理(SubmitByIngredients)」、「交付包含其中任意一个Tag的对应物品(SubmitByAnyOneTag)」和「达到目标角色的羁绊等级LV(ReachTargetCharacterKisunaLevel)」类型的完成条件',
