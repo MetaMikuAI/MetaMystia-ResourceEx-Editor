@@ -12,6 +12,7 @@ import type { Character, Dialog, DialogAction } from '@/types/resource';
 interface DialogItemProps {
 	dialog: Dialog;
 	index: number;
+	dialogCount: number;
 	onUpdate: (updates: Partial<Dialog>) => void;
 	onRemove: () => void;
 	customCharacters: Character[];
@@ -20,6 +21,7 @@ interface DialogItemProps {
 export const DialogItem = memo<DialogItemProps>(function DialogItem({
 	customCharacters,
 	dialog,
+	dialogCount,
 	index,
 	onRemove,
 	onUpdate,
@@ -75,6 +77,7 @@ export const DialogItem = memo<DialogItemProps>(function DialogItem({
 			</div>
 			<DialogActionsEditor
 				actions={dialog.actions}
+				dialogCount={dialogCount}
 				onChange={handleActionsChange}
 			/>
 		</div>
@@ -83,13 +86,20 @@ export const DialogItem = memo<DialogItemProps>(function DialogItem({
 
 export const DialogItemWrapper = memo<
 	Omit<DialogItemProps, 'customCharacters'>
->(function DialogItemWrapper({ dialog, index, onRemove, onUpdate }) {
+>(function DialogItemWrapper({
+	dialog,
+	dialogCount,
+	index,
+	onRemove,
+	onUpdate,
+}) {
 	const { data } = useData();
 
 	return (
 		<DialogItem
 			customCharacters={data.characters}
 			dialog={dialog}
+			dialogCount={dialogCount}
 			index={index}
 			onRemove={onRemove}
 			onUpdate={onUpdate}

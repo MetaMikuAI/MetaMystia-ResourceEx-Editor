@@ -520,6 +520,29 @@ export function DataProvider({ children }: PropsWithChildren) {
 									...(act.sound ? { sound: act.sound } : {}),
 								};
 							}
+							if (act.actionType === 'Branch') {
+								return {
+									actionType: act.actionType,
+									options: (act.options ?? []).map(
+										(option) => ({
+											text: option.text,
+											jump: option.jump ?? 1,
+										})
+									),
+								};
+							}
+							if (act.actionType === 'Goto') {
+								return {
+									actionType: act.actionType,
+									index: act.index ?? 1,
+								};
+							}
+							if (act.actionType === 'End') {
+								return {
+									actionType: act.actionType,
+									exitCode: act.exitCode ?? 0,
+								};
+							}
 							if (act.shouldSet === false) {
 								return {
 									actionType: act.actionType,

@@ -130,6 +130,7 @@ export const DialogEditor = memo<DialogEditorProps>(function DialogEditor({
 					<div key={index} className="flex flex-col gap-2">
 						<DialogItemWrapper
 							dialog={dialog}
+							dialogCount={dialogPackage.dialogList.length}
 							index={index}
 							onRemove={() => {
 								onRemoveDialog(index);

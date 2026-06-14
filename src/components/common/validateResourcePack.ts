@@ -221,6 +221,81 @@ export async function validateResourcePack(
 		pkg.dialogList.forEach((dlg, dlgIndex) => {
 			(dlg.actions ?? []).forEach((act, actIndex) => {
 				const where = `${pkgName} 第 ${dlgIndex + 1} 条对话的动作 #${actIndex + 1}`;
+				const maxJump = pkg.dialogList.length + 1;
+
+				if (act.actionType === 'Branch') {
+					if (!act.options || act.options.length === 0) {
+						issues.push({
+							severity: 'error',
+							category: '对话动作',
+							message: `${where} (Branch) 至少需要一个选项`,
+						});
+						return;
+					}
+
+					act.options.forEach((option, optionIndex) => {
+						const optionWhere = `${where} (Branch) 选项 #${optionIndex + 1}`;
+						if (!option.text?.trim()) {
+							issues.push({
+								severity: 'error',
+								category: '对话动作',
+								message: `${optionWhere} 未设置选项文字`,
+							});
+						}
+						if (
+							!Number.isInteger(option.jump) ||
+							option.jump < 1 ||
+							option.jump > maxJump
+						) {
+							issues.push({
+								severity: 'error',
+								category: '对话动作',
+								message: `${optionWhere} 的跳转目标 ${option.jump} 无效，应为 1-${maxJump}`,
+							});
+						}
+						if (
+							option.price !== undefined &&
+							(!Number.isInteger(option.price) ||
+								option.price < 0)
+						) {
+							issues.push({
+								severity: 'error',
+								category: '对话动作',
+								message: `${optionWhere} 的价格必须为空或非负整数`,
+							});
+						}
+					});
+					return;
+				}
+
+				if (act.actionType === 'Goto') {
+					if (
+						!Number.isInteger(act.index) ||
+						(act.index ?? -1) < 1 ||
+						(act.index ?? -1) > maxJump
+					) {
+						issues.push({
+							severity: 'error',
+							category: '对话动作',
+							message: `${where} (Goto) 的跳转目标 ${act.index ?? '未设置'} 无效，应为 1-${maxJump}`,
+						});
+					}
+					return;
+				}
+
+				if (act.actionType === 'End') {
+					if (
+						act.exitCode !== undefined &&
+						!Number.isInteger(act.exitCode)
+					) {
+						issues.push({
+							severity: 'error',
+							category: '对话动作',
+							message: `${where} (End) 的退出码必须是整数或留空`,
+						});
+					}
+					return;
+				}
 
 				if (act.actionType === 'Sound') {
 					if (!act.sound) {
