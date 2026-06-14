@@ -103,7 +103,22 @@ export interface Character {
 	isCollabCharacter?: boolean;
 }
 
-export type DialogActionType = 'CameraShake' | 'CG' | 'BG' | 'Sound';
+export type DialogActionType =
+	| 'CameraShake'
+	| 'CG'
+	| 'BG'
+	| 'Sound'
+	| 'Branch'
+	| 'Goto'
+	| 'End';
+
+export interface DialogBranchOption {
+	text: string;
+	/** 1-based dialog number; dialogList.length + 1 means finish this dialog package. */
+	jump: number;
+	/** Optional paid choice cost. Omit for normal free choices. */
+	price?: number | undefined;
+}
 
 /**
  * 对话条目附加的运行时动作。
@@ -120,6 +135,12 @@ export interface DialogAction {
 	shouldSet?: boolean | undefined;
 	/** Sound 资源的相对路径，例如 "assets/Audio/baka.wav"。 */
 	sound?: string | undefined;
+	/** Branch 选项；每项包含按钮文本、跳转目标与可选价格。 */
+	options?: DialogBranchOption[] | undefined;
+	/** Goto 跳转目标，使用 1-based 对话编号。 */
+	index?: number | undefined;
+	/** End 退出码；普通对话可保持 0。 */
+	exitCode?: number | undefined;
 }
 
 export interface Dialog {
