@@ -15,9 +15,9 @@ export function TagButton({
 }: TagButtonProps) {
 	const getSelectedStyles = () => {
 		if (variant === 'ban') {
-			return 'border-danger bg-danger/20 text-danger shadow-sm';
+			return 'border-black bg-[#5d453a] text-[#e6b4a6]';
 		}
-		return 'border-[#9d5437] bg-[#e6b4a6] text-[#830000] shadow-sm';
+		return 'border-[#9d5437] bg-[#e6b4a6] text-[#830000]';
 	};
 
 	const getUnselectedStyles = () =>
@@ -35,7 +35,8 @@ export function TagButton({
 		>
 			<span
 				className={cn(
-					'mr-1 transition-opacity',
+					'transition-opacity',
+					variant === 'ban' ? 'order-last ml-1' : 'mr-1',
 					isSelected ? 'opacity-100' : 'opacity-40'
 				)}
 			>
