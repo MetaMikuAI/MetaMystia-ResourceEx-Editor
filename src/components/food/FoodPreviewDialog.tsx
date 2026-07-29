@@ -39,6 +39,14 @@ function FoodTagChip({
 	);
 }
 
+function renderDescription(description: string) {
+	return description
+		.split(/(\r\n|\r|\n|<br\s*\/?>)/gi)
+		.map((part, index) =>
+			/^(\r\n|\r|\n|<br\s*\/?>)$/i.test(part) ? <br key={index} /> : part
+		);
+}
+
 export const FoodPreviewDialog = memo<FoodPreviewDialogProps>(
 	function FoodPreviewDialog({ foodId, isOpen, onClose }) {
 		const { data, getAssetUrl } = useData();
@@ -100,7 +108,7 @@ export const FoodPreviewDialog = memo<FoodPreviewDialogProps>(
 								</div>
 								{food.description ? (
 									<p className="text-xs text-foreground/70">
-										{food.description}
+										{renderDescription(food.description)}
 									</p>
 								) : null}
 								{food.tags.length > 0 ||
