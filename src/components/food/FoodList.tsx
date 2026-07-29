@@ -12,6 +12,7 @@ interface FoodListProps {
 	onSelect: (index: number) => void;
 	onAdd: () => void;
 	onRemove: (index: number) => void;
+	onPreview: (foodId: number) => void;
 }
 
 export const FoodList = memo<FoodListProps>(function FoodList({
@@ -20,6 +21,7 @@ export const FoodList = memo<FoodListProps>(function FoodList({
 	onSelect,
 	onAdd,
 	onRemove,
+	onPreview,
 }) {
 	const isIdDuplicate = useCallback(
 		(id: number, index: number) => {
@@ -118,23 +120,36 @@ export const FoodList = memo<FoodListProps>(function FoodList({
 												{food.level}
 											</div>
 										</button>
-										<Button
-											color="danger"
-											size="sm"
-											radius="full"
-											onPress={() => {
-												if (
-													confirm(
-														'确定要删除这个料理吗？'
-													)
-												) {
-													onRemove(index);
+										<div className="flex shrink-0 gap-1">
+											<Button
+												color="primary"
+												size="sm"
+												radius="full"
+												onPress={() =>
+													onPreview(food.id)
 												}
-											}}
-											className="pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-100"
-										>
-											删除
-										</Button>
+												className="pointer-events-none opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
+											>
+												预览
+											</Button>
+											<Button
+												color="danger"
+												size="sm"
+												radius="full"
+												onPress={() => {
+													if (
+														confirm(
+															'确定要删除这个料理吗？'
+														)
+													) {
+														onRemove(index);
+													}
+												}}
+												className="pointer-events-none opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
+											>
+												删除
+											</Button>
+										</div>
 									</div>
 								</div>
 							);

@@ -6,12 +6,14 @@ import { useData } from '@/components/context/DataContext';
 
 import { RecipeEditor } from '@/components/recipe/RecipeEditor';
 import { RecipeList } from '@/components/recipe/RecipeList';
+import { FoodPreviewDialog } from '@/components/food/FoodPreviewDialog';
 
 import type { Recipe } from '@/types/resource';
 
 export default function RecipePage() {
 	const { data, setData, setHasUnsavedChanges } = useData();
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+	const [previewFoodId, setPreviewFoodId] = useState<number | null>(null);
 
 	const customIngredients = useMemo(
 		() => data.ingredients.map((ing) => ({ id: ing.id, name: ing.name })),
@@ -89,7 +91,13 @@ export default function RecipePage() {
 						selectedIndex={selectedIndex}
 						onAdd={addRecipe}
 						onRemove={removeRecipe}
+						onPreview={setPreviewFoodId}
 						onSelect={setSelectedIndex}
+					/>
+					<FoodPreviewDialog
+						foodId={previewFoodId}
+						isOpen={previewFoodId !== null}
+						onClose={() => setPreviewFoodId(null)}
 					/>
 
 					<RecipeEditor

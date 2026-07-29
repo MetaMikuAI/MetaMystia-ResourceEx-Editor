@@ -6,12 +6,14 @@ import { useData } from '@/components/context/DataContext';
 
 import { FoodEditor } from '@/components/food/FoodEditor';
 import { FoodList } from '@/components/food/FoodList';
+import { FoodPreviewDialog } from '@/components/food/FoodPreviewDialog';
 
 import type { Food } from '@/types/resource';
 
 export default function FoodPage() {
 	const { data, setData, setHasUnsavedChanges } = useData();
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+	const [previewFoodId, setPreviewFoodId] = useState<number | null>(null);
 
 	const addFood = useCallback(() => {
 		const newId = 11000 + (data.foods?.length || 0);
@@ -75,7 +77,13 @@ export default function FoodPage() {
 						selectedIndex={selectedIndex}
 						onAdd={addFood}
 						onRemove={removeFood}
+						onPreview={setPreviewFoodId}
 						onSelect={setSelectedIndex}
+					/>
+					<FoodPreviewDialog
+						foodId={previewFoodId}
+						isOpen={previewFoodId !== null}
+						onClose={() => setPreviewFoodId(null)}
 					/>
 
 					<FoodEditor
