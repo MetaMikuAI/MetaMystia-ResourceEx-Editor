@@ -1,12 +1,16 @@
 import { memo, useCallback, useMemo, useState } from 'react';
-import { Button, Select } from '@/design/ui/components';
-import type { ISelectOption } from '@/design/ui/components';
+
 import { EditorField } from '@/components/common/EditorField';
+import { EmptyState } from '@/components/common/EmptyState';
 import { SectionAddButton } from '@/components/common/SectionAddButton';
 import { WarningNotice } from '@/components/common/WarningNotice';
-import type { MissionReward, ObjectType, RewardType } from '@/types/resource';
+
 import { BEVERAGE_NAMES } from '@/data/beverages';
-import { EmptyState } from '@/components/common/EmptyState';
+
+import Button from '@/design/ui/components/button';
+import { type ISelectOption, Select } from '@/design/ui/components/select';
+
+import type { MissionReward, ObjectType, RewardType } from '@/types/resource';
 
 interface AddRewardItemRowProps {
 	objectType: ObjectType | undefined;

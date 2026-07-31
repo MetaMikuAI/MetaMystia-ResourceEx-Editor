@@ -1,10 +1,13 @@
+import { cn } from '@heroui/theme';
 import { memo, useState } from 'react';
-import { Button } from '@/design/ui/components';
+
 import { EmptyState } from '@/components/common/EmptyState';
-import { WarningBadge } from '@/components/common/WarningBadge';
-import { cn } from '@/design/ui/utils';
-import type { MissionNode } from '@/types/resource';
 import { usePackLabelPrefix } from '@/components/common/useLabelPrefixValidation';
+import { WarningBadge } from '@/components/common/WarningBadge';
+
+import Button from '@/design/ui/components/button';
+
+import type { MissionNode } from '@/types/resource';
 
 interface MissionListProps {
 	missions: MissionNode[];
@@ -79,11 +82,11 @@ export const MissionList = memo<MissionListProps>(function MissionList({
 								mission.label &&
 								!mission.label.startsWith(packLabelPrefix);
 							return (
-								<button
+								<Button
 									key={index}
-									onClick={() => onSelect(index)}
+									onPress={() => onSelect(index)}
 									className={cn(
-										'surface-pressable min-w-0 flex-col items-start gap-1.5 border p-4 text-left',
+										'h-auto min-w-0 flex-col items-start gap-1.5 border p-4 text-left',
 										selectedIndex === index
 											? 'border-primary bg-primary/20 shadow-inner'
 											: 'border-transparent bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10'
@@ -109,7 +112,7 @@ export const MissionList = memo<MissionListProps>(function MissionList({
 											{mission.label}
 										</span>
 									</div>
-								</button>
+								</Button>
 							);
 						})}
 						{(!missions || missions.length === 0) && (

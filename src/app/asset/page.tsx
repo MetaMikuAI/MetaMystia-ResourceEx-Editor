@@ -1,11 +1,12 @@
 'use client';
 
+import { cn } from '@heroui/theme';
 import { useCallback, useState } from 'react';
 
-import { Button } from '@/design/ui/components';
-import { cn } from '@/design/ui/utils';
-import { useData } from '@/components/context/DataContext';
 import { AssetFileManager } from '@/components/asset/AssetFileManager';
+import { useData } from '@/components/context/DataContext';
+
+import Button from '@/design/ui/components/button';
 
 import type { AssetPathOperation } from '@/types/resource';
 
@@ -114,14 +115,14 @@ export default function AssetPage() {
 						>
 							<div className="flex min-h-0 flex-col gap-2">
 								{QUICK_FOLDERS.map((folder) => (
-									<button
+									<Button
 										key={folder.path}
-										onClick={() => {
+										onPress={() => {
 											setActiveFolder(folder.path);
 											setIsCollapsed(true);
 										}}
 										className={cn(
-											'surface-pressable flex-col items-stretch border px-3 py-2 text-left text-foreground',
+											'h-auto flex-col items-stretch border px-3 py-2 text-left text-foreground',
 											activeFolder === folder.path
 												? 'border-primary bg-primary/20 shadow-inner'
 												: 'border-transparent bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10'
@@ -136,7 +137,7 @@ export default function AssetPage() {
 										<div className="mt-1 text-[11px] leading-relaxed opacity-50">
 											{folder.description}
 										</div>
-									</button>
+									</Button>
 								))}
 
 								<div className="mt-4 rounded-md border border-dashed border-black/10 bg-black/5 p-3 text-[11px] leading-relaxed opacity-70 dark:border-white/10 dark:bg-white/5">

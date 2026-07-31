@@ -1,12 +1,16 @@
 import { memo, useCallback, useId, useMemo, useState } from 'react';
 
-import { Button, Select } from '@/design/ui/components';
-import type { SelectItemSpec } from '@/design/ui/components';
 import { AssetPickerDialog } from '@/components/asset/AssetPickerDialog';
-import { useData } from '@/components/context/DataContext';
 import { Label } from '@/components/common/Label';
 import { TextInput } from '@/components/common/TextInput';
 import { WarningBadge } from '@/components/common/WarningBadge';
+import { useData } from '@/components/context/DataContext';
+
+import Button from '@/design/ui/components/button';
+import {
+	Select,
+	type SelectItem as SelectItemSpec,
+} from '@/design/ui/components/select';
 
 import type {
 	Dialog,

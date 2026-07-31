@@ -1,19 +1,22 @@
+import { cn } from '@heroui/theme';
 import { memo, useCallback } from 'react';
 
-import { Button } from '@/design/ui/components';
-import { cn } from '@/design/ui/utils';
-import { Label } from '@/components/common/Label';
 import { EmptyState } from '@/components/common/EmptyState';
+import { Label } from '@/components/common/Label';
 import { SectionAddButton } from '@/components/common/SectionAddButton';
-import { ProductEditor } from './ProductEditor';
+
+import Button from '@/design/ui/components/button';
+
 import type {
-	MerchandiseConfig,
-	ProductConfig,
+	Beverage,
 	Food,
 	Ingredient,
-	Beverage,
+	MerchandiseConfig,
+	ProductConfig,
 	Recipe,
 } from '@/types/resource';
+
+import { ProductEditor } from './ProductEditor';
 
 interface MerchandiseListEditorProps {
 	merchandiseList: MerchandiseConfig[];

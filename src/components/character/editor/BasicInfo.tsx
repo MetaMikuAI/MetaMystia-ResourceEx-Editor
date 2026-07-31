@@ -1,11 +1,12 @@
+import { cn } from '@heroui/theme';
 import { memo, useId } from 'react';
 
-import { cn } from '@/design/ui/utils';
 import { ErrorBadge } from '@/components/common/ErrorBadge';
-import { WarningBadge } from '@/components/common/WarningBadge';
 import { IdRangeBadge } from '@/components/common/IdRangeBadge';
 import { Label } from '@/components/common/Label';
 import { useLabelPrefixValidation } from '@/components/common/useLabelPrefixValidation';
+import { WarningBadge } from '@/components/common/WarningBadge';
+
 import type { Character } from '@/types/resource';
 
 interface BasicInfoProps {

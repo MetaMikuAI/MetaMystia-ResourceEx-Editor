@@ -1,5 +1,5 @@
+import { cn } from '@heroui/theme';
 import { type ReactNode } from 'react';
-import { cn } from '@/design/ui/utils';
 
 interface WarningBadgeProps {
 	children: ReactNode;

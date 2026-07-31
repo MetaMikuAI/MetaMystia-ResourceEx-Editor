@@ -2,11 +2,13 @@
 
 import { memo, useCallback } from 'react';
 
-import { Modal } from '@/design/ui/components';
 import { useData } from '@/components/context/DataContext';
-import { AssetFileManager } from './AssetFileManager';
+
+import Modal from '@/design/ui/components/modal';
 
 import type { AssetPathOperation } from '@/types/resource';
+
+import { AssetFileManager } from './AssetFileManager';
 
 interface AssetPickerDialogProps {
 	open: boolean;
@@ -25,8 +27,13 @@ interface AssetPickerDialogProps {
  */
 export const AssetPickerDialog = memo<AssetPickerDialogProps>(
 	function AssetPickerDialog({ open, onClose, onSelect, initialFolder }) {
-		const { data, assetUrls, assetFolders, updateAsset, createAssetFolder } =
-			useData();
+		const {
+			data,
+			assetUrls,
+			assetFolders,
+			updateAsset,
+			createAssetFolder,
+		} = useData();
 		const packLabel = data.packInfo?.label;
 
 		const handleSelect = useCallback(

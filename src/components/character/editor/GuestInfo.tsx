@@ -1,19 +1,23 @@
+import { cn } from '@heroui/theme';
 import { useState } from 'react';
-import { Switch } from '@/design/ui/components';
+
 import { EmptyState } from '@/components/common/EmptyState';
-import { SectionAddButton } from '@/components/common/SectionAddButton';
-import { GuestInfo, Request, SpawnConfig } from '@/types/resource';
-import {
-	BEVERAGE_TAGS,
-	FOOD_TAGS,
-	FOOD_TAG_MAP,
-	BEVERAGE_TAG_MAP,
-} from '@/data/tags';
-import { IZAKAYAS } from '@/data/izakayas';
-import { cn } from '@/design/ui/utils';
-import { ChevronRight } from '@/components/icons/ChevronRight';
-import { Label } from '@/components/common/Label';
 import { InfoTip } from '@/components/common/InfoTip';
+import { Label } from '@/components/common/Label';
+import { SectionAddButton } from '@/components/common/SectionAddButton';
+import { ChevronRight } from '@/components/icons/ChevronRight';
+
+import { IZAKAYAS } from '@/data/izakayas';
+import {
+	BEVERAGE_TAG_MAP,
+	BEVERAGE_TAGS,
+	FOOD_TAG_MAP,
+	FOOD_TAGS,
+} from '@/data/tags';
+
+import Switch from '@/design/ui/components/switch';
+
+import { GuestInfo, Request, SpawnConfig } from '@/types/resource';
 
 interface GuestInfoProps {
 	guest: GuestInfo | undefined;

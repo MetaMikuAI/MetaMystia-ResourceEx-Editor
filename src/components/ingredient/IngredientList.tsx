@@ -1,8 +1,11 @@
+import { cn } from '@heroui/theme';
 import { memo, useCallback, useState } from 'react';
 
-import { Button } from '@/design/ui/components';
-import { cn } from '@/design/ui/utils';
 import { EmptyState } from '@/components/common/EmptyState';
+
+import Button from '@/design/ui/components/button';
+import Card from '@/design/ui/components/card';
+
 import type { Ingredient } from '@/types/resource';
 
 interface IngredientListProps {
@@ -88,10 +91,10 @@ export const IngredientList = memo<IngredientListProps>(
 									index
 								);
 								return (
-									<div
+									<Card
 										key={index}
 										className={cn(
-											'surface-pressable group border p-4',
+											'group border p-4',
 											selectedIndex === index
 												? isDuplicate
 													? 'border-danger bg-danger/20 shadow-inner'
@@ -136,12 +139,12 @@ export const IngredientList = memo<IngredientListProps>(
 														onRemove(index);
 													}
 												}}
-												className="pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-100"
+												className="pointer-events-none opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
 											>
 												删除
 											</Button>
 										</div>
-									</div>
+									</Card>
 								);
 							})}
 							{ingredients.length === 0 && (

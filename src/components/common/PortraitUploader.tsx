@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { cn } from '@/design/ui/utils';
+import { cn } from '@heroui/theme';
+import { useCallback, useEffect, useState } from 'react';
+
 import { useData } from '@/components/context/DataContext';
 
 interface PortraitUploaderProps {

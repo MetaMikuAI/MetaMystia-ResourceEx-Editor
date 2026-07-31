@@ -6,7 +6,8 @@ import { EditorField } from '@/components/common/EditorField';
 import { ErrorBadge } from '@/components/common/ErrorBadge';
 import { TextInput } from '@/components/common/TextInput';
 
-import { Button } from '@/design/ui/components';
+import Button from '@/design/ui/components/button';
+import Modal from '@/design/ui/components/modal';
 
 import {
 	MANAGED_ID_MAX,
@@ -14,6 +15,7 @@ import {
 	signIdRange,
 	verifyIdRange,
 } from '@/infrastructure/browser/crypto/idRangeSignature';
+
 import type { PackInfo } from '@/types/resource';
 
 interface IdRangeEditorProps {
@@ -32,8 +34,7 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 	const [signing, setSigning] = useState(false);
 	const [signError, setSignError] = useState<string | null>(null);
 	const [copied, setCopied] = useState(false);
-	const dialogRef = useRef<HTMLDialogElement>(null);
-
+	const openDialogTriggerRef = useRef<HTMLButtonElement>(null);
 	const { idRangeStart, idRangeEnd, idSignature, label } = packInfo;
 
 	// Verify signature whenever relevant fields change
@@ -83,16 +84,24 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 		setPastedSignature('');
 		setDialogMode('paste');
 		setShowKeyDialog(true);
-		requestAnimationFrame(() => dialogRef.current?.showModal());
 	}, []);
 
 	const closeDialog = useCallback(() => {
-		dialogRef.current?.close();
 		setShowKeyDialog(false);
 		setPrivateKey('');
 		setPastedSignature('');
 		setSignError(null);
+		requestAnimationFrame(() => openDialogTriggerRef.current?.focus());
 	}, []);
+
+	const handleDialogOpenChange = useCallback(
+		(isOpen: boolean) => {
+			if (!isOpen) {
+				closeDialog();
+			}
+		},
+		[closeDialog]
+	);
 
 	const handleSign = useCallback(async () => {
 		if (!label || idRangeStart == null || idRangeEnd == null) return;
@@ -188,6 +197,7 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 				label="签名 (Signature)"
 				actions={
 					<Button
+						ref={openDialogTriggerRef}
 						variant="light"
 						size="sm"
 						onPress={openDialog}
@@ -265,116 +275,113 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 			</EditorField>
 
 			{/* Signing dialog */}
-			{showKeyDialog && (
-				<dialog
-					ref={dialogRef}
-					className="w-full max-w-lg rounded-lg border border-black/10 bg-white p-6 shadow-xl backdrop:bg-black/40 dark:border-white/10 dark:bg-zinc-900"
-					onClose={closeDialog}
-				>
-					<h4 className="mb-4 text-lg font-bold">设置签名</h4>
+			<Modal
+				isOpen={showKeyDialog}
+				onOpenChange={handleDialogOpenChange}
+				size="lg"
+				classNames={{ body: 'gap-0 py-3' }}
+			>
+				<h4 className="mb-4 text-lg font-bold">设置签名</h4>
 
-					{/* Tab switcher */}
-					<div className="mb-4 flex gap-1 rounded-lg bg-black/5 p-1 dark:bg-white/5">
-						<button
-							onClick={() => {
-								setDialogMode('paste');
-								setSignError(null);
-							}}
-							className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-								dialogMode === 'paste'
-									? 'bg-white shadow dark:bg-zinc-700'
-									: 'opacity-60 hover:opacity-80'
-							}`}
-						>
-							直接输入签名
-						</button>
-						<button
-							onClick={() => {
-								setDialogMode('sign');
-								setSignError(null);
-							}}
-							className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-								dialogMode === 'sign'
-									? 'bg-white shadow dark:bg-zinc-700'
-									: 'opacity-60 hover:opacity-80'
-							}`}
-						>
-							使用私钥签名
-						</button>
-					</div>
+				{/* Tab switcher */}
+				<div className="mb-4 flex gap-1 rounded-lg bg-black/5 p-1 dark:bg-white/5">
+					<button
+						onClick={() => {
+							setDialogMode('paste');
+							setSignError(null);
+						}}
+						className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+							dialogMode === 'paste'
+								? 'bg-white shadow dark:bg-zinc-700'
+								: 'opacity-60 hover:opacity-80'
+						}`}
+					>
+						直接输入签名
+					</button>
+					<button
+						onClick={() => {
+							setDialogMode('sign');
+							setSignError(null);
+						}}
+						className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+							dialogMode === 'sign'
+								? 'bg-white shadow dark:bg-zinc-700'
+								: 'opacity-60 hover:opacity-80'
+						}`}
+					>
+						使用私钥签名
+					</button>
+				</div>
 
+				{dialogMode === 'sign' ? (
+					<>
+						<p className="mb-2 text-xs opacity-60">
+							待签名内容: {label}:{idRangeStart}-{idRangeEnd}
+						</p>
+						<p className="mb-4 text-xs text-danger">
+							私钥仅用于本次签名，不会被保存！
+						</p>
+						<textarea
+							value={privateKey}
+							onChange={(e) => setPrivateKey(e.target.value)}
+							placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"
+							rows={6}
+							className="mb-4 w-full rounded-lg border border-black/10 bg-white/40 px-3 py-2 font-mono text-xs text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:border-white/10 dark:bg-black/10 dark:focus:border-white/30 dark:focus:ring-white/10"
+						/>
+					</>
+				) : (
+					<>
+						<p className="mb-4 text-xs opacity-60">
+							直接粘贴已有的 Base64 签名，提交后将自动验证。
+						</p>
+						<textarea
+							value={pastedSignature}
+							onChange={(e) => setPastedSignature(e.target.value)}
+							placeholder="粘贴 Base64 编码的签名…"
+							rows={4}
+							className="mb-4 w-full rounded-lg border border-black/10 bg-white/40 px-3 py-2 font-mono text-xs text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:border-white/10 dark:bg-black/10 dark:focus:border-white/30 dark:focus:ring-white/10"
+						/>
+					</>
+				)}
+
+				{signError && (
+					<p className="mb-4 text-xs text-danger">{signError}</p>
+				)}
+				<div className="flex justify-end gap-2">
+					<button
+						onClick={closeDialog}
+						className="h-8 rounded-lg border border-black/10 px-4 text-sm transition-colors hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
+					>
+						取消
+					</button>
 					{dialogMode === 'sign' ? (
-						<>
-							<p className="mb-2 text-xs opacity-60">
-								待签名内容: {label}:{idRangeStart}-{idRangeEnd}
-							</p>
-							<p className="mb-4 text-xs text-danger">
-								私钥仅用于本次签名，不会被保存！
-							</p>
-							<textarea
-								value={privateKey}
-								onChange={(e) => setPrivateKey(e.target.value)}
-								placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"
-								rows={6}
-								className="mb-4 w-full rounded-lg border border-black/10 bg-white/40 px-3 py-2 font-mono text-xs text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:border-white/10 dark:bg-black/10 dark:focus:border-white/30 dark:focus:ring-white/10"
-							/>
-						</>
-					) : (
-						<>
-							<p className="mb-4 text-xs opacity-60">
-								直接粘贴已有的 Base64 签名，提交后将自动验证。
-							</p>
-							<textarea
-								value={pastedSignature}
-								onChange={(e) =>
-									setPastedSignature(e.target.value)
-								}
-								placeholder="粘贴 Base64 编码的签名…"
-								rows={4}
-								className="mb-4 w-full rounded-lg border border-black/10 bg-white/40 px-3 py-2 font-mono text-xs text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:border-white/10 dark:bg-black/10 dark:focus:border-white/30 dark:focus:ring-white/10"
-							/>
-						</>
-					)}
-
-					{signError && (
-						<p className="mb-4 text-xs text-danger">{signError}</p>
-					)}
-					<div className="flex justify-end gap-2">
-						<button
-							onClick={closeDialog}
-							className="h-8 rounded-lg border border-black/10 px-4 text-sm transition-colors hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
+						<Button
+							variant="light"
+							size="sm"
+							onPress={handleSign}
+							isDisabled={!privateKey.trim() || signing}
+							className="h-8 px-4 text-sm"
 						>
-							取消
-						</button>
-						{dialogMode === 'sign' ? (
-							<Button
-								variant="light"
-								size="sm"
-								onPress={handleSign}
-								isDisabled={!privateKey.trim() || signing}
-								className="h-8 px-4 text-sm"
-							>
-								{signing ? '签名中…' : '确认签名'}
-							</Button>
-						) : (
-							<Button
-								variant="light"
-								size="sm"
-								onPress={() => {
-									const trimmed = pastedSignature.trim();
-									if (!trimmed) return;
-									onUpdate({ idSignature: trimmed });
-									closeDialog();
-								}}
-								isDisabled={!pastedSignature.trim()}
-								className="h-8 px-4 text-sm"
-							>
-								应用签名
-							</Button>
-						)}
-					</div>
-				</dialog>
-			)}
+							{signing ? '签名中…' : '确认签名'}
+						</Button>
+					) : (
+						<Button
+							variant="light"
+							size="sm"
+							onPress={() => {
+								const trimmed = pastedSignature.trim();
+								if (!trimmed) return;
+								onUpdate({ idSignature: trimmed });
+								closeDialog();
+							}}
+							isDisabled={!pastedSignature.trim()}
+							className="h-8 px-4 text-sm"
+						>
+							应用签名
+						</Button>
+					)}
+				</div>
+			</Modal>
 		</div>
 	);
 }

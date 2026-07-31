@@ -2,14 +2,16 @@
 
 import { memo, useMemo } from 'react';
 
-import { Modal } from '@/design/ui/components';
 import { useData } from '@/components/context/DataContext';
-import { FOOD_NAMES } from '@/data/foods';
-import { FOOD_TAGS } from '@/data/tags';
 import {
 	CookerPreviewIcon,
 	IngredientPreviewIcon,
 } from '@/components/food/RecipePreviewIcons';
+
+import { FOOD_NAMES } from '@/data/foods';
+import { FOOD_TAGS } from '@/data/tags';
+
+import Modal from '@/design/ui/components/modal';
 
 interface FoodPreviewDialogProps {
 	foodId: number | null;

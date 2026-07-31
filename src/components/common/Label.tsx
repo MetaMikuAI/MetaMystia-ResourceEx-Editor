@@ -1,5 +1,6 @@
+import { cn } from '@heroui/theme';
 import { memo } from 'react';
-import { cn } from '@/design/ui/utils';
+
 import { InfoTip } from '@/components/common/InfoTip';
 
 interface LabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {

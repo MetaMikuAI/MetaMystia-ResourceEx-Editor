@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from '@heroui/theme';
 import {
 	type Key,
 	type ReactNode,
@@ -11,14 +12,12 @@ import {
 	useState,
 } from 'react';
 
-import { DropdownSection } from '@heroui/dropdown';
-
 import Dropdown, {
 	DropdownItem,
 	DropdownMenu,
+	DropdownSection,
 	DropdownTrigger,
-} from './dropdown';
-import { cn } from '@/design/ui/utils';
+} from '@/design/ui/components/dropdown';
 
 export type SelectValue = string | number;
 

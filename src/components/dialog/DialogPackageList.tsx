@@ -1,12 +1,15 @@
+import { cn } from '@heroui/theme';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { Button } from '@/design/ui/components';
 import { EmptyState } from '@/components/common/EmptyState';
+import { usePackLabelPrefix } from '@/components/common/useLabelPrefixValidation';
 import { WarningBadge } from '@/components/common/WarningBadge';
 import { ChevronRight } from '@/components/icons/ChevronRight';
-import { cn } from '@/design/ui/utils';
+
+import Button from '@/design/ui/components/button';
+import Card from '@/design/ui/components/card';
+
 import type { DialogPackage } from '@/types/resource';
-import { usePackLabelPrefix } from '@/components/common/useLabelPrefixValidation';
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -175,9 +178,9 @@ function DialogTreeItem({
 	onRemove: () => void;
 }) {
 	return (
-		<div
+		<Card
 			className={cn(
-				'surface-pressable group flex-col items-stretch border px-3 py-2',
+				'group flex-col items-stretch border px-3 py-2',
 				isSelected
 					? isDuplicate
 						? 'border-danger bg-danger/20 shadow-inner'
@@ -219,12 +222,12 @@ function DialogTreeItem({
 							onRemove();
 						}
 					}}
-					className="pointer-events-none h-6 min-w-0 shrink-0 px-2 text-xs opacity-0 group-hover:pointer-events-auto group-hover:opacity-100"
+					className="pointer-events-none h-6 min-w-0 shrink-0 px-2 text-xs opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
 				>
 					删除
 				</Button>
 			</div>
-		</div>
+		</Card>
 	);
 }
 
@@ -606,10 +609,10 @@ export const DialogPackageList = memo<DialogPackageListProps>(
 										const hasPrefixWarning =
 											isNamePrefixInvalid(pkg.name);
 										return (
-											<div
+											<Card
 												key={index}
 												className={cn(
-													'surface-pressable group flex-col items-stretch border p-4',
+													'group flex-col items-stretch border p-4',
 													selectedIndex === index
 														? isDuplicate
 															? 'border-danger bg-danger/20 shadow-inner'
@@ -662,12 +665,12 @@ export const DialogPackageList = memo<DialogPackageListProps>(
 																onRemove(index);
 															}
 														}}
-														className="pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-100"
+														className="pointer-events-none opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
 													>
 														删除
 													</Button>
 												</div>
-											</div>
+											</Card>
 										);
 									})}
 								</div>

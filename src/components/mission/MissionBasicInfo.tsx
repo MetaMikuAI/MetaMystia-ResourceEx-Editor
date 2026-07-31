@@ -1,8 +1,12 @@
 import { memo, useEffect, useMemo } from 'react';
-import { Button, Select } from '@/design/ui/components';
+
 import { EditorField } from '@/components/common/EditorField';
-import { WarningBadge } from '@/components/common/WarningBadge';
 import { useLabelPrefixValidation } from '@/components/common/useLabelPrefixValidation';
+import { WarningBadge } from '@/components/common/WarningBadge';
+
+import Button from '@/design/ui/components/button';
+import { Select } from '@/design/ui/components/select';
+
 import type { Character, MissionNode, MissionType } from '@/types/resource';
 
 interface MissionBasicInfoProps {

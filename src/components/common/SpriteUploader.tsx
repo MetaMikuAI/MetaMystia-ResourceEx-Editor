@@ -1,7 +1,7 @@
 'use client';
 
+import { cn } from '@heroui/theme';
 import { memo, useCallback, useState } from 'react';
-import { cn } from '@/design/ui/utils';
 
 interface SpriteUploaderProps {
 	spriteUrl: string | null;

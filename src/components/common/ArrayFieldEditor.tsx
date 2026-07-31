@@ -1,7 +1,9 @@
 'use client';
 
 import { ReactNode } from 'react';
-import { Button } from '@/design/ui/components';
+
+import Button from '@/design/ui/components/button';
+
 import { TextInput } from './TextInput';
 
 interface ArrayFieldEditorProps<T = string> {

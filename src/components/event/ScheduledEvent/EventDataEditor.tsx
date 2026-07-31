@@ -1,9 +1,12 @@
 'use client';
 
 import { memo } from 'react';
-import { Select } from '@/design/ui/components';
+
 import { WarningNotice } from '@/components/common/WarningNotice';
-import type { ScheduledEvent, DialogPackage } from '@/types/resource';
+
+import { Select } from '@/design/ui/components/select';
+
+import type { DialogPackage, ScheduledEvent } from '@/types/resource';
 
 type EventType = NonNullable<ScheduledEvent['eventData']>['eventType'];
 

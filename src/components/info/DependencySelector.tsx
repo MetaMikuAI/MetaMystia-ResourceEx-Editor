@@ -1,6 +1,7 @@
 'use client';
 
-import { cn } from '@/design/ui/utils';
+import { cn } from '@heroui/theme';
+
 import { KNOWN_DEPENDENCIES } from '@/lib/constants';
 
 interface DependencySelectorProps {

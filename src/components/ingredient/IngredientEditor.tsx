@@ -1,20 +1,22 @@
+import { cn } from '@heroui/theme';
 import { memo, useCallback, useId, useMemo } from 'react';
 
-import { useData } from '@/components/context/DataContext';
 import { ErrorBadge } from '@/components/common/ErrorBadge';
 import { IdRangeBadge } from '@/components/common/IdRangeBadge';
 import { InfoTip } from '@/components/common/InfoTip';
+import { Label } from '@/components/common/Label';
 import { SpriteUploader } from '@/components/common/SpriteUploader';
 import { TagsField } from '@/components/common/TagsField';
-import { Label } from '@/components/common/Label';
-import { FOOD_TAGS } from '@/data/tags';
-import {
-	INGREDIENT_PREFIXES,
-	INGREDIENT_PREFIX_NONE_ID,
-} from '@/data/ingredientPrefixes';
+import { useData } from '@/components/context/DataContext';
 
-import { Select } from '@/design/ui/components';
-import { cn } from '@/design/ui/utils';
+import {
+	INGREDIENT_PREFIX_NONE_ID,
+	INGREDIENT_PREFIXES,
+} from '@/data/ingredientPrefixes';
+import { FOOD_TAGS } from '@/data/tags';
+
+import { Select } from '@/design/ui/components/select';
+
 import type { Ingredient } from '@/types/resource';
 
 interface IngredientEditorProps {

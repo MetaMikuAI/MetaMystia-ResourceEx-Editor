@@ -7,8 +7,12 @@ import {
 	ANNOUNCEMENT_TITLE,
 	ANNOUNCEMENT_VERSION,
 } from '@/data/announcement';
-import { Button, Modal } from '@/design/ui/components';
+
+import Button from '@/design/ui/components/button';
+import Modal from '@/design/ui/components/modal';
+
 import { safeStorage } from '@/infrastructure/browser/storage/safeStorage';
+
 import { useHydrated } from '@/shared/react/useHydrated';
 
 /**

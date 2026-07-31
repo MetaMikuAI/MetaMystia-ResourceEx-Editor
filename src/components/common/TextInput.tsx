@@ -1,7 +1,7 @@
 'use client';
 
+import { cn } from '@heroui/theme';
 import { forwardRef } from 'react';
-import { cn } from '@/design/ui/utils';
 
 interface TextInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 	error?: boolean;

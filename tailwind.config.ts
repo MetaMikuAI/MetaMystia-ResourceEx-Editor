@@ -9,7 +9,7 @@ import {
 	fontFamily,
 	getExtendConfig,
 	semanticColors,
-} from './src/design/theme';
+} from './app/design/theme';
 
 const herouiComponents = [
 	...Object.keys(PACKAGE.dependencies)

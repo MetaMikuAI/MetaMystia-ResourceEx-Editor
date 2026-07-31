@@ -1,20 +1,25 @@
 import { memo, useCallback, useId, useMemo, useState } from 'react';
 
-import { Select } from '@/design/ui/components';
-import type { SelectItemSpec } from '@/design/ui/components';
-import { Button } from '@/design/ui/components';
 import { Label } from '@/components/common/Label';
-import { MerchandiseListEditor } from './MerchandiseListEditor';
+
+import Button from '@/design/ui/components/button';
+import {
+	Select,
+	type SelectItem as SelectItemSpec,
+} from '@/design/ui/components/select';
+
 import type {
-	MerchantConfig,
-	MerchandiseConfig,
+	Beverage,
 	Character,
 	DialogPackage,
 	Food,
 	Ingredient,
-	Beverage,
+	MerchandiseConfig,
+	MerchantConfig,
 	Recipe,
 } from '@/types/resource';
+
+import { MerchandiseListEditor } from './MerchandiseListEditor';
 
 interface MerchantEditorProps {
 	merchant: MerchantConfig | null;

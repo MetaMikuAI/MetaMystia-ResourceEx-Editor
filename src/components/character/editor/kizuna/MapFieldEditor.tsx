@@ -1,7 +1,11 @@
 import { memo, useMemo } from 'react';
-import { Select } from '@/design/ui/components';
-import type { SelectItemSpec } from '@/design/ui/components';
+
 import { DAYSCENEMAP } from '@/data/daySceneMap';
+
+import {
+	Select,
+	type SelectItem as SelectItemSpec,
+} from '@/design/ui/components/select';
 
 interface MapFieldEditorProps {
 	label: string;

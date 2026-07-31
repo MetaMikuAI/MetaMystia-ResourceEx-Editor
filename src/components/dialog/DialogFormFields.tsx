@@ -1,11 +1,14 @@
 import { memo, useId } from 'react';
 
-import { Select } from '@/design/ui/components';
+import { Label } from '@/components/common/Label';
 import { CharacterSelector } from '@/components/dialog/CharacterSelector';
 import { PortraitSelector } from '@/components/dialog/PortraitSelector';
+
 import { SPECIAL_PORTRAITS } from '@/data/specialPortraits';
+
+import { Select } from '@/design/ui/components/select';
+
 import type { Character, Dialog } from '@/types/resource';
-import { Label } from '@/components/common/Label';
 
 interface DialogFormFieldsProps {
 	dialog: Dialog;

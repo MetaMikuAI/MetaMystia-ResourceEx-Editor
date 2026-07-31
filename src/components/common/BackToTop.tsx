@@ -1,10 +1,12 @@
 'use client';
 
+import { cn } from '@heroui/theme';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 
-import { Button, cn } from '@/design/ui/components';
 import { ChevronDown } from '@/components/icons/ChevronDown';
 import { ChevronUp } from '@/components/icons/ChevronUp';
+
+import Button from '@/design/ui/components/button';
 
 // -----------------------------------------------------------------------------
 // 常量

@@ -1,25 +1,27 @@
 'use client';
 
-import { memo, useCallback, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { cn } from '@heroui/theme';
 import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { memo, useCallback, useState } from 'react';
 
-import {
-	Button,
-	Navbar as HeroUINavbar,
-	NavbarBrand,
-	NavbarContent,
-	NavbarItem,
-	Dropdown,
+import { useData } from '@/components/context/DataContext';
+
+import Button from '@/design/ui/components/button';
+import Dropdown, {
 	DropdownItem,
 	DropdownMenu,
 	DropdownTrigger,
-	cn,
-} from '@/design/ui/components';
-import { useData } from '@/components/context/DataContext';
-import { validateResourcePack } from './validateResourcePack';
-import { ExportValidationDialog } from './ExportValidationDialog';
+} from '@/design/ui/components/dropdown';
+import HeroUINavbar, {
+	NavbarBrand,
+	NavbarContent,
+	NavbarItem,
+} from '@/design/ui/components/navbar';
+
 import { openAnnouncementModal } from './AnnouncementModal';
+import { ExportValidationDialog } from './ExportValidationDialog';
+import { validateResourcePack } from './validateResourcePack';
 import type { ValidationIssue } from './validateResourcePack';
 
 interface NavDropdownProps {

@@ -1,14 +1,17 @@
+import { cn } from '@heroui/theme';
 import { useState } from 'react';
-import { Switch } from '@/design/ui/components';
+
 import { EmptyState } from '@/components/common/EmptyState';
-import { CharacterSpriteSet } from '@/types/resource';
-import { ChevronRight } from '@/components/icons/ChevronRight';
-import { cn } from '@/design/ui/utils';
-import { useData } from '@/components/context/DataContext';
 import { InfoTip } from '@/components/common/InfoTip';
 import { Label } from '@/components/common/Label';
-import { WarningBadge } from '@/components/common/WarningBadge';
 import { useLabelPrefixValidation } from '@/components/common/useLabelPrefixValidation';
+import { WarningBadge } from '@/components/common/WarningBadge';
+import { useData } from '@/components/context/DataContext';
+import { ChevronRight } from '@/components/icons/ChevronRight';
+
+import Switch from '@/design/ui/components/switch';
+
+import { CharacterSpriteSet } from '@/types/resource';
 
 interface SpriteSetProps {
 	characterId: number;

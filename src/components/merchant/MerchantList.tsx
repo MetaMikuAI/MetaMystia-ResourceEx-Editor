@@ -1,9 +1,12 @@
+import { cn } from '@heroui/theme';
 import { memo, useCallback, useState } from 'react';
 
-import { Button } from '@/design/ui/components';
-import { cn } from '@/design/ui/utils';
 import { EmptyState } from '@/components/common/EmptyState';
-import type { MerchantConfig, Character } from '@/types/resource';
+
+import Button from '@/design/ui/components/button';
+import Card from '@/design/ui/components/card';
+
+import type { Character, MerchantConfig } from '@/types/resource';
 
 interface MerchantListProps {
 	merchants: MerchantConfig[];
@@ -97,10 +100,10 @@ export const MerchantList = memo<MerchantListProps>(function MerchantList({
 								index
 							);
 							return (
-								<div
+								<Card
 									key={index}
 									className={cn(
-										'surface-pressable group border p-4',
+										'group border p-4',
 										selectedIndex === index
 											? isDuplicate
 												? 'border-danger bg-danger/20 shadow-inner'
@@ -153,12 +156,12 @@ export const MerchantList = memo<MerchantListProps>(function MerchantList({
 													onRemove(index);
 												}
 											}}
-											className="pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-100"
+											className="pointer-events-none opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
 										>
 											删除
 										</Button>
 									</div>
-								</div>
+								</Card>
 							);
 						})}
 						{merchants.length === 0 && (

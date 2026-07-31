@@ -1,3 +1,4 @@
+import { cn } from '@heroui/theme';
 import { type Metadata } from 'next';
 import { Noto_Sans, Noto_Sans_Mono, Noto_Sans_SC } from 'next/font/google';
 import { type PropsWithChildren } from 'react';
@@ -5,8 +6,7 @@ import { type PropsWithChildren } from 'react';
 import { BackToTop } from '@/components/common/BackToTop';
 import { Navbar } from '@/components/common/Navbar';
 
-import { ThemeScript } from '@/design/hooks';
-import { cn } from '@/design/ui/components';
+import ThemeScript from '@/design/theme/runtime/themeScript';
 
 import Providers from './providers';
 
@@ -54,7 +54,10 @@ export default function RootLayout({ children }: PropsWithChildren) {
 				<Providers>
 					<div className="flex min-h-dvh-safe flex-col">
 						<Navbar />
-						<main className="grow">{children}</main>
+						<main className="grow">
+							<div id="modal-portal-container" />
+							{children}
+						</main>
 					</div>
 					<BackToTop />
 				</Providers>

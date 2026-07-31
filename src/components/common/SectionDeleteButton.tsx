@@ -1,11 +1,11 @@
 'use client';
 
+import { cn } from '@heroui/theme';
 import { memo, type ReactNode } from 'react';
 
-import { Button, type IButtonProps } from '@/design/ui/components';
-import { cn } from '@/design/ui/utils';
-
 import { TrashIcon } from '@/components/icons/Trash';
+
+import Button, { type IButtonProps } from '@/design/ui/components/button';
 
 interface IProps extends Omit<
 	IButtonProps,

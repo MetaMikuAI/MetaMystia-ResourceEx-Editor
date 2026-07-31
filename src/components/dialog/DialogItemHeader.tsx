@@ -1,6 +1,7 @@
 import { memo } from 'react';
 
-import { Button } from '@/design/ui/components';
+import Button from '@/design/ui/components/button';
+
 import type { Dialog } from '@/types/resource';
 
 interface DialogItemHeaderProps {

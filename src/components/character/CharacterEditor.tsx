@@ -1,14 +1,8 @@
 import { memo, useCallback, useEffect } from 'react';
 
 import { SectionDeleteButton } from '@/components/common/SectionDeleteButton';
-import { Switch } from '@/design/ui/components';
-import { BasicInfo } from './editor/BasicInfo';
-import { Descriptions } from './editor/Descriptions';
-import { SpawnMarkerEditor } from './editor/SpawnMarker';
-import { GuestInfoEditor } from './editor/GuestInfo';
-import { KizunaInfoEditor } from './editor/KizunaInfo';
-import { Portraits } from './editor/Portraits';
-import { SpriteSetEditor } from './editor/SpriteSet';
+
+import Switch from '@/design/ui/components/switch';
 
 import type {
 	Character,
@@ -20,6 +14,14 @@ import type {
 	KizunaInfo,
 	SpawnMarker,
 } from '@/types/resource';
+
+import { BasicInfo } from './editor/BasicInfo';
+import { Descriptions } from './editor/Descriptions';
+import { GuestInfoEditor } from './editor/GuestInfo';
+import { KizunaInfoEditor } from './editor/KizunaInfo';
+import { Portraits } from './editor/Portraits';
+import { SpawnMarkerEditor } from './editor/SpawnMarker';
+import { SpriteSetEditor } from './editor/SpriteSet';
 
 interface CharacterEditorProps {
 	character: Character | null;

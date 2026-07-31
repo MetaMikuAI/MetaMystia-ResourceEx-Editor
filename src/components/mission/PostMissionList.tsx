@@ -1,8 +1,12 @@
 import { memo, useCallback } from 'react';
-import { Button, Select } from '@/design/ui/components';
-import { EmptyState } from '@/components/common/EmptyState';
+
 import { EditorField } from '@/components/common/EditorField';
+import { EmptyState } from '@/components/common/EmptyState';
 import { SectionAddButton } from '@/components/common/SectionAddButton';
+
+import Button from '@/design/ui/components/button';
+import { Select } from '@/design/ui/components/select';
+
 import type { MissionNode } from '@/types/resource';
 
 interface PostMissionListProps {

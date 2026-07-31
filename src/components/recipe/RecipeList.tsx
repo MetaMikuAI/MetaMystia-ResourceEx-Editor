@@ -1,11 +1,15 @@
+import { cn } from '@heroui/theme';
 import { memo, useCallback, useMemo, useState } from 'react';
 
-import { Button } from '@/design/ui/components';
 import { EmptyState } from '@/components/common/EmptyState';
-import { cn } from '@/design/ui/utils';
 import { ErrorBadge } from '@/components/common/ErrorBadge';
-import type { Recipe } from '@/types/resource';
+
 import { FOOD_NAMES } from '@/data/foods';
+
+import Button from '@/design/ui/components/button';
+import Card from '@/design/ui/components/card';
+
+import type { Recipe } from '@/types/resource';
 
 interface RecipeListProps {
 	recipes: Recipe[];
@@ -102,10 +106,10 @@ export const RecipeList = memo<RecipeListProps>(function RecipeList({
 						{recipes.map((recipe, index) => {
 							const isDuplicate = isIdDuplicate(recipe.id, index);
 							return (
-								<div
+								<Card
 									key={index}
 									className={cn(
-										'surface-pressable group border p-4',
+										'group border p-4',
 										selectedIndex === index
 											? isDuplicate
 												? 'border-danger bg-danger/20 shadow-inner'
@@ -168,7 +172,7 @@ export const RecipeList = memo<RecipeListProps>(function RecipeList({
 											</Button>
 										</div>
 									</div>
-								</div>
+								</Card>
 							);
 						})}
 						{recipes.length === 0 && (

@@ -1,8 +1,11 @@
 'use client';
 
+import { cn } from '@heroui/theme';
 import { memo, useMemo, useState } from 'react';
-import { Button, Modal } from '@/design/ui/components';
-import { cn } from '@/design/ui/utils';
+
+import Button from '@/design/ui/components/button';
+import Modal from '@/design/ui/components/modal';
+
 import type { ValidationIssue } from './validateResourcePack';
 
 interface ExportValidationDialogProps {

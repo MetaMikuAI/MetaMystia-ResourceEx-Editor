@@ -1,8 +1,9 @@
 'use client';
 
+import { cn } from '@heroui/theme';
 import { memo } from 'react';
-import { Tooltip } from '@/design/ui/components';
-import { cn } from '@/design/ui/utils';
+
+import Tooltip from '@/design/ui/components/tooltip';
 
 interface InfoTipProps {
 	children: React.ReactNode;

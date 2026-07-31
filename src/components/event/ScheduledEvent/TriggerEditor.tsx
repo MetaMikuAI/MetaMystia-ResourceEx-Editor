@@ -1,10 +1,14 @@
 'use client';
 
 import { memo, useMemo } from 'react';
-import { Select } from '@/design/ui/components';
+
 import { WarningNotice } from '@/components/common/WarningNotice';
-import type { ScheduledEvent, Character } from '@/types/resource';
+
 import { SPECIAL_GUESTS } from '@/data/specialGuest';
+
+import { Select } from '@/design/ui/components/select';
+
+import type { Character, ScheduledEvent } from '@/types/resource';
 
 export const TRIGGER_TYPES = [
 	{

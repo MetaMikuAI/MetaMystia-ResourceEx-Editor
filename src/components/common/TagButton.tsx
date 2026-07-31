@@ -1,4 +1,4 @@
-import { cn } from '@/design/ui/utils';
+import { cn } from '@heroui/theme';
 
 interface TagButtonProps {
 	tag: { id: number; name: string };

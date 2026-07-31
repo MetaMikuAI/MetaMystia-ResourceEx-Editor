@@ -1,7 +1,7 @@
 'use client';
 
-import { forwardRef, useEffect, useRef, useImperativeHandle } from 'react';
-import { cn } from '@/design/ui/utils';
+import { cn } from '@heroui/theme';
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 
 interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
 	autoResize?: boolean;

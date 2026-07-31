@@ -1,14 +1,15 @@
+import { cn } from '@heroui/theme';
 import { memo, useCallback, useId } from 'react';
 
-import { useData } from '@/components/context/DataContext';
 import { ErrorBadge } from '@/components/common/ErrorBadge';
 import { IdRangeBadge } from '@/components/common/IdRangeBadge';
+import { Label } from '@/components/common/Label';
 import { SpriteUploader } from '@/components/common/SpriteUploader';
 import { TagsField } from '@/components/common/TagsField';
-import { Label } from '@/components/common/Label';
+import { useData } from '@/components/context/DataContext';
+
 import { BEVERAGE_TAGS } from '@/data/tags';
 
-import { cn } from '@/design/ui/utils';
 import type { Beverage } from '@/types/resource';
 
 interface BeverageEditorProps {

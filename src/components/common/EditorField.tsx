@@ -1,5 +1,5 @@
+import { cn } from '@heroui/theme';
 import { ReactNode } from 'react';
-import { cn } from '@/design/ui/utils';
 
 interface EditorFieldProps {
 	label?: ReactNode;

@@ -1,9 +1,12 @@
+import { cn } from '@heroui/theme';
 import { memo, useCallback, useState } from 'react';
 
-import { Button } from '@/design/ui/components';
-import { cn } from '@/design/ui/utils';
-import { ErrorBadge } from '@/components/common/ErrorBadge';
 import { EmptyState } from '@/components/common/EmptyState';
+import { ErrorBadge } from '@/components/common/ErrorBadge';
+
+import Button from '@/design/ui/components/button';
+import Card from '@/design/ui/components/card';
+
 import type { Beverage } from '@/types/resource';
 
 interface BeverageListProps {
@@ -83,10 +86,10 @@ export const BeverageList = memo<BeverageListProps>(function BeverageList({
 						{beverages.map((bev, index) => {
 							const isDuplicate = isIdDuplicate(bev.id, index);
 							return (
-								<div
+								<Card
 									key={index}
 									className={cn(
-										'surface-pressable group border p-4',
+										'group border p-4',
 										selectedIndex === index
 											? isDuplicate
 												? 'border-danger bg-danger/20 shadow-inner'
@@ -130,12 +133,12 @@ export const BeverageList = memo<BeverageListProps>(function BeverageList({
 													onRemove(index);
 												}
 											}}
-											className="pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-100"
+											className="pointer-events-none opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
 										>
 											删除
 										</Button>
 									</div>
-								</div>
+								</Card>
 							);
 						})}
 						{beverages.length === 0 && (

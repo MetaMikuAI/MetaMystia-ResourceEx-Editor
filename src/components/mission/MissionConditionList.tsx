@@ -1,13 +1,17 @@
 import { memo, useCallback } from 'react';
 import type { ReactNode } from 'react';
 
-import { Button, Select } from '@/design/ui/components';
 import { EditorField } from '@/components/common/EditorField';
 import { EmptyState } from '@/components/common/EmptyState';
 import { SectionAddButton } from '@/components/common/SectionAddButton';
-import { WarningNotice } from '@/components/common/WarningNotice';
 import { TagsField } from '@/components/common/TagsField';
+import { WarningNotice } from '@/components/common/WarningNotice';
+
 import { BEVERAGE_TAGS, FOOD_TAGS } from '@/data/tags';
+
+import Button from '@/design/ui/components/button';
+import { Select } from '@/design/ui/components/select';
+
 import type {
 	ConditionType,
 	MissionCondition,

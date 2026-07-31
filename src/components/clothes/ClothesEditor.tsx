@@ -1,17 +1,18 @@
+import { cn } from '@heroui/theme';
 import { memo, useCallback, useEffect, useId, useMemo, useState } from 'react';
 
-import { useData } from '@/components/context/DataContext';
 import { ErrorBadge } from '@/components/common/ErrorBadge';
 import { IdRangeBadge } from '@/components/common/IdRangeBadge';
-import { SpriteUploader } from '@/components/common/SpriteUploader';
-import { PortraitUploader } from '@/components/common/PortraitUploader';
-import { Label } from '@/components/common/Label';
 import { InfoTip } from '@/components/common/InfoTip';
+import { Label } from '@/components/common/Label';
+import { PortraitUploader } from '@/components/common/PortraitUploader';
+import { SpriteUploader } from '@/components/common/SpriteUploader';
+import { useData } from '@/components/context/DataContext';
 import { ChevronRight } from '@/components/icons/ChevronRight';
-import { SpriteGrid } from './SpriteGrid';
 
-import { cn } from '@/design/ui/utils';
 import type { Clothes, PixelFullConfig } from '@/types/resource';
+
+import { SpriteGrid } from './SpriteGrid';
 
 interface ClothesEditorProps {
 	clothes: Clothes | null;

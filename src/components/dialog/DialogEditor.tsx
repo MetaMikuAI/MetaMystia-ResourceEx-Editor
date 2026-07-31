@@ -1,15 +1,18 @@
+import { cn } from '@heroui/theme';
 import { memo, useCallback, useId } from 'react';
 
-import { Button } from '@/design/ui/components';
 import { EmptyState } from '@/components/common/EmptyState';
-import { SectionAddButton } from '@/components/common/SectionAddButton';
-import { DialogItemWrapper } from './DialogItem';
 import { ErrorBadge } from '@/components/common/ErrorBadge';
-import { WarningBadge } from '@/components/common/WarningBadge';
-import { cn } from '@/design/ui/utils';
-import type { Dialog, DialogPackage } from '@/types/resource';
-import { Label } from '../common/Label';
+import { SectionAddButton } from '@/components/common/SectionAddButton';
 import { useLabelPrefixValidation } from '@/components/common/useLabelPrefixValidation';
+import { WarningBadge } from '@/components/common/WarningBadge';
+
+import Button from '@/design/ui/components/button';
+
+import type { Dialog, DialogPackage } from '@/types/resource';
+
+import { Label } from '../common/Label';
+import { DialogItemWrapper } from './DialogItem';
 
 interface DialogEditorProps {
 	allPackages: DialogPackage[];

@@ -1,9 +1,5 @@
 'use client';
 
-import { type JSX, memo } from 'react';
-
-import { useReducedMotion } from '@/design/ui/hooks';
-
 import {
 	Navbar as HeroUINavbar,
 	NavbarBrand,
@@ -14,6 +10,9 @@ import {
 	NavbarMenuToggle,
 	type NavbarProps,
 } from '@heroui/navbar';
+import { type JSX, memo } from 'react';
+
+import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 interface IProps extends NavbarProps {}
 

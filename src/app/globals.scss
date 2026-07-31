@@ -1,16 +1,7 @@
-@use '../design/hooks/use-theme/styles';
+@use '../../app/design/theme/runtime/styles';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@layer components {
-	// Card-as-button surface used for clickable list items that contain other
-	// interactive elements (where a real <button> would create nested-button
-	// semantics). For genuine action buttons, use HeroUI Button instead.
-	.surface-pressable {
-		@apply flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-opacity-80 px-4 py-2 font-medium backdrop-blur-md transition-all hover:brightness-95 active:scale-[.98] active:brightness-90 disabled:cursor-not-allowed disabled:opacity-50 dark:backdrop-blur-none;
-	}
-}
 
 @layer utilities {
 	.bg-blend-mystia {

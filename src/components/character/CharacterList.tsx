@@ -1,10 +1,12 @@
+import { cn } from '@heroui/theme';
 import { memo, useCallback, useState } from 'react';
 
-import { Button } from '@/design/ui/components';
-import { cn } from '@/design/ui/utils';
 import { EmptyState } from '@/components/common/EmptyState';
-import { WarningBadge } from '@/components/common/WarningBadge';
 import { usePackLabelPrefix } from '@/components/common/useLabelPrefixValidation';
+import { WarningBadge } from '@/components/common/WarningBadge';
+
+import Button from '@/design/ui/components/button';
+
 import type { Character } from '@/types/resource';
 
 interface CharacterListProps {
@@ -88,13 +90,13 @@ export const CharacterList = memo<CharacterListProps>(function CharacterList({
 								char.label &&
 								!char.label.startsWith(packLabelPrefix);
 							return (
-								<button
+								<Button
 									key={index}
-									onClick={() => {
+									onPress={() => {
 										onSelect(index);
 									}}
 									className={cn(
-										'surface-pressable flex-col items-start border p-4',
+										'h-auto flex-col items-start border p-4',
 										selectedIndex === index
 											? isDuplicate
 												? 'border-danger bg-danger/20 shadow-inner'
@@ -124,7 +126,7 @@ export const CharacterList = memo<CharacterListProps>(function CharacterList({
 									<div className="font-mono text-xs text-foreground opacity-80">
 										ID: {char.id} | {char.type}
 									</div>
-								</button>
+								</Button>
 							);
 						})}
 						{characters.length === 0 && (

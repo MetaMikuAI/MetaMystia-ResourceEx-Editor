@@ -1,17 +1,22 @@
+import { cn } from '@heroui/theme';
 import { memo, useCallback, useId, useMemo } from 'react';
 
-import { Select } from '@/design/ui/components';
-import type { SelectItemSpec } from '@/design/ui/components';
 import { EmptyState } from '@/components/common/EmptyState';
-import { SectionAddButton } from '@/components/common/SectionAddButton';
-import { SectionDeleteButton } from '@/components/common/SectionDeleteButton';
-import { cn } from '@/design/ui/utils';
 import { ErrorBadge } from '@/components/common/ErrorBadge';
 import { IdRangeBadge } from '@/components/common/IdRangeBadge';
 import { Label } from '@/components/common/Label';
-import type { Recipe, CookerType } from '@/types/resource';
-import { INGREDIENT_NAMES } from '@/data/ingredients';
+import { SectionAddButton } from '@/components/common/SectionAddButton';
+import { SectionDeleteButton } from '@/components/common/SectionDeleteButton';
+
 import { FOOD_NAMES } from '@/data/foods';
+import { INGREDIENT_NAMES } from '@/data/ingredients';
+
+import {
+	Select,
+	type SelectItem as SelectItemSpec,
+} from '@/design/ui/components/select';
+
+import type { CookerType, Recipe } from '@/types/resource';
 
 interface RecipeEditorProps {
 	recipe: Recipe | null;

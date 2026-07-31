@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from '@heroui/theme';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { EmptyState } from '@/components/common/EmptyState';
@@ -8,13 +9,18 @@ import { ChevronRight } from '@/components/icons/ChevronRight';
 import { PlusIcon } from '@/components/icons/Plus';
 import { TrashIcon } from '@/components/icons/Trash';
 
-import { Button, Select } from '@/design/ui/components';
-import { type SelectItemSpec } from '@/design/ui/components';
-import { cn } from '@/design/ui/utils';
+import Button from '@/design/ui/components/button';
+import {
+	Select,
+	type SelectItem as SelectItemSpec,
+} from '@/design/ui/components/select';
 
 import { safeStorage } from '@/infrastructure/browser/storage/safeStorage';
 
+import type { AssetPathOperation } from '@/types/resource';
+
 import {
+	type AssetEntry,
 	buildAssetPathOperations,
 	collectAssetFolders,
 	expandAssetSelection,
@@ -24,10 +30,7 @@ import {
 	listAssetFolder,
 	normalizeAssetFilename,
 	normalizeAssetFolderPath,
-	type AssetEntry,
 } from './assetPaths';
-
-import type { AssetPathOperation } from '@/types/resource';
 
 interface AssetFileManagerProps {
 	assetUrls: Record<string, string>;

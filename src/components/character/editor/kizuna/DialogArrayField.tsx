@@ -1,7 +1,12 @@
 import { memo, useMemo } from 'react';
-import { Select } from '@/design/ui/components';
-import type { SelectItemSpec } from '@/design/ui/components';
+
+import {
+	Select,
+	type SelectItem as SelectItemSpec,
+} from '@/design/ui/components/select';
+
 import type { DialogPackage } from '@/types/resource';
+
 import { DialogItem } from './DialogItem';
 
 interface DialogArrayFieldProps {
