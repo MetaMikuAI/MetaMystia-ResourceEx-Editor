@@ -1,1 +1,5 @@
-export { default } from '@/app/recipe/page';
+import { RecipeEditorScreen } from '@/features/resourceEditor/client/editors/recipe/RecipeEditorScreen';
+
+export default function RecipePage() {
+	return <RecipeEditorScreen />;
+}

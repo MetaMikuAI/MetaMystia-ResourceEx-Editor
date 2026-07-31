@@ -1,1 +1,5 @@
-export { default } from '@/app/character/page';
+import { CharacterEditorScreen } from '@/features/resourceEditor/client/editors/character/CharacterEditorScreen';
+
+export default function CharacterPage() {
+	return <CharacterEditorScreen />;
+}
