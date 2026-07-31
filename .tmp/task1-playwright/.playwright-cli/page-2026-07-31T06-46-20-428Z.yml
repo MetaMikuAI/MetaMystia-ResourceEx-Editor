@@ -1,0 +1,506 @@
+- generic [active] [ref=f5e1]:
+  - generic [ref=f5e2]:
+    - generic [ref=f5e3]:
+      - navigation [ref=f5e4]:
+        - generic [ref=f5e5]:
+          - list [ref=f5e6]:
+            - navigation [ref=f5e9]:
+              - listitem [ref=f5e10]:
+                - button "基础信息" [ref=f5e11] [cursor=pointer]
+              - button "角色" [ref=f5e12] [cursor=pointer]
+              - button "素材" [ref=f5e13] [cursor=pointer]
+              - button "节点" [ref=f5e14] [cursor=pointer]
+              - listitem [ref=f5e15]:
+                - button "资产" [ref=f5e16] [cursor=pointer]
+          - list [ref=f5e17]:
+            - listitem [ref=f5e18]:
+              - button "GitHub" [ref=f5e19] [cursor=pointer]
+            - generic [ref=f5e22]:
+              - button "公告" [ref=f5e23] [cursor=pointer]
+              - button "全新创建" [ref=f5e24] [cursor=pointer]
+              - button "上传资源包(ZIP)" [ref=f5e25] [cursor=pointer]
+              - button "导出资源包(ZIP)" [ref=f5e26] [cursor=pointer]
+      - main [ref=f5e27]:
+        - generic [ref=f5e30]:
+          - generic [ref=f5e31]:
+            - generic [ref=f5e32]:
+              - heading "服装列表" [level=2] [ref=f5e33]
+              - button "+" [ref=f5e35] [cursor=pointer]
+            - generic [ref=f5e55] [cursor=pointer]:
+              - 'button "新服装1 ID: 9000" [ref=f5e56]':
+                - generic [ref=f5e57]: 新服装1
+                - generic [ref=f5e59]: "ID: 9000"
+              - button "删除"
+          - generic [ref=f5e42]:
+            - heading "服装编辑" [level=2] [ref=f5e61]
+            - generic [ref=f5e62]:
+              - heading "基本信息" [level=3] [ref=f5e63]
+              - generic [ref=f5e64]:
+                - generic [ref=f5e65]:
+                  - generic [ref=f5e66]:
+                    - generic [ref=f5e67]:
+                      - generic [ref=f5e68]: ID
+                      - button "?" [ref=f5e69] [cursor=pointer]
+                    - generic [ref=f5e71]: 未分配ID段
+                  - spinbutton "ID" [ref=f5e73]: "9000"
+                - generic [ref=f5e74]:
+                  - generic [ref=f5e75]: 名称 (Name)
+                  - textbox "名称 (Name)" [ref=f5e77]: 新服装1
+                - generic [ref=f5e78]:
+                  - generic [ref=f5e79]: 描述 (Description)
+                  - textbox "描述 (Description)" [ref=f5e81]
+            - generic [ref=f5e82]:
+              - heading [level=3] [ref=f5e83]:
+                - text: 物品图标贴图 (Icon Sprite)
+                - button "?" [ref=f5e84] [cursor=pointer]
+              - generic [ref=f5e86]:
+                - generic [ref=f5e88] [cursor=pointer]:
+                  - generic [ref=f5e89]: 🖼️
+                  - generic [ref=f5e90]: 点击设置贴图
+                - generic [ref=f5e91]:
+                  - paragraph [ref=f5e92]: "贴图建议尺寸: 26 × 26 像素"
+                  - paragraph [ref=f5e93]: "资源路径: assets/Clothes/9000/icon.png"
+            - generic [ref=f5e94]:
+              - heading [level=3] [ref=f5e95]:
+                - text: 显示参数 (居酒屋 / 笔记本)
+                - button "?" [ref=f5e96] [cursor=pointer]
+              - generic [ref=f5e98]:
+                - generic [ref=f5e99]:
+                  - generic [ref=f5e100]:
+                    - generic [ref=f5e101]: 居酒屋皮肤索引 (izakayaSkinIndex)
+                    - button "?" [ref=f5e102] [cursor=pointer]
+                  - spinbutton [ref=f5e104]: "-1"
+                - generic [ref=f5e105]:
+                  - generic [ref=f5e106]:
+                    - generic [ref=f5e107]: 居酒屋水平偏移 (izkayaHorizontalOffset)
+                    - button "?" [ref=f5e108] [cursor=pointer]
+                  - spinbutton [ref=f5e110]: "0"
+                - generic [ref=f5e111]:
+                  - generic [ref=f5e112]:
+                    - generic [ref=f5e113]: 笔记本水平偏移 (notebookHorizontalOffset)
+                    - button "?" [ref=f5e114] [cursor=pointer]
+                  - spinbutton [ref=f5e116]: "0"
+                - generic [ref=f5e117]:
+                  - generic [ref=f5e118]:
+                    - generic [ref=f5e119]: 笔记本垂直偏移 (notebookVerticalOffset)
+                    - button "?" [ref=f5e120] [cursor=pointer]
+                  - spinbutton [ref=f5e122]: "0"
+                - generic [ref=f5e123]:
+                  - generic [ref=f5e124]:
+                    - generic [ref=f5e125]: 笔记本标题水平偏移 (notebookUITitleHorizontalOffset)
+                    - button "?" [ref=f5e126] [cursor=pointer]
+                  - spinbutton [ref=f5e128]: "0"
+                - generic [ref=f5e129]:
+                  - generic [ref=f5e130]:
+                    - generic [ref=f5e131]: 笔记本标题垂直偏移 (notebookUITitleVerticalOffset)
+                    - button "?" [ref=f5e132] [cursor=pointer]
+                  - spinbutton [ref=f5e134]: "0"
+            - generic [ref=f5e135]:
+              - heading [level=3] [ref=f5e136]:
+                - text: 立绘 (Portrait)
+                - button "?" [ref=f5e137] [cursor=pointer]
+              - generic [ref=f5e139]:
+                - generic [ref=f5e140]: 预览 (点击/拖拽上传)
+                - generic [ref=f5e144] [cursor=pointer]:
+                  - generic [ref=f5e145]: 📷
+                  - generic [ref=f5e146]: 256 x 359
+            - generic [ref=f5e147]:
+              - generic [ref=f5e152] [cursor=pointer]:
+                - text: 服装小人配置（Pixel Full Config）
+                - button "服装小人配置（Pixel Full Config）" [ref=f5e153]:
+                  - generic [ref=f5e154]: "?"
+              - generic [ref=f5e155]:
+                - generic [ref=f5e156]:
+                  - generic [ref=f5e157]:
+                    - generic [ref=f5e158]:
+                      - generic [ref=f5e159]: 服装小人名称 (Name)
+                      - button "?" [ref=f5e160] [cursor=pointer]
+                    - button "刷新默认填充" [ref=f5e162] [cursor=pointer]
+                  - generic [ref=f5e163]: _NewPack_Clothes_9000_新服装1
+                - generic [ref=f5e164]:
+                  - generic [ref=f5e165]:
+                    - text: 主身体贴图 (Main Sprites - 12张)
+                    - button "主身体贴图 (Main Sprites - 12张)" [ref=f5e166] [cursor=pointer]:
+                      - generic [ref=f5e167]: "?"
+                  - generic [ref=f5e168]:
+                    - generic [ref=f5e169]:
+                      - generic [ref=f5e170] [cursor=pointer]:
+                        - generic [ref=f5e171]: "0"
+                        - generic [ref=f5e172]: 上传
+                        - generic [ref=f5e174]: 更换
+                      - paragraph [ref=f5e176]: Main_0, 0.png
+                    - generic [ref=f5e177]:
+                      - generic [ref=f5e178] [cursor=pointer]:
+                        - generic [ref=f5e179]: "1"
+                        - generic [ref=f5e180]: 上传
+                        - generic [ref=f5e182]: 更换
+                      - paragraph [ref=f5e184]: Main_0, 1.png
+                    - generic [ref=f5e185]:
+                      - generic [ref=f5e186] [cursor=pointer]:
+                        - generic [ref=f5e187]: "2"
+                        - generic [ref=f5e188]: 上传
+                        - generic [ref=f5e190]: 更换
+                      - paragraph [ref=f5e192]: Main_0, 2.png
+                    - generic [ref=f5e193]:
+                      - generic [ref=f5e194] [cursor=pointer]:
+                        - generic [ref=f5e195]: "3"
+                        - generic [ref=f5e196]: 上传
+                        - generic [ref=f5e198]: 更换
+                      - paragraph [ref=f5e200]: Main_1, 0.png
+                    - generic [ref=f5e201]:
+                      - generic [ref=f5e202] [cursor=pointer]:
+                        - generic [ref=f5e203]: "4"
+                        - generic [ref=f5e204]: 上传
+                        - generic [ref=f5e206]: 更换
+                      - paragraph [ref=f5e208]: Main_1, 1.png
+                    - generic [ref=f5e209]:
+                      - generic [ref=f5e210] [cursor=pointer]:
+                        - generic [ref=f5e211]: "5"
+                        - generic [ref=f5e212]: 上传
+                        - generic [ref=f5e214]: 更换
+                      - paragraph [ref=f5e216]: Main_1, 2.png
+                    - generic [ref=f5e217]:
+                      - generic [ref=f5e218] [cursor=pointer]:
+                        - generic [ref=f5e219]: "6"
+                        - generic [ref=f5e220]: 上传
+                        - generic [ref=f5e222]: 更换
+                      - paragraph [ref=f5e224]: Main_2, 0.png
+                    - generic [ref=f5e225]:
+                      - generic [ref=f5e226] [cursor=pointer]:
+                        - generic [ref=f5e227]: "7"
+                        - generic [ref=f5e228]: 上传
+                        - generic [ref=f5e230]: 更换
+                      - paragraph [ref=f5e232]: Main_2, 1.png
+                    - generic [ref=f5e233]:
+                      - generic [ref=f5e234] [cursor=pointer]:
+                        - generic [ref=f5e235]: "8"
+                        - generic [ref=f5e236]: 上传
+                        - generic [ref=f5e238]: 更换
+                      - paragraph [ref=f5e240]: Main_2, 2.png
+                    - generic [ref=f5e241]:
+                      - generic [ref=f5e242] [cursor=pointer]:
+                        - generic [ref=f5e243]: "9"
+                        - generic [ref=f5e244]: 上传
+                        - generic [ref=f5e246]: 更换
+                      - paragraph [ref=f5e248]: Main_3, 0.png
+                    - generic [ref=f5e249]:
+                      - generic [ref=f5e250] [cursor=pointer]:
+                        - generic [ref=f5e251]: "10"
+                        - generic [ref=f5e252]: 上传
+                        - generic [ref=f5e254]: 更换
+                      - paragraph [ref=f5e256]: Main_3, 1.png
+                    - generic [ref=f5e257]:
+                      - generic [ref=f5e258] [cursor=pointer]:
+                        - generic [ref=f5e259]: "11"
+                        - generic [ref=f5e260]: 上传
+                        - generic [ref=f5e262]: 更换
+                      - paragraph [ref=f5e264]: Main_3, 2.png
+                - generic [ref=f5e265]:
+                  - generic [ref=f5e266]:
+                    - text: 眼睛贴图 (Eye Sprites - 24张)
+                    - button "眼睛贴图 (Eye Sprites - 24张)" [ref=f5e267] [cursor=pointer]:
+                      - generic [ref=f5e268]: "?"
+                  - generic [ref=f5e269]:
+                    - generic [ref=f5e270]:
+                      - generic [ref=f5e271] [cursor=pointer]:
+                        - generic [ref=f5e272]: "0"
+                        - generic [ref=f5e273]: 上传
+                        - generic [ref=f5e275]: 更换
+                      - paragraph [ref=f5e277]: Eyes_0, 0.png
+                    - generic [ref=f5e278]:
+                      - generic [ref=f5e279] [cursor=pointer]:
+                        - generic [ref=f5e280]: "1"
+                        - generic [ref=f5e281]: 上传
+                        - generic [ref=f5e283]: 更换
+                      - paragraph [ref=f5e285]: Eyes_0, 1.png
+                    - generic [ref=f5e286]:
+                      - generic [ref=f5e287] [cursor=pointer]:
+                        - generic [ref=f5e288]: "2"
+                        - generic [ref=f5e289]: 上传
+                        - generic [ref=f5e291]: 更换
+                      - paragraph [ref=f5e293]: Eyes_0, 2.png
+                    - generic [ref=f5e294]:
+                      - generic [ref=f5e295] [cursor=pointer]:
+                        - generic [ref=f5e296]: "3"
+                        - generic [ref=f5e297]: 上传
+                        - generic [ref=f5e299]: 更换
+                      - paragraph [ref=f5e301]: Eyes_0, 3.png
+                    - generic [ref=f5e302]:
+                      - generic [ref=f5e303] [cursor=pointer]:
+                        - generic [ref=f5e304]: "4"
+                        - generic [ref=f5e305]: 上传
+                        - generic [ref=f5e307]: 更换
+                      - paragraph [ref=f5e309]: Eyes_1, 0.png
+                    - generic [ref=f5e310]:
+                      - generic [ref=f5e311] [cursor=pointer]:
+                        - generic [ref=f5e312]: "5"
+                        - generic [ref=f5e313]: 上传
+                        - generic [ref=f5e315]: 更换
+                      - paragraph [ref=f5e317]: Eyes_1, 1.png
+                    - generic [ref=f5e318]:
+                      - generic [ref=f5e319] [cursor=pointer]:
+                        - generic [ref=f5e320]: "6"
+                        - generic [ref=f5e321]: 上传
+                        - generic [ref=f5e323]: 更换
+                      - paragraph [ref=f5e325]: Eyes_1, 2.png
+                    - generic [ref=f5e326]:
+                      - generic [ref=f5e327] [cursor=pointer]:
+                        - generic [ref=f5e328]: "7"
+                        - generic [ref=f5e329]: 上传
+                        - generic [ref=f5e331]: 更换
+                      - paragraph [ref=f5e333]: Eyes_1, 3.png
+                    - generic [ref=f5e334]:
+                      - generic [ref=f5e335] [cursor=pointer]:
+                        - generic [ref=f5e336]: "8"
+                        - generic [ref=f5e337]: 上传
+                        - generic [ref=f5e339]: 更换
+                      - paragraph [ref=f5e341]: Eyes_2, 0.png
+                    - generic [ref=f5e342]:
+                      - generic [ref=f5e343] [cursor=pointer]:
+                        - generic [ref=f5e344]: "9"
+                        - generic [ref=f5e345]: 上传
+                        - generic [ref=f5e347]: 更换
+                      - paragraph [ref=f5e349]: Eyes_2, 1.png
+                    - generic [ref=f5e350]:
+                      - generic [ref=f5e351] [cursor=pointer]:
+                        - generic [ref=f5e352]: "10"
+                        - generic [ref=f5e353]: 上传
+                        - generic [ref=f5e355]: 更换
+                      - paragraph [ref=f5e357]: Eyes_2, 2.png
+                    - generic [ref=f5e358]:
+                      - generic [ref=f5e359] [cursor=pointer]:
+                        - generic [ref=f5e360]: "11"
+                        - generic [ref=f5e361]: 上传
+                        - generic [ref=f5e363]: 更换
+                      - paragraph [ref=f5e365]: Eyes_2, 3.png
+                    - generic [ref=f5e366]:
+                      - generic [ref=f5e367] [cursor=pointer]:
+                        - generic [ref=f5e368]: "12"
+                        - generic [ref=f5e369]: 上传
+                        - generic [ref=f5e371]: 更换
+                      - paragraph [ref=f5e373]: Eyes_3, 0.png
+                    - generic [ref=f5e374]:
+                      - generic [ref=f5e375] [cursor=pointer]:
+                        - generic [ref=f5e376]: "13"
+                        - generic [ref=f5e377]: 上传
+                        - generic [ref=f5e379]: 更换
+                      - paragraph [ref=f5e381]: Eyes_3, 1.png
+                    - generic [ref=f5e382]:
+                      - generic [ref=f5e383] [cursor=pointer]:
+                        - generic [ref=f5e384]: "14"
+                        - generic [ref=f5e385]: 上传
+                        - generic [ref=f5e387]: 更换
+                      - paragraph [ref=f5e389]: Eyes_3, 2.png
+                    - generic [ref=f5e390]:
+                      - generic [ref=f5e391] [cursor=pointer]:
+                        - generic [ref=f5e392]: "15"
+                        - generic [ref=f5e393]: 上传
+                        - generic [ref=f5e395]: 更换
+                      - paragraph [ref=f5e397]: Eyes_3, 3.png
+                    - generic [ref=f5e398]:
+                      - generic [ref=f5e399] [cursor=pointer]:
+                        - generic [ref=f5e400]: "16"
+                        - generic [ref=f5e401]: 上传
+                        - generic [ref=f5e403]: 更换
+                      - paragraph [ref=f5e405]: Eyes_4, 0.png
+                    - generic [ref=f5e406]:
+                      - generic [ref=f5e407] [cursor=pointer]:
+                        - generic [ref=f5e408]: "17"
+                        - generic [ref=f5e409]: 上传
+                        - generic [ref=f5e411]: 更换
+                      - paragraph [ref=f5e413]: Eyes_4, 1.png
+                    - generic [ref=f5e414]:
+                      - generic [ref=f5e415] [cursor=pointer]:
+                        - generic [ref=f5e416]: "18"
+                        - generic [ref=f5e417]: 上传
+                        - generic [ref=f5e419]: 更换
+                      - paragraph [ref=f5e421]: Eyes_4, 2.png
+                    - generic [ref=f5e422]:
+                      - generic [ref=f5e423] [cursor=pointer]:
+                        - generic [ref=f5e424]: "19"
+                        - generic [ref=f5e425]: 上传
+                        - generic [ref=f5e427]: 更换
+                      - paragraph [ref=f5e429]: Eyes_4, 3.png
+                    - generic [ref=f5e430]:
+                      - generic [ref=f5e431] [cursor=pointer]:
+                        - generic [ref=f5e432]: "20"
+                        - generic [ref=f5e433]: 上传
+                        - generic [ref=f5e435]: 更换
+                      - paragraph [ref=f5e437]: Eyes_5, 0.png
+                    - generic [ref=f5e438]:
+                      - generic [ref=f5e439] [cursor=pointer]:
+                        - generic [ref=f5e440]: "21"
+                        - generic [ref=f5e441]: 上传
+                        - generic [ref=f5e443]: 更换
+                      - paragraph [ref=f5e445]: Eyes_5, 1.png
+                    - generic [ref=f5e446]:
+                      - generic [ref=f5e447] [cursor=pointer]:
+                        - generic [ref=f5e448]: "22"
+                        - generic [ref=f5e449]: 上传
+                        - generic [ref=f5e451]: 更换
+                      - paragraph [ref=f5e453]: Eyes_5, 2.png
+                    - generic [ref=f5e454]:
+                      - generic [ref=f5e455] [cursor=pointer]:
+                        - generic [ref=f5e456]: "23"
+                        - generic [ref=f5e457]: 上传
+                        - generic [ref=f5e459]: 更换
+                      - paragraph [ref=f5e461]: Eyes_5, 3.png
+                - generic [ref=f5e462]:
+                  - generic [ref=f5e463]:
+                    - text: 头发贴图 (Hair Sprites - 12张)
+                    - button "头发贴图 (Hair Sprites - 12张)" [ref=f5e464] [cursor=pointer]:
+                      - generic [ref=f5e465]: "?"
+                  - generic [ref=f5e466]:
+                    - generic [ref=f5e467]:
+                      - generic [ref=f5e468] [cursor=pointer]:
+                        - generic [ref=f5e469]: "0"
+                        - generic [ref=f5e470]: 上传
+                        - generic [ref=f5e472]: 更换
+                      - paragraph [ref=f5e474]: Hair_0, 0.png
+                    - generic [ref=f5e475]:
+                      - generic [ref=f5e476] [cursor=pointer]:
+                        - generic [ref=f5e477]: "1"
+                        - generic [ref=f5e478]: 上传
+                        - generic [ref=f5e480]: 更换
+                      - paragraph [ref=f5e482]: Hair_0, 1.png
+                    - generic [ref=f5e483]:
+                      - generic [ref=f5e484] [cursor=pointer]:
+                        - generic [ref=f5e485]: "2"
+                        - generic [ref=f5e486]: 上传
+                        - generic [ref=f5e488]: 更换
+                      - paragraph [ref=f5e490]: Hair_0, 2.png
+                    - generic [ref=f5e491]:
+                      - generic [ref=f5e492] [cursor=pointer]:
+                        - generic [ref=f5e493]: "3"
+                        - generic [ref=f5e494]: 上传
+                        - generic [ref=f5e496]: 更换
+                      - paragraph [ref=f5e498]: Hair_1, 0.png
+                    - generic [ref=f5e499]:
+                      - generic [ref=f5e500] [cursor=pointer]:
+                        - generic [ref=f5e501]: "4"
+                        - generic [ref=f5e502]: 上传
+                        - generic [ref=f5e504]: 更换
+                      - paragraph [ref=f5e506]: Hair_1, 1.png
+                    - generic [ref=f5e507]:
+                      - generic [ref=f5e508] [cursor=pointer]:
+                        - generic [ref=f5e509]: "5"
+                        - generic [ref=f5e510]: 上传
+                        - generic [ref=f5e512]: 更换
+                      - paragraph [ref=f5e514]: Hair_1, 2.png
+                    - generic [ref=f5e515]:
+                      - generic [ref=f5e516] [cursor=pointer]:
+                        - generic [ref=f5e517]: "6"
+                        - generic [ref=f5e518]: 上传
+                        - generic [ref=f5e520]: 更换
+                      - paragraph [ref=f5e522]: Hair_2, 0.png
+                    - generic [ref=f5e523]:
+                      - generic [ref=f5e524] [cursor=pointer]:
+                        - generic [ref=f5e525]: "7"
+                        - generic [ref=f5e526]: 上传
+                        - generic [ref=f5e528]: 更换
+                      - paragraph [ref=f5e530]: Hair_2, 1.png
+                    - generic [ref=f5e531]:
+                      - generic [ref=f5e532] [cursor=pointer]:
+                        - generic [ref=f5e533]: "8"
+                        - generic [ref=f5e534]: 上传
+                        - generic [ref=f5e536]: 更换
+                      - paragraph [ref=f5e538]: Hair_2, 2.png
+                    - generic [ref=f5e539]:
+                      - generic [ref=f5e540] [cursor=pointer]:
+                        - generic [ref=f5e541]: "9"
+                        - generic [ref=f5e542]: 上传
+                        - generic [ref=f5e544]: 更换
+                      - paragraph [ref=f5e546]: Hair_3, 0.png
+                    - generic [ref=f5e547]:
+                      - generic [ref=f5e548] [cursor=pointer]:
+                        - generic [ref=f5e549]: "10"
+                        - generic [ref=f5e550]: 上传
+                        - generic [ref=f5e552]: 更换
+                      - paragraph [ref=f5e554]: Hair_3, 1.png
+                    - generic [ref=f5e555]:
+                      - generic [ref=f5e556] [cursor=pointer]:
+                        - generic [ref=f5e557]: "11"
+                        - generic [ref=f5e558]: 上传
+                        - generic [ref=f5e560]: 更换
+                      - paragraph [ref=f5e562]: Hair_3, 2.png
+                - generic [ref=f5e563]:
+                  - generic [ref=f5e564]:
+                    - text: 背部贴图 (Back Sprites - 12张)
+                    - button "背部贴图 (Back Sprites - 12张)" [ref=f5e565] [cursor=pointer]:
+                      - generic [ref=f5e566]: "?"
+                  - generic [ref=f5e567]:
+                    - generic [ref=f5e568]:
+                      - generic [ref=f5e569] [cursor=pointer]:
+                        - generic [ref=f5e570]: "0"
+                        - generic [ref=f5e571]: 上传
+                        - generic [ref=f5e573]: 更换
+                      - paragraph [ref=f5e575]: Back_0, 0.png
+                    - generic [ref=f5e576]:
+                      - generic [ref=f5e577] [cursor=pointer]:
+                        - generic [ref=f5e578]: "1"
+                        - generic [ref=f5e579]: 上传
+                        - generic [ref=f5e581]: 更换
+                      - paragraph [ref=f5e583]: Back_0, 1.png
+                    - generic [ref=f5e584]:
+                      - generic [ref=f5e585] [cursor=pointer]:
+                        - generic [ref=f5e586]: "2"
+                        - generic [ref=f5e587]: 上传
+                        - generic [ref=f5e589]: 更换
+                      - paragraph [ref=f5e591]: Back_0, 2.png
+                    - generic [ref=f5e592]:
+                      - generic [ref=f5e593] [cursor=pointer]:
+                        - generic [ref=f5e594]: "3"
+                        - generic [ref=f5e595]: 上传
+                        - generic [ref=f5e597]: 更换
+                      - paragraph [ref=f5e599]: Back_1, 0.png
+                    - generic [ref=f5e600]:
+                      - generic [ref=f5e601] [cursor=pointer]:
+                        - generic [ref=f5e602]: "4"
+                        - generic [ref=f5e603]: 上传
+                        - generic [ref=f5e605]: 更换
+                      - paragraph [ref=f5e607]: Back_1, 1.png
+                    - generic [ref=f5e608]:
+                      - generic [ref=f5e609] [cursor=pointer]:
+                        - generic [ref=f5e610]: "5"
+                        - generic [ref=f5e611]: 上传
+                        - generic [ref=f5e613]: 更换
+                      - paragraph [ref=f5e615]: Back_1, 2.png
+                    - generic [ref=f5e616]:
+                      - generic [ref=f5e617] [cursor=pointer]:
+                        - generic [ref=f5e618]: "6"
+                        - generic [ref=f5e619]: 上传
+                        - generic [ref=f5e621]: 更换
+                      - paragraph [ref=f5e623]: Back_2, 0.png
+                    - generic [ref=f5e624]:
+                      - generic [ref=f5e625] [cursor=pointer]:
+                        - generic [ref=f5e626]: "7"
+                        - generic [ref=f5e627]: 上传
+                        - generic [ref=f5e629]: 更换
+                      - paragraph [ref=f5e631]: Back_2, 1.png
+                    - generic [ref=f5e632]:
+                      - generic [ref=f5e633] [cursor=pointer]:
+                        - generic [ref=f5e634]: "8"
+                        - generic [ref=f5e635]: 上传
+                        - generic [ref=f5e637]: 更换
+                      - paragraph [ref=f5e639]: Back_2, 2.png
+                    - generic [ref=f5e640]:
+                      - generic [ref=f5e641] [cursor=pointer]:
+                        - generic [ref=f5e642]: "9"
+                        - generic [ref=f5e643]: 上传
+                        - generic [ref=f5e645]: 更换
+                      - paragraph [ref=f5e647]: Back_3, 0.png
+                    - generic [ref=f5e648]:
+                      - generic [ref=f5e649] [cursor=pointer]:
+                        - generic [ref=f5e650]: "10"
+                        - generic [ref=f5e651]: 上传
+                        - generic [ref=f5e653]: 更换
+                      - paragraph [ref=f5e655]: Back_3, 1.png
+                    - generic [ref=f5e656]:
+                      - generic [ref=f5e657] [cursor=pointer]:
+                        - generic [ref=f5e658]: "11"
+                        - generic [ref=f5e659]: 上传
+                        - generic [ref=f5e661]: 更换
+                      - paragraph [ref=f5e663]: Back_3, 2.png
+    - button "回到顶部" [ref=f5e665] [cursor=pointer]
+  - button "Open Next.js Dev Tools" [ref=f5e49] [cursor=pointer]
+  - alert [ref=f5e53]

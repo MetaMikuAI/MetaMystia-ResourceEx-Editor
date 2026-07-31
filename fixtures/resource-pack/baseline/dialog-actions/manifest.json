@@ -1,0 +1,75 @@
+{
+  "fixture": "dialog-actions",
+  "input": {
+    "bytes": 2441,
+    "entries": [
+      {
+        "bytes": 1879,
+        "dir": false,
+        "name": "ResourceEx.json",
+        "sha256": "3801f61dab4c2869548bf9f7d9a18aae7da6425037f44ea29cbe1c7e1ced3f5f"
+      },
+      {
+        "dir": true,
+        "name": "assets/"
+      },
+      {
+        "bytes": 68,
+        "dir": false,
+        "name": "assets/CG/scene.png",
+        "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460"
+      },
+      {
+        "bytes": 44,
+        "dir": false,
+        "name": "assets/Audio/test.wav",
+        "sha256": "3f8c638a5bf5576bbd1c348e682de5df7c26c1f9ead2eb3374c9e6ba812eb597"
+      }
+    ],
+    "license": null,
+    "sha256": "4d1be412ff596b115aba39245369d9e57600c844518cc14d652f8f8e62997046"
+  },
+  "normalized": {
+    "bytes": 1879,
+    "sha256": "e481c5a00b23df27ac4be2ea7312cfac24213cb93815fe5ba89499cb94544b26"
+  },
+  "exported": {
+    "entries": [
+      {
+        "bytes": 1795,
+        "dir": false,
+        "name": "ResourceEx.json",
+        "sha256": "d85e2bb5baf359af939b2f78ff77af1581d0c8f9e7561f3f54443275e208a7a4"
+      },
+      {
+        "dir": true,
+        "name": "assets/"
+      },
+      {
+        "dir": true,
+        "name": "assets/Audio/"
+      },
+      {
+        "dir": true,
+        "name": "assets/CG/"
+      },
+      {
+        "bytes": 68,
+        "dir": false,
+        "name": "assets/CG/scene.png",
+        "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460"
+      },
+      {
+        "bytes": 44,
+        "dir": false,
+        "name": "assets/Audio/test.wav",
+        "sha256": "3f8c638a5bf5576bbd1c348e682de5df7c26c1f9ead2eb3374c9e6ba812eb597"
+      }
+    ],
+    "json": {
+      "bytes": 1795,
+      "sha256": "d85e2bb5baf359af939b2f78ff77af1581d0c8f9e7561f3f54443275e208a7a4"
+    },
+    "license": null
+  }
+}

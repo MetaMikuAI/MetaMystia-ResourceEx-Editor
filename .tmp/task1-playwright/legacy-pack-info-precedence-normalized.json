@@ -1,0 +1,228 @@
+{
+  "packInfo": {
+    "name": "FixturePackInfoWins Resource Pack",
+    "label": "FixturePackInfoWins",
+    "authors": [
+      "Task 1"
+    ],
+    "description": "Deterministic baseline fixture",
+    "version": "1.0.0"
+  },
+  "characters": [
+    {
+      "id": 9001,
+      "name": "Legacy Character",
+      "label": "_FixturePackInfoWins_Character",
+      "type": "Special",
+      "descriptions": [
+        "one",
+        "",
+        ""
+      ],
+      "guest": {
+        "fundRangeLower": 1,
+        "fundRangeUpper": 2,
+        "evaluation": [
+          "A",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "conversation": [],
+        "foodRequests": [
+          {
+            "tagId": 2,
+            "request": "food",
+            "enable": true
+          }
+        ],
+        "bevRequests": [
+          {
+            "tagId": 3,
+            "request": "bev",
+            "enable": false
+          }
+        ],
+        "hateFoodTag": [
+          1,
+          9
+        ],
+        "likeFoodTag": [
+          {
+            "tagId": 1,
+            "weight": 2
+          },
+          {
+            "tagId": 2,
+            "weight": 1
+          }
+        ],
+        "likeBevTag": [
+          {
+            "tagId": 3,
+            "weight": 1
+          }
+        ],
+        "spawn": [
+          {
+            "izakayaId": 1,
+            "relativeProb": 1,
+            "onlySpawnAfterUnlocking": false,
+            "onlySpawnWhenPlaceBeRecorded": false
+          },
+          {
+            "izakayaId": 2,
+            "relativeProb": 1,
+            "onlySpawnAfterUnlocking": false,
+            "onlySpawnWhenPlaceBeRecorded": false
+          }
+        ]
+      },
+      "hideInAlbum": false,
+      "isParticular": false,
+      "isCollabCharacter": false
+    }
+  ],
+  "dialogPackages": [],
+  "ingredients": [],
+  "foods": [
+    {
+      "id": 9003,
+      "name": "Legacy Food",
+      "description": "",
+      "level": 1,
+      "baseValue": 1,
+      "tags": [
+        1,
+        3
+      ],
+      "banTags": [
+        2,
+        4
+      ],
+      "spritePath": ""
+    }
+  ],
+  "beverages": [],
+  "recipes": [],
+  "missionNodes": [
+    {
+      "debugLabel": "",
+      "missionType": "Kitsuna",
+      "receiver": "Legacy Receiver",
+      "title": "Legacy Mission",
+      "rewards": [],
+      "finishConditions": [],
+      "postMissionsAfterPerformance": [],
+      "postEvents": [],
+      "label": "Legacy Mission",
+      "description": "",
+      "sender": "",
+      "reciever": "Legacy Receiver"
+    }
+  ],
+  "merchants": [],
+  "clothes": [
+    {
+      "id": 9004,
+      "name": "Legacy Clothes",
+      "description": "",
+      "spritePath": "",
+      "portraitPath": "",
+      "pixelFullConfig": {
+        "name": "_ResourceExample_Clothes_9004",
+        "mainSprite": [
+          "assets/Clothes/9004/Sprite/Main_0, 0.png",
+          "assets/Clothes/9004/Sprite/Main_0, 1.png",
+          "assets/Clothes/9004/Sprite/Main_0, 2.png",
+          "assets/Clothes/9004/Sprite/Main_1, 0.png",
+          "assets/Clothes/9004/Sprite/Main_1, 1.png",
+          "assets/Clothes/9004/Sprite/Main_1, 2.png",
+          "assets/Clothes/9004/Sprite/Main_2, 0.png",
+          "assets/Clothes/9004/Sprite/Main_2, 1.png",
+          "assets/Clothes/9004/Sprite/Main_2, 2.png",
+          "assets/Clothes/9004/Sprite/Main_3, 0.png",
+          "assets/Clothes/9004/Sprite/Main_3, 1.png",
+          "assets/Clothes/9004/Sprite/Main_3, 2.png"
+        ],
+        "eyeSprite": [
+          "assets/Clothes/9004/Sprite/Eyes_0, 0.png",
+          "assets/Clothes/9004/Sprite/Eyes_0, 1.png",
+          "assets/Clothes/9004/Sprite/Eyes_0, 2.png",
+          "assets/Clothes/9004/Sprite/Eyes_0, 3.png",
+          "assets/Clothes/9004/Sprite/Eyes_1, 0.png",
+          "assets/Clothes/9004/Sprite/Eyes_1, 1.png",
+          "assets/Clothes/9004/Sprite/Eyes_1, 2.png",
+          "assets/Clothes/9004/Sprite/Eyes_1, 3.png",
+          "assets/Clothes/9004/Sprite/Eyes_2, 0.png",
+          "assets/Clothes/9004/Sprite/Eyes_2, 1.png",
+          "assets/Clothes/9004/Sprite/Eyes_2, 2.png",
+          "assets/Clothes/9004/Sprite/Eyes_2, 3.png",
+          "assets/Clothes/9004/Sprite/Eyes_3, 0.png",
+          "assets/Clothes/9004/Sprite/Eyes_3, 1.png",
+          "assets/Clothes/9004/Sprite/Eyes_3, 2.png",
+          "assets/Clothes/9004/Sprite/Eyes_3, 3.png",
+          "assets/Clothes/9004/Sprite/Eyes_4, 0.png",
+          "assets/Clothes/9004/Sprite/Eyes_4, 1.png",
+          "assets/Clothes/9004/Sprite/Eyes_4, 2.png",
+          "assets/Clothes/9004/Sprite/Eyes_4, 3.png",
+          "assets/Clothes/9004/Sprite/Eyes_5, 0.png",
+          "assets/Clothes/9004/Sprite/Eyes_5, 1.png",
+          "assets/Clothes/9004/Sprite/Eyes_5, 2.png",
+          "assets/Clothes/9004/Sprite/Eyes_5, 3.png"
+        ],
+        "hairSprite": [
+          "assets/Clothes/9004/Sprite/Hair_0, 0.png",
+          "assets/Clothes/9004/Sprite/Hair_0, 1.png",
+          "assets/Clothes/9004/Sprite/Hair_0, 2.png",
+          "assets/Clothes/9004/Sprite/Hair_1, 0.png",
+          "assets/Clothes/9004/Sprite/Hair_1, 1.png",
+          "assets/Clothes/9004/Sprite/Hair_1, 2.png",
+          "assets/Clothes/9004/Sprite/Hair_2, 0.png",
+          "assets/Clothes/9004/Sprite/Hair_2, 1.png",
+          "assets/Clothes/9004/Sprite/Hair_2, 2.png",
+          "assets/Clothes/9004/Sprite/Hair_3, 0.png",
+          "assets/Clothes/9004/Sprite/Hair_3, 1.png",
+          "assets/Clothes/9004/Sprite/Hair_3, 2.png"
+        ],
+        "backSprite": [
+          "assets/Clothes/9004/Sprite/Back_0, 0.png",
+          "assets/Clothes/9004/Sprite/Back_0, 1.png",
+          "assets/Clothes/9004/Sprite/Back_0, 2.png",
+          "assets/Clothes/9004/Sprite/Back_1, 0.png",
+          "assets/Clothes/9004/Sprite/Back_1, 1.png",
+          "assets/Clothes/9004/Sprite/Back_1, 2.png",
+          "assets/Clothes/9004/Sprite/Back_2, 0.png",
+          "assets/Clothes/9004/Sprite/Back_2, 1.png",
+          "assets/Clothes/9004/Sprite/Back_2, 2.png",
+          "assets/Clothes/9004/Sprite/Back_3, 0.png",
+          "assets/Clothes/9004/Sprite/Back_3, 1.png",
+          "assets/Clothes/9004/Sprite/Back_3, 2.png"
+        ]
+      }
+    }
+  ],
+  "eventNodes": [
+    {
+      "label": "_FixturePackInfoWins_Event",
+      "debugLabel": "Legacy Event",
+      "scheduledEvent": {
+        "trigger": {
+          "triggerType": "OnTalkWithCharacter"
+        },
+        "eventData": {
+          "eventType": "Null"
+        }
+      },
+      "rewards": [],
+      "postRewards": [],
+      "postMissionsAfterPerformance": [],
+      "postEvents": []
+    }
+  ]
+}

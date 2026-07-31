@@ -1,0 +1,82 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - navigation [ref=e4]:
+        - generic [ref=e5]:
+          - list [ref=e6]:
+            - navigation [ref=e9]:
+              - listitem [ref=e10]:
+                - button "基础信息" [ref=e184] [cursor=pointer]
+              - button "角色" [ref=e185] [cursor=pointer]
+              - button "素材" [ref=e186] [cursor=pointer]
+              - button "节点" [ref=e187] [cursor=pointer]
+              - listitem [ref=e15]:
+                - button "资产" [ref=e188] [cursor=pointer]
+          - list [ref=e17]:
+            - listitem [ref=e18]:
+              - button "GitHub" [ref=e189] [cursor=pointer]
+            - generic [ref=e22]:
+              - button "公告" [ref=e190] [cursor=pointer]
+              - button "全新创建" [ref=e191] [cursor=pointer]
+              - button "上传资源包(ZIP)" [active] [ref=e192] [cursor=pointer]
+              - button "导出资源包(ZIP)" [ref=e193] [cursor=pointer]
+      - main [ref=e27]:
+        - generic [ref=e30]:
+          - heading "资源包基础信息 (Pack Info)" [level=2] [ref=e194]
+          - generic [ref=e33]:
+            - generic [ref=e34]:
+              - generic [ref=e35]: 资源包名称 (Name)
+              - 'textbox "例如: MetaMystia 示例资源包" [ref=e195]': FixturePackInfoWins Resource Pack
+            - generic [ref=e38]:
+              - generic [ref=e39]: 资源包唯一标识符 (Label)
+              - 'textbox "例如: ResourceEx" [ref=e196]': FixturePackInfoWins
+          - generic [ref=e42]:
+            - generic [ref=e43]: 版本 (Version)
+            - 'textbox "例如: 1.0.0" [ref=e197]': 1.0.0
+          - generic [ref=e46]:
+            - generic [ref=e47]:
+              - generic [ref=e48]: 作者列表 (Authors)
+              - button "添加作者" [ref=e198] [cursor=pointer]
+            - generic [ref=e215]:
+              - textbox "Author Name" [ref=e216]: Task 1
+              - button "删除" [ref=e217] [cursor=pointer]
+          - generic [ref=e54]:
+            - heading "ID 段分配 (ID Range Allocation)" [level=3] [ref=e199]
+            - paragraph [ref=e57]:
+              - text: 请务必参考
+              - link "有关ID签名校验机制的说明（资源包创作者请注意）" [ref=e200] [cursor=pointer]:
+                - /url: https://doc.meta-mystia.izakaya.cc/resource_ex/why_add_signature_check.html
+            - generic [ref=e59]:
+              - generic [ref=e60]:
+                - generic [ref=e61]: ID段起始 (Start, 含)
+                - spinbutton "最小 9000" [ref=e201]
+              - generic [ref=e64]:
+                - generic [ref=e65]: ID段结束 (End, 含)
+                - spinbutton "最大 1073741823" [ref=e202]
+            - generic [ref=e68]:
+              - generic [ref=e69]:
+                - generic [ref=e70]: 签名 (Signature)
+                - button "签名" [disabled]
+              - generic [ref=e71]:
+                - textbox "点击「签名」按钮进行签名…" [ref=e203]
+                - button "复制签名" [disabled] [ref=e204]
+          - generic [ref=e77]:
+            - generic [ref=e78]: 依赖 (Dependencies)
+            - generic [ref=e80]:
+              - button "CORE" [ref=e205] [cursor=pointer]
+              - button "DLC1" [ref=e206] [cursor=pointer]
+              - button "DLC2" [ref=e207] [cursor=pointer]
+              - button "DLC3" [ref=e208] [cursor=pointer]
+              - button "DLC4" [ref=e209] [cursor=pointer]
+              - button "DLC5" [ref=e210] [cursor=pointer]
+              - button "DLCMUSIC" [ref=e211] [cursor=pointer]
+          - generic [ref=e88]:
+            - generic [ref=e89]: 描述 (Description)
+            - textbox "资源包的详细描述..." [ref=e212]: Deterministic baseline fixture
+          - generic [ref=e92]:
+            - generic [ref=e93]: 许可证 (License)
+            - textbox "在此处粘贴许可证文本，将单独保存为 LICENSE.md..." [ref=e213]
+    - generic:
+      - button "回到顶部"
+  - button "Open Next.js Dev Tools" [ref=e214] [cursor=pointer]
+  - alert [ref=e135]

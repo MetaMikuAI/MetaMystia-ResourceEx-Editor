@@ -1,0 +1,33 @@
+- generic [ref=f3e2]:
+  - generic [ref=f3e3]:
+    - navigation [ref=f3e4]:
+      - generic [ref=f3e5]:
+        - list [ref=f3e6]:
+          - navigation [ref=f3e9]:
+            - listitem [ref=f3e10]:
+              - button "基础信息" [ref=f3e11] [cursor=pointer]
+            - button "角色" [ref=f3e12] [cursor=pointer]
+            - button "素材" [ref=f3e13] [cursor=pointer]
+            - button "节点" [ref=f3e14] [cursor=pointer]
+            - listitem [ref=f3e15]:
+              - button "资产" [ref=f3e16] [cursor=pointer]
+        - list [ref=f3e17]:
+          - listitem [ref=f3e18]:
+            - button "GitHub" [ref=f3e19] [cursor=pointer]
+          - generic [ref=f3e22]:
+            - button "公告" [ref=f3e23] [cursor=pointer]
+            - button "全新创建" [ref=f3e24] [cursor=pointer]
+            - button "上传资源包(ZIP)" [ref=f3e25] [cursor=pointer]
+            - button "导出资源包(ZIP)" [ref=f3e26] [cursor=pointer]
+    - main [ref=f3e27]:
+      - generic [ref=f3e30]:
+        - generic [ref=f3e31]:
+          - generic [ref=f3e32]:
+            - heading "角色列表" [level=2] [ref=f3e33]
+            - button "+" [ref=f3e35] [cursor=pointer]
+          - generic [ref=f3e39]:
+            - paragraph [ref=f3e40]: 暂无角色
+            - paragraph [ref=f3e41]: 点击上方 + 按钮创建
+        - generic [ref=f3e42]: 请从左侧选择一个角色进行编辑，或点击 + 按钮添加新角色
+  - generic:
+    - button "回到顶部"

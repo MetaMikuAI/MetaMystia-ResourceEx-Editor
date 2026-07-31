@@ -1,0 +1,21 @@
+{
+  "packInfo": {
+    "name": "FixtureMinimal Resource Pack",
+    "label": "FixtureMinimal",
+    "authors": [
+      "Task 1"
+    ],
+    "description": "Deterministic baseline fixture",
+    "version": "1.0.0"
+  },
+  "characters": [],
+  "dialogPackages": [],
+  "ingredients": [],
+  "foods": [],
+  "beverages": [],
+  "recipes": [],
+  "missionNodes": [],
+  "merchants": [],
+  "clothes": [],
+  "eventNodes": []
+}

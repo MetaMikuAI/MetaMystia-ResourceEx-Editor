@@ -1,0 +1,43 @@
+{
+  "fixture": "minimal",
+  "input": {
+    "bytes": 626,
+    "entries": [
+      {
+        "bytes": 408,
+        "dir": false,
+        "name": "ResourceEx.json",
+        "sha256": "de34ed0210d515e83885d33ed3006822485e37220dfa61e6931c5c626b79a739"
+      },
+      {
+        "dir": true,
+        "name": "assets/"
+      }
+    ],
+    "license": null,
+    "sha256": "62e6123b55e71bd2ba895ac53c704aeb1a4ba6e4ff5b738bd128d7fb79b9d9a2"
+  },
+  "normalized": {
+    "bytes": 408,
+    "sha256": "15c1f8044726d0c6211e90c54ca9ad48d0bb69628e61f927c3fe23f35c0710ac"
+  },
+  "exported": {
+    "entries": [
+      {
+        "bytes": 408,
+        "dir": false,
+        "name": "ResourceEx.json",
+        "sha256": "15c1f8044726d0c6211e90c54ca9ad48d0bb69628e61f927c3fe23f35c0710ac"
+      },
+      {
+        "dir": true,
+        "name": "assets/"
+      }
+    ],
+    "json": {
+      "bytes": 408,
+      "sha256": "15c1f8044726d0c6211e90c54ca9ad48d0bb69628e61f927c3fe23f35c0710ac"
+    },
+    "license": null
+  }
+}

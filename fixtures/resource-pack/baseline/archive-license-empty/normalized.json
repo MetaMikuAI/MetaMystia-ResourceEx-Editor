@@ -1,0 +1,62 @@
+{
+  "packInfo": {
+    "name": "FixtureLicenseEmpty Resource Pack",
+    "label": "FixtureLicenseEmpty",
+    "authors": [
+      "Task 1"
+    ],
+    "description": "Deterministic baseline fixture",
+    "version": "1.0.0"
+  },
+  "characters": [],
+  "dialogPackages": [
+    {
+      "name": "_FixtureLicenseEmpty_ArchiveActions",
+      "dialogList": [
+        {
+          "characterId": 0,
+          "characterType": "Special",
+          "pid": 0,
+          "position": "Left",
+          "text": "Archive references",
+          "actions": [
+            {
+              "actionType": "CG",
+              "sprite": "assets/CG/scene.png"
+            },
+            {
+              "actionType": "BG",
+              "sprite": "assets/BG/background.png"
+            },
+            {
+              "actionType": "Sound",
+              "sound": "assets/Audio/test.wav"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "ingredients": [
+    {
+      "id": 9005,
+      "name": "External Asset Reference",
+      "description": "",
+      "level": 1,
+      "prefix": -1,
+      "isFish": false,
+      "isMeat": false,
+      "isVeg": true,
+      "baseValue": 1,
+      "tags": [],
+      "spritePath": "external/referenced.png"
+    }
+  ],
+  "foods": [],
+  "beverages": [],
+  "recipes": [],
+  "missionNodes": [],
+  "merchants": [],
+  "clothes": [],
+  "eventNodes": []
+}

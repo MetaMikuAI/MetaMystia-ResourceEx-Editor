@@ -1,0 +1,132 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - navigation [ref=e4]:
+        - generic [ref=e5]:
+          - list [ref=e6]:
+            - navigation [ref=e9]:
+              - listitem [ref=e10]:
+                - button [ref=e227] [cursor=pointer]: 基础信息
+              - button [ref=e228] [cursor=pointer]: 角色
+              - button [ref=e229] [cursor=pointer]: 素材
+              - button [ref=e230] [cursor=pointer]: 节点
+              - listitem [ref=e15]:
+                - button [ref=e231] [cursor=pointer]: 资产
+          - list [ref=e17]:
+            - listitem [ref=e18]:
+              - button [ref=e232] [cursor=pointer]
+            - generic [ref=e22]:
+              - button [ref=e233] [cursor=pointer]: 公告
+              - button [ref=e234] [cursor=pointer]: 全新创建
+              - button [ref=e235] [cursor=pointer]: 上传资源包(ZIP)
+              - button [ref=e236] [cursor=pointer]: 导出资源包(ZIP)
+      - main [ref=e27]:
+        - generic [ref=e30]:
+          - heading [level=2] [ref=e237]: 资源包基础信息 (Pack Info)
+          - generic [ref=e33]:
+            - generic [ref=e34]:
+              - generic [ref=e35]: 资源包名称 (Name)
+              - textbox [ref=e238]:
+                - /placeholder: "例如: MetaMystia 示例资源包"
+                - text: Dirty State Baseline
+            - generic [ref=e38]:
+              - generic [ref=e39]: 资源包唯一标识符 (Label)
+              - textbox [ref=e239]:
+                - /placeholder: "例如: ResourceEx"
+                - text: FixtureDialogActions
+          - generic [ref=e42]:
+            - generic [ref=e43]: 版本 (Version)
+            - textbox [ref=e240]:
+              - /placeholder: "例如: 1.0.0"
+              - text: 1.0.0
+          - generic [ref=e46]:
+            - generic [ref=e47]:
+              - generic [ref=e48]: 作者列表 (Authors)
+              - button [ref=e241] [cursor=pointer]: 添加作者
+            - generic [ref=e215]:
+              - textbox [ref=e242]:
+                - /placeholder: Author Name
+                - text: Task 1
+              - button [ref=e243] [cursor=pointer]: 删除
+          - generic [ref=e54]:
+            - heading [level=3] [ref=e244]: ID 段分配 (ID Range Allocation)
+            - paragraph [ref=e57]:
+              - text: 请务必参考
+              - link [ref=e245] [cursor=pointer]:
+                - /url: https://doc.meta-mystia.izakaya.cc/resource_ex/why_add_signature_check.html
+                - text: 有关ID签名校验机制的说明（资源包创作者请注意）
+            - generic [ref=e59]:
+              - generic [ref=e60]:
+                - generic [ref=e61]: ID段起始 (Start, 含)
+                - spinbutton [ref=e246]
+              - generic [ref=e64]:
+                - generic [ref=e65]: ID段结束 (End, 含)
+                - spinbutton [ref=e247]
+            - generic [ref=e68]:
+              - generic [ref=e69]:
+                - generic [ref=e70]: 签名 (Signature)
+                - button [disabled]: 签名
+              - generic [ref=e71]:
+                - textbox [ref=e248]:
+                  - /placeholder: 点击「签名」按钮进行签名…
+                - button [disabled] [ref=e249]
+          - generic [ref=e77]:
+            - generic [ref=e78]: 依赖 (Dependencies)
+            - generic [ref=e80]:
+              - button [ref=e250] [cursor=pointer]: CORE
+              - button [ref=e251] [cursor=pointer]: DLC1
+              - button [ref=e252] [cursor=pointer]: DLC2
+              - button [ref=e253] [cursor=pointer]: DLC3
+              - button [ref=e254] [cursor=pointer]: DLC4
+              - button [ref=e255] [cursor=pointer]: DLC5
+              - button [ref=e256] [cursor=pointer]: DLCMUSIC
+          - generic [ref=e88]:
+            - generic [ref=e89]: 描述 (Description)
+            - textbox [ref=e257]:
+              - /placeholder: 资源包的详细描述...
+              - text: Deterministic baseline fixture
+          - generic [ref=e92]:
+            - generic [ref=e93]: 许可证 (License)
+            - textbox [ref=e258]:
+              - /placeholder: 在此处粘贴许可证文本，将单独保存为 LICENSE.md...
+    - generic:
+      - button
+  - generic [ref=e130] [cursor=pointer]:
+    - button [ref=e259]
+    - generic [ref=e218]:
+      - button [ref=e260]:
+        - generic [ref=e220]:
+          - generic [ref=e221]: "0"
+          - generic [ref=e222]: "1"
+        - generic [ref=e223]: Issue
+      - button [ref=e261]
+  - alert [ref=e135]
+  - dialog [active] [ref=e264]:
+    - button "取消" [ref=e266] [cursor=pointer]
+    - button "Close" [ref=e267] [cursor=pointer]
+    - generic [ref=e272]:
+      - generic [ref=e273]:
+        - generic [ref=e274]: ⚠️
+        - generic [ref=e275]:
+          - heading "资源包导出检查" [level=2] [ref=e276]
+          - paragraph [ref=e277]: 存在以下问题，建议修正后再导出
+      - generic [ref=e278]:
+        - button "2 个错误" [ref=e279] [cursor=pointer]
+        - button "1 个警告" [ref=e280] [cursor=pointer]
+      - generic [ref=e281]:
+        - generic [ref=e282]:
+          - generic [ref=e283]:
+            - generic [ref=e285]: 对话动作
+            - generic [ref=e286]: (2)
+          - generic [ref=e287]:
+            - paragraph [ref=e288]: "• _FixtureDialogActions_AllActions 第 1 条对话的动作 #5 (Branch) 选项 #2 的跳转目标 undefined 无效，应为 1-3"
+            - paragraph [ref=e289]: "• _FixtureDialogActions_AllActions 第 1 条对话的动作 #6 (Goto) 的跳转目标 未设置 无效，应为 1-3"
+        - generic [ref=e290]:
+          - generic [ref=e291]:
+            - generic [ref=e293]: 对话动作
+            - generic [ref=e294]: (1)
+          - paragraph [ref=e296]: "• _FixtureDialogActions_AllActions 第 1 条对话的动作 #3 (BG) 标记为清空但仍带有 sprite 字段，导出时将会丢弃"
+      - generic [ref=e297]:
+        - button "返回修改" [ref=e298] [cursor=pointer]
+        - button "忽略问题，仍然导出" [ref=e299] [cursor=pointer]
+    - button "取消" [ref=e301] [cursor=pointer]

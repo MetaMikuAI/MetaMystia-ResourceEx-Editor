@@ -5,6 +5,8 @@ const skipLint = env.NODE_ENV === 'production' && Boolean(env['SKIP_LINT']);
 
 const nextConfig: NextConfig = {
 	output: 'export',
+	reactStrictMode: true,
+	typedRoutes: true,
 
 	eslint: { ignoreDuringBuilds: skipLint },
 	typescript: { ignoreBuildErrors: skipLint },

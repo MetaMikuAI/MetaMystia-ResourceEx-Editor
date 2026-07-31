@@ -38,6 +38,7 @@
 	"js/ts.tsdk.promptToUseWorkspaceVersion": true,
 	"js/ts.tsdk.path": "./node_modules/typescript/lib",
 	"cSpell.words": [
+		"autospace",
 		"Conv",
 		"exbad",
 		"exgood",
@@ -46,6 +47,7 @@
 		"izakayas",
 		"metamystia",
 		"mystia",
+		"pressable",
 		"reciever",
 		"resourceex",
 		"titlebar",

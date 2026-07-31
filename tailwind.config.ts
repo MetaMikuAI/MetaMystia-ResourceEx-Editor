@@ -25,6 +25,7 @@ const herouiComponents = [
 
 const config: Config = {
 	content: [
+		'./app/**/*.{ts,tsx}',
 		'./src/**/*.{ts,tsx}',
 		`./node_modules/@heroui/theme/dist/components/(${herouiComponents.join('|')}).js`,
 	],

@@ -74,12 +74,12 @@
 
 ## 5. 验收
 
-- [ ] `patches/` 恰好包含上述 8 个迁移文件；
-- [ ] 8 个文件与固定参考提交字节一致；
-- [ ] `package.json` 按包名一一登记；
-- [ ] `pnpm install` 无 patch 失败；
-- [ ] lockfile 含 8 个 patch hash，且没有未登记的 patch；
-- [ ] 安装产物中的 Google Fonts CSS/字体 URL 已替换为两个镜像域名，构建后字体落入 `_next/static/media`；
-- [ ] 扫描确认没有 intercepting routes；不得把 Next Patch 的 warning 降级当作静态导出兼容证明；
+- [x] `patches/` 恰好包含上述 8 个迁移文件；
+- [x] 8 个文件与固定参考提交字节一致；
+- [x] `package.json` 按包名一一登记；
+- [x] `pnpm install` 无 patch 失败；
+- [x] lockfile 含 8 个 patch hash，且没有未登记的 patch；
+- [x] 安装产物中的 Google Fonts CSS/字体 URL 已替换为两个镜像域名，构建后字体落入 `_next/static/media`；
+- [x] 扫描确认没有 intercepting routes；不得把 Next Patch 的 warning 降级当作静态导出兼容证明；
 - [ ] Select、Button/Card、Tooltip、Theme/extended variants 在后续 UI 阶段按应用 patch 后的行为验收；
-- [ ] patch 导入阶段只验证复制内容、安装和 lockfile；浏览器行为在对应 UI 实施 Task 验证。
+- [x] patch 导入阶段只验证复制内容、安装和 lockfile；浏览器行为在对应 UI 实施 Task 验证。

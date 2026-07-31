@@ -1,0 +1,163 @@
+{
+  "fixture": "archive-license-missing",
+  "input": {
+    "bytes": 3177,
+    "entries": [
+      {
+        "bytes": 1359,
+        "dir": false,
+        "name": "ResourceEx.json",
+        "sha256": "db9fe20d7613982d367ec836307eb8e4b284606bdd4fbf0afaa2be468178b681"
+      },
+      {
+        "dir": true,
+        "name": "assets/"
+      },
+      {
+        "dir": true,
+        "name": "assets/Empty/"
+      },
+      {
+        "dir": true,
+        "name": "assets/Nested/"
+      },
+      {
+        "dir": true,
+        "name": "assets/Nested/Empty/"
+      },
+      {
+        "bytes": 68,
+        "dir": false,
+        "name": "assets/CG/scene.png",
+        "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460"
+      },
+      {
+        "bytes": 68,
+        "dir": false,
+        "name": "assets/BG/background.png",
+        "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460"
+      },
+      {
+        "bytes": 44,
+        "dir": false,
+        "name": "assets/Audio/test.wav",
+        "sha256": "3f8c638a5bf5576bbd1c348e682de5df7c26c1f9ead2eb3374c9e6ba812eb597"
+      },
+      {
+        "bytes": 21,
+        "dir": false,
+        "name": "assets/Unreferenced/keep.bin",
+        "sha256": "dedcfceb77a689fd2be393e425db46b2b32366c626ea9bdd505e7c3c0d80f850"
+      },
+      {
+        "bytes": 68,
+        "dir": false,
+        "name": "external/referenced.png",
+        "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460"
+      },
+      {
+        "bytes": 15,
+        "dir": false,
+        "name": "external/unreferenced.bin",
+        "sha256": "22c7604cfd8e85b77db1caf8e2a2b0dc7dd2085f96af04e8e66e633495acb20d"
+      },
+      {
+        "dir": true,
+        "name": "external/ignored-empty/"
+      },
+      {
+        "bytes": 8,
+        "dir": false,
+        "name": "__MACOSX/._ResourceEx.json",
+        "sha256": "a6c7e3c5ddd823efc8b7a30853eabc152dac866843bd7a39dc4a29e0a0eb68b3"
+      }
+    ],
+    "license": null,
+    "sha256": "cdfc58359d274e9bd9dbaf0ee4d4ade331d5666fe0dfcbe95a442caee0b16d4b"
+  },
+  "normalized": {
+    "bytes": 1359,
+    "sha256": "795209c249f95549dd5d0e27dcc049d0f3cf9eea8a885594e94e26586e7635ca"
+  },
+  "exported": {
+    "entries": [
+      {
+        "bytes": 1359,
+        "dir": false,
+        "name": "ResourceEx.json",
+        "sha256": "795209c249f95549dd5d0e27dcc049d0f3cf9eea8a885594e94e26586e7635ca"
+      },
+      {
+        "dir": true,
+        "name": "assets/"
+      },
+      {
+        "dir": true,
+        "name": "assets/Audio/"
+      },
+      {
+        "dir": true,
+        "name": "assets/BG/"
+      },
+      {
+        "dir": true,
+        "name": "assets/CG/"
+      },
+      {
+        "dir": true,
+        "name": "assets/Empty/"
+      },
+      {
+        "dir": true,
+        "name": "assets/Nested/"
+      },
+      {
+        "dir": true,
+        "name": "assets/Nested/Empty/"
+      },
+      {
+        "dir": true,
+        "name": "assets/Unreferenced/"
+      },
+      {
+        "bytes": 68,
+        "dir": false,
+        "name": "assets/CG/scene.png",
+        "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460"
+      },
+      {
+        "bytes": 68,
+        "dir": false,
+        "name": "assets/BG/background.png",
+        "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460"
+      },
+      {
+        "bytes": 44,
+        "dir": false,
+        "name": "assets/Audio/test.wav",
+        "sha256": "3f8c638a5bf5576bbd1c348e682de5df7c26c1f9ead2eb3374c9e6ba812eb597"
+      },
+      {
+        "bytes": 21,
+        "dir": false,
+        "name": "assets/Unreferenced/keep.bin",
+        "sha256": "dedcfceb77a689fd2be393e425db46b2b32366c626ea9bdd505e7c3c0d80f850"
+      },
+      {
+        "dir": true,
+        "name": "external/"
+      },
+      {
+        "bytes": 68,
+        "dir": false,
+        "name": "external/referenced.png",
+        "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460"
+      }
+    ],
+    "json": {
+      "bytes": 1359,
+      "sha256": "795209c249f95549dd5d0e27dcc049d0f3cf9eea8a885594e94e26586e7635ca"
+    },
+    "license": null
+  }
+}

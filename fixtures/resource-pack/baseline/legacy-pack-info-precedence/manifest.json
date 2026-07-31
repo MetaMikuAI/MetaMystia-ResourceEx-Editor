@@ -1,0 +1,43 @@
+{
+  "fixture": "legacy-pack-info-precedence",
+  "input": {
+    "bytes": 2942,
+    "entries": [
+      {
+        "bytes": 2724,
+        "dir": false,
+        "name": "ResourceEx.json",
+        "sha256": "19e5b61823b1245177ade9c96b887eae5178946d53199eb579af22fc3e477f8c"
+      },
+      {
+        "dir": true,
+        "name": "assets/"
+      }
+    ],
+    "license": null,
+    "sha256": "c2b7f41884a4bc9991576306b9d1ac4ab96928f7e12fba9cc57c159b6ef90ae8"
+  },
+  "normalized": {
+    "bytes": 6614,
+    "sha256": "2e6a835f79295fdeabf1412fe3f351f6eb7b4bf7f210334e7fa63391bbe8768c"
+  },
+  "exported": {
+    "entries": [
+      {
+        "bytes": 6614,
+        "dir": false,
+        "name": "ResourceEx.json",
+        "sha256": "2e6a835f79295fdeabf1412fe3f351f6eb7b4bf7f210334e7fa63391bbe8768c"
+      },
+      {
+        "dir": true,
+        "name": "assets/"
+      }
+    ],
+    "json": {
+      "bytes": 6614,
+      "sha256": "2e6a835f79295fdeabf1412fe3f351f6eb7b4bf7f210334e7fa63391bbe8768c"
+    },
+    "license": null
+  }
+}
