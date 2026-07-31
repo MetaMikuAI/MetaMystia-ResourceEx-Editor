@@ -20,7 +20,7 @@
 		"@heroui/dropdown": "2.3.10",
 		"@heroui/link": "2.2.8",
 		"@heroui/modal": "2.2.8",
-		"@heroui/navbar": "2.2.19",
+		"@heroui/navbar": "2.2.9",
 		"@heroui/pagination": "2.2.9",
 		"@heroui/popover": "2.3.10",
 		"@heroui/scroll-shadow": "2.3.6",
@@ -29,35 +29,45 @@
 		"@heroui/system": "2.4.7",
 		"@heroui/theme": "2.4.6",
 		"@heroui/tooltip": "2.2.8",
-		"clsx": "^2.1.1",
-		"color2k": "^2.0.3",
 		"file-saver": "^2.0.5",
 		"framer-motion": "12.17.2",
 		"jszip": "^3.10.1",
-		"next": "^15.5.18",
-		"react": "^19.2.6",
-		"react-dom": "^19.2.6",
-		"tailwind-merge": "^3.5.0"
+		"next": "^15.5.22",
+		"react": "^19.2.8",
+		"react-dom": "^19.2.8"
 	},
 	"devDependencies": {
 		"@types/file-saver": "^2.0.7",
-		"@types/node": "^24.12.3",
-		"@types/react": "^19.2.14",
-		"@types/react-dom": "^19.2.3",
+		"@types/node": "^24.13.3",
+		"@types/react": "^19.2.18",
+		"@types/react-dom": "^19.2.4",
 		"husky": "^9.1.7",
-		"lint-staged": "^17.0.3",
-		"postcss": "^8.5.14",
-		"postcss-preset-env": "^11.2.1",
-		"prettier": "^3.8.3",
-		"prettier-plugin-tailwindcss": "^0.8.0",
-		"sass": "^1.99.0",
+		"lint-staged": "^17.2.0",
+		"postcss": "^8.5.25",
+		"postcss-preset-env": "^11.3.2",
+		"prettier": "3.8.5",
+		"prettier-plugin-tailwindcss": "^0.8.1",
+		"sass": "^1.102.0",
 		"tailwindcss": "^3.4.19",
 		"typescript": "^6.0.3"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [
+			"@heroui/shared-utils",
 			"@parcel/watcher",
 			"sharp"
-		]
+		],
+		"overrides": {
+			"@react-aria/interactions@^3.22.3": "3.22.2"
+		},
+		"updateConfig": {
+			"ignoreDependencies": [
+				"framer-motion",
+				"@heroui/*",
+				"@react-aria/*",
+				"@react-stately/*",
+				"@react-types/*"
+			]
+		}
 	}
 }

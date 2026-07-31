@@ -1,2 +1,5 @@
 publicHoistPattern:
+  - "*@heroui/*"
+  - "@next/env"
+  - color2k
   - postcss-load-config

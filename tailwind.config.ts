@@ -1,7 +1,9 @@
 /* eslint-disable sort-keys */
 
-import { type Config } from 'tailwindcss';
 import { heroui } from '@heroui/theme';
+import { type Config } from 'tailwindcss';
+
+import PACKAGE from './package.json';
 
 import {
 	fontFamily,
@@ -10,21 +12,15 @@ import {
 } from './src/design/theme';
 
 const herouiComponents = [
-	'avatar',
-	'badge',
-	'button',
-	'card',
-	'dropdown',
-	'link',
-	'modal',
-	'navbar',
-	'pagination',
-	'popover',
-	'scroll-shadow',
-	'snippet',
-	'switch',
-	'tooltip',
-	'toggle',
+	...Object.keys(PACKAGE.dependencies)
+		.filter(
+			(dependency) =>
+				dependency.startsWith('@heroui/') &&
+				dependency !== '@heroui/system' &&
+				dependency !== '@heroui/theme'
+		)
+		.map((dependency) => dependency.replace('@heroui/', '')),
+	'toggle', // For `@heroui/switch`.
 ];
 
 const config: Config = {
@@ -33,7 +29,7 @@ const config: Config = {
 		`./node_modules/@heroui/theme/dist/components/(${herouiComponents.join('|')}).js`,
 	],
 	darkMode: 'selector',
-	theme: { extend: getExtendConfig(''), fontFamily },
+	theme: { extend: getExtendConfig(), fontFamily },
 	plugins: [
 		heroui({
 			themes: {

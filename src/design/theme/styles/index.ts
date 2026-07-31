@@ -1,12 +1,12 @@
 import { ratingColors } from '../colors';
 import type { TThemeExtendConfig } from '../types';
 
-export const getExtendConfig = (cdnUrl: string) =>
+export const getExtendConfig = () =>
 	({
 		backgroundImage: {
-			loading: `url("${cdnUrl}/assets/loading.gif")`,
-			logo: `url("${cdnUrl}/assets/icon.png")`,
-			mystia: `url("${cdnUrl}/assets/mystia.png")`,
+			loading: 'url("/assets/loading.gif")',
+			logo: 'url("/assets/icon.png")',
+			mystia: 'url("/assets/mystia.png")',
 		},
 		backgroundSize: { 'y-auto': 'auto 100%' },
 		colors: { ...ratingColors, 'qq-blue': '#1479d7', rednote: '#ff2741' },
