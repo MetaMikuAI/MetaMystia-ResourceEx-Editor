@@ -1,7 +1,8 @@
 type TPlainObject = { [key: string]: any };
 
-const isArray = (value: unknown) => Array.isArray(value);
-const isObject = (value: unknown): value is object =>
+const isArray = (value: unknown): value is TPlainObject[] =>
+	Array.isArray(value);
+const isObject = (value: unknown): value is TPlainObject =>
 	typeof value === 'object' && value !== null;
 const isString = (value: unknown) => typeof value === 'string';
 
@@ -31,10 +32,10 @@ export const trimCRLF = (data: TPlainObject) => {
 export const sortValues = (data: TPlainObject) => {
 	// 1) characters (by id)
 	if (isArray(data['characters'])) {
-		data['characters'].sort((a, b) => Number(a.id) - Number(b.id));
+		data['characters'].sort((a, b) => Number(a['id']) - Number(b['id']));
 
 		data['characters'].forEach((character) => {
-			const guest = character && character.guest;
+			const guest = character && character['guest'];
 			if (!guest) return;
 
 			// foodRequests (by tagId)
@@ -84,40 +85,40 @@ export const sortValues = (data: TPlainObject) => {
 
 	// 2) ingredients (by id) and ingredients.tags
 	if (isArray(data['ingredients'])) {
-		data['ingredients'].sort((a, b) => Number(a.id) - Number(b.id));
+		data['ingredients'].sort((a, b) => Number(a['id']) - Number(b['id']));
 		data['ingredients'].forEach((ing) => {
-			if (isArray(ing.tags))
-				ing.tags.sort((a: any, b: any) => Number(a) - Number(b));
+			if (isArray(ing['tags']))
+				ing['tags'].sort((a: any, b: any) => Number(a) - Number(b));
 		});
 	}
 
 	// 3) foods (by id) and foods.tags, foods.banTags
 	if (isArray(data['foods'])) {
-		data['foods'].sort((a, b) => Number(a.id) - Number(b.id));
+		data['foods'].sort((a, b) => Number(a['id']) - Number(b['id']));
 		data['foods'].forEach((food) => {
-			if (isArray(food.tags))
-				food.tags.sort((a: any, b: any) => Number(a) - Number(b));
-			if (isArray(food.banTags))
-				food.banTags.sort((a: any, b: any) => Number(a) - Number(b));
+			if (isArray(food['tags']))
+				food['tags'].sort((a: any, b: any) => Number(a) - Number(b));
+			if (isArray(food['banTags']))
+				food['banTags'].sort((a: any, b: any) => Number(a) - Number(b));
 		});
 	}
 
 	// 4) beverages (by id) and beverages.tags
 	if (isArray(data['beverages'])) {
-		data['beverages'].sort((a, b) => Number(a.id) - Number(b.id));
+		data['beverages'].sort((a, b) => Number(a['id']) - Number(b['id']));
 		data['beverages'].forEach((bev) => {
-			if (isArray(bev.tags))
-				bev.tags.sort((a: any, b: any) => Number(a) - Number(b));
+			if (isArray(bev['tags']))
+				bev['tags'].sort((a: any, b: any) => Number(a) - Number(b));
 		});
 	}
 
 	// 5) recipes (by id)
 	if (isArray(data['recipes'])) {
-		data['recipes'].sort((a, b) => Number(a.id) - Number(b.id));
+		data['recipes'].sort((a, b) => Number(a['id']) - Number(b['id']));
 	}
 
 	// 6) clothes (by id)
 	if (isArray(data['clothes'])) {
-		data['clothes'].sort((a, b) => Number(a.id) - Number(b.id));
+		data['clothes'].sort((a, b) => Number(a['id']) - Number(b['id']));
 	}
 };

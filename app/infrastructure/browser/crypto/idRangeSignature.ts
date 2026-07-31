@@ -6,7 +6,9 @@
  * for the duration of a single signing operation.
  */
 
-import PUBLIC_KEY_PEM from './keys/public.pem';
+import 'client-only';
+
+import PUBLIC_KEY_PEM from './public.pem';
 
 /** ID range boundaries */
 export const GAME_ID_MAX = 8999;
@@ -15,15 +17,10 @@ export const MANAGED_ID_MAX = 1073741823;
 export const UNMANAGED_ID_MIN = 1073741824;
 export const UNMANAGED_ID_MAX = 2147483647;
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 function pemToArrayBuffer(
 	pem: string,
 	label: 'PUBLIC KEY' | 'PRIVATE KEY'
 ): ArrayBuffer {
-	// Extract base64 content between BEGIN and END markers
 	const lines = pem.split(/[\r\n]+/);
 	const base64Lines: string[] = [];
 	let insideBlock = false;
@@ -49,8 +46,8 @@ function pemToArrayBuffer(
 	const b64 = base64Lines.join('');
 	const binary = atob(b64);
 	const buf = new Uint8Array(binary.length);
-	for (let i = 0; i < binary.length; i++) {
-		buf[i] = binary.charCodeAt(i);
+	for (let index = 0; index < binary.length; index++) {
+		buf[index] = binary.charCodeAt(index);
 	}
 	return buf.buffer;
 }
@@ -67,10 +64,6 @@ function buildMessage(
 	);
 }
 
-// ---------------------------------------------------------------------------
-// Key import
-// ---------------------------------------------------------------------------
-
 async function importPublicKey(): Promise<CryptoKey> {
 	return crypto.subtle.importKey(
 		'spki',
@@ -82,7 +75,6 @@ async function importPublicKey(): Promise<CryptoKey> {
 }
 
 async function importPrivateKey(pem: string): Promise<CryptoKey> {
-	// Try PKCS#8 format first (BEGIN PRIVATE KEY)
 	if (pem.includes('BEGIN PRIVATE KEY')) {
 		return crypto.subtle.importKey(
 			'pkcs8',
@@ -93,22 +85,12 @@ async function importPrivateKey(pem: string): Promise<CryptoKey> {
 		);
 	}
 
-	// Fall back to PKCS#1 format (BEGIN RSA PRIVATE KEY)
-	// Note: Web Crypto API doesn't support PKCS#1 directly, need conversion
 	throw new Error(
 		'请使用 PKCS#8 格式的私钥。如果你的私钥是 "BEGIN RSA PRIVATE KEY" 格式，请使用以下命令转换：\n' +
 			'openssl pkcs8 -topk8 -nocrypt -in rsa_private.pem -out private_key.pem'
 	);
 }
 
-// ---------------------------------------------------------------------------
-// Sign & Verify
-// ---------------------------------------------------------------------------
-
-/**
- * Sign `"<label>:<start>-<end>"` with the given PEM-encoded RSA private key.
- * Returns the signature as a Base64 string.
- */
 export async function signIdRange(
 	privateKeyPem: string,
 	packLabel: string,
@@ -143,10 +125,6 @@ export async function signIdRange(
 	}
 }
 
-/**
- * Verify a Base64-encoded signature for `"<label>:<start>-<end>"`
- * using the embedded public key.
- */
 export async function verifyIdRange(
 	packLabel: string,
 	start: number,
@@ -159,8 +137,8 @@ export async function verifyIdRange(
 		const sigBinary = atob(signatureBase64);
 		const sigBuf = new ArrayBuffer(sigBinary.length);
 		const sigView = new Uint8Array(sigBuf);
-		for (let i = 0; i < sigBinary.length; i++) {
-			sigView[i] = sigBinary.charCodeAt(i);
+		for (let index = 0; index < sigBinary.length; index++) {
+			sigView[index] = sigBinary.charCodeAt(index);
 		}
 		return crypto.subtle.verify(
 			'RSASSA-PKCS1-v1_5',

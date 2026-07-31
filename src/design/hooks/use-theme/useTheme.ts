@@ -1,13 +1,12 @@
 'use client';
 
-import { useCallback, useState } from 'react';
-
-import { useMounted } from '@/hooks';
+import { useCallback, useEffect, useState } from 'react';
 
 import { COLOR_MAP, MEDIA, STORAGE_KEY, THEME_MAP } from './constants';
 import type { TTheme } from './types';
 import { addSafeMediaQueryEventListener } from '@/design/utils';
-import { safeStorage } from '@/utilities';
+import { safeStorage } from '@/infrastructure/browser/storage/safeStorage';
+import { useHydrated } from '@/shared/react/useHydrated';
 
 // eslint-disable-next-line unicorn/prefer-global-this
 const isServer = typeof window === 'undefined';
@@ -61,6 +60,7 @@ function setThemeCallback(selectedTheme: TTheme, isFromEvent?: boolean) {
 }
 
 export function useTheme() {
+	const isHydrated = useHydrated();
 	const [theme, setThemeState] = useState<TTheme>(() => {
 		const storedTheme = getThemeCallback();
 
@@ -80,7 +80,11 @@ export function useTheme() {
 		setThemeState(newTheme);
 	}, []);
 
-	useMounted(() => {
+	useEffect(() => {
+		if (!isHydrated) {
+			return;
+		}
+
 		const mediaQueryList = globalThis.matchMedia(MEDIA);
 
 		return addSafeMediaQueryEventListener(mediaQueryList, (event) => {
@@ -89,9 +93,13 @@ export function useTheme() {
 				setThemeCallback(getSystemTheme(event), true);
 			}
 		});
-	});
+	}, [isHydrated]);
 
-	useMounted(() => {
+	useEffect(() => {
+		if (!isHydrated) {
+			return;
+		}
+
 		const EVENT_TYPE = 'storage';
 
 		const handleStorage = (event: StorageEvent) => {
@@ -111,7 +119,7 @@ export function useTheme() {
 		return () => {
 			globalThis.removeEventListener(EVENT_TYPE, handleStorage);
 		};
-	});
+	}, [isHydrated]);
 
 	return [theme, setTheme] as const;
 }

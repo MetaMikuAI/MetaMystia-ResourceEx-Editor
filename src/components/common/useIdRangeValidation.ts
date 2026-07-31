@@ -1,11 +1,13 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+
 import { useData } from '@/components/context/DataContext';
+
 import {
-	verifyIdRange,
 	GAME_ID_MAX,
 	UNMANAGED_ID_MIN,
 	UNMANAGED_ID_MAX,
-} from '@/lib/crypto';
+	verifyIdRange,
+} from '@/infrastructure/browser/crypto/idRangeSignature';
 
 export type IdRangeStatus =
 	/** ID is within the signed allocation – all good */

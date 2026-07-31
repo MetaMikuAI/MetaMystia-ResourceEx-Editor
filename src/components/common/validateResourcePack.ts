@@ -1,14 +1,14 @@
-import type { ResourceEx } from '@/types/resource';
 import {
 	GAME_ID_MAX,
 	UNMANAGED_ID_MIN,
 	UNMANAGED_ID_MAX,
 	verifyIdRange,
-} from '@/lib/crypto';
+} from '@/infrastructure/browser/crypto/idRangeSignature';
 import {
 	isValidPackLabel,
 	PACK_LABEL_ALLOWED_DESCRIPTION,
 } from '@/lib/constants';
+import type { ResourceEx } from '@/types/resource';
 
 export type IssueSeverity = 'error' | 'warning';
 

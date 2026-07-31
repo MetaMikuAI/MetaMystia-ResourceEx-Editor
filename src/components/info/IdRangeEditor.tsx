@@ -1,17 +1,19 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
+import { EditorField } from '@/components/common/EditorField';
+import { ErrorBadge } from '@/components/common/ErrorBadge';
+import { TextInput } from '@/components/common/TextInput';
 
 import { Button } from '@/design/ui/components';
-import { EditorField } from '@/components/common/EditorField';
-import { TextInput } from '@/components/common/TextInput';
-import { ErrorBadge } from '@/components/common/ErrorBadge';
+
 import {
+	MANAGED_ID_MAX,
+	MANAGED_ID_MIN,
 	signIdRange,
 	verifyIdRange,
-	MANAGED_ID_MIN,
-	MANAGED_ID_MAX,
-} from '@/lib/crypto';
+} from '@/infrastructure/browser/crypto/idRangeSignature';
 import type { PackInfo } from '@/types/resource';
 
 interface IdRangeEditorProps {

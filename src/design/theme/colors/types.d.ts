@@ -9,6 +9,7 @@ export type TColorScale = Required<
 	Omit<Exclude<ColorScale, string>, 'DEFAULT' | 'foreground'>
 >;
 
+type Prettify<T> = { [K in keyof T]: T[K] } & {};
 type TColor = Prettify<TColorScale & Exclude<ColorScale, string>>;
 type TBaseColors = Record<
 	Exclude<keyof BaseColors, 'content3' | 'content4'>,

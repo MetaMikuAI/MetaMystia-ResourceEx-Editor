@@ -2,14 +2,14 @@
 
 import { memo, useCallback, useEffect, useState } from 'react';
 
-import { Button, Modal } from '@/design/ui/components';
-import { useMounted } from '@/hooks';
-import { safeStorage } from '@/utilities';
 import {
 	ANNOUNCEMENT_SECTIONS,
 	ANNOUNCEMENT_TITLE,
 	ANNOUNCEMENT_VERSION,
 } from '@/data/announcement';
+import { Button, Modal } from '@/design/ui/components';
+import { safeStorage } from '@/infrastructure/browser/storage/safeStorage';
+import { useHydrated } from '@/shared/react/useHydrated';
 
 /**
  * localStorage 中记录"用户已读公告版本"的键。
@@ -33,7 +33,7 @@ export function openAnnouncementModal() {
  *   弹窗本次会话仍会展示一次。
  */
 export const AnnouncementModal = memo(function AnnouncementModal() {
-	const isMounted = useMounted();
+	const isMounted = useHydrated();
 	const [isOpen, setIsOpen] = useState(false);
 
 	useEffect(() => {

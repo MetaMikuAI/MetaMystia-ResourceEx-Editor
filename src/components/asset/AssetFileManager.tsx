@@ -2,15 +2,17 @@
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { Button, Select } from '@/design/ui/components';
-import type { SelectItemSpec } from '@/design/ui/components';
-import { cn } from '@/design/ui/utils';
 import { EmptyState } from '@/components/common/EmptyState';
 import { TextInput } from '@/components/common/TextInput';
+import { ChevronRight } from '@/components/icons/ChevronRight';
 import { PlusIcon } from '@/components/icons/Plus';
 import { TrashIcon } from '@/components/icons/Trash';
-import { ChevronRight } from '@/components/icons/ChevronRight';
-import { safeStorage } from '@/utilities/safeStorage';
+
+import { Button, Select } from '@/design/ui/components';
+import { type SelectItemSpec } from '@/design/ui/components';
+import { cn } from '@/design/ui/utils';
+
+import { safeStorage } from '@/infrastructure/browser/storage/safeStorage';
 
 import {
 	buildAssetPathOperations,
@@ -717,9 +719,7 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 											: 'default'
 									}
 									variant={
-										isCreateFolderOpen
-											? 'flat'
-											: 'light'
+										isCreateFolderOpen ? 'flat' : 'light'
 									}
 									size="sm"
 									startContent={
@@ -773,10 +773,7 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 										uploadFiles(e.target.files);
 										e.target.value = '';
 									}}
-									{...{
-										webkitdirectory: '',
-										directory: '',
-									}}
+									{...{ webkitdirectory: '', directory: '' }}
 								/>
 							</div>
 						</div>
