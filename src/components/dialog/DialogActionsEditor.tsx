@@ -1,15 +1,9 @@
 import { memo, useCallback, useId, useMemo, useState } from 'react';
 
 import { AssetPickerDialog } from '@/components/asset/AssetPickerDialog';
-import { Label } from '@/components/common/Label';
-import { TextInput } from '@/components/common/TextInput';
-import { WarningBadge } from '@/components/common/WarningBadge';
 
 import Button from '@/design/ui/components/button';
-import {
-	Select,
-	type SelectItem as SelectItemSpec,
-} from '@/design/ui/components/select';
+import Input from '@/design/ui/components/input';
 
 import type {
 	Dialog,
@@ -18,6 +12,12 @@ import type {
 	DialogBranchOption,
 } from '@/domain/resourcePack/contracts/dialogue';
 
+import { Label } from '@/features/resourceEditor/client/components/fields/Label';
+import {
+	Select,
+	type SelectItem as SelectItemSpec,
+} from '@/features/resourceEditor/client/components/select/Select';
+import { WarningBadge } from '@/features/resourceEditor/client/components/status/WarningBadge';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 const ACTION_TYPES: DialogActionType[] = [
@@ -409,7 +409,7 @@ const SpriteActionFields = memo<SpriteActionFieldsProps>(
 										onUpdate({ sprite: v || undefined })
 									}
 									items={spriteItems}
-									className="flex-1"
+									baseClassName="flex-1"
 								/>
 								<Button
 									variant="light"
@@ -524,7 +524,7 @@ const BranchActionFields = memo<BranchActionFieldsProps>(
 									<Label className="text-[10px] normal-case opacity-60">
 										选项文本
 									</Label>
-									<TextInput
+									<Input
 										value={option.text}
 										onChange={(e) =>
 											updateOption(optionIndex, {
@@ -539,11 +539,15 @@ const BranchActionFields = memo<BranchActionFieldsProps>(
 									<Label className="text-[10px] normal-case opacity-60">
 										跳转
 									</Label>
-									<TextInput
+									<Input
 										type="number"
 										min={1}
 										max={finishTarget}
-										value={option.jump}
+										value={
+											option.jump === undefined
+												? ''
+												: String(option.jump)
+										}
 										onChange={(e) =>
 											updateOption(optionIndex, {
 												jump: numberOrOne(
@@ -627,11 +631,11 @@ const GotoActionFields = memo<GotoActionFieldsProps>(function GotoActionFields({
 				跳转目标对话编号
 			</Label>
 			<div className="flex flex-col gap-1 sm:flex-row sm:items-center">
-				<TextInput
+				<Input
 					type="number"
 					min={1}
 					max={finishTarget}
-					value={action.index ?? 1}
+					value={String(action.index ?? 1)}
 					onChange={(e) =>
 						onUpdate({ index: numberOrOne(e.target.value) })
 					}
@@ -659,9 +663,9 @@ const EndActionFields = memo<EndActionFieldsProps>(function EndActionFields({
 		<div className="flex flex-col gap-1">
 			<Label className="text-xs normal-case opacity-70">退出码</Label>
 			<div className="flex flex-col gap-1 sm:flex-row sm:items-center">
-				<TextInput
+				<Input
 					type="number"
-					value={action.exitCode ?? 0}
+					value={String(action.exitCode ?? 0)}
 					onChange={(e) =>
 						onUpdate({ exitCode: numberOrZero(e.target.value) })
 					}
@@ -758,7 +762,7 @@ const SoundActionFields = memo<SoundActionFieldsProps>(
 								onUpdate({ sound: v || undefined })
 							}
 							items={soundItems}
-							className="flex-1"
+							baseClassName="flex-1"
 						/>
 						<Button
 							variant="light"

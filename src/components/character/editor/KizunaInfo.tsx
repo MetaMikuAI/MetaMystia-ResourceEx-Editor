@@ -1,15 +1,16 @@
 import { cn } from '@heroui/theme';
 import { memo, useCallback, useState } from 'react';
 
-import { EmptyState } from '@/components/common/EmptyState';
-import { InfoTip } from '@/components/common/InfoTip';
-import { ChevronRight } from '@/components/icons/ChevronRight';
-
 import Switch from '@/design/ui/components/switch';
 
 import type { KizunaInfo } from '@/domain/resourcePack/contracts/character';
 import type { DialogPackage } from '@/domain/resourcePack/contracts/dialogue';
 import type { EventNode } from '@/domain/resourcePack/contracts/event';
+
+import { ConfirmPopover } from '@/features/resourceEditor/client/components/confirm/ConfirmPopover';
+import { InfoTip } from '@/features/resourceEditor/client/components/fields/InfoTip';
+import { ChevronRight } from '@/features/resourceEditor/client/components/icons/ChevronRight';
+import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
 
 import { DIALOG_FIELDS, EVENT_FIELDS, MAP_FIELD } from './kizuna/constants';
 import { DialogArrayField } from './kizuna/DialogArrayField';
@@ -35,6 +36,8 @@ export const KizunaInfoEditor = memo<KizunaInfoEditorProps>(
 		onDisable,
 	}) {
 		const [isExpanded, setIsExpanded] = useState(false);
+		const [isDisableConfirmationOpen, setIsDisableConfirmationOpen] =
+			useState(false);
 
 		const handleDialogAdd = useCallback(
 			(field: keyof KizunaInfo, dialogName: string) => {
@@ -78,21 +81,38 @@ export const KizunaInfoEditor = memo<KizunaInfoEditorProps>(
 						<span className="whitespace-nowrap text-xs font-medium">
 							{kizuna ? '已启用羁绊配置' : '启用羁绊配置'}
 						</span>
-						<Switch
-							size="sm"
-							isSelected={Boolean(kizuna)}
-							onValueChange={(v) => {
-								if (v) {
-									onEnable();
-								} else if (
-									confirm(
-										'关闭羁绊配置将丢失已填写的所有羁绊数据（升级前置事件、各等级对话包、委托区域等），且不可恢复。\n\n确定要关闭吗？'
-									)
-								) {
-									onDisable();
+						{kizuna ? (
+							<ConfirmPopover
+								title="确定要关闭羁绊配置吗？"
+								description="关闭后将丢失已填写的所有羁绊数据（升级前置事件、各等级对话包、委托区域等），且不可恢复。"
+								confirmLabel="确认关闭"
+								isOpen={isDisableConfirmationOpen}
+								onConfirm={onDisable}
+								onOpenChange={setIsDisableConfirmationOpen}
+								trigger={
+									<Switch
+										aria-label="关闭羁绊配置"
+										isSelected
+										onValueChange={(isSelected) => {
+											if (!isSelected) {
+												setIsDisableConfirmationOpen(
+													true
+												);
+											}
+										}}
+										size="sm"
+									/>
 								}
-							}}
-						/>
+							/>
+						) : (
+							<Switch
+								size="sm"
+								isSelected={false}
+								onValueChange={(isSelected) => {
+									if (isSelected) onEnable();
+								}}
+							/>
+						)}
 					</div>
 				</div>
 

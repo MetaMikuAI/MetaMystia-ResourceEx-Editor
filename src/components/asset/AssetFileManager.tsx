@@ -3,19 +3,20 @@
 import { cn } from '@heroui/theme';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { EmptyState } from '@/components/common/EmptyState';
-import { TextInput } from '@/components/common/TextInput';
-import { ChevronRight } from '@/components/icons/ChevronRight';
-import { PlusIcon } from '@/components/icons/Plus';
-import { TrashIcon } from '@/components/icons/Trash';
-
 import Button from '@/design/ui/components/button';
+import Input from '@/design/ui/components/input';
+
+import type { IAssetPathOperation } from '@/features/resourceEditor/client/assets/contracts';
+import { PlusIcon } from '@/features/resourceEditor/client/components/actions/PlusIcon';
+import { TrashIcon } from '@/features/resourceEditor/client/components/actions/TrashIcon';
+import { ConfirmDialog } from '@/features/resourceEditor/client/components/confirm/ConfirmDialog';
+import { ChevronRight } from '@/features/resourceEditor/client/components/icons/ChevronRight';
+import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
 import {
 	Select,
 	type SelectItem as SelectItemSpec,
-} from '@/design/ui/components/select';
-
-import type { IAssetPathOperation } from '@/features/resourceEditor/client/assets/contracts';
+} from '@/features/resourceEditor/client/components/select/Select';
+import { WarningNotice } from '@/features/resourceEditor/client/components/status/WarningNotice';
 
 import { safeStorage } from '@/infrastructure/browser/storage/safeStorage';
 
@@ -52,6 +53,16 @@ interface AssetFileManagerProps {
 
 type ViewMode = 'grid' | 'list';
 type ClipboardState = { mode: 'copy' | 'move'; paths: Set<string> };
+interface IConfirmationRequest {
+	title: string;
+	description: string;
+	confirmLabel: string;
+}
+
+interface IConfirmationResolver {
+	operationId: number;
+	resolve: (isConfirmed: boolean) => void;
+}
 
 const DEFAULT_ROOT = 'assets/';
 const VIEW_MODE_STORAGE_KEY = 'assetFileManager.viewMode';
@@ -268,9 +279,76 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 		const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
 		const [newFolderName, setNewFolderName] = useState('');
 		const [isDragging, setIsDragging] = useState(false);
+		const [operationError, setOperationError] = useState<string | null>(
+			null
+		);
+		const [confirmation, setConfirmation] =
+			useState<IConfirmationRequest | null>(null);
 
 		const fileInputRef = useRef<HTMLInputElement>(null);
 		const folderInputRef = useRef<HTMLInputElement>(null);
+		const confirmationResolverRef = useRef<IConfirmationResolver | null>(
+			null
+		);
+		const isDisposedRef = useRef(false);
+		const operationIdRef = useRef(0);
+
+		const isOperationActive = useCallback((operationId: number) => {
+			return (
+				!isDisposedRef.current && operationIdRef.current === operationId
+			);
+		}, []);
+
+		const beginOperation = useCallback(() => {
+			const operationId = operationIdRef.current + 1;
+			operationIdRef.current = operationId;
+			confirmationResolverRef.current?.resolve(false);
+			confirmationResolverRef.current = null;
+			if (!isDisposedRef.current) setConfirmation(null);
+			return operationId;
+		}, []);
+
+		const requestConfirmation = useCallback(
+			(request: IConfirmationRequest, operationId: number) => {
+				if (!isOperationActive(operationId)) {
+					return Promise.resolve(false);
+				}
+
+				return new Promise<boolean>((resolve) => {
+					if (!isOperationActive(operationId)) {
+						resolve(false);
+						return;
+					}
+					confirmationResolverRef.current = { operationId, resolve };
+					setConfirmation(request);
+				});
+			},
+			[isOperationActive]
+		);
+
+		const finishConfirmation = useCallback(
+			(isConfirmed: boolean) => {
+				const resolver = confirmationResolverRef.current;
+				confirmationResolverRef.current = null;
+				if (!isDisposedRef.current) setConfirmation(null);
+				if (resolver) {
+					resolver.resolve(
+						isConfirmed && isOperationActive(resolver.operationId)
+					);
+				}
+			},
+			[isOperationActive]
+		);
+
+		useEffect(() => {
+			isDisposedRef.current = false;
+			return () => {
+				isDisposedRef.current = true;
+				operationIdRef.current += 1;
+				confirmationResolverRef.current?.resolve(false);
+				confirmationResolverRef.current = null;
+			};
+		}, []);
 
 		const setViewMode = useCallback((mode: ViewMode) => {
 			setViewModeState(mode);
@@ -366,27 +444,45 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 				targetFolder = currentFolder
 			) => {
 				if (!files || files.length === 0) return;
+				const operationId = beginOperation();
 				const normalizedTarget =
 					normalizeAssetFolderPath(targetFolder, normalizedRoot) ??
 					currentFolder;
 
 				for (const file of Array.from(files)) {
+					if (!isOperationActive(operationId)) return;
 					if (!file.name) continue;
 					const safeName = normalizeAssetFilename(file.name);
 					const path = joinAssetPath(normalizedTarget, safeName);
-					if (
-						assetUrls[path] &&
-						!confirm(`已存在同名文件 ${path}，是否覆盖？`)
-					) {
-						continue;
+					if (assetUrls[path]) {
+						if (!isOperationActive(operationId)) return;
+						const shouldOverwrite = await requestConfirmation(
+							{
+								title: '覆盖同名文件？',
+								description: `已存在同名文件 ${path}。`,
+								confirmLabel: '确认覆盖',
+							},
+							operationId
+						);
+						if (!isOperationActive(operationId)) return;
+						if (!shouldOverwrite) continue;
 					}
-					const blob = new Blob([await file.arrayBuffer()], {
-						type: file.type,
-					});
+					const arrayBuffer = await file.arrayBuffer();
+					if (!isOperationActive(operationId)) return;
+					const blob = new Blob([arrayBuffer], { type: file.type });
+					if (!isOperationActive(operationId)) return;
 					onUpload(path, blob);
 				}
 			},
-			[assetUrls, currentFolder, normalizedRoot, onUpload]
+			[
+				assetUrls,
+				beginOperation,
+				currentFolder,
+				isOperationActive,
+				normalizedRoot,
+				onUpload,
+				requestConfirmation,
+			]
 		);
 
 		const handleCreateFolder = useCallback(() => {
@@ -398,9 +494,10 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 				normalizedRoot
 			);
 			if (!folder) {
-				alert('请输入有效目录名');
+				setOperationError('请输入有效目录名。');
 				return;
 			}
+			setOperationError(null);
 			onCreateFolder?.(folder);
 			setNewFolderName('');
 			setIsCreateFolderOpen(false);
@@ -462,28 +559,43 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 			}, 1200);
 		}, []);
 
-		const handleDelete = useCallback(() => {
+		const handleDelete = useCallback(async () => {
 			if (selectedPaths.size === 0) return;
+			const operationId = beginOperation();
 			const expanded = expandAssetSelection(selectedPaths, assetPaths);
-			if (expanded.length === 0) {
-				const folders = Array.from(selectedPaths).filter((path) =>
-					path.endsWith('/')
-				);
-				if (folders.length > 0) onRemoveFolders?.(folders);
-				setSelectedPaths(new Set());
-				return;
-			}
-			if (!confirm(`确定删除选中的 ${expanded.length} 个文件吗？`))
-				return;
-			onRemove(expanded);
-			onRemoveFolders?.(
-				Array.from(selectedPaths).filter((path) => path.endsWith('/'))
+			const folders = Array.from(selectedPaths).filter((path) =>
+				path.endsWith('/')
 			);
+			if (!isOperationActive(operationId)) return;
+			const shouldDelete = await requestConfirmation(
+				{
+					title: '确定删除选中的资产吗？',
+					description: `将删除 ${expanded.length} 个文件和 ${folders.length} 个目录。此操作不可撤销。`,
+					confirmLabel: '确认删除',
+				},
+				operationId
+			);
+			if (!isOperationActive(operationId)) return;
+			if (!shouldDelete) return;
+			if (!isOperationActive(operationId)) return;
+			if (expanded.length > 0) onRemove(expanded);
+			if (!isOperationActive(operationId)) return;
+			if (folders.length > 0) onRemoveFolders?.(folders);
+			if (!isOperationActive(operationId)) return;
 			setSelectedPaths(new Set());
-		}, [assetPaths, onRemove, onRemoveFolders, selectedPaths]);
+		}, [
+			assetPaths,
+			beginOperation,
+			isOperationActive,
+			onRemove,
+			onRemoveFolders,
+			requestConfirmation,
+			selectedPaths,
+		]);
 
-		const handleClipboardPaste = useCallback(() => {
+		const handleClipboardPaste = useCallback(async () => {
 			if (!clipboard) return;
+			const operationId = beginOperation();
 			const operations = buildAssetPathOperations(
 				clipboard.paths,
 				assetPaths,
@@ -491,7 +603,7 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 				clipboard.mode
 			);
 			if (!operations) {
-				alert('目标路径无效或存在冲突，请选择其他目录。');
+				setOperationError('目标路径无效或存在冲突，请选择其他目录。');
 				return;
 			}
 			if (operations.length === 0) {
@@ -501,22 +613,42 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 			const existingTargets = operations.filter((operation) =>
 				Boolean(assetUrls[operation.to])
 			);
-			if (
-				existingTargets.length > 0 &&
-				!confirm(
-					`将覆盖 ${existingTargets.length} 个同名文件，是否继续？`
-				)
-			) {
-				return;
+			if (existingTargets.length > 0) {
+				if (!isOperationActive(operationId)) return;
+				const shouldOverwrite = await requestConfirmation(
+					{
+						title: '覆盖同名文件？',
+						description: `将覆盖 ${existingTargets.length} 个同名文件。`,
+						confirmLabel: '继续粘贴',
+					},
+					operationId
+				);
+				if (!isOperationActive(operationId)) return;
+				if (!shouldOverwrite) return;
 			}
+			if (!isOperationActive(operationId)) return;
+			setOperationError(null);
+			if (!isOperationActive(operationId)) return;
 			if (clipboard.mode === 'copy') onCopy(operations);
 			else onMove(operations);
+			if (!isOperationActive(operationId)) return;
 			if (clipboard.mode === 'move') setClipboard(null);
 			setSelectedPaths(new Set());
-		}, [assetPaths, assetUrls, clipboard, currentFolder, onCopy, onMove]);
+		}, [
+			assetPaths,
+			assetUrls,
+			beginOperation,
+			clipboard,
+			currentFolder,
+			isOperationActive,
+			onCopy,
+			onMove,
+			requestConfirmation,
+		]);
 
 		const handleMoveToFolder = useCallback(
-			(target: string) => {
+			async (target: string) => {
+				const operationId = beginOperation();
 				const operations = buildAssetPathOperations(
 					selectedPaths,
 					assetPaths,
@@ -524,28 +656,46 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 					'move'
 				);
 				if (!operations) {
-					alert('无法移动到自身或子目录。');
+					setOperationError('无法移动到自身或子目录。');
 					return;
 				}
 				const existingTargets = operations.filter((operation) =>
 					Boolean(assetUrls[operation.to])
 				);
-				if (
-					existingTargets.length > 0 &&
-					!confirm(
-						`将覆盖 ${existingTargets.length} 个同名文件，是否继续？`
-					)
-				) {
-					return;
+				if (existingTargets.length > 0) {
+					if (!isOperationActive(operationId)) return;
+					const shouldOverwrite = await requestConfirmation(
+						{
+							title: '覆盖同名文件？',
+							description: `将覆盖 ${existingTargets.length} 个同名文件。`,
+							confirmLabel: '继续移动',
+						},
+						operationId
+					);
+					if (!isOperationActive(operationId)) return;
+					if (!shouldOverwrite) return;
 				}
+				if (!isOperationActive(operationId)) return;
+				setOperationError(null);
+				if (!isOperationActive(operationId)) return;
 				onMove(operations);
+				if (!isOperationActive(operationId)) return;
 				setSelectedPaths(new Set());
 			},
-			[assetPaths, assetUrls, onMove, selectedPaths]
+			[
+				assetPaths,
+				assetUrls,
+				beginOperation,
+				isOperationActive,
+				onMove,
+				requestConfirmation,
+				selectedPaths,
+			]
 		);
 
 		const handleCopyToFolder = useCallback(
-			(target: string) => {
+			async (target: string) => {
+				const operationId = beginOperation();
 				const operations = buildAssetPathOperations(
 					selectedPaths,
 					assetPaths,
@@ -553,24 +703,43 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 					'copy'
 				);
 				if (!operations) {
-					alert('目标路径无效或存在冲突，请选择其他目录。');
+					setOperationError(
+						'目标路径无效或存在冲突，请选择其他目录。'
+					);
 					return;
 				}
 				const existingTargets = operations.filter((operation) =>
 					Boolean(assetUrls[operation.to])
 				);
-				if (
-					existingTargets.length > 0 &&
-					!confirm(
-						`将覆盖 ${existingTargets.length} 个同名文件，是否继续？`
-					)
-				) {
-					return;
+				if (existingTargets.length > 0) {
+					if (!isOperationActive(operationId)) return;
+					const shouldOverwrite = await requestConfirmation(
+						{
+							title: '覆盖同名文件？',
+							description: `将覆盖 ${existingTargets.length} 个同名文件。`,
+							confirmLabel: '继续复制',
+						},
+						operationId
+					);
+					if (!isOperationActive(operationId)) return;
+					if (!shouldOverwrite) return;
 				}
+				if (!isOperationActive(operationId)) return;
+				setOperationError(null);
+				if (!isOperationActive(operationId)) return;
 				onCopy(operations);
+				if (!isOperationActive(operationId)) return;
 				setSelectedPaths(new Set());
 			},
-			[assetPaths, assetUrls, onCopy, selectedPaths]
+			[
+				assetPaths,
+				assetUrls,
+				beginOperation,
+				isOperationActive,
+				onCopy,
+				requestConfirmation,
+				selectedPaths,
+			]
 		);
 
 		const handleDragEnter = useCallback((e: React.DragEvent) => {
@@ -625,6 +794,14 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 					className
 				)}
 			>
+				<ConfirmDialog
+					isOpen={confirmation !== null}
+					title={confirmation?.title ?? ''}
+					description={confirmation?.description}
+					confirmLabel={confirmation?.confirmLabel}
+					onCancel={() => finishConfirmation(false)}
+					onConfirm={() => finishConfirmation(true)}
+				/>
 				{isDragging && (
 					<div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center rounded-lg bg-primary/10 backdrop-blur-sm">
 						<span className="rounded-md bg-white/80 px-4 py-2 text-sm font-medium text-foreground shadow dark:bg-black/60">
@@ -789,7 +966,7 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 									>
 										在当前目录下新建
 									</label>
-									<TextInput
+									<Input
 										id="asset-new-folder-name"
 										value={newFolderName}
 										onChange={(e) =>
@@ -833,6 +1010,9 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 						)}
 					</div>
 				</div>
+				{operationError !== null && (
+					<WarningNotice>{operationError}</WarningNotice>
+				)}
 
 				<div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-black/5 bg-black/[0.03] p-2 dark:border-white/5 dark:bg-white/[0.03]">
 					<div className="text-xs opacity-60">
@@ -915,8 +1095,9 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 									placeholder="复制到..."
 									size="sm"
 									isDisabled={selectedPaths.size === 0}
-									className="h-7 w-36 rounded px-2 py-0 text-xs"
-									menuMaxHeightClass="max-h-80"
+									baseClassName="w-36"
+									className="h-7 rounded px-2 py-0 text-xs"
+									menuMaxHeight={320}
 								/>
 								<Select<string>
 									value={undefined}
@@ -926,8 +1107,9 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 									placeholder="移动到..."
 									size="sm"
 									isDisabled={selectedPaths.size === 0}
-									className="h-7 w-36 rounded px-2 py-0 text-xs"
-									menuMaxHeightClass="max-h-80"
+									baseClassName="w-36"
+									className="h-7 rounded px-2 py-0 text-xs"
+									menuMaxHeight={320}
 								/>
 								<Button
 									color="danger"
@@ -991,7 +1173,12 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 									<span className="truncate font-mono text-[10px] opacity-50">
 										{entry.path}
 									</span>
-									<div className="mt-1 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+									<div
+										onClick={(event) =>
+											event.stopPropagation()
+										}
+										className="mt-1 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100"
+									>
 										{entry.kind !== 'folder' && (
 											<>
 												<Button
@@ -1002,9 +1189,6 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 															`path:${entry.path}`,
 															entry.path
 														)
-													}
-													onClick={(e) =>
-														e.stopPropagation()
 													}
 													className={cn(
 														'h-6 min-w-0 rounded border border-black/10 px-2 font-mono text-[10px] dark:border-white/10',
@@ -1031,9 +1215,6 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 															)
 														)
 													}
-													onClick={(e) =>
-														e.stopPropagation()
-													}
 													className={cn(
 														'h-6 min-w-0 rounded border border-black/10 px-2 font-mono text-[10px] dark:border-white/10',
 														copiedKey ===
@@ -1055,7 +1236,6 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 											onPress={() =>
 												handleEntryOpen(entry)
 											}
-											onClick={(e) => e.stopPropagation()}
 											className="h-6 min-w-0 flex-1 rounded px-2 text-[11px]"
 										>
 											{entry.kind === 'folder'
@@ -1104,7 +1284,10 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 										{entry.path}
 									</div>
 								</div>
-								<div className="flex items-center gap-1">
+								<div
+									onClick={(event) => event.stopPropagation()}
+									className="flex items-center gap-1"
+								>
 									{entry.kind !== 'folder' ? (
 										<>
 											<Button
@@ -1115,9 +1298,6 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 														`path:${entry.path}`,
 														entry.path
 													)
-												}
-												onClick={(e) =>
-													e.stopPropagation()
 												}
 												className={cn(
 													'h-6 min-w-0 rounded border border-black/10 px-2 font-mono text-[10px] dark:border-white/10',
@@ -1143,9 +1323,6 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 															entry.path
 														)
 													)
-												}
-												onClick={(e) =>
-													e.stopPropagation()
 												}
 												className={cn(
 													'h-6 min-w-0 rounded border border-black/10 px-2 font-mono text-[10px] dark:border-white/10',

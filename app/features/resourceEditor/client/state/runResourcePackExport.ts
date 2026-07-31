@@ -6,8 +6,8 @@ import {
 import type { ResourceEx } from '@/domain/resourcePack/contracts/resourceEx';
 import { createResourcePackExportView } from '@/domain/resourcePack/serialization';
 
-import type { IWriteResourcePackArchiveInput } from '../archive/contracts';
-import type { IAssetSnapshot } from '../assets/contracts';
+import type { IWriteResourcePackArchiveInput } from '@/features/resourceEditor/client/archive/contracts';
+import type { IAssetSnapshot } from '@/features/resourceEditor/client/assets/contracts';
 
 import type { IResourceEditorExportResult } from './contracts';
 

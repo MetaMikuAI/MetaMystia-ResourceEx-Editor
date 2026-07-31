@@ -1,0 +1,181 @@
+'use client';
+
+import { cn } from '@heroui/theme';
+import { memo, useMemo, useState } from 'react';
+
+import Button from '@/design/ui/components/button';
+import Modal from '@/design/ui/components/modal';
+
+import { type IResourcePackValidationIssue } from '@/features/resourceEditor/client/validation/validateResourcePackForExport';
+
+interface IProps {
+	issues: IResourcePackValidationIssue[];
+	onConfirm: () => void;
+	onCancel: () => void;
+}
+
+function groupByCategory(items: IResourcePackValidationIssue[]) {
+	const groups: Record<string, IResourcePackValidationIssue[]> = {};
+	for (const item of items) {
+		(groups[item.category] ??= []).push(item);
+	}
+	return groups;
+}
+
+function IssueGroup({
+	category,
+	items,
+	severity,
+}: {
+	category: string;
+	items: IResourcePackValidationIssue[];
+	severity: 'error' | 'warning';
+}) {
+	return (
+		<div className="flex flex-col gap-1">
+			<div className="flex items-center gap-2">
+				<span
+					className={cn(
+						'h-2 w-2 rounded-full',
+						severity === 'error' ? 'bg-danger' : 'bg-warning'
+					)}
+				/>
+				<span className="text-sm font-semibold">{category}</span>
+				<span className="text-xs opacity-40">({items.length})</span>
+			</div>
+			<div className="ml-4 flex flex-col gap-0.5">
+				{items.map((item, index) => (
+					<p
+						key={`${item.message}-${index}`}
+						className={cn(
+							'text-sm',
+							severity === 'error'
+								? 'text-danger'
+								: 'text-warning-600 dark:text-warning-400'
+						)}
+					>
+						• {item.message}
+					</p>
+				))}
+			</div>
+		</div>
+	);
+}
+
+export const ExportValidationDialog = memo<IProps>(
+	function ExportValidationDialog({ issues, onCancel, onConfirm }) {
+		const [filter, setFilter] = useState<'all' | 'error' | 'warning'>(
+			'all'
+		);
+		const errors = useMemo(
+			() => issues.filter((issue) => issue.severity === 'error'),
+			[issues]
+		);
+		const warnings = useMemo(
+			() => issues.filter((issue) => issue.severity === 'warning'),
+			[issues]
+		);
+		const groupedErrors = useMemo(() => groupByCategory(errors), [errors]);
+		const groupedWarnings = useMemo(
+			() => groupByCategory(warnings),
+			[warnings]
+		);
+
+		return (
+			<Modal isOpen onClose={onCancel} size="2xl">
+				<div className="flex flex-col gap-4">
+					<div className="flex items-center gap-3">
+						<span className="text-2xl">
+							{errors.length > 0 ? '⚠️' : '📋'}
+						</span>
+						<div>
+							<h2 className="text-xl font-bold">
+								资源包导出检查
+							</h2>
+							<p className="text-sm text-foreground/60">
+								{errors.length > 0
+									? '存在以下问题，建议修正后再导出'
+									: '存在部分建议项，可确认后继续导出'}
+							</p>
+						</div>
+					</div>
+					<div className="flex gap-3">
+						{errors.length > 0 && (
+							<Button
+								size="sm"
+								color={
+									filter === 'error' ? 'danger' : 'default'
+								}
+								variant={filter === 'error' ? 'solid' : 'flat'}
+								onPress={() =>
+									setFilter((current) =>
+										current === 'error' ? 'all' : 'error'
+									)
+								}
+							>
+								{errors.length} 个错误
+							</Button>
+						)}
+						{warnings.length > 0 && (
+							<Button
+								size="sm"
+								color={
+									filter === 'warning' ? 'warning' : 'default'
+								}
+								variant={
+									filter === 'warning' ? 'solid' : 'flat'
+								}
+								onPress={() =>
+									setFilter((current) =>
+										current === 'warning'
+											? 'all'
+											: 'warning'
+									)
+								}
+							>
+								{warnings.length} 个警告
+							</Button>
+						)}
+					</div>
+					<div className="flex flex-col gap-4">
+						{filter !== 'warning' &&
+							Object.entries(groupedErrors).map(
+								([category, items]) => (
+									<IssueGroup
+										key={`error-${category}`}
+										category={category}
+										items={items}
+										severity="error"
+									/>
+								)
+							)}
+						{filter !== 'error' &&
+							Object.entries(groupedWarnings).map(
+								([category, items]) => (
+									<IssueGroup
+										key={`warning-${category}`}
+										category={category}
+										items={items}
+										severity="warning"
+									/>
+								)
+							)}
+					</div>
+					<div className="flex justify-end gap-3 border-t border-divider pt-4">
+						<Button variant="light" onPress={onCancel}>
+							返回修改
+						</Button>
+						<Button
+							color={errors.length > 0 ? 'danger' : 'primary'}
+							onPress={onConfirm}
+						>
+							{errors.length > 0
+								? '忽略问题，仍然导出'
+								: '确认导出'}
+						</Button>
+					</div>
+				</div>
+			</Modal>
+		);
+	}
+);

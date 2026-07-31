@@ -7,6 +7,7 @@ import { ClothesList } from '@/components/clothes/ClothesList';
 
 import type { Clothes } from '@/domain/resourcePack/contracts/items';
 
+import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 export default function ClothesPage() {
@@ -93,26 +94,22 @@ export default function ClothesPage() {
 	);
 
 	return (
-		<div className="flex flex-col">
-			<div className="container mx-auto w-full max-w-7xl px-6 py-8 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl">
-				<div className="relative grid grid-cols-1 gap-8 lg:grid-cols-3">
-					<ClothesList
-						clothes={data.clothes || []}
-						selectedIndex={selectedIndex}
-						onAdd={addClothes}
-						onRemove={removeClothes}
-						onSelect={setSelectedIndex}
-					/>
+		<EditorWorkspace>
+			<ClothesList
+				clothes={data.clothes || []}
+				selectedIndex={selectedIndex}
+				onAdd={addClothes}
+				onRemove={removeClothes}
+				onSelect={setSelectedIndex}
+			/>
 
-					<ClothesEditor
-						clothes={selectedClothes}
-						clothesIndex={selectedIndex}
-						onUpdate={(updates: Partial<Clothes>) => {
-							updateClothes(selectedIndex, updates);
-						}}
-					/>
-				</div>
-			</div>
-		</div>
+			<ClothesEditor
+				clothes={selectedClothes}
+				clothesIndex={selectedIndex}
+				onUpdate={(updates: Partial<Clothes>) => {
+					updateClothes(selectedIndex, updates);
+				}}
+			/>
+		</EditorWorkspace>
 	);
 }

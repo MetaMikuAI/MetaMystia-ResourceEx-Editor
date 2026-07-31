@@ -1,19 +1,19 @@
 import { cn } from '@heroui/theme';
 import { memo, useCallback, useId } from 'react';
 
-import { EmptyState } from '@/components/common/EmptyState';
-import { ErrorBadge } from '@/components/common/ErrorBadge';
-import { Label } from '@/components/common/Label';
-import { SectionAddButton } from '@/components/common/SectionAddButton';
-import { useLabelPrefixValidation } from '@/components/common/useLabelPrefixValidation';
-import { WarningBadge } from '@/components/common/WarningBadge';
-
 import Button from '@/design/ui/components/button';
 
 import type {
 	Dialog,
 	DialogPackage,
 } from '@/domain/resourcePack/contracts/dialogue';
+
+import { SectionAddButton } from '@/features/resourceEditor/client/components/actions/SectionAddButton';
+import { Label } from '@/features/resourceEditor/client/components/fields/Label';
+import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
+import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
+import { WarningBadge } from '@/features/resourceEditor/client/components/status/WarningBadge';
+import { useLabelPrefixValidation } from '@/features/resourceEditor/client/hooks/useLabelPrefixValidation';
 
 import { DialogItemWrapper } from './DialogItem';
 

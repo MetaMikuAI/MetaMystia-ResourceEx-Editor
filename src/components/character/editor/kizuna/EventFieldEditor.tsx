@@ -1,11 +1,11 @@
 import { memo, useMemo } from 'react';
 
+import type { EventNode } from '@/domain/resourcePack/contracts/event';
+
 import {
 	Select,
 	type SelectItem as SelectItemSpec,
-} from '@/design/ui/components/select';
-
-import type { EventNode } from '@/domain/resourcePack/contracts/event';
+} from '@/features/resourceEditor/client/components/select/Select';
 
 interface EventFieldEditorProps {
 	label: string;

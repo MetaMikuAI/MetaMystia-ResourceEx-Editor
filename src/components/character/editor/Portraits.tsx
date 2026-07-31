@@ -1,16 +1,15 @@
 import { cn } from '@heroui/theme';
 import { useState } from 'react';
 
-import { EmptyState } from '@/components/common/EmptyState';
-import { Label } from '@/components/common/Label';
-import { PortraitUploader } from '@/components/common/PortraitUploader';
-import { SectionAddButton } from '@/components/common/SectionAddButton';
-import { ChevronRight } from '@/components/icons/ChevronRight';
-
 import Button from '@/design/ui/components/button';
 
 import type { CharacterPortrait } from '@/domain/resourcePack/contracts/character';
 
+import { SectionAddButton } from '@/features/resourceEditor/client/components/actions/SectionAddButton';
+import { Label } from '@/features/resourceEditor/client/components/fields/Label';
+import { ChevronRight } from '@/features/resourceEditor/client/components/icons/ChevronRight';
+import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
+import { PortraitUploader } from '@/features/resourceEditor/client/components/uploads/PortraitUploader';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 interface PortraitsProps {

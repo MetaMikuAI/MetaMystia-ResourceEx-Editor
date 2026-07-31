@@ -1,20 +1,23 @@
 import { memo, useCallback, useMemo, useState } from 'react';
 
-import { EditorField } from '@/components/common/EditorField';
-import { EmptyState } from '@/components/common/EmptyState';
-import { SectionAddButton } from '@/components/common/SectionAddButton';
-import { WarningNotice } from '@/components/common/WarningNotice';
-
 import { BEVERAGE_NAMES } from '@/data/beverages';
 
 import Button from '@/design/ui/components/button';
-import { type ISelectOption, Select } from '@/design/ui/components/select';
 
 import type {
 	MissionReward,
 	ObjectType,
 	RewardType,
 } from '@/domain/resourcePack/contracts/mission';
+
+import { SectionAddButton } from '@/features/resourceEditor/client/components/actions/SectionAddButton';
+import { EditorField } from '@/features/resourceEditor/client/components/fields/EditorField';
+import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
+import {
+	type ISelectOption,
+	Select,
+} from '@/features/resourceEditor/client/components/select/Select';
+import { WarningNotice } from '@/features/resourceEditor/client/components/status/WarningNotice';
 
 interface AddRewardItemRowProps {
 	objectType: ObjectType | undefined;
@@ -66,7 +69,7 @@ function AddRewardItemRow({
 		<div className="mt-2 flex items-center gap-2">
 			<Select<number>
 				ariaLabel="选择物品"
-				className="flex-1"
+				baseClassName="flex-1"
 				placeholder="选择物品..."
 				value={selectedId}
 				onChange={(v) => setSelectedId(v)}
@@ -289,7 +292,7 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 							<div className="flex items-center justify-between gap-4">
 								<Select<RewardType>
 									ariaLabel="Reward Type"
-									className="flex-1"
+									baseClassName="flex-1"
 									value={reward.rewardType}
 									onChange={(v) =>
 										updateReward(index, { rewardType: v })

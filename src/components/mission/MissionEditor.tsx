@@ -2,8 +2,6 @@
 
 import { memo, useMemo } from 'react';
 
-import { EditorField } from '@/components/common/EditorField';
-import { SectionDeleteButton } from '@/components/common/SectionDeleteButton';
 import { PostEventList } from '@/components/event/PostEventList';
 import { EventDataEditor } from '@/components/event/ScheduledEvent/EventDataEditor';
 
@@ -23,6 +21,9 @@ import type {
 	Recipe,
 } from '@/domain/resourcePack/contracts/items';
 import type { MissionNode } from '@/domain/resourcePack/contracts/mission';
+
+import { SectionDeleteButton } from '@/features/resourceEditor/client/components/actions/SectionDeleteButton';
+import { EditorField } from '@/features/resourceEditor/client/components/fields/EditorField';
 
 import { MissionBasicInfo } from './MissionBasicInfo';
 import { MissionConditionList } from './MissionConditionList';
@@ -131,7 +132,10 @@ export default memo<MissionEditorProps>(function MissionEditor({
 		<div className="flex flex-col gap-6 rounded-lg bg-white/10 p-6 shadow-md backdrop-blur">
 			<div className="flex items-center justify-between border-b border-black/10 pb-4 dark:border-white/10">
 				<h2 className="text-2xl font-bold">任务节点编辑</h2>
-				<SectionDeleteButton onPress={onRemove}>
+				<SectionDeleteButton
+					confirmTitle="确定要删除这个任务节点吗？"
+					onPress={onRemove}
+				>
 					删除任务
 				</SectionDeleteButton>
 			</div>

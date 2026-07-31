@@ -12,10 +12,10 @@ import {
 import type { ResourceEx } from '@/domain/resourcePack/contracts/resourceEx';
 import { createBlankResourcePack } from '@/domain/resourcePack/createBlankResourcePack';
 
-import { downloadResourcePack } from '../archive/downloadResourcePack';
-import { readResourcePackArchive } from '../archive/readResourcePackArchive';
-import { writeResourcePackArchive } from '../archive/writeResourcePackArchive';
-import { useAssetStore } from '../assets/useAssetStore';
+import { downloadResourcePack } from '@/features/resourceEditor/client/archive/downloadResourcePack';
+import { readResourcePackArchive } from '@/features/resourceEditor/client/archive/readResourcePackArchive';
+import { writeResourcePackArchive } from '@/features/resourceEditor/client/archive/writeResourcePackArchive';
+import { useAssetStore } from '@/features/resourceEditor/client/assets/useAssetStore';
 
 import type {
 	IResourceEditorExportResult,

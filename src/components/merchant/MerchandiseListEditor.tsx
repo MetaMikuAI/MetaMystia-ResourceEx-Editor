@@ -1,10 +1,6 @@
 import { cn } from '@heroui/theme';
 import { memo, useCallback } from 'react';
 
-import { EmptyState } from '@/components/common/EmptyState';
-import { Label } from '@/components/common/Label';
-import { SectionAddButton } from '@/components/common/SectionAddButton';
-
 import Button from '@/design/ui/components/button';
 
 import type {
@@ -17,6 +13,11 @@ import type {
 	MerchandiseConfig,
 	ProductConfig,
 } from '@/domain/resourcePack/contracts/merchant';
+
+import { SectionAddButton } from '@/features/resourceEditor/client/components/actions/SectionAddButton';
+import { ConfirmPopover } from '@/features/resourceEditor/client/components/confirm/ConfirmPopover';
+import { Label } from '@/features/resourceEditor/client/components/fields/Label';
+import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
 
 import { ProductEditor } from './ProductEditor';
 
@@ -118,23 +119,20 @@ export const MerchandiseListEditor = memo<MerchandiseListEditorProps>(
 									<span className="text-sm font-semibold opacity-70">
 										商品 #{index + 1}
 									</span>
-									<Button
-										color="danger"
-										size="sm"
-										radius="full"
-										onPress={() => {
-											if (
-												confirm(
-													'确定要删除这个商品吗？'
-												)
-											) {
-												handleRemove(index);
-											}
-										}}
-										className="h-7 min-w-0 px-3 text-xs opacity-0 transition-opacity group-hover:opacity-100"
-									>
-										删除
-									</Button>
+									<ConfirmPopover
+										title="确定要删除这个商品吗？"
+										onConfirm={() => handleRemove(index)}
+										trigger={
+											<Button
+												color="danger"
+												size="sm"
+												radius="full"
+												className="h-7 min-w-0 px-3 text-xs opacity-0 transition-opacity group-hover:opacity-100"
+											>
+												删除
+											</Button>
+										}
+									/>
 								</div>
 
 								{/* Product config */}

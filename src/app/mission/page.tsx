@@ -11,6 +11,7 @@ import type {
 	MissionReward,
 } from '@/domain/resourcePack/contracts/mission';
 
+import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 const DEFAULT_MISSION = {
@@ -58,8 +59,6 @@ export default function MissionPage() {
 	const removeMission = useCallback(
 		(index: number | null) => {
 			if (index === null) return;
-			if (!confirm('确定要删除这个任务节点吗？')) return;
-
 			const newMissions = data.missionNodes.filter((_, i) => i !== index);
 			updateResourcePack(() => ({ ...data, missionNodes: newMissions }));
 			setSelectedIndex(null);
@@ -73,35 +72,31 @@ export default function MissionPage() {
 			: null;
 
 	return (
-		<div className="flex flex-col">
-			<div className="container mx-auto w-full max-w-7xl px-6 py-8 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl">
-				<div className="relative grid grid-cols-1 gap-8 lg:grid-cols-3">
-					<MissionList
-						missions={data.missionNodes}
-						selectedIndex={selectedIndex}
-						onAdd={addMission}
-						onSelect={setSelectedIndex}
-					/>
+		<EditorWorkspace>
+			<MissionList
+				missions={data.missionNodes}
+				selectedIndex={selectedIndex}
+				onAdd={addMission}
+				onSelect={setSelectedIndex}
+			/>
 
-					<div className="lg:col-span-2">
-						<MissionEditor
-							mission={selectedMission}
-							characters={data.characters || []}
-							foods={data.foods || []}
-							ingredients={data.ingredients || []}
-							beverages={data.beverages || []}
-							recipes={data.recipes || []}
-							allMissions={data.missionNodes || []}
-							allEvents={data.eventNodes || []}
-							allDialogPackages={data.dialogPackages || []}
-							onRemove={() => removeMission(selectedIndex)}
-							onUpdate={(updates) =>
-								updateMission(selectedIndex, updates)
-							}
-						/>
-					</div>
-				</div>
+			<div className="lg:col-span-2">
+				<MissionEditor
+					mission={selectedMission}
+					characters={data.characters || []}
+					foods={data.foods || []}
+					ingredients={data.ingredients || []}
+					beverages={data.beverages || []}
+					recipes={data.recipes || []}
+					allMissions={data.missionNodes || []}
+					allEvents={data.eventNodes || []}
+					allDialogPackages={data.dialogPackages || []}
+					onRemove={() => removeMission(selectedIndex)}
+					onUpdate={(updates) =>
+						updateMission(selectedIndex, updates)
+					}
+				/>
 			</div>
-		</div>
+		</EditorWorkspace>
 	);
 }

@@ -1,12 +1,6 @@
 import { cn } from '@heroui/theme';
 import { useState } from 'react';
 
-import { EmptyState } from '@/components/common/EmptyState';
-import { InfoTip } from '@/components/common/InfoTip';
-import { Label } from '@/components/common/Label';
-import { SectionAddButton } from '@/components/common/SectionAddButton';
-import { ChevronRight } from '@/components/icons/ChevronRight';
-
 import { IZAKAYAS } from '@/data/izakayas';
 import {
 	BEVERAGE_TAG_MAP,
@@ -23,6 +17,13 @@ import type {
 	SpawnConfig,
 } from '@/domain/resourcePack/contracts/character';
 
+import { SectionAddButton } from '@/features/resourceEditor/client/components/actions/SectionAddButton';
+import { ConfirmPopover } from '@/features/resourceEditor/client/components/confirm/ConfirmPopover';
+import { InfoTip } from '@/features/resourceEditor/client/components/fields/InfoTip';
+import { Label } from '@/features/resourceEditor/client/components/fields/Label';
+import { ChevronRight } from '@/features/resourceEditor/client/components/icons/ChevronRight';
+import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
+
 interface GuestInfoProps {
 	guest: GuestInfo | undefined;
 	onUpdate: (updates: Partial<GuestInfo>) => void;
@@ -37,6 +38,8 @@ export function GuestInfoEditor({
 	onDisable,
 }: GuestInfoProps) {
 	const [isExpanded, setIsExpanded] = useState(false);
+	const [isDisableConfirmationOpen, setIsDisableConfirmationOpen] =
+		useState(false);
 
 	const toggleLikeTag = (
 		field: 'likeFoodTag' | 'likeBevTag',
@@ -232,21 +235,36 @@ export function GuestInfoEditor({
 					<span className="whitespace-nowrap text-xs font-medium">
 						{guest ? '已启用顾客配置' : '启用顾客配置'}
 					</span>
-					<Switch
-						size="sm"
-						isSelected={Boolean(guest)}
-						onValueChange={(v) => {
-							if (v) {
-								onEnable();
-							} else if (
-								confirm(
-									'关闭顾客配置将丢失已填写的所有顾客数据（喜好、闲聊、评价等），且不可恢复。\n\n确定要关闭吗？'
-								)
-							) {
-								onDisable();
+					{guest ? (
+						<ConfirmPopover
+							title="确定要关闭顾客配置吗？"
+							description="关闭后将丢失已填写的所有顾客数据（喜好、闲聊、评价等），且不可恢复。"
+							confirmLabel="确认关闭"
+							isOpen={isDisableConfirmationOpen}
+							onConfirm={onDisable}
+							onOpenChange={setIsDisableConfirmationOpen}
+							trigger={
+								<Switch
+									aria-label="关闭顾客配置"
+									isSelected
+									onValueChange={(isSelected) => {
+										if (!isSelected) {
+											setIsDisableConfirmationOpen(true);
+										}
+									}}
+									size="sm"
+								/>
 							}
-						}}
-					/>
+						/>
+					) : (
+						<Switch
+							size="sm"
+							isSelected={false}
+							onValueChange={(isSelected) => {
+								if (isSelected) onEnable();
+							}}
+						/>
+					)}
 				</div>
 			</div>
 

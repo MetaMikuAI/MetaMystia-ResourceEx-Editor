@@ -1,15 +1,16 @@
 import { cn } from '@heroui/theme';
 import { memo, useCallback, useMemo, useState } from 'react';
 
-import { EmptyState } from '@/components/common/EmptyState';
-import { ErrorBadge } from '@/components/common/ErrorBadge';
-
 import { FOOD_NAMES } from '@/data/foods';
 
 import Button from '@/design/ui/components/button';
 import Card from '@/design/ui/components/card';
 
 import type { Recipe } from '@/domain/resourcePack/contracts/items';
+
+import { ConfirmPopover } from '@/features/resourceEditor/client/components/confirm/ConfirmPopover';
+import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
+import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
 
 interface RecipeListProps {
 	recipes: Recipe[];
@@ -153,23 +154,22 @@ export const RecipeList = memo<RecipeListProps>(function RecipeList({
 											>
 												预览
 											</Button>
-											<Button
-												color="danger"
-												size="sm"
-												radius="full"
-												onPress={() => {
-													if (
-														confirm(
-															'确定要删除这个菜谱吗？'
-														)
-													) {
-														onRemove(index);
-													}
-												}}
-												className="pointer-events-none opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
-											>
-												删除
-											</Button>
+											<ConfirmPopover
+												title="确定要删除这个菜谱吗？"
+												onConfirm={() =>
+													onRemove(index)
+												}
+												trigger={
+													<Button
+														color="danger"
+														size="sm"
+														radius="full"
+														className="pointer-events-none opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
+													>
+														删除
+													</Button>
+												}
+											/>
 										</div>
 									</div>
 								</Card>

@@ -1,13 +1,12 @@
 import { cn } from '@heroui/theme';
 import { memo } from 'react';
 
-import { Label } from '@/components/common/Label';
-
 import { DAYSCENEMAP } from '@/data/daySceneMap';
 
-import { Select } from '@/design/ui/components/select';
-
 import type { SpawnMarker } from '@/domain/resourcePack/contracts/character';
+
+import { Label } from '@/features/resourceEditor/client/components/fields/Label';
+import { Select } from '@/features/resourceEditor/client/components/select/Select';
 
 interface SpawnMarkerEditorProps {
 	spawnMarker: SpawnMarker;

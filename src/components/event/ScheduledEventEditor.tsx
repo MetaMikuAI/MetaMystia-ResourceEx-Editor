@@ -2,11 +2,11 @@
 
 import { memo } from 'react';
 
-import { EditorField } from '@/components/common/EditorField';
-
 import type { Character } from '@/domain/resourcePack/contracts/character';
 import type { DialogPackage } from '@/domain/resourcePack/contracts/dialogue';
 import type { ScheduledEvent } from '@/domain/resourcePack/contracts/event';
+
+import { EditorField } from '@/features/resourceEditor/client/components/fields/EditorField';
 
 import { EventDataEditor } from './ScheduledEvent/EventDataEditor';
 import { TriggerEditor } from './ScheduledEvent/TriggerEditor';

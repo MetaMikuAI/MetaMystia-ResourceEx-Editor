@@ -1,16 +1,16 @@
 import { memo, useCallback, useMemo } from 'react';
 
-import { EditorField } from '@/components/common/EditorField';
-import { EmptyState } from '@/components/common/EmptyState';
-import { SectionAddButton } from '@/components/common/SectionAddButton';
-
 import Button from '@/design/ui/components/button';
+
+import type { EventNode } from '@/domain/resourcePack/contracts/event';
+
+import { SectionAddButton } from '@/features/resourceEditor/client/components/actions/SectionAddButton';
+import { EditorField } from '@/features/resourceEditor/client/components/fields/EditorField';
+import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
 import {
 	Select,
 	type SelectItem as SelectItemSpec,
-} from '@/design/ui/components/select';
-
-import type { EventNode } from '@/domain/resourcePack/contracts/event';
+} from '@/features/resourceEditor/client/components/select/Select';
 
 interface PostEventListProps {
 	postEvents: string[] | undefined;
@@ -77,7 +77,7 @@ export const PostEventList = memo<PostEventListProps>(function PostEventList({
 							</label>
 							<div className="flex items-center justify-between gap-4">
 								<Select<string>
-									className="flex-1"
+									baseClassName="flex-1"
 									value={pe}
 									onChange={(value) =>
 										updatePostEvent(index, value)

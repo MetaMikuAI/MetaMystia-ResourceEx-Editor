@@ -1,17 +1,18 @@
 import { cn } from '@heroui/theme';
 import { useState } from 'react';
 
-import { EmptyState } from '@/components/common/EmptyState';
-import { InfoTip } from '@/components/common/InfoTip';
-import { Label } from '@/components/common/Label';
-import { useLabelPrefixValidation } from '@/components/common/useLabelPrefixValidation';
-import { WarningBadge } from '@/components/common/WarningBadge';
-import { ChevronRight } from '@/components/icons/ChevronRight';
-
 import Switch from '@/design/ui/components/switch';
 
 import type { CharacterSpriteSet } from '@/domain/resourcePack/contracts/character';
 
+import { ConfirmPopover } from '@/features/resourceEditor/client/components/confirm/ConfirmPopover';
+import { InfoTip } from '@/features/resourceEditor/client/components/fields/InfoTip';
+import { Label } from '@/features/resourceEditor/client/components/fields/Label';
+import { ChevronRight } from '@/features/resourceEditor/client/components/icons/ChevronRight';
+import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
+import { WarningBadge } from '@/features/resourceEditor/client/components/status/WarningBadge';
+import { WarningNotice } from '@/features/resourceEditor/client/components/status/WarningNotice';
+import { useLabelPrefixValidation } from '@/features/resourceEditor/client/hooks/useLabelPrefixValidation';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import { readImageDimensions } from '@/infrastructure/browser/images/readImageDimensions';
@@ -35,6 +36,9 @@ export function SpriteSetEditor({
 	onGenerateDefaults,
 }: SpriteSetProps) {
 	const [isExpanded, setIsExpanded] = useState(false);
+	const [isDisableConfirmationOpen, setIsDisableConfirmationOpen] =
+		useState(false);
+	const [uploadError, setUploadError] = useState<string | null>(null);
 	const { getAssetUrl, updateAsset } = useResourceEditor();
 	const {
 		isValid: isSpriteNamePrefixValid,
@@ -64,15 +68,16 @@ export function SpriteSetEditor({
 		try {
 			dimensions = await readImageDimensions(file);
 		} catch {
-			alert('错误: 无法读取 Sprite Set 贴图尺寸');
+			setUploadError('无法读取 Sprite Set 贴图尺寸。');
 			return;
 		}
 		if (dimensions.width !== 64 || dimensions.height !== 64) {
-			alert(
+			setUploadError(
 				`错误: Sprite Set 贴图尺寸必须为 64x64，当前为 ${dimensions.width}x${dimensions.height}`
 			);
 			return;
 		}
+		setUploadError(null);
 
 		let filename = '';
 		if (field === 'mainSprite') {
@@ -117,23 +122,41 @@ export function SpriteSetEditor({
 					<span className="whitespace-nowrap text-xs font-medium">
 						{spriteSet ? '已启用小人配置' : '启用小人配置'}
 					</span>
-					<Switch
-						size="sm"
-						isSelected={Boolean(spriteSet)}
-						onValueChange={(v) => {
-							if (v) {
-								onEnable();
-							} else if (
-								confirm(
-									'关闭角色小人配置将丢失名称与贴图路径等所有小人配置数据，且不可恢复。\n\n确定要关闭吗？'
-								)
-							) {
-								onDisable();
+					{spriteSet ? (
+						<ConfirmPopover
+							title="确定要关闭角色小人配置吗？"
+							description="关闭后将丢失名称与贴图路径等所有小人配置数据，且不可恢复。"
+							confirmLabel="确认关闭"
+							isOpen={isDisableConfirmationOpen}
+							onConfirm={onDisable}
+							onOpenChange={setIsDisableConfirmationOpen}
+							trigger={
+								<Switch
+									aria-label="关闭角色小人配置"
+									isSelected
+									onValueChange={(isSelected) => {
+										if (!isSelected) {
+											setIsDisableConfirmationOpen(true);
+										}
+									}}
+									size="sm"
+								/>
 							}
-						}}
-					/>
+						/>
+					) : (
+						<Switch
+							size="sm"
+							isSelected={false}
+							onValueChange={(isSelected) => {
+								if (isSelected) onEnable();
+							}}
+						/>
+					)}
 				</div>
 			</div>
+			{uploadError !== null && (
+				<WarningNotice>{uploadError}</WarningNotice>
+			)}
 
 			{isExpanded && spriteSet && (
 				<div className="animate-in fade-in slide-in-from-top-2 flex flex-col gap-6 rounded-2xl border border-white/5 bg-black/5 p-6 duration-200">

@@ -1,13 +1,14 @@
 import { cn } from '@heroui/theme';
 import { memo, useCallback, useState } from 'react';
 
-import { EmptyState } from '@/components/common/EmptyState';
-import { ErrorBadge } from '@/components/common/ErrorBadge';
-
 import Button from '@/design/ui/components/button';
 import Card from '@/design/ui/components/card';
 
 import type { Food } from '@/domain/resourcePack/contracts/items';
+
+import { ConfirmPopover } from '@/features/resourceEditor/client/components/confirm/ConfirmPopover';
+import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
+import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
 
 interface FoodListProps {
 	foods: Food[];
@@ -135,23 +136,22 @@ export const FoodList = memo<FoodListProps>(function FoodList({
 											>
 												预览
 											</Button>
-											<Button
-												color="danger"
-												size="sm"
-												radius="full"
-												onPress={() => {
-													if (
-														confirm(
-															'确定要删除这个料理吗？'
-														)
-													) {
-														onRemove(index);
-													}
-												}}
-												className="pointer-events-none opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
-											>
-												删除
-											</Button>
+											<ConfirmPopover
+												title="确定要删除这个料理吗？"
+												onConfirm={() =>
+													onRemove(index)
+												}
+												trigger={
+													<Button
+														color="danger"
+														size="sm"
+														radius="full"
+														className="pointer-events-none opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
+													>
+														删除
+													</Button>
+												}
+											/>
 										</div>
 									</div>
 								</Card>

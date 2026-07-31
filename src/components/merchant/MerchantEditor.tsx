@@ -1,12 +1,6 @@
 import { memo, useCallback, useId, useMemo, useState } from 'react';
 
-import { Label } from '@/components/common/Label';
-
 import Button from '@/design/ui/components/button';
-import {
-	Select,
-	type SelectItem as SelectItemSpec,
-} from '@/design/ui/components/select';
 
 import type { Character } from '@/domain/resourcePack/contracts/character';
 import type { DialogPackage } from '@/domain/resourcePack/contracts/dialogue';
@@ -20,6 +14,12 @@ import type {
 	MerchandiseConfig,
 	MerchantConfig,
 } from '@/domain/resourcePack/contracts/merchant';
+
+import { Label } from '@/features/resourceEditor/client/components/fields/Label';
+import {
+	Select,
+	type SelectItem as SelectItemSpec,
+} from '@/features/resourceEditor/client/components/select/Select';
 
 import { MerchandiseListEditor } from './MerchandiseListEditor';
 

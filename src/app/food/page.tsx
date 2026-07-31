@@ -8,6 +8,7 @@ import { FoodPreviewDialog } from '@/components/food/FoodPreviewDialog';
 
 import type { Food } from '@/domain/resourcePack/contracts/items';
 
+import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 export default function FoodPage() {
@@ -66,32 +67,28 @@ export default function FoodPage() {
 	);
 
 	return (
-		<div className="flex flex-col">
-			<div className="container mx-auto w-full max-w-7xl px-6 py-8 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl">
-				<div className="relative grid grid-cols-1 gap-8 lg:grid-cols-3">
-					<FoodList
-						foods={data.foods || []}
-						selectedIndex={selectedIndex}
-						onAdd={addFood}
-						onRemove={removeFood}
-						onPreview={setPreviewFoodId}
-						onSelect={setSelectedIndex}
-					/>
-					<FoodPreviewDialog
-						foodId={previewFoodId}
-						isOpen={previewFoodId !== null}
-						onClose={() => setPreviewFoodId(null)}
-					/>
+		<EditorWorkspace>
+			<FoodList
+				foods={data.foods || []}
+				selectedIndex={selectedIndex}
+				onAdd={addFood}
+				onRemove={removeFood}
+				onPreview={setPreviewFoodId}
+				onSelect={setSelectedIndex}
+			/>
+			<FoodPreviewDialog
+				foodId={previewFoodId}
+				isOpen={previewFoodId !== null}
+				onClose={() => setPreviewFoodId(null)}
+			/>
 
-					<FoodEditor
-						food={selectedFood}
-						foodIndex={selectedIndex}
-						onUpdate={(updates: Partial<Food>) => {
-							updateFood(selectedIndex, updates);
-						}}
-					/>
-				</div>
-			</div>
-		</div>
+			<FoodEditor
+				food={selectedFood}
+				foodIndex={selectedIndex}
+				onUpdate={(updates: Partial<Food>) => {
+					updateFood(selectedIndex, updates);
+				}}
+			/>
+		</EditorWorkspace>
 	);
 }

@@ -1,15 +1,16 @@
 import { cn } from '@heroui/theme';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { EmptyState } from '@/components/common/EmptyState';
-import { usePackLabelPrefix } from '@/components/common/useLabelPrefixValidation';
-import { WarningBadge } from '@/components/common/WarningBadge';
-import { ChevronRight } from '@/components/icons/ChevronRight';
-
 import Button from '@/design/ui/components/button';
 import Card from '@/design/ui/components/card';
 
 import type { DialogPackage } from '@/domain/resourcePack/contracts/dialogue';
+
+import { ConfirmPopover } from '@/features/resourceEditor/client/components/confirm/ConfirmPopover';
+import { ChevronRight } from '@/features/resourceEditor/client/components/icons/ChevronRight';
+import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
+import { WarningBadge } from '@/features/resourceEditor/client/components/status/WarningBadge';
+import { usePackLabelPrefix } from '@/features/resourceEditor/client/hooks/useLabelPrefixValidation';
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -213,19 +214,20 @@ function DialogTreeItem({
 						{item.pkg.dialogList.length}条对话
 					</div>
 				</button>
-				<Button
-					color="danger"
-					size="sm"
-					radius="full"
-					onPress={() => {
-						if (confirm('确定要删除这个对话包吗？')) {
-							onRemove();
-						}
-					}}
-					className="pointer-events-none h-6 min-w-0 shrink-0 px-2 text-xs opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
-				>
-					删除
-				</Button>
+				<ConfirmPopover
+					title="确定要删除这个对话包吗？"
+					onConfirm={onRemove}
+					trigger={
+						<Button
+							color="danger"
+							size="sm"
+							radius="full"
+							className="pointer-events-none h-6 min-w-0 shrink-0 px-2 text-xs opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
+						>
+							删除
+						</Button>
+					}
+				/>
 			</div>
 		</Card>
 	);
@@ -652,23 +654,22 @@ export const DialogPackageList = memo<DialogPackageListProps>(
 															条对话
 														</div>
 													</button>
-													<Button
-														color="danger"
-														size="sm"
-														radius="full"
-														onPress={() => {
-															if (
-																confirm(
-																	'确定要删除这个对话包吗？'
-																)
-															) {
-																onRemove(index);
-															}
-														}}
-														className="pointer-events-none opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
-													>
-														删除
-													</Button>
+													<ConfirmPopover
+														title="确定要删除这个对话包吗？"
+														onConfirm={() =>
+															onRemove(index)
+														}
+														trigger={
+															<Button
+																color="danger"
+																size="sm"
+																radius="full"
+																className="pointer-events-none opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
+															>
+																删除
+															</Button>
+														}
+													/>
 												</div>
 											</Card>
 										);

@@ -3,10 +3,10 @@ import { type Metadata } from 'next';
 import { Noto_Sans, Noto_Sans_Mono, Noto_Sans_SC } from 'next/font/google';
 import { type PropsWithChildren } from 'react';
 
-import { BackToTop } from '@/components/common/BackToTop';
-import { Navbar } from '@/components/common/Navbar';
-
 import ThemeScript from '@/design/theme/runtime/themeScript';
+
+import { AppNavbar } from '@/features/appShell/client/AppNavbar';
+import { BackToTop } from '@/features/appShell/client/BackToTop';
 
 import Providers from './providers';
 
@@ -53,7 +53,7 @@ export default function RootLayout({ children }: PropsWithChildren) {
 			>
 				<Providers>
 					<div className="flex min-h-dvh-safe flex-col">
-						<Navbar />
+						<AppNavbar />
 						<main className="grow">
 							<div id="modal-portal-container" />
 							{children}

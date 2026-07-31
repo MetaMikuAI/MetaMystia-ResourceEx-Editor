@@ -1,16 +1,15 @@
 import { cn } from '@heroui/theme';
 import { memo, useCallback, useId } from 'react';
 
-import { ErrorBadge } from '@/components/common/ErrorBadge';
-import { IdRangeBadge } from '@/components/common/IdRangeBadge';
-import { Label } from '@/components/common/Label';
-import { SpriteUploader } from '@/components/common/SpriteUploader';
-import { TagsField } from '@/components/common/TagsField';
-
 import { BEVERAGE_TAGS } from '@/data/tags';
 
 import type { Beverage } from '@/domain/resourcePack/contracts/items';
 
+import { Label } from '@/features/resourceEditor/client/components/fields/Label';
+import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
+import { TagsField } from '@/features/resourceEditor/client/components/tags/TagsField';
+import { SpriteUploader } from '@/features/resourceEditor/client/components/uploads/SpriteUploader';
+import { IdRangeBadge } from '@/features/resourceEditor/client/editors/info/IdRangeBadge';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 interface BeverageEditorProps {

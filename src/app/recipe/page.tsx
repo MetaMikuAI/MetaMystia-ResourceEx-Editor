@@ -8,6 +8,7 @@ import { RecipeList } from '@/components/recipe/RecipeList';
 
 import type { Recipe } from '@/domain/resourcePack/contracts/items';
 
+import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 export default function RecipePage() {
@@ -78,36 +79,32 @@ export default function RecipePage() {
 	);
 
 	return (
-		<div className="flex flex-col">
-			<div className="container mx-auto w-full max-w-7xl px-6 py-8 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl">
-				<div className="relative grid grid-cols-1 gap-8 lg:grid-cols-3">
-					<RecipeList
-						recipes={data.recipes || []}
-						customIngredients={customIngredients}
-						customFoods={customFoods}
-						selectedIndex={selectedIndex}
-						onAdd={addRecipe}
-						onRemove={removeRecipe}
-						onPreview={setPreviewFoodId}
-						onSelect={setSelectedIndex}
-					/>
-					<FoodPreviewDialog
-						foodId={previewFoodId}
-						isOpen={previewFoodId !== null}
-						onClose={() => setPreviewFoodId(null)}
-					/>
+		<EditorWorkspace>
+			<RecipeList
+				recipes={data.recipes || []}
+				customIngredients={customIngredients}
+				customFoods={customFoods}
+				selectedIndex={selectedIndex}
+				onAdd={addRecipe}
+				onRemove={removeRecipe}
+				onPreview={setPreviewFoodId}
+				onSelect={setSelectedIndex}
+			/>
+			<FoodPreviewDialog
+				foodId={previewFoodId}
+				isOpen={previewFoodId !== null}
+				onClose={() => setPreviewFoodId(null)}
+			/>
 
-					<RecipeEditor
-						recipe={selectedRecipe}
-						recipeIndex={selectedIndex}
-						customIngredients={customIngredients}
-						customFoods={customFoods}
-						onUpdate={(updates: Partial<Recipe>) => {
-							updateRecipe(selectedIndex, updates);
-						}}
-					/>
-				</div>
-			</div>
-		</div>
+			<RecipeEditor
+				recipe={selectedRecipe}
+				recipeIndex={selectedIndex}
+				customIngredients={customIngredients}
+				customFoods={customFoods}
+				onUpdate={(updates: Partial<Recipe>) => {
+					updateRecipe(selectedIndex, updates);
+				}}
+			/>
+		</EditorWorkspace>
 	);
 }

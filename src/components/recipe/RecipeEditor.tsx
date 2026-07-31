@@ -1,22 +1,22 @@
 import { cn } from '@heroui/theme';
 import { memo, useCallback, useId, useMemo } from 'react';
 
-import { EmptyState } from '@/components/common/EmptyState';
-import { ErrorBadge } from '@/components/common/ErrorBadge';
-import { IdRangeBadge } from '@/components/common/IdRangeBadge';
-import { Label } from '@/components/common/Label';
-import { SectionAddButton } from '@/components/common/SectionAddButton';
-import { SectionDeleteButton } from '@/components/common/SectionDeleteButton';
-
 import { FOOD_NAMES } from '@/data/foods';
 import { INGREDIENT_NAMES } from '@/data/ingredients';
 
+import type { CookerType, Recipe } from '@/domain/resourcePack/contracts/items';
+
+import { SectionAddButton } from '@/features/resourceEditor/client/components/actions/SectionAddButton';
+import { SectionDeleteButton } from '@/features/resourceEditor/client/components/actions/SectionDeleteButton';
+import { Label } from '@/features/resourceEditor/client/components/fields/Label';
+import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
 import {
 	Select,
 	type SelectItem as SelectItemSpec,
-} from '@/design/ui/components/select';
-
-import type { CookerType, Recipe } from '@/domain/resourcePack/contracts/items';
+} from '@/features/resourceEditor/client/components/select/Select';
+import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
+import { WarningNotice } from '@/features/resourceEditor/client/components/status/WarningNotice';
+import { IdRangeBadge } from '@/features/resourceEditor/client/editors/info/IdRangeBadge';
 
 interface RecipeEditorProps {
 	recipe: Recipe | null;
@@ -104,10 +104,7 @@ export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
 
 	const addIngredient = useCallback(() => {
 		if (!recipe) return;
-		if (recipe.ingredients.length >= 5) {
-			alert('最多只能添加 5 个原料！');
-			return;
-		}
+		if (recipe.ingredients.length >= 5) return;
 		onUpdate({ ingredients: [...recipe.ingredients, -1] });
 	}, [recipe, onUpdate]);
 
@@ -227,6 +224,9 @@ export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
 						添加原料
 					</SectionAddButton>
 				</div>
+				{recipe.ingredients.length >= 5 && (
+					<WarningNotice>已达到最多 5 个原料的上限。</WarningNotice>
+				)}
 				<div className="flex flex-col gap-3">
 					{recipe.ingredients.map((ingredientId, index) => (
 						<div
@@ -238,7 +238,7 @@ export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
 							</span>
 							<Select<number>
 								ariaLabel={`原料 #${index + 1}`}
-								className="flex-1"
+								baseClassName="flex-1"
 								value={ingredientId}
 								onChange={(v) =>
 									updateIngredient(index, String(v))

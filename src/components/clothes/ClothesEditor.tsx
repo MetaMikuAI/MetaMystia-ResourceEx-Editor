@@ -1,19 +1,18 @@
 import { cn } from '@heroui/theme';
 import { memo, useCallback, useEffect, useId, useMemo, useState } from 'react';
 
-import { ErrorBadge } from '@/components/common/ErrorBadge';
-import { IdRangeBadge } from '@/components/common/IdRangeBadge';
-import { InfoTip } from '@/components/common/InfoTip';
-import { Label } from '@/components/common/Label';
-import { PortraitUploader } from '@/components/common/PortraitUploader';
-import { SpriteUploader } from '@/components/common/SpriteUploader';
-import { ChevronRight } from '@/components/icons/ChevronRight';
-
 import type {
 	Clothes,
 	PixelFullConfig,
 } from '@/domain/resourcePack/contracts/items';
 
+import { InfoTip } from '@/features/resourceEditor/client/components/fields/InfoTip';
+import { Label } from '@/features/resourceEditor/client/components/fields/Label';
+import { ChevronRight } from '@/features/resourceEditor/client/components/icons/ChevronRight';
+import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
+import { PortraitUploader } from '@/features/resourceEditor/client/components/uploads/PortraitUploader';
+import { SpriteUploader } from '@/features/resourceEditor/client/components/uploads/SpriteUploader';
+import { IdRangeBadge } from '@/features/resourceEditor/client/editors/info/IdRangeBadge';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import { SpriteGrid } from './SpriteGrid';

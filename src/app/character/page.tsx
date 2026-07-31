@@ -10,6 +10,7 @@ import type {
 	CharacterType,
 } from '@/domain/resourcePack/contracts/character';
 
+import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 const DEFAULT_CHARACTER = {
@@ -61,9 +62,6 @@ export default function CharacterPage() {
 	const removeCharacter = useCallback(
 		(index: number | null) => {
 			if (index === null) {
-				return;
-			}
-			if (!confirm('确定要删除这个角色吗？此操作不可撤销。')) {
 				return;
 			}
 			const newCharacters = [...data.characters];
@@ -123,34 +121,30 @@ export default function CharacterPage() {
 	);
 
 	return (
-		<div className="flex flex-col">
-			<div className="container mx-auto w-full max-w-7xl px-6 py-8 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl">
-				<div className="relative grid grid-cols-1 gap-8 lg:grid-cols-3">
-					<CharacterList
-						characters={data.characters}
-						selectedIndex={selectedIndex}
-						onAdd={addCharacter}
-						onSelect={setSelectedIndex}
-					/>
+		<EditorWorkspace>
+			<CharacterList
+				characters={data.characters}
+				selectedIndex={selectedIndex}
+				onAdd={addCharacter}
+				onSelect={setSelectedIndex}
+			/>
 
-					<CharacterEditor
-						character={selectedChar}
-						allEvents={data.eventNodes || []}
-						allDialogPackages={data.dialogPackages || []}
-						isIdDuplicate={
-							selectedChar
-								? isIdDuplicate(selectedChar.id, selectedIndex)
-								: false
-						}
-						onRemove={() => {
-							removeCharacter(selectedIndex);
-						}}
-						onUpdate={(updates) => {
-							updateCharacter(selectedIndex, updates);
-						}}
-					/>
-				</div>
-			</div>
-		</div>
+			<CharacterEditor
+				character={selectedChar}
+				allEvents={data.eventNodes || []}
+				allDialogPackages={data.dialogPackages || []}
+				isIdDuplicate={
+					selectedChar
+						? isIdDuplicate(selectedChar.id, selectedIndex)
+						: false
+				}
+				onRemove={() => {
+					removeCharacter(selectedIndex);
+				}}
+				onUpdate={(updates) => {
+					updateCharacter(selectedIndex, updates);
+				}}
+			/>
+		</EditorWorkspace>
 	);
 }

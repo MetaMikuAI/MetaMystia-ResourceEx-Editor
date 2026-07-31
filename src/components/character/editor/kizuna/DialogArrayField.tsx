@@ -1,11 +1,11 @@
 import { memo, useMemo } from 'react';
 
+import type { DialogPackage } from '@/domain/resourcePack/contracts/dialogue';
+
 import {
 	Select,
 	type SelectItem as SelectItemSpec,
-} from '@/design/ui/components/select';
-
-import type { DialogPackage } from '@/domain/resourcePack/contracts/dialogue';
+} from '@/features/resourceEditor/client/components/select/Select';
 
 import { DialogItem } from './DialogItem';
 

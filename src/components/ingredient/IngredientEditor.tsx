@@ -1,23 +1,21 @@
 import { cn } from '@heroui/theme';
 import { memo, useCallback, useId, useMemo } from 'react';
 
-import { ErrorBadge } from '@/components/common/ErrorBadge';
-import { IdRangeBadge } from '@/components/common/IdRangeBadge';
-import { InfoTip } from '@/components/common/InfoTip';
-import { Label } from '@/components/common/Label';
-import { SpriteUploader } from '@/components/common/SpriteUploader';
-import { TagsField } from '@/components/common/TagsField';
-
 import {
 	INGREDIENT_PREFIX_NONE_ID,
 	INGREDIENT_PREFIXES,
 } from '@/data/ingredientPrefixes';
 import { FOOD_TAGS } from '@/data/tags';
 
-import { Select } from '@/design/ui/components/select';
-
 import type { Ingredient } from '@/domain/resourcePack/contracts/items';
 
+import { InfoTip } from '@/features/resourceEditor/client/components/fields/InfoTip';
+import { Label } from '@/features/resourceEditor/client/components/fields/Label';
+import { Select } from '@/features/resourceEditor/client/components/select/Select';
+import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
+import { TagsField } from '@/features/resourceEditor/client/components/tags/TagsField';
+import { SpriteUploader } from '@/features/resourceEditor/client/components/uploads/SpriteUploader';
+import { IdRangeBadge } from '@/features/resourceEditor/client/editors/info/IdRangeBadge';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 interface IngredientEditorProps {

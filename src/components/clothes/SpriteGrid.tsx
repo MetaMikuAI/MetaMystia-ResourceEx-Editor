@@ -1,7 +1,7 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useState } from 'react';
 
-import { InfoTip } from '@/components/common/InfoTip';
-
+import { InfoTip } from '@/features/resourceEditor/client/components/fields/InfoTip';
+import { WarningNotice } from '@/features/resourceEditor/client/components/status/WarningNotice';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import { readImageDimensions } from '@/infrastructure/browser/images/readImageDimensions';
@@ -26,6 +26,7 @@ export const SpriteGrid = memo<SpriteGridProps>(function SpriteGrid({
 	onUpload,
 }) {
 	const { getAssetUrl } = useResourceEditor();
+	const [uploadError, setUploadError] = useState<string | null>(null);
 
 	const handleUpload = useCallback(
 		async (index: number, file: File) => {
@@ -33,15 +34,16 @@ export const SpriteGrid = memo<SpriteGridProps>(function SpriteGrid({
 			try {
 				dimensions = await readImageDimensions(file);
 			} catch {
-				alert('错误: 无法读取 Sprite 贴图尺寸');
+				setUploadError('无法读取 Sprite 贴图尺寸。');
 				return;
 			}
 			if (dimensions.width !== 64 || dimensions.height !== 64) {
-				alert(
+				setUploadError(
 					`错误: Sprite 贴图尺寸必须为 64x64，当前为 ${dimensions.width}x${dimensions.height}`
 				);
 				return;
 			}
+			setUploadError(null);
 
 			const row = Math.floor(index / cols);
 			const col = index % cols;
@@ -58,6 +60,9 @@ export const SpriteGrid = memo<SpriteGridProps>(function SpriteGrid({
 				{label}
 				<InfoTip>{tip}</InfoTip>
 			</label>
+			{uploadError !== null && (
+				<WarningNotice>{uploadError}</WarningNotice>
+			)}
 			<div
 				className="grid gap-3"
 				style={{

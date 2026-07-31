@@ -2,12 +2,11 @@
 
 import { memo } from 'react';
 
-import { WarningNotice } from '@/components/common/WarningNotice';
-
-import { Select } from '@/design/ui/components/select';
-
 import type { DialogPackage } from '@/domain/resourcePack/contracts/dialogue';
 import type { ScheduledEvent } from '@/domain/resourcePack/contracts/event';
+
+import { Select } from '@/features/resourceEditor/client/components/select/Select';
+import { WarningNotice } from '@/features/resourceEditor/client/components/status/WarningNotice';
 
 type EventType = NonNullable<ScheduledEvent['eventData']>['eventType'];
 

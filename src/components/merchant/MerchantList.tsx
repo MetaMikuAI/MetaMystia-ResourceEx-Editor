@@ -1,13 +1,14 @@
 import { cn } from '@heroui/theme';
 import { memo, useCallback, useState } from 'react';
 
-import { EmptyState } from '@/components/common/EmptyState';
-
 import Button from '@/design/ui/components/button';
 import Card from '@/design/ui/components/card';
 
 import type { Character } from '@/domain/resourcePack/contracts/character';
 import type { MerchantConfig } from '@/domain/resourcePack/contracts/merchant';
+
+import { ConfirmPopover } from '@/features/resourceEditor/client/components/confirm/ConfirmPopover';
+import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
 
 interface MerchantListProps {
 	merchants: MerchantConfig[];
@@ -144,23 +145,20 @@ export const MerchantList = memo<MerchantListProps>(function MerchantList({
 												)}
 											</div>
 										</button>
-										<Button
-											color="danger"
-											size="sm"
-											radius="full"
-											onPress={() => {
-												if (
-													confirm(
-														'确定要删除这个商人吗？'
-													)
-												) {
-													onRemove(index);
-												}
-											}}
-											className="pointer-events-none opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
-										>
-											删除
-										</Button>
+										<ConfirmPopover
+											title="删除这个商人？"
+											onConfirm={() => onRemove(index)}
+											trigger={
+												<Button
+													color="danger"
+													size="sm"
+													radius="full"
+													className="pointer-events-none opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
+												>
+													删除
+												</Button>
+											}
+										/>
 									</div>
 								</Card>
 							);

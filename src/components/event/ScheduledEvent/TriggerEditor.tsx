@@ -2,14 +2,13 @@
 
 import { memo, useMemo } from 'react';
 
-import { WarningNotice } from '@/components/common/WarningNotice';
-
 import { SPECIAL_GUESTS } from '@/data/specialGuest';
-
-import { Select } from '@/design/ui/components/select';
 
 import type { Character } from '@/domain/resourcePack/contracts/character';
 import type { ScheduledEvent } from '@/domain/resourcePack/contracts/event';
+
+import { Select } from '@/features/resourceEditor/client/components/select/Select';
+import { WarningNotice } from '@/features/resourceEditor/client/components/status/WarningNotice';
 
 export const TRIGGER_TYPES = [
 	{

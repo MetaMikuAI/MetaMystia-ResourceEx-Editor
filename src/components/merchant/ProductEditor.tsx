@@ -1,17 +1,9 @@
 import { memo, useCallback, useMemo } from 'react';
 
-import { Label } from '@/components/common/Label';
-import { WarningNotice } from '@/components/common/WarningNotice';
-
 import { BEVERAGE_NAMES } from '@/data/beverages';
 import { FOOD_NAMES } from '@/data/foods';
 import { INGREDIENT_NAMES } from '@/data/ingredients';
 import { RECIPE_NAMES } from '@/data/recipes';
-
-import {
-	Select,
-	type SelectItem as SelectItemSpec,
-} from '@/design/ui/components/select';
 
 import type {
 	Beverage,
@@ -23,6 +15,13 @@ import type {
 	ProductConfig,
 	ProductType,
 } from '@/domain/resourcePack/contracts/merchant';
+
+import { Label } from '@/features/resourceEditor/client/components/fields/Label';
+import {
+	Select,
+	type SelectItem as SelectItemSpec,
+} from '@/features/resourceEditor/client/components/select/Select';
+import { WarningNotice } from '@/features/resourceEditor/client/components/status/WarningNotice';
 
 const ALL_PRODUCT_TYPES: { value: ProductType; label: string }[] = [
 	{ value: 'Food', label: 'Food' },

@@ -1,7 +1,5 @@
 import { memo, useCallback, useEffect } from 'react';
 
-import { SectionDeleteButton } from '@/components/common/SectionDeleteButton';
-
 import Switch from '@/design/ui/components/switch';
 
 import type {
@@ -14,6 +12,8 @@ import type {
 } from '@/domain/resourcePack/contracts/character';
 import type { DialogPackage } from '@/domain/resourcePack/contracts/dialogue';
 import type { EventNode } from '@/domain/resourcePack/contracts/event';
+
+import { SectionDeleteButton } from '@/features/resourceEditor/client/components/actions/SectionDeleteButton';
 
 import { BasicInfo } from './editor/BasicInfo';
 import { Descriptions } from './editor/Descriptions';
@@ -355,7 +355,11 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 							{character.type || '未知类型'}
 						</span>
 					</div>
-					<SectionDeleteButton onPress={onRemove}>
+					<SectionDeleteButton
+						confirmTitle="确定要删除这个角色吗？"
+						confirmDescription="此操作不可撤销。"
+						onPress={onRemove}
+					>
 						删除角色
 					</SectionDeleteButton>
 				</div>

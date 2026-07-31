@@ -1,15 +1,15 @@
 import { memo, useId } from 'react';
 
-import { Label } from '@/components/common/Label';
 import { CharacterSelector } from '@/components/dialog/CharacterSelector';
 import { PortraitSelector } from '@/components/dialog/PortraitSelector';
 
 import { SPECIAL_PORTRAITS } from '@/data/specialPortraits';
 
-import { Select } from '@/design/ui/components/select';
-
 import type { Character } from '@/domain/resourcePack/contracts/character';
 import type { Dialog } from '@/domain/resourcePack/contracts/dialogue';
+
+import { Label } from '@/features/resourceEditor/client/components/fields/Label';
+import { Select } from '@/features/resourceEditor/client/components/select/Select';
 
 interface DialogFormFieldsProps {
 	dialog: Dialog;

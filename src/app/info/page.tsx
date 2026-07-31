@@ -1,13 +1,10 @@
 'use client';
 
-import { ArrayFieldEditor } from '@/components/common/ArrayFieldEditor';
-import { EditorField } from '@/components/common/EditorField';
-import { SectionAddButton } from '@/components/common/SectionAddButton';
-import { TextArea } from '@/components/common/TextArea';
-import { TextInput } from '@/components/common/TextInput';
-import { useVersionValidation } from '@/components/common/useVersionValidation';
 import { DependencySelector } from '@/components/info/DependencySelector';
 import { IdRangeEditor } from '@/components/info/IdRangeEditor';
+
+import Input from '@/design/ui/components/input';
+import Textarea from '@/design/ui/components/textarea';
 
 import {
 	KNOWN_DEPENDENCIES,
@@ -16,6 +13,13 @@ import {
 } from '@/domain/resourcePack/constants';
 import type { PackInfo } from '@/domain/resourcePack/contracts/resourceEx';
 
+import { SectionAddButton } from '@/features/resourceEditor/client/components/actions/SectionAddButton';
+import { ArrayFieldEditor } from '@/features/resourceEditor/client/components/fields/ArrayFieldEditor';
+import { EditorField } from '@/features/resourceEditor/client/components/fields/EditorField';
+import { EditorHeader } from '@/features/resourceEditor/client/components/layout/EditorHeader';
+import { EditorPanel } from '@/features/resourceEditor/client/components/layout/EditorPanel';
+import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
+import { useVersionValidation } from '@/features/resourceEditor/client/editors/info/useVersionValidation';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 export default function InfoPage() {
@@ -58,127 +62,118 @@ export default function InfoPage() {
 	};
 
 	return (
-		<div className="flex flex-col">
-			<div className="container mx-auto w-full max-w-4xl px-6 py-8">
-				<div className="flex flex-col gap-6 rounded-lg bg-white/10 p-6 shadow-md backdrop-blur">
-					<div className="flex items-center justify-between border-b border-black/5 pb-4 dark:border-white/5">
-						<h2 className="text-2xl font-bold">
-							资源包基础信息 (Pack Info)
-						</h2>
-					</div>
-
-					<div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-						{/* Name */}
-						<EditorField label="资源包名称 (Name)">
-							<TextInput
-								value={packInfo.name || ''}
-								onChange={(e) =>
-									updatePackInfo({ name: e.target.value })
-								}
-								placeholder="例如: MetaMystia 示例资源包"
-							/>
-						</EditorField>
-
-						{/* Label */}
-						<EditorField
-							label="资源包唯一标识符 (Label)"
-							actions={
-								isLabelInvalid && (
-									<span className="text-[10px] text-danger">
-										{isLabelReserved
-											? '不能使用保留关键字 (如 CORE, DLC1 等)'
-											: PACK_LABEL_ALLOWED_DESCRIPTION}
-									</span>
-								)
+		<EditorWorkspace columns={1} contentClassName="flex flex-col">
+			<EditorHeader title="资源包基础信息 (Pack Info)" />
+			<EditorPanel className="flex flex-col gap-6 p-6">
+				<div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+					{/* Name */}
+					<EditorField label="资源包名称 (Name)">
+						<Input
+							value={packInfo.name || ''}
+							onChange={(e) =>
+								updatePackInfo({ name: e.target.value })
 							}
-						>
-							<TextInput
-								value={packInfo.label || ''}
-								onChange={(e) =>
-									updatePackInfo({ label: e.target.value })
-								}
-								placeholder="例如: ResourceEx"
-								error={isLabelInvalid}
-							/>
-						</EditorField>
-					</div>
+							placeholder="例如: MetaMystia 示例资源包"
+						/>
+					</EditorField>
 
-					{/* Version */}
+					{/* Label */}
 					<EditorField
-						label="版本 (Version)"
+						label="资源包唯一标识符 (Label)"
 						actions={
-							!isVersionValid && (
+							isLabelInvalid && (
 								<span className="text-[10px] text-danger">
-									版本格式不符合语义化版本规范 (例如: 1.0.0)
+									{isLabelReserved
+										? '不能使用保留关键字 (如 CORE, DLC1 等)'
+										: PACK_LABEL_ALLOWED_DESCRIPTION}
 								</span>
 							)
 						}
 					>
-						<TextInput
-							value={packInfo.version || ''}
+						<Input
+							value={packInfo.label || ''}
 							onChange={(e) =>
-								updatePackInfo({ version: e.target.value })
+								updatePackInfo({ label: e.target.value })
 							}
-							placeholder="例如: 1.0.0"
-							error={!isVersionValid}
-						/>
-					</EditorField>
-
-					{/* Authors */}
-					<EditorField
-						label="作者列表 (Authors)"
-						actions={
-							<SectionAddButton onPress={authorsHandlers.onAdd}>
-								添加作者
-							</SectionAddButton>
-						}
-					>
-						<ArrayFieldEditor
-							items={packInfo.authors || []}
-							{...authorsHandlers}
-							placeholder="Author Name"
-							emptyMessage="暂无作者"
-						/>
-					</EditorField>
-
-					{/* ID Range Allocation */}
-					<IdRangeEditor
-						packInfo={packInfo}
-						onUpdate={updatePackInfo}
-					/>
-
-					{/* Dependencies */}
-					<EditorField label="依赖 (Dependencies)">
-						<DependencySelector
-							value={packInfo.dependencies || []}
-							onChange={(deps) =>
-								updatePackInfo({ dependencies: deps })
-							}
-						/>
-					</EditorField>
-
-					{/* Description */}
-					<EditorField label="描述 (Description)">
-						<TextArea
-							value={packInfo.description || ''}
-							onChange={(e) =>
-								updatePackInfo({ description: e.target.value })
-							}
-							placeholder="资源包的详细描述..."
-						/>
-					</EditorField>
-
-					{/* License */}
-					<EditorField label="许可证 (License)">
-						<TextArea
-							value={license}
-							onChange={(e) => replaceLicense(e.target.value)}
-							placeholder="在此处粘贴许可证文本，将单独保存为 LICENSE.md..."
-							autoResize
+							placeholder="例如: ResourceEx"
+							isInvalid={isLabelInvalid}
 						/>
 					</EditorField>
 				</div>
-			</div>
-		</div>
+
+				{/* Version */}
+				<EditorField
+					label="版本 (Version)"
+					actions={
+						!isVersionValid && (
+							<span className="text-[10px] text-danger">
+								版本格式不符合语义化版本规范 (例如: 1.0.0)
+							</span>
+						)
+					}
+				>
+					<Input
+						value={packInfo.version || ''}
+						onChange={(e) =>
+							updatePackInfo({ version: e.target.value })
+						}
+						placeholder="例如: 1.0.0"
+						isInvalid={!isVersionValid}
+					/>
+				</EditorField>
+
+				{/* Authors */}
+				<EditorField
+					label="作者列表 (Authors)"
+					actions={
+						<SectionAddButton onPress={authorsHandlers.onAdd}>
+							添加作者
+						</SectionAddButton>
+					}
+				>
+					<ArrayFieldEditor
+						items={packInfo.authors || []}
+						{...authorsHandlers}
+						placeholder="Author Name"
+						emptyMessage="暂无作者"
+					/>
+				</EditorField>
+
+				{/* ID Range Allocation */}
+				<IdRangeEditor packInfo={packInfo} onUpdate={updatePackInfo} />
+
+				{/* Dependencies */}
+				<EditorField label="依赖 (Dependencies)">
+					<DependencySelector
+						value={packInfo.dependencies || []}
+						onChange={(deps) =>
+							updatePackInfo({ dependencies: deps })
+						}
+					/>
+				</EditorField>
+
+				{/* Description */}
+				<EditorField label="描述 (Description)">
+					<Textarea
+						minRows={5}
+						value={packInfo.description || ''}
+						onChange={(e) =>
+							updatePackInfo({ description: e.target.value })
+						}
+						placeholder="资源包的详细描述..."
+					/>
+				</EditorField>
+
+				{/* License */}
+				<EditorField label="许可证 (License)">
+					<Textarea
+						minRows={5}
+						value={license}
+						onChange={(e) => replaceLicense(e.target.value)}
+						placeholder="在此处粘贴许可证文本，将单独保存为 LICENSE.md..."
+					/>
+				</EditorField>
+			</EditorPanel>
+		</EditorWorkspace>
 	);
 }

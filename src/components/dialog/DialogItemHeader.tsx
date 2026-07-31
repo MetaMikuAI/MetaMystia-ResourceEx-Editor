@@ -4,6 +4,8 @@ import Button from '@/design/ui/components/button';
 
 import type { Dialog } from '@/domain/resourcePack/contracts/dialogue';
 
+import { ConfirmPopover } from '@/features/resourceEditor/client/components/confirm/ConfirmPopover';
+
 interface DialogItemHeaderProps {
 	index: number;
 	position: Dialog['position'];
@@ -31,14 +33,20 @@ export const DialogItemHeader = memo<DialogItemHeaderProps>(
 						{position === 'Left' ? '← 左侧' : '右侧 →'}
 					</button>
 				</div>
-				<Button
-					color="danger"
-					size="sm"
-					onPress={onRemove}
-					className="h-7 min-w-0 px-3 text-xs"
-				>
-					删除此条
-				</Button>
+				<ConfirmPopover
+					title="确定要删除这条对话吗？"
+					description="此操作不可撤销。"
+					onConfirm={onRemove}
+					trigger={
+						<Button
+							color="danger"
+							size="sm"
+							className="h-7 min-w-0 px-3 text-xs"
+						>
+							删除此条
+						</Button>
+					}
+				/>
 			</div>
 		);
 	}

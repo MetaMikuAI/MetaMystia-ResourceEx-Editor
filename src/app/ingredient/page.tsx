@@ -7,6 +7,7 @@ import { IngredientList } from '@/components/ingredient/IngredientList';
 
 import type { Ingredient } from '@/domain/resourcePack/contracts/items';
 
+import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 export default function IngredientPage() {
@@ -78,26 +79,22 @@ export default function IngredientPage() {
 	);
 
 	return (
-		<div className="flex flex-col">
-			<div className="container mx-auto w-full max-w-7xl px-6 py-8 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl">
-				<div className="relative grid grid-cols-1 gap-8 lg:grid-cols-3">
-					<IngredientList
-						ingredients={data.ingredients}
-						selectedIndex={selectedIndex}
-						onAdd={addIngredient}
-						onRemove={removeIngredient}
-						onSelect={setSelectedIndex}
-					/>
+		<EditorWorkspace>
+			<IngredientList
+				ingredients={data.ingredients}
+				selectedIndex={selectedIndex}
+				onAdd={addIngredient}
+				onRemove={removeIngredient}
+				onSelect={setSelectedIndex}
+			/>
 
-					<IngredientEditor
-						ingredient={selectedIngredient}
-						ingredientIndex={selectedIndex}
-						onUpdate={(updates: Partial<Ingredient>) => {
-							updateIngredient(selectedIndex, updates);
-						}}
-					/>
-				</div>
-			</div>
-		</div>
+			<IngredientEditor
+				ingredient={selectedIngredient}
+				ingredientIndex={selectedIndex}
+				onUpdate={(updates: Partial<Ingredient>) => {
+					updateIngredient(selectedIndex, updates);
+				}}
+			/>
+		</EditorWorkspace>
 	);
 }

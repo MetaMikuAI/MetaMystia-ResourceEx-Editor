@@ -1,13 +1,13 @@
 import { memo, useCallback } from 'react';
 
-import { EditorField } from '@/components/common/EditorField';
-import { EmptyState } from '@/components/common/EmptyState';
-import { SectionAddButton } from '@/components/common/SectionAddButton';
-
 import Button from '@/design/ui/components/button';
-import { Select } from '@/design/ui/components/select';
 
 import type { MissionNode } from '@/domain/resourcePack/contracts/mission';
+
+import { SectionAddButton } from '@/features/resourceEditor/client/components/actions/SectionAddButton';
+import { EditorField } from '@/features/resourceEditor/client/components/fields/EditorField';
+import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
+import { Select } from '@/features/resourceEditor/client/components/select/Select';
 
 interface PostMissionListProps {
 	postMissions: string[] | undefined;
@@ -66,7 +66,7 @@ export const PostMissionList = memo<PostMissionListProps>(
 								</label>
 								<div className="flex items-center justify-between gap-4">
 									<Select<string>
-										className="flex-1"
+										baseClassName="flex-1"
 										ariaLabel="任务 Label"
 										placeholder="请选择任务..."
 										value={pm}

@@ -1,21 +1,21 @@
 import { memo, type ReactNode, useCallback } from 'react';
 
-import { EditorField } from '@/components/common/EditorField';
-import { EmptyState } from '@/components/common/EmptyState';
-import { SectionAddButton } from '@/components/common/SectionAddButton';
-import { TagsField } from '@/components/common/TagsField';
-import { WarningNotice } from '@/components/common/WarningNotice';
-
 import { BEVERAGE_TAGS, FOOD_TAGS } from '@/data/tags';
 
 import Button from '@/design/ui/components/button';
-import { Select } from '@/design/ui/components/select';
 
 import type {
 	ConditionType,
 	MissionCondition,
 	MissionNode,
 } from '@/domain/resourcePack/contracts/mission';
+
+import { SectionAddButton } from '@/features/resourceEditor/client/components/actions/SectionAddButton';
+import { EditorField } from '@/features/resourceEditor/client/components/fields/EditorField';
+import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
+import { Select } from '@/features/resourceEditor/client/components/select/Select';
+import { WarningNotice } from '@/features/resourceEditor/client/components/status/WarningNotice';
+import { TagsField } from '@/features/resourceEditor/client/components/tags/TagsField';
 
 // -----------------------------------------------------------------------------
 // 常量
@@ -535,7 +535,7 @@ function ConditionItem({
 			<div className="flex items-center justify-between gap-4">
 				<Select<ConditionType>
 					ariaLabel="Condition Type"
-					className="flex-1"
+					baseClassName="flex-1"
 					value={condition.conditionType}
 					onChange={(v) =>
 						onUpdate(getCleanCondition(v as ConditionType))

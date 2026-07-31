@@ -7,6 +7,7 @@ import { MerchantList } from '@/components/merchant/MerchantList';
 
 import type { MerchantConfig } from '@/domain/resourcePack/contracts/merchant';
 
+import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 const DEFAULT_MERCHANT: MerchantConfig = {
@@ -72,32 +73,28 @@ export default function MerchantPage() {
 	const extRecipes = useMemo(() => data.recipes || [], [data.recipes]);
 
 	return (
-		<div className="flex flex-col">
-			<div className="container mx-auto w-full max-w-7xl px-6 py-8 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl">
-				<div className="relative grid grid-cols-1 gap-8 lg:grid-cols-3">
-					<MerchantList
-						merchants={merchants}
-						allCharacters={data.characters}
-						selectedIndex={selectedIndex}
-						onAdd={addMerchant}
-						onRemove={removeMerchant}
-						onSelect={setSelectedIndex}
-					/>
+		<EditorWorkspace>
+			<MerchantList
+				merchants={merchants}
+				allCharacters={data.characters}
+				selectedIndex={selectedIndex}
+				onAdd={addMerchant}
+				onRemove={removeMerchant}
+				onSelect={setSelectedIndex}
+			/>
 
-					<MerchantEditor
-						merchant={selectedMerchant}
-						allCharacters={data.characters}
-						allDialogPackages={data.dialogPackages}
-						extFoods={extFoods}
-						extIngredients={extIngredients}
-						extBeverages={extBeverages}
-						extRecipes={extRecipes}
-						onUpdate={(updates: Partial<MerchantConfig>) => {
-							updateMerchant(selectedIndex, updates);
-						}}
-					/>
-				</div>
-			</div>
-		</div>
+			<MerchantEditor
+				merchant={selectedMerchant}
+				allCharacters={data.characters}
+				allDialogPackages={data.dialogPackages}
+				extFoods={extFoods}
+				extIngredients={extIngredients}
+				extBeverages={extBeverages}
+				extRecipes={extRecipes}
+				onUpdate={(updates: Partial<MerchantConfig>) => {
+					updateMerchant(selectedIndex, updates);
+				}}
+			/>
+		</EditorWorkspace>
 	);
 }

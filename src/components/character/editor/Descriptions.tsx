@@ -1,5 +1,6 @@
 import { memo } from 'react';
-import { Label } from '@/components/common/Label';
+
+import { Label } from '@/features/resourceEditor/client/components/fields/Label';
 
 interface DescriptionsProps {
 	descriptions: string[];

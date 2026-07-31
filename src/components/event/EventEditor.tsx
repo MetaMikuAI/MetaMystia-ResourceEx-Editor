@@ -2,10 +2,6 @@
 
 import { memo, useMemo } from 'react';
 
-import { EditorField } from '@/components/common/EditorField';
-import { SectionDeleteButton } from '@/components/common/SectionDeleteButton';
-import { useLabelPrefixValidation } from '@/components/common/useLabelPrefixValidation';
-import { WarningBadge } from '@/components/common/WarningBadge';
 import { MissionRewardList } from '@/components/mission/MissionRewardList';
 import { PostMissionList } from '@/components/mission/PostMissionList';
 
@@ -23,6 +19,11 @@ import type {
 	Recipe,
 } from '@/domain/resourcePack/contracts/items';
 import type { MissionNode } from '@/domain/resourcePack/contracts/mission';
+
+import { SectionDeleteButton } from '@/features/resourceEditor/client/components/actions/SectionDeleteButton';
+import { EditorField } from '@/features/resourceEditor/client/components/fields/EditorField';
+import { WarningBadge } from '@/features/resourceEditor/client/components/status/WarningBadge';
+import { useLabelPrefixValidation } from '@/features/resourceEditor/client/hooks/useLabelPrefixValidation';
 
 import { PostEventList } from './PostEventList';
 import { ScheduledEventEditor } from './ScheduledEventEditor';
@@ -125,7 +126,10 @@ export default memo<EventEditorProps>(function EventEditor({
 		<div className="flex flex-col gap-6 rounded-lg bg-white/10 p-6 shadow-md backdrop-blur">
 			<div className="flex items-center justify-between border-b border-black/10 pb-4 dark:border-white/10">
 				<h2 className="text-2xl font-bold">事件节点编辑</h2>
-				<SectionDeleteButton onPress={onRemove}>
+				<SectionDeleteButton
+					confirmTitle="确定要删除这个事件节点吗？"
+					onPress={onRemove}
+				>
 					删除事件
 				</SectionDeleteButton>
 			</div>

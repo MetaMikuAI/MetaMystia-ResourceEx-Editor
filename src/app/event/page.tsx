@@ -7,6 +7,7 @@ import { EventList } from '@/components/event/EventList';
 
 import type { EventNode } from '@/domain/resourcePack/contracts/event';
 
+import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 const DEFAULT_EVENT = {
@@ -41,8 +42,6 @@ export default function EventPage() {
 	const removeEvent = useCallback(
 		(index: number | null) => {
 			if (index === null) return;
-			if (!confirm('确定要删除这个事件节点吗？')) return;
-
 			const newEvents = (data.eventNodes || []).filter(
 				(_, i) => i !== index
 			);
@@ -60,34 +59,28 @@ export default function EventPage() {
 			: null;
 
 	return (
-		<div className="flex flex-col">
-			<div className="container mx-auto w-full max-w-7xl px-6 py-8 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl">
-				<div className="relative grid grid-cols-1 gap-8 lg:grid-cols-3">
-					<EventList
-						events={data.eventNodes || []}
-						selectedIndex={selectedIndex}
-						onAdd={addEvent}
-						onSelect={setSelectedIndex}
-					/>
+		<EditorWorkspace>
+			<EventList
+				events={data.eventNodes || []}
+				selectedIndex={selectedIndex}
+				onAdd={addEvent}
+				onSelect={setSelectedIndex}
+			/>
 
-					<div className="lg:col-span-2">
-						<EventEditor
-							eventNode={selectedEvent}
-							allMissions={data.missionNodes || []}
-							allEvents={data.eventNodes || []}
-							allCharacters={data.characters || []}
-							foods={data.foods || []}
-							ingredients={data.ingredients || []}
-							recipes={data.recipes || []}
-							allDialogPackages={data.dialogPackages || []}
-							onRemove={() => removeEvent(selectedIndex)}
-							onUpdate={(updates) =>
-								updateEvent(selectedIndex, updates)
-							}
-						/>
-					</div>
-				</div>
+			<div className="lg:col-span-2">
+				<EventEditor
+					eventNode={selectedEvent}
+					allMissions={data.missionNodes || []}
+					allEvents={data.eventNodes || []}
+					allCharacters={data.characters || []}
+					foods={data.foods || []}
+					ingredients={data.ingredients || []}
+					recipes={data.recipes || []}
+					allDialogPackages={data.dialogPackages || []}
+					onRemove={() => removeEvent(selectedIndex)}
+					onUpdate={(updates) => updateEvent(selectedIndex, updates)}
+				/>
 			</div>
-		</div>
+		</EditorWorkspace>
 	);
 }

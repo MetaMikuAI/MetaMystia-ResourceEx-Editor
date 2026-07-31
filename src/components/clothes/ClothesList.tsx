@@ -1,13 +1,14 @@
 import { cn } from '@heroui/theme';
 import { memo, useCallback, useState } from 'react';
 
-import { EmptyState } from '@/components/common/EmptyState';
-import { ErrorBadge } from '@/components/common/ErrorBadge';
-
 import Button from '@/design/ui/components/button';
 import Card from '@/design/ui/components/card';
 
 import type { Clothes } from '@/domain/resourcePack/contracts/items';
+
+import { ConfirmPopover } from '@/features/resourceEditor/client/components/confirm/ConfirmPopover';
+import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
+import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
 
 interface ClothesListProps {
 	clothes: Clothes[];
@@ -120,23 +121,20 @@ export const ClothesList = memo<ClothesListProps>(function ClothesList({
 												ID: {item.id}
 											</div>
 										</button>
-										<Button
-											color="danger"
-											size="sm"
-											radius="full"
-											onPress={() => {
-												if (
-													confirm(
-														'确定要删除这个服装吗？'
-													)
-												) {
-													onRemove(index);
-												}
-											}}
-											className="pointer-events-none opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
-										>
-											删除
-										</Button>
+										<ConfirmPopover
+											title="删除这个服装？"
+											onConfirm={() => onRemove(index)}
+											trigger={
+												<Button
+													color="danger"
+													size="sm"
+													radius="full"
+													className="pointer-events-none opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
+												>
+													删除
+												</Button>
+											}
+										/>
 									</div>
 								</Card>
 							);

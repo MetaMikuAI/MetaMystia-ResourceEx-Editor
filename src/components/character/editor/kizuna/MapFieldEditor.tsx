@@ -5,7 +5,7 @@ import { DAYSCENEMAP } from '@/data/daySceneMap';
 import {
 	Select,
 	type SelectItem as SelectItemSpec,
-} from '@/design/ui/components/select';
+} from '@/features/resourceEditor/client/components/select/Select';
 
 interface MapFieldEditorProps {
 	label: string;

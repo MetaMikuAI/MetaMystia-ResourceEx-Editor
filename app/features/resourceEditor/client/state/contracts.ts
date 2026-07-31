@@ -1,6 +1,9 @@
 import type { ResourceEx } from '@/domain/resourcePack/contracts/resourceEx';
 
-import type { IAssetPathOperation, IAssetState } from '../assets/contracts';
+import type {
+	IAssetPathOperation,
+	IAssetState,
+} from '@/features/resourceEditor/client/assets/contracts';
 
 export interface IResourceEditorOperationResult {
 	isSuccess: boolean;

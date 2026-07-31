@@ -1,17 +1,17 @@
 import { memo, useEffect, useMemo } from 'react';
 
-import { EditorField } from '@/components/common/EditorField';
-import { useLabelPrefixValidation } from '@/components/common/useLabelPrefixValidation';
-import { WarningBadge } from '@/components/common/WarningBadge';
-
 import Button from '@/design/ui/components/button';
-import { Select } from '@/design/ui/components/select';
 
 import type { Character } from '@/domain/resourcePack/contracts/character';
 import type {
 	MissionNode,
 	MissionType,
 } from '@/domain/resourcePack/contracts/mission';
+
+import { EditorField } from '@/features/resourceEditor/client/components/fields/EditorField';
+import { Select } from '@/features/resourceEditor/client/components/select/Select';
+import { WarningBadge } from '@/features/resourceEditor/client/components/status/WarningBadge';
+import { useLabelPrefixValidation } from '@/features/resourceEditor/client/hooks/useLabelPrefixValidation';
 
 interface MissionBasicInfoProps {
 	mission: MissionNode;

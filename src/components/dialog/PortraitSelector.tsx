@@ -1,15 +1,14 @@
 import { memo, useId, useMemo } from 'react';
 
-import { Label } from '@/components/common/Label';
-
 import { SPECIAL_PORTRAITS } from '@/data/specialPortraits';
-
-import { Select } from '@/design/ui/components/select';
 
 import type {
 	Character,
 	CharacterType,
 } from '@/domain/resourcePack/contracts/character';
+
+import { Label } from '@/features/resourceEditor/client/components/fields/Label';
+import { Select } from '@/features/resourceEditor/client/components/select/Select';
 
 interface PortraitSelectorProps {
 	characterId: number;

@@ -1,18 +1,17 @@
 import { memo, useId, useMemo } from 'react';
 
-import { Label } from '@/components/common/Label';
-
 import { SPECIAL_GUESTS } from '@/data/specialGuest';
-
-import {
-	Select,
-	type SelectItem as SelectItemSpec,
-} from '@/design/ui/components/select';
 
 import type {
 	Character,
 	CharacterType,
 } from '@/domain/resourcePack/contracts/character';
+
+import { Label } from '@/features/resourceEditor/client/components/fields/Label';
+import {
+	Select,
+	type SelectItem as SelectItemSpec,
+} from '@/features/resourceEditor/client/components/select/Select';
 
 interface CharacterSelectorProps {
 	characterType: CharacterType;

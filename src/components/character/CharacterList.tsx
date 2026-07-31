@@ -1,13 +1,13 @@
 import { cn } from '@heroui/theme';
 import { memo, useCallback, useState } from 'react';
 
-import { EmptyState } from '@/components/common/EmptyState';
-import { usePackLabelPrefix } from '@/components/common/useLabelPrefixValidation';
-import { WarningBadge } from '@/components/common/WarningBadge';
-
 import Button from '@/design/ui/components/button';
 
 import type { Character } from '@/domain/resourcePack/contracts/character';
+
+import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
+import { WarningBadge } from '@/features/resourceEditor/client/components/status/WarningBadge';
+import { usePackLabelPrefix } from '@/features/resourceEditor/client/hooks/useLabelPrefixValidation';
 
 interface CharacterListProps {
 	characters: Character[];

@@ -1,13 +1,13 @@
 import { cn } from '@heroui/theme';
 import { memo, useId } from 'react';
 
-import { ErrorBadge } from '@/components/common/ErrorBadge';
-import { IdRangeBadge } from '@/components/common/IdRangeBadge';
-import { Label } from '@/components/common/Label';
-import { useLabelPrefixValidation } from '@/components/common/useLabelPrefixValidation';
-import { WarningBadge } from '@/components/common/WarningBadge';
-
 import type { Character } from '@/domain/resourcePack/contracts/character';
+
+import { Label } from '@/features/resourceEditor/client/components/fields/Label';
+import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
+import { WarningBadge } from '@/features/resourceEditor/client/components/status/WarningBadge';
+import { IdRangeBadge } from '@/features/resourceEditor/client/editors/info/IdRangeBadge';
+import { useLabelPrefixValidation } from '@/features/resourceEditor/client/hooks/useLabelPrefixValidation';
 
 interface BasicInfoProps {
 	character: Character;

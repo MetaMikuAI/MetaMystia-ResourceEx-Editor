@@ -10,6 +10,7 @@ import type {
 	DialogPackage,
 } from '@/domain/resourcePack/contracts/dialogue';
 
+import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 const DEFAULT_DIALOG: Dialog = {
@@ -154,10 +155,6 @@ export default function DialoguePage() {
 			if (selectedIndex === null) {
 				return;
 			}
-			if (!confirm('确定要删除这条对话吗？此操作不可撤销。')) {
-				return;
-			}
-
 			const newPackages = [...data.dialogPackages];
 			const pkg = newPackages[selectedIndex];
 			if (!pkg) {
@@ -206,30 +203,26 @@ export default function DialoguePage() {
 	);
 
 	return (
-		<div className="flex flex-col">
-			<div className="container mx-auto w-full max-w-7xl px-6 py-8 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl">
-				<div className="relative grid grid-cols-1 gap-8 lg:grid-cols-3">
-					<DialogPackageList
-						packages={data.dialogPackages}
-						selectedIndex={selectedIndex}
-						onAdd={addDialogPackage}
-						onRemove={removeDialogPackage}
-						onSelect={setSelectedIndex}
-					/>
+		<EditorWorkspace>
+			<DialogPackageList
+				packages={data.dialogPackages}
+				selectedIndex={selectedIndex}
+				onAdd={addDialogPackage}
+				onRemove={removeDialogPackage}
+				onSelect={setSelectedIndex}
+			/>
 
-					<DialogEditor
-						allPackages={data.dialogPackages}
-						dialogPackage={selectedPackage}
-						packageIndex={selectedIndex}
-						onAddDialog={addDialog}
-						onRemoveDialog={removeDialog}
-						onUpdate={(updates) => {
-							updateDialogPackage(selectedIndex, updates);
-						}}
-						onUpdateDialog={updateDialog}
-					/>
-				</div>
-			</div>
-		</div>
+			<DialogEditor
+				allPackages={data.dialogPackages}
+				dialogPackage={selectedPackage}
+				packageIndex={selectedIndex}
+				onAddDialog={addDialog}
+				onRemoveDialog={removeDialog}
+				onUpdate={(updates) => {
+					updateDialogPackage(selectedIndex, updates);
+				}}
+				onUpdateDialog={updateDialog}
+			/>
+		</EditorWorkspace>
 	);
 }

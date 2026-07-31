@@ -2,33 +2,22 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { EditorField } from '@/components/common/EditorField';
-import { ErrorBadge } from '@/components/common/ErrorBadge';
-import { TextInput } from '@/components/common/TextInput';
-
 import Button from '@/design/ui/components/button';
+import Input from '@/design/ui/components/input';
 import Modal from '@/design/ui/components/modal';
 
-import {
-	MANAGED_ID_MAX,
-	MANAGED_ID_MIN,
-} from '@/domain/resourcePack/constants';
 import type { PackInfo } from '@/domain/resourcePack/contracts/resourceEx';
 
-import {
-	signIdRange,
-	verifyIdRange,
-} from '@/infrastructure/browser/crypto/idRangeSignature';
+import { EditorField } from '@/features/resourceEditor/client/components/fields/EditorField';
+import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
+import { useIdRangeEditor } from '@/features/resourceEditor/client/editors/info/useIdRangeEditor';
 
 interface IdRangeEditorProps {
 	packInfo: PackInfo;
 	onUpdate: (updates: Partial<PackInfo>) => void;
 }
 
-type VerifyStatus = 'idle' | 'valid' | 'invalid' | 'verifying';
-
 export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
-	const [verifyStatus, setVerifyStatus] = useState<VerifyStatus>('idle');
 	const [showKeyDialog, setShowKeyDialog] = useState(false);
 	const [dialogMode, setDialogMode] = useState<'sign' | 'paste'>('sign');
 	const [privateKey, setPrivateKey] = useState('');
@@ -36,48 +25,35 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 	const [signing, setSigning] = useState(false);
 	const [signError, setSignError] = useState<string | null>(null);
 	const [copied, setCopied] = useState(false);
+	const isMountedRef = useRef(false);
 	const openDialogTriggerRef = useRef<HTMLButtonElement>(null);
+	const signingOperationIdRef = useRef(0);
 	const { idRangeStart, idRangeEnd, idSignature, label } = packInfo;
+	const {
+		canSign,
+		managedIdMax,
+		managedIdMin,
+		rangeError,
+		sign,
+		verifyStatus,
+	} = useIdRangeEditor({ idRangeEnd, idRangeStart, idSignature, label });
 
-	// Verify signature whenever relevant fields change
+	const invalidateSigning = useCallback(() => {
+		signingOperationIdRef.current += 1;
+		setSigning(false);
+	}, []);
+
 	useEffect(() => {
-		if (
-			!label ||
-			idRangeStart == null ||
-			idRangeEnd == null ||
-			!idSignature
-		) {
-			setVerifyStatus('idle');
-			return;
-		}
-
-		let cancelled = false;
-		setVerifyStatus('verifying');
-		verifyIdRange(label, idRangeStart, idRangeEnd, idSignature).then(
-			(ok) => {
-				if (!cancelled) setVerifyStatus(ok ? 'valid' : 'invalid');
-			}
-		);
+		isMountedRef.current = true;
 		return () => {
-			cancelled = true;
+			isMountedRef.current = false;
+			signingOperationIdRef.current += 1;
 		};
-	}, [label, idRangeStart, idRangeEnd, idSignature]);
+	}, []);
 
-	// Range validation
-	const rangeError = (() => {
-		if (idRangeStart == null && idRangeEnd == null) return null;
-		if (idRangeStart == null || idRangeEnd == null)
-			return '请同时填写起始和结束';
-		if (idRangeStart < MANAGED_ID_MIN)
-			return `起始ID不能小于 ${MANAGED_ID_MIN}`;
-		if (idRangeEnd > MANAGED_ID_MAX)
-			return `结束ID不能大于 ${MANAGED_ID_MAX}`;
-		if (idRangeStart > idRangeEnd) return '起始ID不能大于结束ID';
-		return null;
-	})();
-
-	const canSign =
-		!!label && idRangeStart != null && idRangeEnd != null && !rangeError;
+	useEffect(() => {
+		invalidateSigning();
+	}, [idRangeEnd, idRangeStart, invalidateSigning, label]);
 
 	// Dialog management
 	const openDialog = useCallback(() => {
@@ -89,12 +65,13 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 	}, []);
 
 	const closeDialog = useCallback(() => {
+		invalidateSigning();
 		setShowKeyDialog(false);
 		setPrivateKey('');
 		setPastedSignature('');
 		setSignError(null);
 		requestAnimationFrame(() => openDialogTriggerRef.current?.focus());
-	}, []);
+	}, [invalidateSigning]);
 
 	const handleDialogOpenChange = useCallback(
 		(isOpen: boolean) => {
@@ -106,26 +83,39 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 	);
 
 	const handleSign = useCallback(async () => {
-		if (!label || idRangeStart == null || idRangeEnd == null) return;
+		const operationId = signingOperationIdRef.current + 1;
+		signingOperationIdRef.current = operationId;
 		setSigning(true);
 		setSignError(null);
 		try {
-			const sig = await signIdRange(
-				privateKey,
-				label,
-				idRangeStart,
-				idRangeEnd
-			);
+			const sig = await sign(privateKey);
+			if (
+				!isMountedRef.current ||
+				signingOperationIdRef.current !== operationId
+			) {
+				return;
+			}
 			onUpdate({ idSignature: sig });
 			closeDialog();
 		} catch (e) {
+			if (
+				!isMountedRef.current ||
+				signingOperationIdRef.current !== operationId
+			) {
+				return;
+			}
 			setSignError(
 				'签名失败: ' + (e instanceof Error ? e.message : String(e))
 			);
 		} finally {
-			setSigning(false);
+			if (
+				isMountedRef.current &&
+				signingOperationIdRef.current === operationId
+			) {
+				setSigning(false);
+			}
 		}
-	}, [privateKey, label, idRangeStart, idRangeEnd, onUpdate, closeDialog]);
+	}, [closeDialog, onUpdate, privateKey, sign]);
 
 	return (
 		<div className="flex flex-col gap-4 rounded-lg bg-white/20 p-4 dark:bg-white/5">
@@ -158,34 +148,40 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 			{/* Start / End */}
 			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 				<EditorField label="ID段起始 (Start, 含)">
-					<TextInput
+					<Input
 						type="number"
-						value={idRangeStart ?? ''}
+						value={
+							idRangeStart === undefined
+								? ''
+								: String(idRangeStart)
+						}
 						onChange={(e) => {
 							const v = parseInt(e.target.value);
 							onUpdate({
 								idRangeStart: isNaN(v) ? undefined : v,
 							});
 						}}
-						placeholder={`最小 ${MANAGED_ID_MIN}`}
-						min={MANAGED_ID_MIN}
-						max={MANAGED_ID_MAX}
-						error={!!rangeError}
+						placeholder={`最小 ${managedIdMin}`}
+						min={managedIdMin}
+						max={managedIdMax}
+						isInvalid={Boolean(rangeError)}
 					/>
 				</EditorField>
 
 				<EditorField label="ID段结束 (End, 含)">
-					<TextInput
+					<Input
 						type="number"
-						value={idRangeEnd ?? ''}
+						value={
+							idRangeEnd === undefined ? '' : String(idRangeEnd)
+						}
 						onChange={(e) => {
 							const v = parseInt(e.target.value);
 							onUpdate({ idRangeEnd: isNaN(v) ? undefined : v });
 						}}
-						placeholder={`最大 ${MANAGED_ID_MAX}`}
-						min={MANAGED_ID_MIN}
-						max={MANAGED_ID_MAX}
-						error={!!rangeError}
+						placeholder={`最大 ${managedIdMax}`}
+						min={managedIdMin}
+						max={managedIdMax}
+						isInvalid={Boolean(rangeError)}
 					/>
 				</EditorField>
 			</div>
@@ -211,7 +207,7 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 				}
 			>
 				<div className="flex items-center gap-2">
-					<TextInput
+					<Input
 						value={idSignature || ''}
 						readOnly
 						placeholder={'点击「签名」按钮进行签名…'}
@@ -289,6 +285,7 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 				<div className="mb-4 flex gap-1 rounded-lg bg-black/5 p-1 dark:bg-white/5">
 					<button
 						onClick={() => {
+							invalidateSigning();
 							setDialogMode('paste');
 							setSignError(null);
 						}}
@@ -302,6 +299,7 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 					</button>
 					<button
 						onClick={() => {
+							invalidateSigning();
 							setDialogMode('sign');
 							setSignError(null);
 						}}

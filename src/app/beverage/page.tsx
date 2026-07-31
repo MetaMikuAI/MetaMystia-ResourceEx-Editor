@@ -7,6 +7,7 @@ import { BeverageList } from '@/components/beverage/BeverageList';
 
 import type { Beverage } from '@/domain/resourcePack/contracts/items';
 
+import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 export default function BeveragePage() {
@@ -68,26 +69,22 @@ export default function BeveragePage() {
 	);
 
 	return (
-		<div className="flex flex-col">
-			<div className="container mx-auto w-full max-w-7xl px-6 py-8 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl">
-				<div className="relative grid grid-cols-1 gap-8 lg:grid-cols-3">
-					<BeverageList
-						beverages={data.beverages || []}
-						selectedIndex={selectedIndex}
-						onAdd={addBeverage}
-						onRemove={removeBeverage}
-						onSelect={setSelectedIndex}
-					/>
+		<EditorWorkspace>
+			<BeverageList
+				beverages={data.beverages || []}
+				selectedIndex={selectedIndex}
+				onAdd={addBeverage}
+				onRemove={removeBeverage}
+				onSelect={setSelectedIndex}
+			/>
 
-					<BeverageEditor
-						beverage={selectedBeverage}
-						beverageIndex={selectedIndex}
-						onUpdate={(updates: Partial<Beverage>) => {
-							updateBeverage(selectedIndex, updates);
-						}}
-					/>
-				</div>
-			</div>
-		</div>
+			<BeverageEditor
+				beverage={selectedBeverage}
+				beverageIndex={selectedIndex}
+				onUpdate={(updates: Partial<Beverage>) => {
+					updateBeverage(selectedIndex, updates);
+				}}
+			/>
+		</EditorWorkspace>
 	);
 }
