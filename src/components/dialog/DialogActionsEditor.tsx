@@ -4,7 +4,6 @@ import { AssetPickerDialog } from '@/components/asset/AssetPickerDialog';
 import { Label } from '@/components/common/Label';
 import { TextInput } from '@/components/common/TextInput';
 import { WarningBadge } from '@/components/common/WarningBadge';
-import { useData } from '@/components/context/DataContext';
 
 import Button from '@/design/ui/components/button';
 import {
@@ -17,7 +16,9 @@ import type {
 	DialogAction,
 	DialogActionType,
 	DialogBranchOption,
-} from '@/types/resource';
+} from '@/domain/resourcePack/contracts/dialogue';
+
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 const ACTION_TYPES: DialogActionType[] = [
 	'CameraShake',
@@ -298,7 +299,10 @@ const SpriteActionFields = memo<SpriteActionFieldsProps>(
 		const radioName = useId();
 		const selectId = useId();
 
-		const { assetUrls, getAssetUrl } = useData();
+		const {
+			assets: { urls: assetUrls },
+			getAssetUrl,
+		} = useResourceEditor();
 
 		const availableAssets = useMemo(() => {
 			return Object.keys(assetUrls)
@@ -698,7 +702,10 @@ const SoundActionFields = memo<SoundActionFieldsProps>(
 		const selectId = useId();
 		const [isPickerOpen, setIsPickerOpen] = useState(false);
 
-		const { assetUrls, getAssetUrl } = useData();
+		const {
+			assets: { urls: assetUrls },
+			getAssetUrl,
+		} = useResourceEditor();
 
 		const availableAssets = useMemo(() => {
 			return Object.keys(assetUrls)

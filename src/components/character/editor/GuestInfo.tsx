@@ -17,7 +17,11 @@ import {
 
 import Switch from '@/design/ui/components/switch';
 
-import { GuestInfo, Request, SpawnConfig } from '@/types/resource';
+import type {
+	GuestInfo,
+	Request,
+	SpawnConfig,
+} from '@/domain/resourcePack/contracts/character';
 
 interface GuestInfoProps {
 	guest: GuestInfo | undefined;

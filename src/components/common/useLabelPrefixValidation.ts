@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { useData } from '@/components/context/DataContext';
+
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 /**
  * 验证 label 是否以 `_{资源包label}_` 格式开头。
@@ -11,8 +12,8 @@ import { useData } from '@/components/context/DataContext';
  *   - `hasPackLabel`: 资源包是否设置了 label
  */
 export function useLabelPrefixValidation(label: string) {
-	const { data } = useData();
-	const packLabel = data.packInfo.label;
+	const { resourcePack } = useResourceEditor();
+	const packLabel = resourcePack.packInfo.label;
 
 	return useMemo(() => {
 		if (!packLabel) {
@@ -36,8 +37,8 @@ export function useLabelPrefixValidation(label: string) {
  * @returns `_{packLabel}_` 或空字符串（如果未设置资源包 label）
  */
 export function usePackLabelPrefix(): string {
-	const { data } = useData();
-	const packLabel = data.packInfo.label;
+	const { resourcePack } = useResourceEditor();
+	const packLabel = resourcePack.packInfo.label;
 
 	return useMemo(() => {
 		if (!packLabel) return '_';

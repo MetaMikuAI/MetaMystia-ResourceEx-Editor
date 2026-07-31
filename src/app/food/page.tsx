@@ -2,16 +2,16 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
-import { useData } from '@/components/context/DataContext';
-
 import { FoodEditor } from '@/components/food/FoodEditor';
 import { FoodList } from '@/components/food/FoodList';
 import { FoodPreviewDialog } from '@/components/food/FoodPreviewDialog';
 
-import type { Food } from '@/types/resource';
+import type { Food } from '@/domain/resourcePack/contracts/items';
+
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 export default function FoodPage() {
-	const { data, setData, setHasUnsavedChanges } = useData();
+	const { resourcePack: data, updateResourcePack } = useResourceEditor();
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 	const [previewFoodId, setPreviewFoodId] = useState<number | null>(null);
 
@@ -28,23 +28,21 @@ export default function FoodPage() {
 			spritePath: `assets/Food/${newId}.png`,
 		};
 		const newFoods = [...(data.foods || []), newFood];
-		setData({ ...data, foods: newFoods });
+		updateResourcePack(() => ({ ...data, foods: newFoods }));
 		setSelectedIndex(newFoods.length - 1);
-		setHasUnsavedChanges(true);
-	}, [data, setData, setHasUnsavedChanges]);
+	}, [data, updateResourcePack]);
 
 	const removeFood = useCallback(
 		(index: number) => {
 			const newFoods = (data.foods || []).filter((_, i) => i !== index);
-			setData({ ...data, foods: newFoods });
+			updateResourcePack(() => ({ ...data, foods: newFoods }));
 			if (selectedIndex === index) {
 				setSelectedIndex(newFoods.length > 0 ? 0 : null);
 			} else if (selectedIndex !== null && selectedIndex > index) {
 				setSelectedIndex(selectedIndex - 1);
 			}
-			setHasUnsavedChanges(true);
 		},
-		[data, selectedIndex, setData, setHasUnsavedChanges]
+		[data, selectedIndex, updateResourcePack]
 	);
 
 	const updateFood = useCallback(
@@ -54,10 +52,9 @@ export default function FoodPage() {
 			}
 			const newFoods = [...(data.foods || [])];
 			newFoods[index] = { ...newFoods[index], ...updates } as Food;
-			setData({ ...data, foods: newFoods });
-			setHasUnsavedChanges(true);
+			updateResourcePack(() => ({ ...data, foods: newFoods }));
 		},
-		[data, setData, setHasUnsavedChanges]
+		[data, updateResourcePack]
 	);
 
 	const selectedFood = useMemo(

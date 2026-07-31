@@ -8,7 +8,8 @@ import { SPECIAL_GUESTS } from '@/data/specialGuest';
 
 import { Select } from '@/design/ui/components/select';
 
-import type { Character, ScheduledEvent } from '@/types/resource';
+import type { Character } from '@/domain/resourcePack/contracts/character';
+import type { ScheduledEvent } from '@/domain/resourcePack/contracts/event';
 
 export const TRIGGER_TYPES = [
 	{

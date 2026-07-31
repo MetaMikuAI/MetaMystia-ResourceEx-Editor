@@ -6,7 +6,10 @@ import { SPECIAL_PORTRAITS } from '@/data/specialPortraits';
 
 import { Select } from '@/design/ui/components/select';
 
-import type { Character, CharacterType } from '@/types/resource';
+import type {
+	Character,
+	CharacterType,
+} from '@/domain/resourcePack/contracts/character';
 
 interface PortraitSelectorProps {
 	characterId: number;

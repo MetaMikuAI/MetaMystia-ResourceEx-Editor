@@ -1,10 +1,13 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { useData } from '@/components/context/DataContext';
-import { EventList } from '@/components/event/EventList';
+
 import EventEditor from '@/components/event/EventEditor';
-import type { EventNode } from '@/types/resource';
+import { EventList } from '@/components/event/EventList';
+
+import type { EventNode } from '@/domain/resourcePack/contracts/event';
+
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 const DEFAULT_EVENT = {
 	debugLabel: '新事件',
@@ -13,7 +16,7 @@ const DEFAULT_EVENT = {
 };
 
 export default function EventPage() {
-	const { data, setData, setHasUnsavedChanges } = useData();
+	const { resourcePack: data, updateResourcePack } = useResourceEditor();
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
 	const addEvent = useCallback(() => {
@@ -21,20 +24,18 @@ export default function EventPage() {
 		const labelPrefix = packLabel ? `_${packLabel}_` : '_';
 		const newEvent: EventNode = { ...DEFAULT_EVENT, label: labelPrefix };
 		const newEvents = [...(data.eventNodes || []), newEvent];
-		setData({ ...data, eventNodes: newEvents });
+		updateResourcePack(() => ({ ...data, eventNodes: newEvents }));
 		setSelectedIndex(newEvents.length - 1);
-		setHasUnsavedChanges(true);
-	}, [data, setData, setHasUnsavedChanges]);
+	}, [data, updateResourcePack]);
 
 	const updateEvent = useCallback(
 		(index: number | null, updates: Partial<EventNode>) => {
 			if (index === null) return;
 			const newEvents = [...(data.eventNodes || [])];
 			newEvents[index] = { ...newEvents[index], ...updates } as EventNode;
-			setData({ ...data, eventNodes: newEvents });
-			setHasUnsavedChanges(true);
+			updateResourcePack(() => ({ ...data, eventNodes: newEvents }));
 		},
-		[data, setData, setHasUnsavedChanges]
+		[data, updateResourcePack]
 	);
 
 	const removeEvent = useCallback(
@@ -45,11 +46,10 @@ export default function EventPage() {
 			const newEvents = (data.eventNodes || []).filter(
 				(_, i) => i !== index
 			);
-			setData({ ...data, eventNodes: newEvents });
+			updateResourcePack(() => ({ ...data, eventNodes: newEvents }));
 			setSelectedIndex(null);
-			setHasUnsavedChanges(true);
 		},
-		[data, setData, setHasUnsavedChanges]
+		[data, updateResourcePack]
 	);
 
 	const selectedEvent =

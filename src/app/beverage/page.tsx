@@ -2,15 +2,15 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
-import { useData } from '@/components/context/DataContext';
-
 import { BeverageEditor } from '@/components/beverage/BeverageEditor';
 import { BeverageList } from '@/components/beverage/BeverageList';
 
-import type { Beverage } from '@/types/resource';
+import type { Beverage } from '@/domain/resourcePack/contracts/items';
+
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 export default function BeveragePage() {
-	const { data, setData, setHasUnsavedChanges } = useData();
+	const { resourcePack: data, updateResourcePack } = useResourceEditor();
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
 	const addBeverage = useCallback(() => {
@@ -25,25 +25,23 @@ export default function BeveragePage() {
 			spritePath: `assets/Beverage/${newId}.png`,
 		};
 		const newBeverages = [...(data.beverages || []), newBeverage];
-		setData({ ...data, beverages: newBeverages });
+		updateResourcePack(() => ({ ...data, beverages: newBeverages }));
 		setSelectedIndex(newBeverages.length - 1);
-		setHasUnsavedChanges(true);
-	}, [data, setData, setHasUnsavedChanges]);
+	}, [data, updateResourcePack]);
 
 	const removeBeverage = useCallback(
 		(index: number) => {
 			const newBeverages = (data.beverages || []).filter(
 				(_, i) => i !== index
 			);
-			setData({ ...data, beverages: newBeverages });
+			updateResourcePack(() => ({ ...data, beverages: newBeverages }));
 			if (selectedIndex === index) {
 				setSelectedIndex(newBeverages.length > 0 ? 0 : null);
 			} else if (selectedIndex !== null && selectedIndex > index) {
 				setSelectedIndex(selectedIndex - 1);
 			}
-			setHasUnsavedChanges(true);
 		},
-		[data, selectedIndex, setData, setHasUnsavedChanges]
+		[data, selectedIndex, updateResourcePack]
 	);
 
 	const updateBeverage = useCallback(
@@ -56,10 +54,9 @@ export default function BeveragePage() {
 				...newBeverages[index],
 				...updates,
 			} as Beverage;
-			setData({ ...data, beverages: newBeverages });
-			setHasUnsavedChanges(true);
+			updateResourcePack(() => ({ ...data, beverages: newBeverages }));
 		},
-		[data, setData, setHasUnsavedChanges]
+		[data, updateResourcePack]
 	);
 
 	const selectedBeverage = useMemo(

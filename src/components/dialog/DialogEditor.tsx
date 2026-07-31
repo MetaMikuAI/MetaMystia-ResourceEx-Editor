@@ -3,15 +3,18 @@ import { memo, useCallback, useId } from 'react';
 
 import { EmptyState } from '@/components/common/EmptyState';
 import { ErrorBadge } from '@/components/common/ErrorBadge';
+import { Label } from '@/components/common/Label';
 import { SectionAddButton } from '@/components/common/SectionAddButton';
 import { useLabelPrefixValidation } from '@/components/common/useLabelPrefixValidation';
 import { WarningBadge } from '@/components/common/WarningBadge';
 
 import Button from '@/design/ui/components/button';
 
-import type { Dialog, DialogPackage } from '@/types/resource';
+import type {
+	Dialog,
+	DialogPackage,
+} from '@/domain/resourcePack/contracts/dialogue';
 
-import { Label } from '../common/Label';
 import { DialogItemWrapper } from './DialogItem';
 
 interface DialogEditorProps {

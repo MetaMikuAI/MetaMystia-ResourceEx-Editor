@@ -7,7 +7,7 @@ import { WarningBadge } from '@/components/common/WarningBadge';
 
 import Button from '@/design/ui/components/button';
 
-import type { EventNode } from '@/types/resource';
+import type { EventNode } from '@/domain/resourcePack/contracts/event';
 
 interface EventListProps {
 	events: EventNode[];

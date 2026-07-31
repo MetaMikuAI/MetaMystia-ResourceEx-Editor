@@ -10,7 +10,11 @@ import { BEVERAGE_NAMES } from '@/data/beverages';
 import Button from '@/design/ui/components/button';
 import { type ISelectOption, Select } from '@/design/ui/components/select';
 
-import type { MissionReward, ObjectType, RewardType } from '@/types/resource';
+import type {
+	MissionReward,
+	ObjectType,
+	RewardType,
+} from '@/domain/resourcePack/contracts/mission';
 
 interface AddRewardItemRowProps {
 	objectType: ObjectType | undefined;

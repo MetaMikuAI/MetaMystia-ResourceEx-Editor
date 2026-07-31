@@ -2,15 +2,15 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
-import { useData } from '@/components/context/DataContext';
-
 import { IngredientEditor } from '@/components/ingredient/IngredientEditor';
 import { IngredientList } from '@/components/ingredient/IngredientList';
 
-import type { Ingredient } from '@/types/resource';
+import type { Ingredient } from '@/domain/resourcePack/contracts/items';
+
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 export default function IngredientPage() {
-	const { data, setData, setHasUnsavedChanges } = useData();
+	const { resourcePack: data, updateResourcePack } = useResourceEditor();
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
 	const addIngredient = useCallback(() => {
@@ -29,25 +29,26 @@ export default function IngredientPage() {
 			spritePath: `assets/Ingredient/${newId}.png`,
 		};
 		const newIngredients = [...data.ingredients, newIngredient];
-		setData({ ...data, ingredients: newIngredients });
+		updateResourcePack(() => ({ ...data, ingredients: newIngredients }));
 		setSelectedIndex(newIngredients.length - 1);
-		setHasUnsavedChanges(true);
-	}, [data, setData, setHasUnsavedChanges]);
+	}, [data, updateResourcePack]);
 
 	const removeIngredient = useCallback(
 		(index: number) => {
 			const newIngredients = data.ingredients.filter(
 				(_, i) => i !== index
 			);
-			setData({ ...data, ingredients: newIngredients });
+			updateResourcePack(() => ({
+				...data,
+				ingredients: newIngredients,
+			}));
 			if (selectedIndex === index) {
 				setSelectedIndex(newIngredients.length > 0 ? 0 : null);
 			} else if (selectedIndex !== null && selectedIndex > index) {
 				setSelectedIndex(selectedIndex - 1);
 			}
-			setHasUnsavedChanges(true);
 		},
-		[data, selectedIndex, setData, setHasUnsavedChanges]
+		[data, selectedIndex, updateResourcePack]
 	);
 
 	const updateIngredient = useCallback(
@@ -60,10 +61,12 @@ export default function IngredientPage() {
 				...newIngredients[index],
 				...updates,
 			} as Ingredient;
-			setData({ ...data, ingredients: newIngredients });
-			setHasUnsavedChanges(true);
+			updateResourcePack(() => ({
+				...data,
+				ingredients: newIngredients,
+			}));
 		},
-		[data, setData, setHasUnsavedChanges]
+		[data, updateResourcePack]
 	);
 
 	const selectedIngredient = useMemo(

@@ -5,7 +5,7 @@ import {
 	type SelectItem as SelectItemSpec,
 } from '@/design/ui/components/select';
 
-import type { DialogPackage } from '@/types/resource';
+import type { DialogPackage } from '@/domain/resourcePack/contracts/dialogue';
 
 import { DialogItem } from './DialogItem';
 

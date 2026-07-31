@@ -9,7 +9,10 @@ import {
 	type SelectItem as SelectItemSpec,
 } from '@/design/ui/components/select';
 
-import type { Character, CharacterType } from '@/types/resource';
+import type {
+	Character,
+	CharacterType,
+} from '@/domain/resourcePack/contracts/character';
 
 interface CharacterSelectorProps {
 	characterType: CharacterType;

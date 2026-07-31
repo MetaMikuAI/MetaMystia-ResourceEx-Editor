@@ -4,11 +4,11 @@ import { cn } from '@heroui/theme';
 import { useCallback, useState } from 'react';
 
 import { AssetFileManager } from '@/components/asset/AssetFileManager';
-import { useData } from '@/components/context/DataContext';
 
 import Button from '@/design/ui/components/button';
 
-import type { AssetPathOperation } from '@/types/resource';
+import type { IAssetPathOperation } from '@/features/resourceEditor/client/assets/contracts';
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 const QUICK_FOLDERS = [
 	{
@@ -32,16 +32,15 @@ const QUICK_FOLDERS = [
 
 export default function AssetPage() {
 	const {
-		data,
-		assetUrls,
-		assetFolders,
+		resourcePack: data,
+		assets: { folders: assetFolders, urls: assetUrls },
 		updateAsset,
 		removeAsset,
 		createAssetFolder,
 		removeAssetFolders,
 		moveAssets,
 		copyAssets,
-	} = useData();
+	} = useResourceEditor();
 	const [activeFolder, setActiveFolder] = useState<string>('assets/');
 	const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -53,14 +52,14 @@ export default function AssetPage() {
 	);
 
 	const handleMove = useCallback(
-		(operations: AssetPathOperation[]) => {
+		(operations: IAssetPathOperation[]) => {
 			moveAssets(operations);
 		},
 		[moveAssets]
 	);
 
 	const handleCopy = useCallback(
-		(operations: AssetPathOperation[]) => {
+		(operations: IAssetPathOperation[]) => {
 			copyAssets(operations);
 		},
 		[copyAssets]

@@ -7,7 +7,7 @@ import { ErrorBadge } from '@/components/common/ErrorBadge';
 import Button from '@/design/ui/components/button';
 import Card from '@/design/ui/components/card';
 
-import type { Clothes } from '@/types/resource';
+import type { Clothes } from '@/domain/resourcePack/contracts/items';
 
 interface ClothesListProps {
 	clothes: Clothes[];

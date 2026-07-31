@@ -10,13 +10,6 @@ import 'client-only';
 
 import PUBLIC_KEY_PEM from './public.pem';
 
-/** ID range boundaries */
-export const GAME_ID_MAX = 8999;
-export const MANAGED_ID_MIN = 9000;
-export const MANAGED_ID_MAX = 1073741823;
-export const UNMANAGED_ID_MIN = 1073741824;
-export const UNMANAGED_ID_MAX = 2147483647;
-
 function pemToArrayBuffer(
 	pem: string,
 	label: 'PUBLIC KEY' | 'PRIVATE KEY'

@@ -1,27 +1,31 @@
 'use client';
 
 import { memo, useMemo } from 'react';
+
+import { EditorField } from '@/components/common/EditorField';
 import { SectionDeleteButton } from '@/components/common/SectionDeleteButton';
+import { useLabelPrefixValidation } from '@/components/common/useLabelPrefixValidation';
+import { WarningBadge } from '@/components/common/WarningBadge';
+import { MissionRewardList } from '@/components/mission/MissionRewardList';
+import { PostMissionList } from '@/components/mission/PostMissionList';
+
 import { FOOD_NAMES } from '@/data/foods';
 import { INGREDIENT_NAMES } from '@/data/ingredients';
 import { RECIPE_NAMES } from '@/data/recipes';
 import { SPECIAL_GUESTS } from '@/data/specialGuest';
+
+import type { Character } from '@/domain/resourcePack/contracts/character';
+import type { DialogPackage } from '@/domain/resourcePack/contracts/dialogue';
+import type { EventNode } from '@/domain/resourcePack/contracts/event';
 import type {
-	EventNode,
-	MissionNode,
-	Character,
-	DialogPackage,
 	Food,
 	Ingredient,
 	Recipe,
-} from '@/types/resource';
-import { EditorField } from '@/components/common/EditorField';
-import { WarningBadge } from '@/components/common/WarningBadge';
-import { MissionRewardList } from '@/components/mission/MissionRewardList';
+} from '@/domain/resourcePack/contracts/items';
+import type { MissionNode } from '@/domain/resourcePack/contracts/mission';
+
 import { PostEventList } from './PostEventList';
-import { PostMissionList } from '@/components/mission/PostMissionList';
 import { ScheduledEventEditor } from './ScheduledEventEditor';
-import { useLabelPrefixValidation } from '@/components/common/useLabelPrefixValidation';
 
 interface EventEditorProps {
 	eventNode: EventNode | null;

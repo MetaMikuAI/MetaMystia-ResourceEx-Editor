@@ -1,14 +1,15 @@
 'use client';
 
 import { memo } from 'react';
-import type {
-	ScheduledEvent,
-	Character,
-	DialogPackage,
-} from '@/types/resource';
-import { TriggerEditor } from './ScheduledEvent/TriggerEditor';
+
 import { EditorField } from '@/components/common/EditorField';
+
+import type { Character } from '@/domain/resourcePack/contracts/character';
+import type { DialogPackage } from '@/domain/resourcePack/contracts/dialogue';
+import type { ScheduledEvent } from '@/domain/resourcePack/contracts/event';
+
 import { EventDataEditor } from './ScheduledEvent/EventDataEditor';
+import { TriggerEditor } from './ScheduledEvent/TriggerEditor';
 
 interface ScheduledEventEditorProps {
 	scheduledEvent?: ScheduledEvent;

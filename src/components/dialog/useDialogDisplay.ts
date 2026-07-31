@@ -1,15 +1,18 @@
 import { useMemo } from 'react';
 
-import { useData } from '@/components/context/DataContext';
 import { SPECIAL_GUESTS } from '@/data/specialGuest';
 import { SPECIAL_PORTRAITS } from '@/data/specialPortraits';
-import type { Character, Dialog } from '@/types/resource';
+
+import type { Character } from '@/domain/resourcePack/contracts/character';
+import type { Dialog } from '@/domain/resourcePack/contracts/dialogue';
+
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 export function useDialogDisplay(
 	dialog: Dialog,
 	customCharacters: Character[]
 ) {
-	const { getAssetUrl } = useData();
+	const { getAssetUrl } = useResourceEditor();
 
 	const portraitPath = useMemo(() => {
 		if (dialog.characterType === 'Special') {

@@ -6,7 +6,8 @@ import { EmptyState } from '@/components/common/EmptyState';
 import Button from '@/design/ui/components/button';
 import Card from '@/design/ui/components/card';
 
-import type { Character, MerchantConfig } from '@/types/resource';
+import type { Character } from '@/domain/resourcePack/contracts/character';
+import type { MerchantConfig } from '@/domain/resourcePack/contracts/merchant';
 
 interface MerchantListProps {
 	merchants: MerchantConfig[];

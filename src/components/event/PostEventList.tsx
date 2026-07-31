@@ -10,7 +10,7 @@ import {
 	type SelectItem as SelectItemSpec,
 } from '@/design/ui/components/select';
 
-import type { EventNode } from '@/types/resource';
+import type { EventNode } from '@/domain/resourcePack/contracts/event';
 
 interface PostEventListProps {
 	postEvents: string[] | undefined;

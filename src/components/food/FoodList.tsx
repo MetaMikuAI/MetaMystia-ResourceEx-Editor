@@ -7,7 +7,7 @@ import { ErrorBadge } from '@/components/common/ErrorBadge';
 import Button from '@/design/ui/components/button';
 import Card from '@/design/ui/components/card';
 
-import type { Food } from '@/types/resource';
+import type { Food } from '@/domain/resourcePack/contracts/items';
 
 interface FoodListProps {
 	foods: Food[];

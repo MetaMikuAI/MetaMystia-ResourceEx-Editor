@@ -1,13 +1,18 @@
 import { memo, useCallback } from 'react';
 
-import { useData } from '@/components/context/DataContext';
+import type { Character } from '@/domain/resourcePack/contracts/character';
+import type {
+	Dialog,
+	DialogAction,
+} from '@/domain/resourcePack/contracts/dialogue';
+
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
+
 import { DialogActionsEditor } from './DialogActionsEditor';
 import { DialogFormFields } from './DialogFormFields';
 import { DialogItemHeader } from './DialogItemHeader';
 import { PortraitPreview } from './PortraitPreview';
 import { useDialogDisplay } from './useDialogDisplay';
-
-import type { Character, Dialog, DialogAction } from '@/types/resource';
 
 interface DialogItemProps {
 	dialog: Dialog;
@@ -93,11 +98,11 @@ export const DialogItemWrapper = memo<
 	onRemove,
 	onUpdate,
 }) {
-	const { data } = useData();
+	const { resourcePack } = useResourceEditor();
 
 	return (
 		<DialogItem
-			customCharacters={data.characters}
+			customCharacters={resourcePack.characters}
 			dialog={dialog}
 			dialogCount={dialogCount}
 			index={index}

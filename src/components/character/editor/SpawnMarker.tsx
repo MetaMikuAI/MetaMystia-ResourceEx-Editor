@@ -7,7 +7,7 @@ import { DAYSCENEMAP } from '@/data/daySceneMap';
 
 import { Select } from '@/design/ui/components/select';
 
-import type { SpawnMarker } from '@/types/resource';
+import type { SpawnMarker } from '@/domain/resourcePack/contracts/character';
 
 interface SpawnMarkerEditorProps {
 	spawnMarker: SpawnMarker;

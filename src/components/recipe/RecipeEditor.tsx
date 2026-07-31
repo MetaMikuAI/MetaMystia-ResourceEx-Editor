@@ -16,7 +16,7 @@ import {
 	type SelectItem as SelectItemSpec,
 } from '@/design/ui/components/select';
 
-import type { CookerType, Recipe } from '@/types/resource';
+import type { CookerType, Recipe } from '@/domain/resourcePack/contracts/items';
 
 interface RecipeEditorProps {
 	recipe: Recipe | null;

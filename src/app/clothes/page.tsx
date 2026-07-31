@@ -2,15 +2,15 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
-import { useData } from '@/components/context/DataContext';
-
 import { ClothesEditor } from '@/components/clothes/ClothesEditor';
 import { ClothesList } from '@/components/clothes/ClothesList';
 
-import type { Clothes } from '@/types/resource';
+import type { Clothes } from '@/domain/resourcePack/contracts/items';
+
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 export default function ClothesPage() {
-	const { data, setData, setHasUnsavedChanges } = useData();
+	const { resourcePack: data, updateResourcePack } = useResourceEditor();
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
 	const addClothes = useCallback(() => {
@@ -50,25 +50,23 @@ export default function ClothesPage() {
 			},
 		};
 		const newClothesList = [...(data.clothes || []), newClothes];
-		setData({ ...data, clothes: newClothesList });
+		updateResourcePack(() => ({ ...data, clothes: newClothesList }));
 		setSelectedIndex(newClothesList.length - 1);
-		setHasUnsavedChanges(true);
-	}, [data, setData, setHasUnsavedChanges]);
+	}, [data, updateResourcePack]);
 
 	const removeClothes = useCallback(
 		(index: number) => {
 			const newClothesList = (data.clothes || []).filter(
 				(_, i) => i !== index
 			);
-			setData({ ...data, clothes: newClothesList });
+			updateResourcePack(() => ({ ...data, clothes: newClothesList }));
 			if (selectedIndex === index) {
 				setSelectedIndex(newClothesList.length > 0 ? 0 : null);
 			} else if (selectedIndex !== null && selectedIndex > index) {
 				setSelectedIndex(selectedIndex - 1);
 			}
-			setHasUnsavedChanges(true);
 		},
-		[data, selectedIndex, setData, setHasUnsavedChanges]
+		[data, selectedIndex, updateResourcePack]
 	);
 
 	const updateClothes = useCallback(
@@ -81,10 +79,9 @@ export default function ClothesPage() {
 				...newClothesList[index],
 				...updates,
 			} as Clothes;
-			setData({ ...data, clothes: newClothesList });
-			setHasUnsavedChanges(true);
+			updateResourcePack(() => ({ ...data, clothes: newClothesList }));
 		},
-		[data, setData, setHasUnsavedChanges]
+		[data, updateResourcePack]
 	);
 
 	const selectedClothes = useMemo(

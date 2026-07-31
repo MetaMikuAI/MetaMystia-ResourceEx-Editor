@@ -1,5 +1,4 @@
-import { memo, useCallback } from 'react';
-import type { ReactNode } from 'react';
+import { memo, type ReactNode, useCallback } from 'react';
 
 import { EditorField } from '@/components/common/EditorField';
 import { EmptyState } from '@/components/common/EmptyState';
@@ -16,7 +15,7 @@ import type {
 	ConditionType,
 	MissionCondition,
 	MissionNode,
-} from '@/types/resource';
+} from '@/domain/resourcePack/contracts/mission';
 
 // -----------------------------------------------------------------------------
 // 常量

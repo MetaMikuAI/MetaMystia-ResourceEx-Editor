@@ -1,29 +1,33 @@
 'use client';
 
 import { memo, useMemo } from 'react';
+
+import { EditorField } from '@/components/common/EditorField';
 import { SectionDeleteButton } from '@/components/common/SectionDeleteButton';
+import { PostEventList } from '@/components/event/PostEventList';
+import { EventDataEditor } from '@/components/event/ScheduledEvent/EventDataEditor';
+
 import { BEVERAGE_NAMES } from '@/data/beverages';
 import { FOOD_NAMES } from '@/data/foods';
 import { INGREDIENT_NAMES } from '@/data/ingredients';
 import { RECIPE_NAMES } from '@/data/recipes';
 import { SPECIAL_GUESTS } from '@/data/specialGuest';
+
+import type { Character } from '@/domain/resourcePack/contracts/character';
+import type { DialogPackage } from '@/domain/resourcePack/contracts/dialogue';
+import type { EventNode } from '@/domain/resourcePack/contracts/event';
 import type {
-	Character,
+	Beverage,
 	Food,
 	Ingredient,
-	Beverage,
 	Recipe,
-	MissionNode,
-	EventNode,
-	DialogPackage,
-} from '@/types/resource';
+} from '@/domain/resourcePack/contracts/items';
+import type { MissionNode } from '@/domain/resourcePack/contracts/mission';
+
 import { MissionBasicInfo } from './MissionBasicInfo';
 import { MissionConditionList } from './MissionConditionList';
 import { MissionRewardList } from './MissionRewardList';
 import { PostMissionList } from './PostMissionList';
-import { EditorField } from '@/components/common/EditorField';
-import { PostEventList } from '@/components/event/PostEventList';
-import { EventDataEditor } from '@/components/event/ScheduledEvent/EventDataEditor';
 
 interface MissionEditorProps {
 	mission: MissionNode | null;

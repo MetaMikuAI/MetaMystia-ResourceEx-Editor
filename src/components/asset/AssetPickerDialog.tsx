@@ -2,11 +2,10 @@
 
 import { memo, useCallback } from 'react';
 
-import { useData } from '@/components/context/DataContext';
-
 import Modal from '@/design/ui/components/modal';
 
-import type { AssetPathOperation } from '@/types/resource';
+import type { IAssetPathOperation } from '@/features/resourceEditor/client/assets/contracts';
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import { AssetFileManager } from './AssetFileManager';
 
@@ -28,13 +27,12 @@ interface AssetPickerDialogProps {
 export const AssetPickerDialog = memo<AssetPickerDialogProps>(
 	function AssetPickerDialog({ open, onClose, onSelect, initialFolder }) {
 		const {
-			data,
-			assetUrls,
-			assetFolders,
+			resourcePack,
+			assets: { folders: assetFolders, urls: assetUrls },
 			updateAsset,
 			createAssetFolder,
-		} = useData();
-		const packLabel = data.packInfo?.label;
+		} = useResourceEditor();
+		const packLabel = resourcePack.packInfo.label;
 
 		const handleSelect = useCallback(
 			(path: string) => {
@@ -47,7 +45,7 @@ export const AssetPickerDialog = memo<AssetPickerDialogProps>(
 		// 隐藏的破坏性操作传空函数满足类型签名
 		const noopRemove = useCallback((_paths: string[]) => {}, []);
 		const noopAssetOps = useCallback(
-			(_operations: AssetPathOperation[]) => {},
+			(_operations: IAssetPathOperation[]) => {},
 			[]
 		);
 

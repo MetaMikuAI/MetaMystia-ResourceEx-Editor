@@ -2,7 +2,7 @@
 
 import { cn } from '@heroui/theme';
 
-import { KNOWN_DEPENDENCIES } from '@/lib/constants';
+import { KNOWN_DEPENDENCIES } from '@/domain/resourcePack/constants';
 
 interface DependencySelectorProps {
 	value: string[];

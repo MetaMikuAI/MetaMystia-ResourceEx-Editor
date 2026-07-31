@@ -5,8 +5,6 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { memo, useCallback, useState } from 'react';
 
-import { useData } from '@/components/context/DataContext';
-
 import Button from '@/design/ui/components/button';
 import Dropdown, {
 	DropdownItem,
@@ -19,10 +17,14 @@ import HeroUINavbar, {
 	NavbarItem,
 } from '@/design/ui/components/navbar';
 
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
+import {
+	type IResourcePackValidationIssue,
+	validateResourcePackForExport,
+} from '@/features/resourceEditor/client/validation/validateResourcePackForExport';
+
 import { openAnnouncementModal } from './AnnouncementModal';
 import { ExportValidationDialog } from './ExportValidationDialog';
-import { validateResourcePack } from './validateResourcePack';
-import type { ValidationIssue } from './validateResourcePack';
 
 interface NavDropdownProps {
 	label: string;
@@ -99,11 +101,21 @@ const navConfig = {
 export const Navbar = memo(function Navbar() {
 	const pathname = usePathname();
 	const router = useRouter();
-	const { data, assetUrls, createBlank, loadResourcePack, saveResourcePack } =
-		useData();
-	const [validationIssues, setValidationIssues] = useState<
-		ValidationIssue[] | null
-	>(null);
+	const {
+		assets: { urls: assetUrls },
+		createBlankResourcePack,
+		exportArchive,
+		importArchive,
+		isDirty,
+		isExporting,
+		isImporting,
+		resourcePack,
+		revision,
+	} = useResourceEditor();
+	const [validationResult, setValidationResult] = useState<{
+		issues: IResourcePackValidationIssue[];
+		revision: number;
+	} | null>(null);
 	const [isMenuOpened, setIsMenuOpened] = useState(false);
 
 	const handleMobileNav = useCallback(
@@ -115,21 +127,33 @@ export const Navbar = memo(function Navbar() {
 	);
 
 	const handleExport = useCallback(async () => {
-		const issues = await validateResourcePack(data, Object.keys(assetUrls));
+		if (isExporting) return;
+		const expectedRevision = revision;
+		const issues = await validateResourcePackForExport(
+			resourcePack,
+			Object.keys(assetUrls)
+		);
 		if (issues.length > 0) {
-			setValidationIssues(issues);
+			setValidationResult({ issues, revision: expectedRevision });
 		} else {
-			saveResourcePack();
+			const result = await exportArchive(expectedRevision);
+			if (!result.isSuccess) {
+				alert(`导出资源包失败: ${result.error ?? '未知错误'}`);
+			}
 		}
-	}, [data, assetUrls, saveResourcePack]);
+	}, [assetUrls, exportArchive, isExporting, resourcePack, revision]);
 
-	const handleExportConfirm = useCallback(() => {
-		setValidationIssues(null);
-		saveResourcePack();
-	}, [saveResourcePack]);
+	const handleExportConfirm = useCallback(async () => {
+		if (!validationResult) return;
+		setValidationResult(null);
+		const result = await exportArchive(validationResult.revision);
+		if (!result.isSuccess) {
+			alert(`导出资源包失败: ${result.error ?? '未知错误'}`);
+		}
+	}, [exportArchive, validationResult]);
 
 	const handleExportCancel = useCallback(() => {
-		setValidationIssues(null);
+		setValidationResult(null);
 	}, []);
 
 	const isItemsActive = [
@@ -144,16 +168,36 @@ export const Navbar = memo(function Navbar() {
 		pathname
 	);
 
+	const handleCreateBlank = useCallback(() => {
+		if (isDirty && !confirm('当前有未保存的更改，确定要清空吗？')) {
+			return;
+		}
+		createBlankResourcePack();
+	}, [createBlankResourcePack, isDirty]);
+
 	const handleUploadZip = useCallback(() => {
+		if (isImporting) return;
 		const input = document.createElement('input');
 		input.type = 'file';
 		input.accept = '.zip';
-		input.onchange = (e) => {
+		input.onchange = async (e) => {
 			const file = (e.target as HTMLInputElement).files?.[0];
-			if (file) loadResourcePack(file);
+			if (!file) return;
+			if (
+				isDirty &&
+				!confirm(
+					'当前有未保存的更改，导入新资源包将丢失这些更改，确定要继续吗？'
+				)
+			) {
+				return;
+			}
+			const result = await importArchive(file);
+			if (!result.isSuccess) {
+				alert(`读取资源包失败: ${result.error ?? '未知错误'}`);
+			}
 		};
 		input.click();
-	}, [loadResourcePack]);
+	}, [importArchive, isDirty, isImporting]);
 
 	const renderNavLinks = useCallback(
 		() => (
@@ -223,23 +267,35 @@ export const Navbar = memo(function Navbar() {
 				>
 					公告
 				</Button>
-				<Button variant="light" size="md" onPress={createBlank}>
+				<Button variant="light" size="md" onPress={handleCreateBlank}>
 					全新创建
 				</Button>
-				<Button variant="light" size="md" onPress={handleUploadZip}>
+				<Button
+					variant="light"
+					size="md"
+					isDisabled={isImporting}
+					onPress={handleUploadZip}
+				>
 					上传资源包(ZIP)
 				</Button>
 				<Button
 					variant="solid"
 					color="primary"
 					size="md"
+					isDisabled={isExporting}
 					onPress={handleExport}
 				>
 					导出资源包(ZIP)
 				</Button>
 			</>
 		),
-		[createBlank, handleExport, handleUploadZip]
+		[
+			handleCreateBlank,
+			handleExport,
+			handleUploadZip,
+			isExporting,
+			isImporting,
+		]
 	);
 
 	return (
@@ -311,6 +367,7 @@ export const Navbar = memo(function Navbar() {
 							variant="solid"
 							color="primary"
 							size="sm"
+							isDisabled={isExporting}
 							onPress={handleExport}
 						>
 							导出资源包(ZIP)
@@ -452,9 +509,10 @@ export const Navbar = memo(function Navbar() {
 						公告
 					</button>
 					<button
+						disabled={isImporting}
 						onClick={() => {
 							setIsMenuOpened(false);
-							createBlank();
+							handleCreateBlank();
 						}}
 						className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-foreground transition-colors hover:bg-default-100"
 					>
@@ -486,9 +544,9 @@ export const Navbar = memo(function Navbar() {
 				</div>
 			)}
 
-			{validationIssues && (
+			{validationResult && (
 				<ExportValidationDialog
-					issues={validationIssues}
+					issues={validationResult.issues}
 					onConfirm={handleExportConfirm}
 					onCancel={handleExportCancel}
 				/>

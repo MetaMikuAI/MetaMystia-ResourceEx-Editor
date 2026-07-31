@@ -8,12 +8,12 @@ import type {
 	Character,
 	CharacterPortrait,
 	CharacterSpriteSet,
-	DialogPackage,
-	EventNode,
 	GuestInfo,
 	KizunaInfo,
 	SpawnMarker,
-} from '@/types/resource';
+} from '@/domain/resourcePack/contracts/character';
+import type { DialogPackage } from '@/domain/resourcePack/contracts/dialogue';
+import type { EventNode } from '@/domain/resourcePack/contracts/event';
 
 import { BasicInfo } from './editor/BasicInfo';
 import { Descriptions } from './editor/Descriptions';

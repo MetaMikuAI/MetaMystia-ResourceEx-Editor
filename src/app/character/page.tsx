@@ -2,12 +2,15 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
-import { useData } from '@/components/context/DataContext';
-
 import { CharacterEditor } from '@/components/character/CharacterEditor';
 import { CharacterList } from '@/components/character/CharacterList';
 
-import type { Character, CharacterType } from '@/types/resource';
+import type {
+	Character,
+	CharacterType,
+} from '@/domain/resourcePack/contracts/character';
+
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 const DEFAULT_CHARACTER = {
 	id: 0,
@@ -18,7 +21,7 @@ const DEFAULT_CHARACTER = {
 };
 
 export default function CharacterPage() {
-	const { data, setData, setHasUnsavedChanges } = useData();
+	const { resourcePack: data, updateResourcePack } = useResourceEditor();
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
 	const sortCharacters = useCallback((chars: Character[]) => {
@@ -50,11 +53,10 @@ export default function CharacterPage() {
 			label: labelPrefix,
 		};
 		const newCharacters = sortCharacters([...data.characters, newChar]);
-		setData({ ...data, characters: newCharacters });
+		updateResourcePack(() => ({ ...data, characters: newCharacters }));
 		const newIndex = newCharacters.indexOf(newChar);
 		setSelectedIndex(newIndex);
-		setHasUnsavedChanges(true);
-	}, [data, setData, setHasUnsavedChanges, sortCharacters]);
+	}, [data, sortCharacters, updateResourcePack]);
 
 	const removeCharacter = useCallback(
 		(index: number | null) => {
@@ -66,11 +68,10 @@ export default function CharacterPage() {
 			}
 			const newCharacters = [...data.characters];
 			newCharacters.splice(index, 1);
-			setData({ ...data, characters: newCharacters });
+			updateResourcePack(() => ({ ...data, characters: newCharacters }));
 			setSelectedIndex(null);
-			setHasUnsavedChanges(true);
 		},
-		[data, setData, setHasUnsavedChanges]
+		[data, updateResourcePack]
 	);
 
 	const updateCharacter = useCallback(
@@ -86,18 +87,19 @@ export default function CharacterPage() {
 			} as Character;
 			newCharacters[index] = updatedChar;
 
-			setHasUnsavedChanges(true);
-
 			if ('id' in updates || 'type' in updates) {
 				const sorted = sortCharacters(newCharacters);
-				setData({ ...data, characters: sorted });
+				updateResourcePack(() => ({ ...data, characters: sorted }));
 				const newIndex = sorted.indexOf(updatedChar);
 				setSelectedIndex(newIndex);
 			} else {
-				setData({ ...data, characters: newCharacters });
+				updateResourcePack(() => ({
+					...data,
+					characters: newCharacters,
+				}));
 			}
 		},
-		[data, setData, setHasUnsavedChanges, sortCharacters]
+		[data, sortCharacters, updateResourcePack]
 	);
 
 	const selectedChar = useMemo(() => {

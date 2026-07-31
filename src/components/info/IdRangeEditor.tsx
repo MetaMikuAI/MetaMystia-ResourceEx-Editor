@@ -12,11 +12,13 @@ import Modal from '@/design/ui/components/modal';
 import {
 	MANAGED_ID_MAX,
 	MANAGED_ID_MIN,
+} from '@/domain/resourcePack/constants';
+import type { PackInfo } from '@/domain/resourcePack/contracts/resourceEx';
+
+import {
 	signIdRange,
 	verifyIdRange,
 } from '@/infrastructure/browser/crypto/idRangeSignature';
-
-import type { PackInfo } from '@/types/resource';
 
 interface IdRangeEditorProps {
 	packInfo: PackInfo;

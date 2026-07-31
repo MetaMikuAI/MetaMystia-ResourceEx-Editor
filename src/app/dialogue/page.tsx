@@ -2,12 +2,15 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
-import { useData } from '@/components/context/DataContext';
-
 import { DialogEditor } from '@/components/dialog/DialogEditor';
 import { DialogPackageList } from '@/components/dialog/DialogPackageList';
 
-import type { Dialog, DialogPackage } from '@/types/resource';
+import type {
+	Dialog,
+	DialogPackage,
+} from '@/domain/resourcePack/contracts/dialogue';
+
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 const DEFAULT_DIALOG: Dialog = {
 	characterId: 0,
@@ -18,7 +21,7 @@ const DEFAULT_DIALOG: Dialog = {
 };
 
 export default function DialoguePage() {
-	const { data, setData, setHasUnsavedChanges } = useData();
+	const { resourcePack: data, updateResourcePack } = useResourceEditor();
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
 	const addDialogPackage = useCallback(() => {
@@ -29,25 +32,26 @@ export default function DialoguePage() {
 			dialogList: [],
 		};
 		const newPackages = [...data.dialogPackages, newPkg];
-		setData({ ...data, dialogPackages: newPackages });
+		updateResourcePack(() => ({ ...data, dialogPackages: newPackages }));
 		setSelectedIndex(newPackages.length - 1);
-		setHasUnsavedChanges(true);
-	}, [data, setData, setHasUnsavedChanges]);
+	}, [data, updateResourcePack]);
 
 	const removeDialogPackage = useCallback(
 		(index: number) => {
 			const newPackages = data.dialogPackages.filter(
 				(_, i) => i !== index
 			);
-			setData({ ...data, dialogPackages: newPackages });
+			updateResourcePack(() => ({
+				...data,
+				dialogPackages: newPackages,
+			}));
 			if (selectedIndex === index) {
 				setSelectedIndex(newPackages.length > 0 ? 0 : null);
 			} else if (selectedIndex !== null && selectedIndex > index) {
 				setSelectedIndex(selectedIndex - 1);
 			}
-			setHasUnsavedChanges(true);
 		},
-		[data, selectedIndex, setData, setHasUnsavedChanges]
+		[data, selectedIndex, updateResourcePack]
 	);
 
 	const updateDialogPackage = useCallback(
@@ -60,10 +64,12 @@ export default function DialoguePage() {
 				...newPackages[index],
 				...updates,
 			} as DialogPackage;
-			setData({ ...data, dialogPackages: newPackages });
-			setHasUnsavedChanges(true);
+			updateResourcePack(() => ({
+				...data,
+				dialogPackages: newPackages,
+			}));
 		},
-		[data, setData, setHasUnsavedChanges]
+		[data, updateResourcePack]
 	);
 
 	const addDialog = useCallback(
@@ -135,10 +141,12 @@ export default function DialoguePage() {
 			} else {
 				pkg.dialogList = [...pkg.dialogList, newDialog];
 			}
-			setData({ ...data, dialogPackages: newPackages });
-			setHasUnsavedChanges(true);
+			updateResourcePack(() => ({
+				...data,
+				dialogPackages: newPackages,
+			}));
 		},
-		[data, selectedIndex, setData, setHasUnsavedChanges]
+		[data, selectedIndex, updateResourcePack]
 	);
 
 	const removeDialog = useCallback(
@@ -157,10 +165,12 @@ export default function DialoguePage() {
 			}
 
 			pkg.dialogList = pkg.dialogList.filter((_, i) => i !== dialogIndex);
-			setData({ ...data, dialogPackages: newPackages });
-			setHasUnsavedChanges(true);
+			updateResourcePack(() => ({
+				...data,
+				dialogPackages: newPackages,
+			}));
 		},
-		[data, selectedIndex, setData, setHasUnsavedChanges]
+		[data, selectedIndex, updateResourcePack]
 	);
 
 	const updateDialog = useCallback(
@@ -179,10 +189,12 @@ export default function DialoguePage() {
 				...pkg.dialogList[dialogIndex],
 				...updates,
 			} as Dialog;
-			setData({ ...data, dialogPackages: newPackages });
-			setHasUnsavedChanges(true);
+			updateResourcePack(() => ({
+				...data,
+				dialogPackages: newPackages,
+			}));
 		},
-		[data, selectedIndex, setData, setHasUnsavedChanges]
+		[data, selectedIndex, updateResourcePack]
 	);
 
 	const selectedPackage = useMemo(

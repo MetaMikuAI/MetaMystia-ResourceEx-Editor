@@ -6,11 +6,12 @@ import { IdRangeBadge } from '@/components/common/IdRangeBadge';
 import { Label } from '@/components/common/Label';
 import { SpriteUploader } from '@/components/common/SpriteUploader';
 import { TagsField } from '@/components/common/TagsField';
-import { useData } from '@/components/context/DataContext';
 
 import { BEVERAGE_TAGS } from '@/data/tags';
 
-import type { Beverage } from '@/types/resource';
+import type { Beverage } from '@/domain/resourcePack/contracts/items';
+
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 interface BeverageEditorProps {
 	beverage: Beverage | null;
@@ -28,7 +29,7 @@ export const BeverageEditor = memo<BeverageEditorProps>(
 
 		const isIdTooSmall = beverage && beverage.id < 9000;
 
-		const { getAssetUrl, updateAsset } = useData();
+		const { getAssetUrl, updateAsset } = useResourceEditor();
 
 		const handleSpriteUpdate = useCallback(
 			(blob: Blob) => {

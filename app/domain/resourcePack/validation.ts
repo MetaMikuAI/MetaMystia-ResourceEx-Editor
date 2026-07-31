@@ -1,38 +1,39 @@
 import {
 	GAME_ID_MAX,
-	UNMANAGED_ID_MIN,
-	UNMANAGED_ID_MAX,
-	verifyIdRange,
-} from '@/infrastructure/browser/crypto/idRangeSignature';
-import {
 	isValidPackLabel,
+	KNOWN_DEPENDENCIES,
 	PACK_LABEL_ALLOWED_DESCRIPTION,
-} from '@/lib/constants';
-import type { ResourceEx } from '@/types/resource';
+	UNMANAGED_ID_MAX,
+	UNMANAGED_ID_MIN,
+} from './constants';
+import type { ResourceEx } from './contracts/resourceEx';
 
 export type IssueSeverity = 'error' | 'warning';
 
-export interface ValidationIssue {
+export interface IResourcePackValidationIssue {
 	severity: IssueSeverity;
 	category: string;
 	message: string;
 }
 
+export interface IValidateResourcePackRulesOptions {
+	availableAssetPaths?: ReadonlySet<string>;
+	isIdSignatureValid?: boolean;
+}
+
 /**
  * 对整个资源包进行全面验证，返回所有问题列表。
- * 不依赖 React hooks，签名验证为异步操作。
+ * 只执行同步领域规则；签名验证结果由 feature orchestration 预先计算。
  *
  * @param data 待校验的资源包数据。
- * @param availableAssetPaths 当前项目内已存在的资产路径集合（来自 DataContext.assetUrls）。
- *   传入后可校验 dialog action 等模块对 sprite 的引用是否实际存在。
- *   未传入时跳过资产存在性检查，保持向后兼容。
+ * @param options 可选资产路径集合与预先计算的签名有效性。
  */
-export async function validateResourcePack(
+export function validateResourcePackRules(
 	data: ResourceEx,
-	availableAssetPaths?: Iterable<string>
-): Promise<ValidationIssue[]> {
-	const issues: ValidationIssue[] = [];
-	const assetSet = availableAssetPaths ? new Set(availableAssetPaths) : null;
+	options: IValidateResourcePackRulesOptions = {}
+): IResourcePackValidationIssue[] {
+	const issues: IResourcePackValidationIssue[] = [];
+	const assetSet = options.availableAssetPaths ?? null;
 	const packLabel = data.packInfo.label;
 	const prefix = packLabel ? `_${packLabel}_` : '';
 
@@ -42,6 +43,14 @@ export async function validateResourcePack(
 			severity: 'warning',
 			category: '基础信息',
 			message: '资源包 Label 未设置',
+		});
+	} else if (
+		KNOWN_DEPENDENCIES.some((dependency) => dependency === packLabel)
+	) {
+		issues.push({
+			severity: 'error',
+			category: '基础信息',
+			message: `资源包标识符 (Label) 不能使用保留关键字 "${packLabel}"`,
 		});
 	} else if (!isValidPackLabel(packLabel)) {
 		issues.push({
@@ -77,13 +86,7 @@ export async function validateResourcePack(
 					'已设置 ID 分配段，但缺少签名，ID 合法性无法被游戏验证',
 			});
 		} else if (packLabel) {
-			const ok = await verifyIdRange(
-				packLabel,
-				idRangeStart!,
-				idRangeEnd!,
-				idSignature
-			);
-			if (!ok) {
+			if (options.isIdSignatureValid === false) {
 				issues.push({
 					severity: 'error',
 					category: '基础信息',
@@ -235,6 +238,7 @@ export async function validateResourcePack(
 
 					act.options.forEach((option, optionIndex) => {
 						const optionWhere = `${where} (Branch) 选项 #${optionIndex + 1}`;
+						const jump = option.jump ?? 1;
 						if (!option.text?.trim()) {
 							issues.push({
 								severity: 'error',
@@ -243,14 +247,14 @@ export async function validateResourcePack(
 							});
 						}
 						if (
-							!Number.isInteger(option.jump) ||
-							option.jump < 1 ||
-							option.jump > maxJump
+							!Number.isInteger(jump) ||
+							jump < 1 ||
+							jump > maxJump
 						) {
 							issues.push({
 								severity: 'error',
 								category: '对话动作',
-								message: `${optionWhere} 的跳转目标 ${option.jump} 无效，应为 1-${maxJump}`,
+								message: `${optionWhere} 的跳转目标 ${jump} 无效，应为 1-${maxJump}`,
 							});
 						}
 						if (

@@ -17,10 +17,12 @@ import type {
 	Beverage,
 	Food,
 	Ingredient,
+	Recipe,
+} from '@/domain/resourcePack/contracts/items';
+import type {
 	ProductConfig,
 	ProductType,
-	Recipe,
-} from '@/types/resource';
+} from '@/domain/resourcePack/contracts/merchant';
 
 const ALL_PRODUCT_TYPES: { value: ProductType; label: string }[] = [
 	{ value: 'Food', label: 'Food' },

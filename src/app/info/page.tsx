@@ -1,24 +1,30 @@
 'use client';
 
-import { useData } from '@/components/context/DataContext';
+import { ArrayFieldEditor } from '@/components/common/ArrayFieldEditor';
 import { EditorField } from '@/components/common/EditorField';
 import { SectionAddButton } from '@/components/common/SectionAddButton';
-import { TextInput } from '@/components/common/TextInput';
 import { TextArea } from '@/components/common/TextArea';
-import { ArrayFieldEditor } from '@/components/common/ArrayFieldEditor';
+import { TextInput } from '@/components/common/TextInput';
 import { useVersionValidation } from '@/components/common/useVersionValidation';
-import { IdRangeEditor } from '@/components/info/IdRangeEditor';
 import { DependencySelector } from '@/components/info/DependencySelector';
-import type { PackInfo } from '@/types/resource';
+import { IdRangeEditor } from '@/components/info/IdRangeEditor';
+
 import {
 	KNOWN_DEPENDENCIES,
 	PACK_LABEL_ALLOWED_DESCRIPTION,
 	PACK_LABEL_ALLOWED_PATTERN,
-} from '@/lib/constants';
+} from '@/domain/resourcePack/constants';
+import type { PackInfo } from '@/domain/resourcePack/contracts/resourceEx';
+
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 export default function InfoPage() {
-	const { data, setData, setHasUnsavedChanges, license, setLicense } =
-		useData();
+	const {
+		license,
+		replaceLicense,
+		resourcePack: data,
+		updateResourcePack,
+	} = useResourceEditor();
 	const packInfo = data.packInfo || {};
 	const isVersionValid = useVersionValidation(packInfo.version);
 	const labelValue = packInfo.label || '';
@@ -29,8 +35,10 @@ export default function InfoPage() {
 
 	// Update handler
 	const updatePackInfo = (updates: Partial<PackInfo>) => {
-		setData({ ...data, packInfo: { ...packInfo, ...updates } });
-		setHasUnsavedChanges(true);
+		updateResourcePack(() => ({
+			...data,
+			packInfo: { ...packInfo, ...updates },
+		}));
 	};
 
 	// Array field handlers
@@ -164,7 +172,7 @@ export default function InfoPage() {
 					<EditorField label="许可证 (License)">
 						<TextArea
 							value={license}
-							onChange={(e) => setLicense(e.target.value)}
+							onChange={(e) => replaceLicense(e.target.value)}
 							placeholder="在此处粘贴许可证文本，将单独保存为 LICENSE.md..."
 							autoResize
 						/>

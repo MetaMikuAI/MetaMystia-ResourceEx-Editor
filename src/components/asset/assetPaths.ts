@@ -1,4 +1,4 @@
-import type { AssetPathOperation } from '@/types/resource';
+import type { IAssetPathOperation } from '@/features/resourceEditor/client/assets/contracts';
 
 export type AssetEntryKind = 'folder' | 'image' | 'audio' | 'file';
 
@@ -215,12 +215,12 @@ export function buildAssetPathOperations(
 	assetPaths: string[],
 	targetFolder: string,
 	mode: 'copy' | 'move'
-): AssetPathOperation[] | null {
+): IAssetPathOperation[] | null {
 	const roots = compactAssetSelection(selectedPaths);
 	const target = targetFolder.endsWith('/')
 		? targetFolder
 		: `${targetFolder}/`;
-	const operations: AssetPathOperation[] = [];
+	const operations: IAssetPathOperation[] = [];
 
 	for (const root of roots) {
 		if (root.endsWith('/')) {

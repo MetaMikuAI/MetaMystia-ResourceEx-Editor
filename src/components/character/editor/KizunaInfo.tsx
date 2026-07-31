@@ -7,7 +7,9 @@ import { ChevronRight } from '@/components/icons/ChevronRight';
 
 import Switch from '@/design/ui/components/switch';
 
-import type { DialogPackage, EventNode, KizunaInfo } from '@/types/resource';
+import type { KizunaInfo } from '@/domain/resourcePack/contracts/character';
+import type { DialogPackage } from '@/domain/resourcePack/contracts/dialogue';
+import type { EventNode } from '@/domain/resourcePack/contracts/event';
 
 import { DIALOG_FIELDS, EVENT_FIELDS, MAP_FIELD } from './kizuna/constants';
 import { DialogArrayField } from './kizuna/DialogArrayField';

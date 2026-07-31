@@ -8,7 +8,8 @@ import { SPECIAL_PORTRAITS } from '@/data/specialPortraits';
 
 import { Select } from '@/design/ui/components/select';
 
-import type { Character, Dialog } from '@/types/resource';
+import type { Character } from '@/domain/resourcePack/contracts/character';
+import type { Dialog } from '@/domain/resourcePack/contracts/dialogue';
 
 interface DialogFormFieldsProps {
 	dialog: Dialog;

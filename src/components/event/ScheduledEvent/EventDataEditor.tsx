@@ -6,7 +6,8 @@ import { WarningNotice } from '@/components/common/WarningNotice';
 
 import { Select } from '@/design/ui/components/select';
 
-import type { DialogPackage, ScheduledEvent } from '@/types/resource';
+import type { DialogPackage } from '@/domain/resourcePack/contracts/dialogue';
+import type { ScheduledEvent } from '@/domain/resourcePack/contracts/event';
 
 type EventType = NonNullable<ScheduledEvent['eventData']>['eventType'];
 

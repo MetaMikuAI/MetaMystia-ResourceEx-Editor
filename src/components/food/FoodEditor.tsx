@@ -6,11 +6,12 @@ import { IdRangeBadge } from '@/components/common/IdRangeBadge';
 import { Label } from '@/components/common/Label';
 import { SpriteUploader } from '@/components/common/SpriteUploader';
 import { TagsField } from '@/components/common/TagsField';
-import { useData } from '@/components/context/DataContext';
 
 import { FOOD_TAGS } from '@/data/tags';
 
-import type { Food } from '@/types/resource';
+import type { Food } from '@/domain/resourcePack/contracts/items';
+
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 interface FoodEditorProps {
 	food: Food | null;
@@ -30,7 +31,7 @@ export const FoodEditor = memo<FoodEditorProps>(function FoodEditor({
 
 	const isIdTooSmall = food && food.id < 9000;
 
-	const { getAssetUrl, updateAsset } = useData();
+	const { getAssetUrl, updateAsset } = useResourceEditor();
 
 	const handleSpriteUpdate = useCallback(
 		(blob: Blob) => {

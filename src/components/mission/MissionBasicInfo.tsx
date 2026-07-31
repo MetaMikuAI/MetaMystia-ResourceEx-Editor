@@ -7,7 +7,11 @@ import { WarningBadge } from '@/components/common/WarningBadge';
 import Button from '@/design/ui/components/button';
 import { Select } from '@/design/ui/components/select';
 
-import type { Character, MissionNode, MissionType } from '@/types/resource';
+import type { Character } from '@/domain/resourcePack/contracts/character';
+import type {
+	MissionNode,
+	MissionType,
+} from '@/domain/resourcePack/contracts/mission';
 
 interface MissionBasicInfoProps {
 	mission: MissionNode;

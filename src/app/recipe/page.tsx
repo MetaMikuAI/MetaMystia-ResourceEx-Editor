@@ -2,16 +2,16 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
-import { useData } from '@/components/context/DataContext';
-
+import { FoodPreviewDialog } from '@/components/food/FoodPreviewDialog';
 import { RecipeEditor } from '@/components/recipe/RecipeEditor';
 import { RecipeList } from '@/components/recipe/RecipeList';
-import { FoodPreviewDialog } from '@/components/food/FoodPreviewDialog';
 
-import type { Recipe } from '@/types/resource';
+import type { Recipe } from '@/domain/resourcePack/contracts/items';
+
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 export default function RecipePage() {
-	const { data, setData, setHasUnsavedChanges } = useData();
+	const { resourcePack: data, updateResourcePack } = useResourceEditor();
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 	const [previewFoodId, setPreviewFoodId] = useState<number | null>(null);
 
@@ -38,25 +38,23 @@ export default function RecipePage() {
 			cookerType: 'Pot',
 		};
 		const newRecipes = [...(data.recipes || []), newRecipe];
-		setData({ ...data, recipes: newRecipes });
+		updateResourcePack(() => ({ ...data, recipes: newRecipes }));
 		setSelectedIndex(newRecipes.length - 1);
-		setHasUnsavedChanges(true);
-	}, [data, setData, setHasUnsavedChanges]);
+	}, [data, updateResourcePack]);
 
 	const removeRecipe = useCallback(
 		(index: number) => {
 			const newRecipes = (data.recipes || []).filter(
 				(_, i) => i !== index
 			);
-			setData({ ...data, recipes: newRecipes });
+			updateResourcePack(() => ({ ...data, recipes: newRecipes }));
 			if (selectedIndex === index) {
 				setSelectedIndex(newRecipes.length > 0 ? 0 : null);
 			} else if (selectedIndex !== null && selectedIndex > index) {
 				setSelectedIndex(selectedIndex - 1);
 			}
-			setHasUnsavedChanges(true);
 		},
-		[data, selectedIndex, setData, setHasUnsavedChanges]
+		[data, selectedIndex, updateResourcePack]
 	);
 
 	const updateRecipe = useCallback(
@@ -66,10 +64,9 @@ export default function RecipePage() {
 			}
 			const newRecipes = [...(data.recipes || [])];
 			newRecipes[index] = { ...newRecipes[index], ...updates } as Recipe;
-			setData({ ...data, recipes: newRecipes });
-			setHasUnsavedChanges(true);
+			updateResourcePack(() => ({ ...data, recipes: newRecipes }));
 		},
-		[data, setData, setHasUnsavedChanges]
+		[data, updateResourcePack]
 	);
 
 	const selectedRecipe = useMemo(

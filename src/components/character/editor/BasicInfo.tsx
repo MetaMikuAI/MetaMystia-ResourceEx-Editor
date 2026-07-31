@@ -7,7 +7,7 @@ import { Label } from '@/components/common/Label';
 import { useLabelPrefixValidation } from '@/components/common/useLabelPrefixValidation';
 import { WarningBadge } from '@/components/common/WarningBadge';
 
-import type { Character } from '@/types/resource';
+import type { Character } from '@/domain/resourcePack/contracts/character';
 
 interface BasicInfoProps {
 	character: Character;

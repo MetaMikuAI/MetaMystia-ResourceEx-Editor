@@ -9,7 +9,7 @@ import { FOOD_NAMES } from '@/data/foods';
 import Button from '@/design/ui/components/button';
 import Card from '@/design/ui/components/card';
 
-import type { Recipe } from '@/types/resource';
+import type { Recipe } from '@/domain/resourcePack/contracts/items';
 
 interface RecipeListProps {
 	recipes: Recipe[];

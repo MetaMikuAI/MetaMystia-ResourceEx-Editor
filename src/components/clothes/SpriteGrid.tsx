@@ -1,7 +1,10 @@
 import { memo, useCallback } from 'react';
 
-import { useData } from '@/components/context/DataContext';
 import { InfoTip } from '@/components/common/InfoTip';
+
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
+
+import { readImageDimensions } from '@/infrastructure/browser/images/readImageDimensions';
 
 interface SpriteGridProps {
 	label: string;
@@ -22,27 +25,29 @@ export const SpriteGrid = memo<SpriteGridProps>(function SpriteGrid({
 	basePath,
 	onUpload,
 }) {
-	const { getAssetUrl } = useData();
+	const { getAssetUrl } = useResourceEditor();
 
 	const handleUpload = useCallback(
-		(index: number, file: File) => {
-			const img = new Image();
-			img.src = URL.createObjectURL(file);
-			img.onload = () => {
-				URL.revokeObjectURL(img.src);
-				if (img.width !== 64 || img.height !== 64) {
-					alert(
-						`错误: Sprite 贴图尺寸必须为 64x64，当前为 ${img.width}x${img.height}`
-					);
-					return;
-				}
+		async (index: number, file: File) => {
+			let dimensions;
+			try {
+				dimensions = await readImageDimensions(file);
+			} catch {
+				alert('错误: 无法读取 Sprite 贴图尺寸');
+				return;
+			}
+			if (dimensions.width !== 64 || dimensions.height !== 64) {
+				alert(
+					`错误: Sprite 贴图尺寸必须为 64x64，当前为 ${dimensions.width}x${dimensions.height}`
+				);
+				return;
+			}
 
-				const row = Math.floor(index / cols);
-				const col = index % cols;
-				const filename = `${prefix}_${row}, ${col}.png`;
-				const path = `${basePath}/${filename}`;
-				onUpload(index, path, file);
-			};
+			const row = Math.floor(index / cols);
+			const col = index % cols;
+			const filename = `${prefix}_${row}, ${col}.png`;
+			const path = `${basePath}/${filename}`;
+			onUpload(index, path, file);
 		},
 		[cols, prefix, basePath, onUpload]
 	);

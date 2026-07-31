@@ -3,6 +3,8 @@
 import { cn } from '@heroui/theme';
 import { memo, useCallback, useState } from 'react';
 
+import { readImageDimensions } from '@/infrastructure/browser/images/readImageDimensions';
+
 interface SpriteUploaderProps {
 	spriteUrl: string | null;
 	spritePath: string;
@@ -23,31 +25,18 @@ export const SpriteUploader = memo<SpriteUploaderProps>(
 
 		const processFile = useCallback(
 			async (file: File) => {
-				const img = new Image();
-				const url = URL.createObjectURL(file);
-				img.src = url;
-
-				await new Promise<void>((resolve, reject) => {
-					img.onload = () => {
-						if (
-							img.width !== recommendedSize.width ||
-							img.height !== recommendedSize.height
-						) {
-							const proceed = confirm(
-								`当前图片尺寸为 ${img.width}x${img.height}，建议尺寸为 ${recommendedSize.width}x${recommendedSize.height} 像素。\n\n是否继续上传？`
-							);
-							if (!proceed) {
-								URL.revokeObjectURL(url);
-								reject(new Error('Cancelled'));
-								return;
-							}
-						}
-						resolve();
-					};
-					img.onerror = () => resolve();
-				});
-
-				URL.revokeObjectURL(url);
+				const { height, width } = await readImageDimensions(file);
+				if (
+					width !== recommendedSize.width ||
+					height !== recommendedSize.height
+				) {
+					const shouldUpload = confirm(
+						`当前图片尺寸为 ${width}x${height}，建议尺寸为 ${recommendedSize.width}x${recommendedSize.height} 像素。\n\n是否继续上传？`
+					);
+					if (!shouldUpload) {
+						throw new Error('Cancelled');
+					}
+				}
 
 				const blob = new Blob([await file.arrayBuffer()], {
 					type: file.type,

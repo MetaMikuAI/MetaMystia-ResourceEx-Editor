@@ -7,10 +7,14 @@ import { InfoTip } from '@/components/common/InfoTip';
 import { Label } from '@/components/common/Label';
 import { PortraitUploader } from '@/components/common/PortraitUploader';
 import { SpriteUploader } from '@/components/common/SpriteUploader';
-import { useData } from '@/components/context/DataContext';
 import { ChevronRight } from '@/components/icons/ChevronRight';
 
-import type { Clothes, PixelFullConfig } from '@/types/resource';
+import type {
+	Clothes,
+	PixelFullConfig,
+} from '@/domain/resourcePack/contracts/items';
+
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import { SpriteGrid } from './SpriteGrid';
 
@@ -67,14 +71,14 @@ export const ClothesEditor = memo<ClothesEditorProps>(function ClothesEditor({
 
 	const isIdTooSmall = clothes && clothes.id < 9000;
 
-	const { data, getAssetUrl, updateAsset } = useData();
+	const { getAssetUrl, resourcePack, updateAsset } = useResourceEditor();
 
 	const autoName = useMemo(() => {
 		if (!clothes) return '';
-		const packLabel = data.packInfo?.label || 'ResourceExample';
+		const packLabel = resourcePack.packInfo.label || 'ResourceExample';
 		const clothesName = clothes.name || 'Unnamed';
 		return `_${packLabel}_Clothes_${clothes.id}_${clothesName}`;
-	}, [clothes, data.packInfo?.label]);
+	}, [clothes, resourcePack.packInfo.label]);
 
 	useEffect(() => {
 		if (!clothes || clothes.pixelFullConfig.name === autoName) return;

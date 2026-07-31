@@ -7,7 +7,7 @@ import { WarningBadge } from '@/components/common/WarningBadge';
 
 import Button from '@/design/ui/components/button';
 
-import type { MissionNode } from '@/types/resource';
+import type { MissionNode } from '@/domain/resourcePack/contracts/mission';
 
 interface MissionListProps {
 	missions: MissionNode[];

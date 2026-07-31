@@ -7,7 +7,7 @@ import { WarningBadge } from '@/components/common/WarningBadge';
 
 import Button from '@/design/ui/components/button';
 
-import type { Character } from '@/types/resource';
+import type { Character } from '@/domain/resourcePack/contracts/character';
 
 interface CharacterListProps {
 	characters: Character[];

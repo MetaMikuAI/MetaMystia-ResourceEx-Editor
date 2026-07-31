@@ -5,12 +5,13 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { Label } from '@/components/common/Label';
 import { PortraitUploader } from '@/components/common/PortraitUploader';
 import { SectionAddButton } from '@/components/common/SectionAddButton';
-import { useData } from '@/components/context/DataContext';
 import { ChevronRight } from '@/components/icons/ChevronRight';
 
 import Button from '@/design/ui/components/button';
 
-import { CharacterPortrait } from '@/types/resource';
+import type { CharacterPortrait } from '@/domain/resourcePack/contracts/character';
+
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 interface PortraitsProps {
 	characterId: number;
@@ -32,7 +33,7 @@ export function Portraits({
 	onSetDefault,
 }: PortraitsProps) {
 	const [isExpanded, setIsExpanded] = useState(true);
-	const { updateAsset } = useData();
+	const { updateAsset } = useResourceEditor();
 
 	const isPidDuplicate = (pid: number, currentIndex: number) => {
 		return portraits.some((p, i) => i !== currentIndex && p.pid === pid);

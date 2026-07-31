@@ -2,7 +2,6 @@
 
 import { memo, useMemo } from 'react';
 
-import { useData } from '@/components/context/DataContext';
 import {
 	CookerPreviewIcon,
 	IngredientPreviewIcon,
@@ -12,6 +11,8 @@ import { FOOD_NAMES } from '@/data/foods';
 import { FOOD_TAGS } from '@/data/tags';
 
 import Modal from '@/design/ui/components/modal';
+
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 interface FoodPreviewDialogProps {
 	foodId: number | null;
@@ -51,7 +52,7 @@ function renderDescription(description: string) {
 
 export const FoodPreviewDialog = memo<FoodPreviewDialogProps>(
 	function FoodPreviewDialog({ foodId, isOpen, onClose }) {
-		const { data, getAssetUrl } = useData();
+		const { getAssetUrl, resourcePack: data } = useResourceEditor();
 		const food = useMemo(
 			() => data.foods.find((item) => item.id === foodId),
 			[data.foods, foodId]

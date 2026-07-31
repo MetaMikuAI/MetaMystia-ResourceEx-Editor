@@ -94,7 +94,7 @@ Persistent preview URL 只由 `useAssetStore.ts` 创建和 revoke；Provider 只
 
 ### `app/infrastructure/browser`
 
-- `crypto/idRangeSignature.ts`：签名与验签、消息编码、范围和 PKCS#8 限制；
+- `crypto/idRangeSignature.ts`：签名与验签、消息编码和 PKCS#8 限制；ID 范围常量与纯规则归 domain；
 - `images/readImageDimensions.ts`：接收 Blob/File 与可选 `AbortSignal`，返回 `{width, height}`；为图片加载创建 transient object URL，并以幂等 cleanup 在成功、失败或 abort 时解除事件并 revoke。
 
 `PortraitUploader.tsx`、`SpriteUploader.tsx`、`clothes/SpriteGrid.tsx` 和 `character/editor/SpriteSet.tsx` 只调用 `readImageDimensions`，不直接调用 `URL.createObjectURL` 或 `URL.revokeObjectURL`。
@@ -262,3 +262,15 @@ Screen 通过单次 updater 完成一次用户动作；不允许先 mutation 再
 - 导入/创建/编辑/导出后的 dirty；
 - persistent/transient URL create/revoke 计数；
 - 失败路径前后 state 身份与内容。
+
+## 10. Task 5 实施结果
+
+- 首轮独立审查未通过：初版的 wire reader、revision/export snapshot、asset folder/Object URL transaction、保留 Label hard guard 与 export-view 引用同源性未完整满足本文门禁。以下为修复后实际结果，Task 5 仍等待主代理复核。
+- 本文定义的 domain/archive/assets/validation/state owner 已建立；旧 `DataContext.tsx`、context utilities、ResourceEx 类型聚合与旧常量 owner 在 caller 清零后删除。业务 Screen 当前仍位于 `src/`，但只通过 `useResourceEditor` 消费新 owner，最终 Screen 目录迁移归 Task 7。
+- wire 解析链已对 PackInfo、十集合实体叶子、嵌套对象与 discriminated union 做 path-aware 读取，严格区分 required/optional/显式 `undefined`/合法 `null` 并保留合法未知扩展字段；最终宽断言已移除。纯序列化与 archive truth table 由七个固定夹具和扩展错误路径 harness 验证；Branch `price` 继续按既有结果裁剪。LICENSE 仅进入 license state，缺失或空内容均不生成导出 entry，也不进入文件快照或 persistent URL。
+- 因上述 LICENSE owner 修正，Task 1 的 empty-LICENSE 包曾创建 7 个 URL（6 个普通文件加 LICENSE），Task 5 后同包只创建 6 个；missing/empty 两包连续导入的累计计数由旧 `13/6` 变为 `12/6`，创建空白后为 `12/12`。JSON、LICENSE 与普通文件的归档字节/哈希仍按固定 manifest 验证，不能把 URL 计数写成完全等价。
+- `useAssetStore` 是 persistent URL 唯一 owner，`readImageDimensions` 是 transient URL 唯一 owner。asset files/URLs 通过 transaction 先完整创建再提交，创建失败撤销本轮 URL 并保留旧 maps，提交成功后才撤销被替换 URL；folders 与 files/URLs 一样由 ref-backed 最新状态读取。源码扫描没有其他 Blob URL 调用；真实浏览器覆盖重复导入、创建空白、SpriteUploader 有效确认/尺寸取消/损坏输入，Task 3 adapter harness 继续覆盖 load/error/abort。
+- Provider 的 ref guard 防止同类 archive 操作并发提交，并向 Navbar 暴露 pending 状态禁用入口；所有 ResourceEx、LICENSE、文件和目录 mutation 同步增加 revision 并原子标脏。Navbar 把 validation 结果绑定当时 revision；export orchestration 只读取该 revision 的一致快照，写包/下载后仅在 revision 未变化时 clean，期间的新 mutation 不会被旧导出清除。import/create blank 成功替换后增加 revision 并 clean，取消/失败不清 state。
+- 领域 validation 与 export orchestration 的不可绕过 hard guard 都拒绝 `CORE`、`DLC1` 和非法 Label。`createResourcePackExportView` 从同一深拷贝、业务裁剪、trim、CRLF 结果同时产生 JSON、下载用 ResourceEx view 与引用集；带空白的非 `assets/` 引用已有实际 ZIP entry/bytes 证明。
+- `.tmp/task5-state-harness.mjs` 覆盖 deferred revision snapshot/dirty、stale validation、Label hard guard、replace/update/remove/copy/move URL 序列、失败回滚和幂等 dispose。focused React/Playwright probe 覆盖旧异步 uploader callback 不回退新 folder，以及 StrictMode/unmount 下每个 persistent URL 恰好 revoke 一次。
+- 本阶段未逐一真实 UI 重跑其余三个图片 caller与资产复制/移动/删除；共享 owner 和确定性 transaction harness 已覆盖其共同边界，这些真实交互仍进入 Task 9 完整回归。当前没有自动化测试套件，确定性脚本只作为任务 harness。

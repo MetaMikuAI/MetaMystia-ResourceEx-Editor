@@ -2,7 +2,7 @@ import { memo } from 'react';
 
 import Button from '@/design/ui/components/button';
 
-import type { Dialog } from '@/types/resource';
+import type { Dialog } from '@/domain/resourcePack/contracts/dialogue';
 
 interface DialogItemHeaderProps {
 	index: number;

@@ -6,7 +6,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import Button from '@/design/ui/components/button';
 import Card from '@/design/ui/components/card';
 
-import type { Ingredient } from '@/types/resource';
+import type { Ingredient } from '@/domain/resourcePack/contracts/items';
 
 interface IngredientListProps {
 	ingredients: Ingredient[];

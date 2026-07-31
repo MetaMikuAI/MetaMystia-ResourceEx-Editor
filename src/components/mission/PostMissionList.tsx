@@ -7,7 +7,7 @@ import { SectionAddButton } from '@/components/common/SectionAddButton';
 import Button from '@/design/ui/components/button';
 import { Select } from '@/design/ui/components/select';
 
-import type { MissionNode } from '@/types/resource';
+import type { MissionNode } from '@/domain/resourcePack/contracts/mission';
 
 interface PostMissionListProps {
 	postMissions: string[] | undefined;

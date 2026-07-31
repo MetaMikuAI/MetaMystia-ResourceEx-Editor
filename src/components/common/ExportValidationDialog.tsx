@@ -6,10 +6,10 @@ import { memo, useMemo, useState } from 'react';
 import Button from '@/design/ui/components/button';
 import Modal from '@/design/ui/components/modal';
 
-import type { ValidationIssue } from './validateResourcePack';
+import { type IResourcePackValidationIssue } from '@/domain/resourcePack/validation';
 
 interface ExportValidationDialogProps {
-	issues: ValidationIssue[];
+	issues: IResourcePackValidationIssue[];
 	onConfirm: () => void;
 	onCancel: () => void;
 }
@@ -150,7 +150,7 @@ function IssueGroup({
 	severity,
 }: {
 	category: string;
-	items: ValidationIssue[];
+	items: IResourcePackValidationIssue[];
 	severity: 'error' | 'warning';
 }) {
 	return (
@@ -185,9 +185,9 @@ function IssueGroup({
 }
 
 function groupByCategory(
-	items: ValidationIssue[]
-): Record<string, ValidationIssue[]> {
-	const groups: Record<string, ValidationIssue[]> = {};
+	items: IResourcePackValidationIssue[]
+): Record<string, IResourcePackValidationIssue[]> {
+	const groups: Record<string, IResourcePackValidationIssue[]> = {};
 	for (const item of items) {
 		if (!groups[item.category]) groups[item.category] = [];
 		groups[item.category]!.push(item);

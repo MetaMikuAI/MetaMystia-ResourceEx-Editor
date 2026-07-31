@@ -3,7 +3,9 @@
 import { cn } from '@heroui/theme';
 import { useCallback, useEffect, useState } from 'react';
 
-import { useData } from '@/components/context/DataContext';
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
+
+import { readImageDimensions } from '@/infrastructure/browser/images/readImageDimensions';
 
 interface PortraitUploaderProps {
 	spritePath: string;
@@ -20,23 +22,26 @@ export function PortraitUploader({
 	height = 359,
 	className,
 }: PortraitUploaderProps) {
-	const { getAssetUrl } = useData();
+	const { getAssetUrl } = useResourceEditor();
 	const [warning, setWarning] = useState<string>('');
 
 	const checkImageSize = useCallback(
-		(file: File) => {
-			const img = new Image();
-			img.src = URL.createObjectURL(file);
-			img.onload = () => {
-				if (img.width !== width || img.height !== height) {
+		async (file: File) => {
+			try {
+				const dimensions = await readImageDimensions(file);
+				if (
+					dimensions.width !== width ||
+					dimensions.height !== height
+				) {
 					setWarning(
-						`尺寸警告: ${img.width}x${img.height} (期望 ${width}x${height})`
+						`尺寸警告: ${dimensions.width}x${dimensions.height} (期望 ${width}x${height})`
 					);
 				} else {
 					setWarning('');
 				}
-				URL.revokeObjectURL(img.src);
-			};
+			} catch {
+				setWarning('无法读取图片尺寸');
+			}
 		},
 		[width, height]
 	);
@@ -44,7 +49,7 @@ export function PortraitUploader({
 	const handleFileChange = useCallback(
 		(file: File | undefined) => {
 			if (file) {
-				checkImageSize(file);
+				void checkImageSize(file);
 				onUpload(file);
 			}
 		},

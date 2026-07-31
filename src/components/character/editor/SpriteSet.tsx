@@ -6,12 +6,15 @@ import { InfoTip } from '@/components/common/InfoTip';
 import { Label } from '@/components/common/Label';
 import { useLabelPrefixValidation } from '@/components/common/useLabelPrefixValidation';
 import { WarningBadge } from '@/components/common/WarningBadge';
-import { useData } from '@/components/context/DataContext';
 import { ChevronRight } from '@/components/icons/ChevronRight';
 
 import Switch from '@/design/ui/components/switch';
 
-import { CharacterSpriteSet } from '@/types/resource';
+import type { CharacterSpriteSet } from '@/domain/resourcePack/contracts/character';
+
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
+
+import { readImageDimensions } from '@/infrastructure/browser/images/readImageDimensions';
 
 interface SpriteSetProps {
 	characterId: number;
@@ -32,7 +35,7 @@ export function SpriteSetEditor({
 	onGenerateDefaults,
 }: SpriteSetProps) {
 	const [isExpanded, setIsExpanded] = useState(false);
-	const { updateAsset, getAssetUrl } = useData();
+	const { getAssetUrl, updateAsset } = useResourceEditor();
 	const {
 		isValid: isSpriteNamePrefixValid,
 		prefix: expectedPrefix,
@@ -52,38 +55,39 @@ export function SpriteSetEditor({
 		onUpdate({ [field]: newArray });
 	};
 
-	const handleUpload = (
+	const handleUpload = async (
 		field: 'mainSprite' | 'eyeSprite',
 		index: number,
 		file: File
 	) => {
-		// Check size and reject if invalid
-		const img = new Image();
-		img.src = URL.createObjectURL(file);
-		img.onload = () => {
-			URL.revokeObjectURL(img.src);
-			if (img.width !== 64 || img.height !== 64) {
-				alert(
-					`错误: Sprite Set 贴图尺寸必须为 64x64，当前为 ${img.width}x${img.height}`
-				);
-				return;
-			}
+		let dimensions;
+		try {
+			dimensions = await readImageDimensions(file);
+		} catch {
+			alert('错误: 无法读取 Sprite Set 贴图尺寸');
+			return;
+		}
+		if (dimensions.width !== 64 || dimensions.height !== 64) {
+			alert(
+				`错误: Sprite Set 贴图尺寸必须为 64x64，当前为 ${dimensions.width}x${dimensions.height}`
+			);
+			return;
+		}
 
-			let filename = '';
-			if (field === 'mainSprite') {
-				const row = Math.floor(index / 3);
-				const col = index % 3;
-				filename = `Main_${row}, ${col}.png`;
-			} else {
-				const row = Math.floor(index / 4);
-				const col = index % 4;
-				filename = `Eyes_${row}, ${col}.png`;
-			}
+		let filename = '';
+		if (field === 'mainSprite') {
+			const row = Math.floor(index / 3);
+			const col = index % 3;
+			filename = `Main_${row}, ${col}.png`;
+		} else {
+			const row = Math.floor(index / 4);
+			const col = index % 4;
+			filename = `Eyes_${row}, ${col}.png`;
+		}
 
-			const path = `assets/Character/${characterId}/Sprite/${filename}`;
-			updateAsset(path, file);
-			updateSpriteArray(field, index, path);
-		};
+		const path = `assets/Character/${characterId}/Sprite/${filename}`;
+		updateAsset(path, file);
+		updateSpriteArray(field, index, path);
 	};
 
 	return (

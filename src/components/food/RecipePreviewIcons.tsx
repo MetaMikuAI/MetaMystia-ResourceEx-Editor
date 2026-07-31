@@ -1,7 +1,10 @@
 import type { CSSProperties } from 'react';
 
 import { INGREDIENT_NAMES } from '@/data/ingredients';
-import type { CookerType, Ingredient } from '@/types/resource';
+import type {
+	CookerType,
+	Ingredient,
+} from '@/domain/resourcePack/contracts/items';
 
 const DISPLAY_SIZE = 32;
 const SPRITES_PER_ROW = 10;

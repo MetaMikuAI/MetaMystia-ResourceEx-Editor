@@ -7,7 +7,6 @@ import { InfoTip } from '@/components/common/InfoTip';
 import { Label } from '@/components/common/Label';
 import { SpriteUploader } from '@/components/common/SpriteUploader';
 import { TagsField } from '@/components/common/TagsField';
-import { useData } from '@/components/context/DataContext';
 
 import {
 	INGREDIENT_PREFIX_NONE_ID,
@@ -17,7 +16,9 @@ import { FOOD_TAGS } from '@/data/tags';
 
 import { Select } from '@/design/ui/components/select';
 
-import type { Ingredient } from '@/types/resource';
+import type { Ingredient } from '@/domain/resourcePack/contracts/items';
+
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 interface IngredientEditorProps {
 	ingredient: Ingredient | null;
@@ -36,7 +37,7 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 
 		const isIdTooSmall = ingredient && ingredient.id < 9000;
 
-		const { getAssetUrl, updateAsset } = useData();
+		const { getAssetUrl, updateAsset } = useResourceEditor();
 
 		const handleSpriteUpdate = useCallback(
 			(blob: Blob) => {

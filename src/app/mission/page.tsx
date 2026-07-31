@@ -1,14 +1,17 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { useData } from '@/components/context/DataContext';
-import { MissionList } from '@/components/mission/MissionList';
+
 import MissionEditor from '@/components/mission/MissionEditor';
+import { MissionList } from '@/components/mission/MissionList';
+
 import type {
+	MissionCondition,
 	MissionNode,
 	MissionReward,
-	MissionCondition,
-} from '@/types/resource';
+} from '@/domain/resourcePack/contracts/mission';
+
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 const DEFAULT_MISSION = {
 	title: '',
@@ -24,7 +27,7 @@ const DEFAULT_MISSION = {
 };
 
 export default function MissionPage() {
-	const { data, setData, setHasUnsavedChanges } = useData();
+	const { resourcePack: data, updateResourcePack } = useResourceEditor();
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
 	const addMission = useCallback(() => {
@@ -35,10 +38,9 @@ export default function MissionPage() {
 			label: labelPrefix,
 		};
 		const newMissions = [...data.missionNodes, newMission];
-		setData({ ...data, missionNodes: newMissions });
+		updateResourcePack(() => ({ ...data, missionNodes: newMissions }));
 		setSelectedIndex(newMissions.length - 1);
-		setHasUnsavedChanges(true);
-	}, [data, setData, setHasUnsavedChanges]);
+	}, [data, updateResourcePack]);
 
 	const updateMission = useCallback(
 		(index: number | null, updates: Partial<MissionNode>) => {
@@ -48,10 +50,9 @@ export default function MissionPage() {
 				...newMissions[index],
 				...(updates as Partial<MissionNode>),
 			} as MissionNode;
-			setData({ ...data, missionNodes: newMissions });
-			setHasUnsavedChanges(true);
+			updateResourcePack(() => ({ ...data, missionNodes: newMissions }));
 		},
-		[data, setData, setHasUnsavedChanges]
+		[data, updateResourcePack]
 	);
 
 	const removeMission = useCallback(
@@ -60,11 +61,10 @@ export default function MissionPage() {
 			if (!confirm('确定要删除这个任务节点吗？')) return;
 
 			const newMissions = data.missionNodes.filter((_, i) => i !== index);
-			setData({ ...data, missionNodes: newMissions });
+			updateResourcePack(() => ({ ...data, missionNodes: newMissions }));
 			setSelectedIndex(null);
-			setHasUnsavedChanges(true);
 		},
-		[data, setData, setHasUnsavedChanges]
+		[data, updateResourcePack]
 	);
 
 	const selectedMission =

@@ -15,9 +15,9 @@ import {
 	type SelectItem as SelectItemSpec,
 } from '@/design/ui/components/select';
 
-import { safeStorage } from '@/infrastructure/browser/storage/safeStorage';
+import type { IAssetPathOperation } from '@/features/resourceEditor/client/assets/contracts';
 
-import type { AssetPathOperation } from '@/types/resource';
+import { safeStorage } from '@/infrastructure/browser/storage/safeStorage';
 
 import {
 	type AssetEntry,
@@ -34,7 +34,7 @@ import {
 
 interface AssetFileManagerProps {
 	assetUrls: Record<string, string>;
-	assetFolders?: string[];
+	assetFolders?: readonly string[];
 	packLabel?: string | undefined;
 	root?: string;
 	initialFolder?: string;
@@ -44,8 +44,8 @@ interface AssetFileManagerProps {
 	onRemove: (paths: string[]) => void;
 	onCreateFolder?: (path: string) => void;
 	onRemoveFolders?: (paths: string[]) => void;
-	onMove: (operations: AssetPathOperation[]) => void;
-	onCopy: (operations: AssetPathOperation[]) => void;
+	onMove: (operations: IAssetPathOperation[]) => void;
+	onCopy: (operations: IAssetPathOperation[]) => void;
 	onSelectFile?: (path: string) => void;
 	className?: string;
 }

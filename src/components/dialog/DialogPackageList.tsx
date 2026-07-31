@@ -9,7 +9,7 @@ import { ChevronRight } from '@/components/icons/ChevronRight';
 import Button from '@/design/ui/components/button';
 import Card from '@/design/ui/components/card';
 
-import type { DialogPackage } from '@/types/resource';
+import type { DialogPackage } from '@/domain/resourcePack/contracts/dialogue';
 
 // ─── Types ───────────────────────────────────────────────
 

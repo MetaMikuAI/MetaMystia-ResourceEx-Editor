@@ -8,16 +8,18 @@ import {
 	type SelectItem as SelectItemSpec,
 } from '@/design/ui/components/select';
 
+import type { Character } from '@/domain/resourcePack/contracts/character';
+import type { DialogPackage } from '@/domain/resourcePack/contracts/dialogue';
 import type {
 	Beverage,
-	Character,
-	DialogPackage,
 	Food,
 	Ingredient,
+	Recipe,
+} from '@/domain/resourcePack/contracts/items';
+import type {
 	MerchandiseConfig,
 	MerchantConfig,
-	Recipe,
-} from '@/types/resource';
+} from '@/domain/resourcePack/contracts/merchant';
 
 import { MerchandiseListEditor } from './MerchandiseListEditor';
 

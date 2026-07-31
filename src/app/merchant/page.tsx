@@ -2,12 +2,12 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
-import { useData } from '@/components/context/DataContext';
-
 import { MerchantEditor } from '@/components/merchant/MerchantEditor';
 import { MerchantList } from '@/components/merchant/MerchantList';
 
-import type { MerchantConfig } from '@/types/resource';
+import type { MerchantConfig } from '@/domain/resourcePack/contracts/merchant';
+
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 const DEFAULT_MERCHANT: MerchantConfig = {
 	key: '',
@@ -20,30 +20,28 @@ const DEFAULT_MERCHANT: MerchantConfig = {
 };
 
 export default function MerchantPage() {
-	const { data, setData, setHasUnsavedChanges } = useData();
+	const { resourcePack: data, updateResourcePack } = useResourceEditor();
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
 	const merchants = useMemo(() => data.merchants || [], [data.merchants]);
 
 	const addMerchant = useCallback(() => {
 		const newMerchants = [...merchants, { ...DEFAULT_MERCHANT }];
-		setData({ ...data, merchants: newMerchants });
+		updateResourcePack(() => ({ ...data, merchants: newMerchants }));
 		setSelectedIndex(newMerchants.length - 1);
-		setHasUnsavedChanges(true);
-	}, [data, merchants, setData, setHasUnsavedChanges]);
+	}, [data, merchants, updateResourcePack]);
 
 	const removeMerchant = useCallback(
 		(index: number) => {
 			const newMerchants = merchants.filter((_, i) => i !== index);
-			setData({ ...data, merchants: newMerchants });
+			updateResourcePack(() => ({ ...data, merchants: newMerchants }));
 			if (selectedIndex === index) {
 				setSelectedIndex(newMerchants.length > 0 ? 0 : null);
 			} else if (selectedIndex !== null && selectedIndex > index) {
 				setSelectedIndex(selectedIndex - 1);
 			}
-			setHasUnsavedChanges(true);
 		},
-		[data, merchants, selectedIndex, setData, setHasUnsavedChanges]
+		[data, merchants, selectedIndex, updateResourcePack]
 	);
 
 	const updateMerchant = useCallback(
@@ -54,10 +52,9 @@ export default function MerchantPage() {
 				...newMerchants[index],
 				...updates,
 			} as MerchantConfig;
-			setData({ ...data, merchants: newMerchants });
-			setHasUnsavedChanges(true);
+			updateResourcePack(() => ({ ...data, merchants: newMerchants }));
 		},
-		[data, merchants, setData, setHasUnsavedChanges]
+		[data, merchants, updateResourcePack]
 	);
 
 	const selectedMerchant = useMemo(

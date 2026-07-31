@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { useData } from '@/components/context/DataContext';
-
 import {
 	GAME_ID_MAX,
-	UNMANAGED_ID_MIN,
 	UNMANAGED_ID_MAX,
-	verifyIdRange,
-} from '@/infrastructure/browser/crypto/idRangeSignature';
+	UNMANAGED_ID_MIN,
+} from '@/domain/resourcePack/constants';
+
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
+
+import { verifyIdRange } from '@/infrastructure/browser/crypto/idRangeSignature';
 
 export type IdRangeStatus =
 	/** ID is within the signed allocation – all good */
@@ -30,9 +31,9 @@ export type IdRangeStatus =
  * situation (game-reserved IDs) or the id is NaN (empty field).
  */
 export function useIdRangeValidation(id: number): IdRangeStatus | null {
-	const { data } = useData();
+	const { resourcePack } = useResourceEditor();
 	const { label, idRangeStart, idRangeEnd, idSignature } =
-		data.packInfo || {};
+		resourcePack.packInfo;
 
 	const [signatureValid, setSignatureValid] = useState<boolean | null>(null);
 

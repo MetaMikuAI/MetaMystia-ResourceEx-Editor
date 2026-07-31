@@ -11,10 +11,12 @@ import type {
 	Beverage,
 	Food,
 	Ingredient,
+	Recipe,
+} from '@/domain/resourcePack/contracts/items';
+import type {
 	MerchandiseConfig,
 	ProductConfig,
-	Recipe,
-} from '@/types/resource';
+} from '@/domain/resourcePack/contracts/merchant';
 
 import { ProductEditor } from './ProductEditor';
 
