@@ -10,5 +10,9 @@ export default function Home() {
 		router.replace('/info');
 	}, [router]);
 
-	return null;
+	return (
+		<noscript>
+			<a href="/info">前往基础信息编辑器</a>
+		</noscript>
+	);
 }

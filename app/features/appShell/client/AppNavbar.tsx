@@ -268,7 +268,6 @@ export const AppNavbar = memo(function AppNavbar() {
 				isBordered
 				isBlurred
 				position="sticky"
-				height="4rem"
 				disableAnimation={isReducedMotion}
 				isMenuOpen={isMenuOpen}
 				onMenuOpenChange={setIsMenuOpen}
@@ -385,7 +384,7 @@ export const AppNavbar = memo(function AppNavbar() {
 					/>
 				</NavbarContent>
 
-				<NavbarMenu className="gap-3 overflow-y-auto pb-8 pt-4">
+				<NavbarMenu className="mobile-navbar-menu-scroll gap-3 overflow-y-auto pb-8 pt-4">
 					{[
 						{
 							label: '资源包',

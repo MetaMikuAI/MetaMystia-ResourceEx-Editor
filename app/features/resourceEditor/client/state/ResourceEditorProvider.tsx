@@ -24,6 +24,8 @@ import type {
 import { runResourcePackExport } from './runResourcePackExport';
 import { ResourceEditorContext } from './useResourceEditor';
 
+import '@/features/resourceEditor/client/assets/styles.scss';
+
 function describeError(error: unknown) {
 	return error instanceof Error ? error.message : String(error);
 }

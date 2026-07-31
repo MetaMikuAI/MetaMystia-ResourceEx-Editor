@@ -19,7 +19,7 @@
 		"module": "ESNext",
 		"moduleResolution": "bundler",
 		"noUncheckedSideEffectImports": true,
-		"paths": { "@/*": ["./app/*", "./src/*"] },
+		"paths": { "@/*": ["./app/*"] },
 		"resolveJsonModule": true,
 
 		"newLine": "lf",
@@ -43,6 +43,12 @@
 		"skipLibCheck": true
 	},
 	"exclude": [".next", "node_modules"],
-	"include": ["**/*.mjs", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "next-env.d.ts"],
+	"include": [
+		"**/*.mjs",
+		"**/*.ts",
+		"**/*.tsx",
+		".next/types/**/*.ts",
+		"next-env.d.ts"
+	],
 	"types": ["*"]
 }
