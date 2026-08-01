@@ -225,10 +225,14 @@ export const ModalPresentation = memo<IModalPresentationProps>(
 			...modalClassNames
 		} = classNames ?? {};
 
-		const [defaultPortalContainer, setDefaultPortalContainer] =
-			useState<HTMLElement | null>(null);
+		const [defaultPortalContainer, setDefaultPortalContainer] = useState<
+			HTMLElement | null | undefined
+		>(undefined);
 		const resolvedPortalContainer =
 			portalContainer ?? defaultPortalContainer ?? null;
+		const isPortalContainerReady =
+			portalContainer !== undefined ||
+			defaultPortalContainer !== undefined;
 
 		const portalContainerProps =
 			resolvedPortalContainer === null
@@ -254,7 +258,7 @@ export const ModalPresentation = memo<IModalPresentationProps>(
 				backdrop={backdrop ?? (isHighAppearance ? 'blur' : 'opaque')}
 				disableAnimation={disableAnimation ?? isReducedMotion}
 				isDismissable={isDismissable}
-				isOpen={isOpen}
+				isOpen={isOpen && isPortalContainerReady}
 				scrollBehavior={scrollBehavior}
 				size={size}
 				classNames={{

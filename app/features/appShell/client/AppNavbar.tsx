@@ -72,6 +72,7 @@ const NavDropdown = memo<INavDropdownProps>(function NavDropdown({
 	label,
 }) {
 	const pathname = usePathname();
+	const router = useRouter();
 	const isActive = items.some((item) => item.href === pathname);
 
 	return (
@@ -87,12 +88,14 @@ const NavDropdown = memo<INavDropdownProps>(function NavDropdown({
 			<DropdownMenu
 				aria-label={`${label} navigation`}
 				selectionMode="none"
+				onAction={(key) => {
+					const item = items.find(({ href }) => href === String(key));
+					if (item) router.push(item.href);
+				}}
 			>
 				{items.map((item) => (
 					<DropdownItem
 						key={item.href}
-						as={Link}
-						href={item.href}
 						textValue={item.label}
 						className={pathname === item.href ? 'text-primary' : ''}
 					>

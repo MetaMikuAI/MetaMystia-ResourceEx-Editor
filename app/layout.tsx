@@ -12,7 +12,10 @@ import Providers from './providers';
 
 import './globals.scss';
 
-export const metadata: Metadata = { title: 'MetaMystia ResourceEx Editor' };
+export const metadata: Metadata = {
+	icons: { icon: '/assets/icon.png' },
+	title: 'MetaMystia ResourceEx Editor',
+};
 
 const notoSans = Noto_Sans({
 	subsets: ['latin'],

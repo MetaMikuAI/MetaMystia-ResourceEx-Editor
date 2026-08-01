@@ -112,8 +112,11 @@ export function Select<V extends TSelectValue = TSelectValue>({
 		[onChange, optionsByKey]
 	);
 
+	const selectedKey = value === undefined ? undefined : String(value);
 	const selectedKeys =
-		value === undefined ? new Set<string>() : new Set([String(value)]);
+		selectedKey !== undefined && optionsByKey.has(selectedKey)
+			? new Set([selectedKey])
+			: new Set<string>();
 	const triggerClassName =
 		classNameOverride ??
 		cn(

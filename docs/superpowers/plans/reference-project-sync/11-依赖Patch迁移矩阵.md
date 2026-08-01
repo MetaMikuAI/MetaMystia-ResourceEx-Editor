@@ -81,5 +81,5 @@
 - [x] lockfile 含 8 个 patch hash，且没有未登记的 patch；
 - [x] 安装产物中的 Google Fonts CSS/字体 URL 已替换为两个镜像域名，构建后字体落入 `_next/static/media`；
 - [x] 扫描确认没有 intercepting routes；不得把 Next Patch 的 warning 降级当作静态导出兼容证明；
-- [ ] Select、Button/Card、Tooltip、Theme/extended variants 在后续 UI 阶段按应用 patch 后的行为验收；
+- [x] Select、Button/Card、Tooltip、Theme/extended variants 已在 Task 4、Task 6 与 Task 9 按应用 patch 后的行为验收；
 - [x] patch 导入阶段只验证复制内容、安装和 lockfile；浏览器行为在对应 UI 实施 Task 验证。
