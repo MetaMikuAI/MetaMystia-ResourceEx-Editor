@@ -1,0 +1,26 @@
+import type { Character } from './character';
+import type { DialogPackage } from './dialogue';
+import type { EventNode } from './event';
+import type { Beverage, Clothes, Food, Ingredient, Recipe } from './items';
+import type { MerchantConfig } from './merchant';
+import type { MissionNode } from './mission';
+import type { PackInfo } from './resourceEx';
+
+export interface IResourcePackWire {
+	packInfo?: PackInfo;
+	name?: string;
+	label?: string;
+	authors?: string[];
+	description?: string;
+	version?: string;
+	characters?: Character[] | null;
+	dialogPackages?: DialogPackage[] | null;
+	ingredients?: Ingredient[] | null;
+	foods?: Food[] | null;
+	beverages?: Beverage[] | null;
+	recipes?: Recipe[] | null;
+	missionNodes?: MissionNode[] | null;
+	eventNodes?: EventNode[] | null;
+	merchants?: MerchantConfig[] | null;
+	clothes?: Clothes[] | null;
+}

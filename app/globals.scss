@@ -1,0 +1,69 @@
+@use '@/design/theme/runtime/styles';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+	.bg-blend-mystia {
+		@apply bg-background bg-mystia bg-cover bg-center bg-no-repeat bg-blend-overlay dark:bg-background/90;
+
+		image-rendering: pixelated;
+	}
+
+	.bg-blend-mystia-pseudo {
+		@apply before:fixed before:-z-10 before:h-full before:w-full before:bg-background before:bg-mystia before:bg-cover before:bg-center before:bg-no-repeat before:bg-blend-overlay before:content-[''] dark:before:bg-background/90;
+
+		image-rendering: pixelated;
+	}
+
+	.image-rendering-pixelated {
+		image-rendering: pixelated;
+	}
+
+	.mobile-navbar-menu-scroll {
+		overscroll-behavior: contain;
+		scrollbar-gutter: stable;
+		scrollbar-width: none;
+	}
+
+	.mobile-navbar-menu-scroll::-webkit-scrollbar {
+		display: none;
+	}
+
+	.text-autospace {
+		text-autospace: normal;
+		text-spacing-trim: normal;
+	}
+
+	.selection-custom {
+		@apply selection:bg-focus/80 selection:text-background dark:selection:text-foreground;
+	}
+}
+
+:root {
+	--navbar-height: 4rem;
+	--safe-h-dvh: 100vh;
+	scrollbar-gutter: stable;
+}
+
+@supports (height: 100dvh) {
+	:root {
+		--safe-h-dvh: 100dvh;
+	}
+}
+
+::-webkit-scrollbar {
+	@apply h-1.5 w-2;
+}
+
+::-webkit-scrollbar-thumb:horizontal {
+	@apply rounded-2xl bg-default;
+}
+
+::-webkit-scrollbar-thumb:vertical {
+	@apply rounded-2xl bg-default;
+}
+
+::-webkit-scrollbar-track-piece {
+	@apply rounded-2xl bg-default-100;
+}

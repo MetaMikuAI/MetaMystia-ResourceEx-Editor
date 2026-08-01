@@ -13,18 +13,16 @@
 		"update": "pnpm up && pnpm dedupe"
 	},
 	"dependencies": {
-		"@heroui/avatar": "2.2.7",
-		"@heroui/badge": "2.2.6",
 		"@heroui/button": "2.2.10",
 		"@heroui/card": "2.2.10",
 		"@heroui/dropdown": "2.3.10",
-		"@heroui/link": "2.2.8",
+		"@heroui/input": "2.4.10",
 		"@heroui/modal": "2.2.8",
 		"@heroui/navbar": "2.2.9",
-		"@heroui/pagination": "2.2.9",
 		"@heroui/popover": "2.3.10",
 		"@heroui/scroll-shadow": "2.3.6",
-		"@heroui/snippet": "2.2.11",
+		"@heroui/select": "2.4.10",
+		"@heroui/shared-icons": "2.1.2",
 		"@heroui/switch": "2.2.9",
 		"@heroui/system": "2.4.7",
 		"@heroui/theme": "2.4.6",
@@ -59,6 +57,16 @@
 		],
 		"overrides": {
 			"@react-aria/interactions@^3.22.3": "3.22.2"
+		},
+		"patchedDependencies": {
+			"@heroui/button": "patches/@heroui__button.patch",
+			"@heroui/ripple": "patches/@heroui__ripple.patch",
+			"@heroui/select": "patches/@heroui__select.patch",
+			"@heroui/system-rsc": "patches/@heroui__system-rsc.patch",
+			"@heroui/theme": "patches/@heroui__theme.patch",
+			"@heroui/tooltip": "patches/@heroui__tooltip.patch",
+			"@heroui/use-aria-button": "patches/@heroui__use-aria-button.patch",
+			"next": "patches/next.patch"
 		},
 		"updateConfig": {
 			"ignoreDependencies": [

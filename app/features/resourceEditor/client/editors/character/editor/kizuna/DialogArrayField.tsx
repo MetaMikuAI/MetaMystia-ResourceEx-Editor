@@ -1,0 +1,68 @@
+import { memo, useMemo } from 'react';
+
+import type { DialogPackage } from '@/domain/resourcePack/contracts/dialogue';
+
+import { Label } from '@/features/resourceEditor/client/components/fields/Label';
+import {
+	Select,
+	type SelectItem as SelectItemSpec,
+} from '@/features/resourceEditor/client/components/select/Select';
+
+import { DialogItem } from './DialogItem';
+
+interface DialogArrayFieldProps {
+	label: string;
+	dialogs: string[];
+	allDialogPackages: DialogPackage[];
+	onAdd: (dialogName: string) => void;
+	onRemove: (index: number) => void;
+}
+
+export const DialogArrayField = memo<DialogArrayFieldProps>(
+	function DialogArrayField({
+		label,
+		dialogs,
+		allDialogPackages,
+		onAdd,
+		onRemove,
+	}) {
+		const items = useMemo<SelectItemSpec<string>[]>(
+			() =>
+				allDialogPackages.map((d) => ({
+					value: d.name,
+					label: d.name,
+					isDisabled: dialogs.includes(d.name),
+				})),
+			[allDialogPackages, dialogs]
+		);
+
+		return (
+			<div className="flex min-w-0 flex-col gap-2">
+				<Label>{label}</Label>
+				<div className="flex flex-col gap-2">
+					{dialogs.length > 0 && (
+						<div className="flex min-w-0 flex-col gap-1">
+							{dialogs.map((dialog, idx) => (
+								<DialogItem
+									key={idx}
+									dialog={dialog}
+									onRemove={() => onRemove(idx)}
+								/>
+							))}
+						</div>
+					)}
+					<Select<string>
+						ariaLabel="添加对话包"
+						placeholder="添加对话包…"
+						value={undefined}
+						onChange={(v) => {
+							if (v) onAdd(v);
+						}}
+						items={items}
+						size="sm"
+					/>
+				</div>
+			</div>
+		);
+	}
+);

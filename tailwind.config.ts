@@ -1,5 +1,3 @@
-/* eslint-disable sort-keys */
-
 import { heroui } from '@heroui/theme';
 import { type Config } from 'tailwindcss';
 
@@ -9,7 +7,7 @@ import {
 	fontFamily,
 	getExtendConfig,
 	semanticColors,
-} from './src/design/theme';
+} from './app/design/theme';
 
 const herouiComponents = [
 	...Object.keys(PACKAGE.dependencies)
@@ -25,7 +23,7 @@ const herouiComponents = [
 
 const config: Config = {
 	content: [
-		'./src/**/*.{ts,tsx}',
+		'./app/**/*.{ts,tsx}',
 		`./node_modules/@heroui/theme/dist/components/(${herouiComponents.join('|')}).js`,
 	],
 	darkMode: 'selector',

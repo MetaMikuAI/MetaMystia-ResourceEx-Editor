@@ -1,0 +1,56 @@
+diff --git a/dist/compiled/@next/font/dist/google/fetch-font-file.js b/dist/compiled/@next/font/dist/google/fetch-font-file.js
+index dad5a3795e52271b7b602814ac987dcfef48b03f..ebf8132e06bfb94f3eb17fcb04e84162bdce9d3b 100644
+--- a/dist/compiled/@next/font/dist/google/fetch-font-file.js
++++ b/dist/compiled/@next/font/dist/google/fetch-font-file.js
+@@ -18,6 +18,7 @@ async function fetchFontFile(url, isDev) {
+         }
+         return Buffer.from(url);
+     }
++    url = url.replace('https://fonts.gstatic.com/', 'https://gstatic.loli.net/');
+     return await (0, retry_1.retry)(async () => {
+         return (0, fetch_resource_1.fetchResource)(url, isDev, `Failed to fetch font file from \`${url}\`.`);
+     }, 3);
+diff --git a/dist/compiled/@next/font/dist/google/get-google-fonts-url.js b/dist/compiled/@next/font/dist/google/get-google-fonts-url.js
+index 92fa91bfca34497150c579b273ce4b0bbbe41218..8ac5163b840b4a560a1485e137abf64d8af6d257 100644
+--- a/dist/compiled/@next/font/dist/google/get-google-fonts-url.js
++++ b/dist/compiled/@next/font/dist/google/get-google-fonts-url.js
+@@ -43,7 +43,7 @@ function getGoogleFontsUrl(fontFamily, axes, display) {
+             });
+         });
+     }
+-    let url = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/ /g, '+')}`;
++    let url = `https://fonts.loli.net/css2?family=${fontFamily.replace(/ /g, '+')}`;
+     if (variants.length > 0) {
+         url = `${url}:${variants[0].map(([key]) => key).join(',')}@${variants
+             .map((variant) => variant.map(([, val]) => val).join(','))
+diff --git a/dist/export/index.js b/dist/export/index.js
+index 15ec99d1dc76c363e76f8fe8cb94d34438f39d6b..dc3155592a6f5e24bdf81c93b912591add7089a4 100644
+--- a/dist/export/index.js
++++ b/dist/export/index.js
+@@ -287,11 +287,7 @@ async function exportAppImpl(dir, options, span) {
+             if ((routesManifest == null ? void 0 : (_routesManifest_rewrites = routesManifest.rewrites) == null ? void 0 : (_routesManifest_rewrites_beforeFiles = _routesManifest_rewrites.beforeFiles) == null ? void 0 : _routesManifest_rewrites_beforeFiles.length) > 0) {
+                 const hasInterceptionRouteRewrite = routesManifest.rewrites.beforeFiles.some(_generateinterceptionroutesrewrites.isInterceptionRouteRewrite);
+                 if (hasInterceptionRouteRewrite) {
+-                    throw Object.defineProperty(new ExportError(`Intercepting routes are not supported with static export.\nRead more: https://nextjs.org/docs/app/building-your-application/deploying/static-exports#unsupported-features`), "__NEXT_ERROR_CODE", {
+-                        value: "E626",
+-                        enumerable: false,
+-                        configurable: true
+-                    });
++                    _log.warn(`Intercepting routes are not supported with static export.\nRead more: https://nextjs.org/docs/app/building-your-application/deploying/static-exports#unsupported-features`);
+                 }
+             }
+             const actionIds = [
+diff --git a/dist/server/dev/next-dev-server.js b/dist/server/dev/next-dev-server.js
+index 839c836563c52dd2515c03bc0325bcf95e3d540d..e74fac82ff603a22b828b608c1e5cf59718e190a 100644
+--- a/dist/server/dev/next-dev-server.js
++++ b/dist/server/dev/next-dev-server.js
+@@ -467,8 +467,7 @@ class DevServer extends _nextserver.default {
+     getinterceptionRoutePatterns() {
+         const rewrites = (0, _generateinterceptionroutesrewrites.generateInterceptionRoutesRewrites)(Object.keys(this.appPathRoutes ?? {}), this.nextConfig.basePath).map((route)=>new RegExp((0, _buildcustomroute.buildCustomRoute)('rewrite', route).regex));
+         if (this.nextConfig.output === 'export' && rewrites.length > 0) {
+-            _log.error('Intercepting routes are not supported with static export.\nRead more: https://nextjs.org/docs/app/building-your-application/deploying/static-exports#unsupported-features');
+-            process.exit(1);
++            _log.warn('Intercepting routes are not supported with static export.\nRead more: https://nextjs.org/docs/app/building-your-application/deploying/static-exports#unsupported-features');
+         }
+         return rewrites ?? [];
+     }

@@ -1,0 +1,67 @@
+'use client';
+
+import { type ReactNode } from 'react';
+
+import Input from '@/design/ui/components/input';
+
+import { SectionDeleteButton } from '@/features/resourceEditor/client/components/actions/SectionDeleteButton';
+
+interface IProps<T = string> {
+	items: T[];
+	onUpdate: (index: number, value: T) => void;
+	onRemove: (index: number) => void;
+	renderItem?: (
+		item: T,
+		index: number,
+		onChange: (value: T) => void
+	) => ReactNode;
+	placeholder?: string;
+	emptyMessage?: string;
+}
+
+export function ArrayFieldEditor<T = string>({
+	emptyMessage = '暂无项目',
+	items,
+	onRemove,
+	onUpdate,
+	placeholder = '',
+	renderItem,
+}: IProps<T>) {
+	const defaultRenderItem = (
+		item: T,
+		index: number,
+		onChange: (value: T) => void
+	) => (
+		<div key={index} className="flex items-center gap-2">
+			<Input
+				value={item as string}
+				onValueChange={(value) => onChange(value as T)}
+				placeholder={placeholder}
+			/>
+			<SectionDeleteButton
+				iconOnly
+				className="h-10 w-10 shrink-0 sm:h-10 sm:w-10"
+				onPress={() => onRemove(index)}
+			>
+				删除作者
+			</SectionDeleteButton>
+		</div>
+	);
+
+	return (
+		<div className="flex flex-col gap-2">
+			{items.map((item, index) =>
+				renderItem
+					? renderItem(item, index, (value) => onUpdate(index, value))
+					: defaultRenderItem(item, index, (value) =>
+							onUpdate(index, value)
+						)
+			)}
+			{items.length === 0 && (
+				<div className="rounded-medium border border-dashed border-divider p-4 text-center text-xs text-foreground-500">
+					{emptyMessage}
+				</div>
+			)}
+		</div>
+	);
+}

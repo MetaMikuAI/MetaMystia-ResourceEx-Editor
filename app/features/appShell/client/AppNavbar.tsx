@@ -1,0 +1,617 @@
+'use client';
+
+import {
+	Navbar as HeroUINavbar,
+	NavbarBrand,
+	NavbarContent,
+	NavbarItem,
+	NavbarMenu,
+	NavbarMenuItem,
+	NavbarMenuToggle,
+} from '@heroui/navbar';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
+
+import Button from '@/design/ui/components/button';
+import Dropdown, {
+	DropdownItem,
+	DropdownMenu,
+	DropdownTrigger,
+} from '@/design/ui/components/dropdown';
+import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
+
+import { openAnnouncementModal } from '@/features/announcements/client/AnnouncementModal';
+import { ConfirmDialog } from '@/features/resourceEditor/client/components/confirm/ConfirmDialog';
+import { ExportValidationDialog } from '@/features/resourceEditor/client/components/export/ExportValidationDialog';
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
+import {
+	type IResourcePackValidationIssue,
+	validateResourcePackForExport,
+} from '@/features/resourceEditor/client/validation/validateResourcePackForExport';
+
+interface INavItem {
+	readonly href: string;
+	readonly label: string;
+}
+
+interface INavGroup {
+	readonly items: readonly INavItem[];
+	readonly label: string;
+}
+
+const NAV_GROUPS = [
+	{
+		label: '角色',
+		items: [
+			{ href: '/character', label: '稀客' },
+			{ href: '/dialogue', label: '对话' },
+			{ href: '/merchant', label: '商人' },
+		],
+	},
+	{
+		label: '素材',
+		items: [
+			{ href: '/ingredient', label: '食材' },
+			{ href: '/food', label: '料理' },
+			{ href: '/recipe', label: '食谱' },
+			{ href: '/beverage', label: '酒水' },
+			{ href: '/clothes', label: '衣服' },
+		],
+	},
+	{
+		label: '节点',
+		items: [
+			{ href: '/mission', label: '任务节点' },
+			{ href: '/event', label: '事件节点' },
+		],
+	},
+] as const satisfies readonly INavGroup[];
+
+const MOBILE_NAV_GROUPS: readonly INavGroup[] = [
+	{ label: '资源包', items: [{ href: '/info', label: '基础信息' }] },
+	...NAV_GROUPS,
+	{ label: '资产', items: [{ href: '/asset', label: '资产管理' }] },
+] as const;
+
+const MOBILE_NAV_ITEMS = MOBILE_NAV_GROUPS.flatMap((group) => group.items);
+
+const GITHUB_URL = 'https://github.com/MetaMystia/MetaMystia-ResourceEx-Editor';
+const MOBILE_MENU_ID = 'app-navbar-mobile-menu';
+const MOBILE_MENU_TOGGLE_ID = 'app-navbar-mobile-menu-toggle';
+
+interface INavDropdownProps {
+	label: string;
+	items: readonly INavItem[];
+}
+
+const NavDropdown = memo<INavDropdownProps>(function NavDropdown({
+	items,
+	label,
+}) {
+	const pathname = usePathname();
+	const router = useRouter();
+	const isActive = items.some((item) => item.href === pathname);
+
+	return (
+		<Dropdown>
+			<DropdownTrigger>
+				<Button
+					variant={isActive ? 'flat' : 'light'}
+					color={isActive ? 'primary' : 'default'}
+				>
+					{label}
+				</Button>
+			</DropdownTrigger>
+			<DropdownMenu
+				aria-label={`${label} navigation`}
+				selectionMode="none"
+				onAction={(key) => {
+					const item = items.find(({ href }) => href === String(key));
+					if (item) router.push(item.href);
+				}}
+			>
+				{items.map((item) => (
+					<DropdownItem
+						key={item.href}
+						textValue={item.label}
+						className={pathname === item.href ? 'text-primary' : ''}
+					>
+						{item.label}
+					</DropdownItem>
+				))}
+			</DropdownMenu>
+		</Dropdown>
+	);
+});
+
+type TDestructiveIntent = { type: 'create' } | { type: 'import'; file: File };
+
+interface INotice {
+	title: string;
+	description: string;
+}
+
+export const AppNavbar = memo(function AppNavbar() {
+	const pathname = usePathname();
+	const router = useRouter();
+	const isReducedMotion = useReducedMotion();
+	const activeExportTriggerRef = useRef<HTMLButtonElement | null>(null);
+	const desktopExportTriggerRef = useRef<HTMLButtonElement>(null);
+	const fileInputRef = useRef<HTMLInputElement>(null);
+	const mobileMenuFirstItemRef = useRef<HTMLButtonElement>(null);
+	const {
+		assets: { urls: assetUrls },
+		createBlankResourcePack,
+		exportArchive,
+		importArchive,
+		isDirty,
+		isExporting,
+		isImporting,
+		resourcePack,
+		revision,
+	} = useResourceEditor();
+	const [destructiveIntent, setDestructiveIntent] =
+		useState<TDestructiveIntent | null>(null);
+	const [isMenuOpen, setIsMenuOpen] = useState(false);
+	const [notice, setNotice] = useState<INotice | null>(null);
+	const [validationResult, setValidationResult] = useState<{
+		issues: IResourcePackValidationIssue[];
+		revision: number;
+	} | null>(null);
+
+	useEffect(() => {
+		if (!isMenuOpen) return;
+
+		const focusFrame = requestAnimationFrame(() => {
+			mobileMenuFirstItemRef.current?.focus({ preventScroll: true });
+		});
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.key === 'Escape') {
+				event.preventDefault();
+				setIsMenuOpen(false);
+				requestAnimationFrame(() =>
+					document.getElementById(MOBILE_MENU_TOGGLE_ID)?.focus()
+				);
+				return;
+			}
+
+			if (event.key !== 'Tab') return;
+			const menu = document.getElementById(MOBILE_MENU_ID);
+			if (!menu) return;
+			const focusableElements = Array.from(
+				menu.querySelectorAll<HTMLElement>(
+					'button:not([disabled]), a[href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+				)
+			).filter((element) => element.getClientRects().length > 0);
+			const firstElement = focusableElements[0];
+			const lastElement = focusableElements.at(-1);
+			if (!firstElement || !lastElement) return;
+
+			if (event.shiftKey && document.activeElement === firstElement) {
+				event.preventDefault();
+				lastElement.focus();
+			} else if (
+				!event.shiftKey &&
+				document.activeElement === lastElement
+			) {
+				event.preventDefault();
+				firstElement.focus();
+			}
+		};
+		document.addEventListener('keydown', handleKeyDown);
+		return () => {
+			cancelAnimationFrame(focusFrame);
+			document.removeEventListener('keydown', handleKeyDown);
+		};
+	}, [isMenuOpen]);
+
+	const showOperationError = useCallback((action: string, error?: string) => {
+		setNotice({ title: `${action}失败`, description: error ?? '未知错误' });
+	}, []);
+
+	const handleNavigate = useCallback(
+		(href: string) => {
+			setIsMenuOpen(false);
+			router.push(href);
+			requestAnimationFrame(() =>
+				document.getElementById(MOBILE_MENU_TOGGLE_ID)?.focus()
+			);
+		},
+		[router]
+	);
+
+	const runImport = useCallback(
+		async (file: File) => {
+			const result = await importArchive(file);
+			if (!result.isSuccess)
+				showOperationError('读取资源包', result.error);
+		},
+		[importArchive, showOperationError]
+	);
+
+	const handleCreateBlank = useCallback(() => {
+		if (isDirty) {
+			setDestructiveIntent({ type: 'create' });
+			return;
+		}
+		createBlankResourcePack();
+	}, [createBlankResourcePack, isDirty]);
+
+	const handleFileChange = useCallback(
+		(event: React.ChangeEvent<HTMLInputElement>) => {
+			const file = event.target.files?.[0];
+			event.target.value = '';
+			if (!file) return;
+			if (isDirty) {
+				setDestructiveIntent({ type: 'import', file });
+				return;
+			}
+			void runImport(file);
+		},
+		[isDirty, runImport]
+	);
+
+	const handleDestructiveConfirm = useCallback(() => {
+		const intent = destructiveIntent;
+		setDestructiveIntent(null);
+		if (intent?.type === 'create') createBlankResourcePack();
+		if (intent?.type === 'import') void runImport(intent.file);
+	}, [createBlankResourcePack, destructiveIntent, runImport]);
+
+	const handleExport = useCallback(async () => {
+		if (isExporting) return;
+		const expectedRevision = revision;
+		const issues = await validateResourcePackForExport(
+			resourcePack,
+			Object.keys(assetUrls)
+		);
+		if (issues.length > 0) {
+			setValidationResult({ issues, revision: expectedRevision });
+			return;
+		}
+		const result = await exportArchive(expectedRevision);
+		if (!result.isSuccess) showOperationError('导出资源包', result.error);
+	}, [
+		assetUrls,
+		exportArchive,
+		isExporting,
+		resourcePack,
+		revision,
+		showOperationError,
+	]);
+
+	const handleExportCancel = useCallback(() => {
+		setValidationResult(null);
+		requestAnimationFrame(() => activeExportTriggerRef.current?.focus());
+	}, []);
+
+	const handleExportConfirm = useCallback(async () => {
+		if (!validationResult) return;
+		setValidationResult(null);
+		const result = await exportArchive(validationResult.revision);
+		if (!result.isSuccess) showOperationError('导出资源包', result.error);
+	}, [exportArchive, showOperationError, validationResult]);
+
+	const openGitHub = useCallback(() => {
+		window.open(GITHUB_URL, '_blank', 'noopener,noreferrer');
+	}, []);
+	const hasActiveMobileRoute = MOBILE_NAV_ITEMS.some(
+		(item) => item.href === pathname
+	);
+
+	return (
+		<>
+			<HeroUINavbar
+				isBordered
+				isBlurred
+				position="sticky"
+				disableAnimation={isReducedMotion}
+				isMenuOpen={isMenuOpen}
+				onMenuOpenChange={setIsMenuOpen}
+				shouldBlockScroll={false}
+				classNames={{
+					base: 'z-50',
+					wrapper:
+						'max-w-7xl 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl',
+				}}
+			>
+				<NavbarContent
+					justify="start"
+					className="min-w-0 flex-1 gap-5 xl:basis-1/5"
+				>
+					<NavbarBrand className="max-w-none shrink-0 grow-0 basis-auto">
+						<Link
+							href="/info"
+							aria-label="ResourceEx Editor首页"
+							className="flex shrink-0 items-center gap-2 rounded-small"
+							onClick={() => setIsMenuOpen(false)}
+						>
+							<span
+								aria-hidden
+								className="image-rendering-pixelated h-9 w-9 shrink-0 rounded-full bg-logo bg-cover bg-no-repeat sm:h-10 sm:w-10"
+							/>
+							<span className="shrink-0 whitespace-nowrap text-[13px] font-bold sm:text-base xl:text-lg">
+								ResourceEx Editor
+							</span>
+						</Link>
+					</NavbarBrand>
+					<nav className="hidden shrink-0 items-center gap-1 xl:flex">
+						<NavbarItem>
+							<Button
+								as={Link}
+								href="/info"
+								variant={
+									pathname === '/info' ? 'flat' : 'light'
+								}
+								color={
+									pathname === '/info' ? 'primary' : 'default'
+								}
+							>
+								基础信息
+							</Button>
+						</NavbarItem>
+						{NAV_GROUPS.map((group) => (
+							<NavDropdown key={group.label} {...group} />
+						))}
+						<NavbarItem>
+							<Button
+								as={Link}
+								href="/asset"
+								variant={
+									pathname === '/asset' ? 'flat' : 'light'
+								}
+								color={
+									pathname === '/asset'
+										? 'primary'
+										: 'default'
+								}
+							>
+								资产
+							</Button>
+						</NavbarItem>
+					</nav>
+				</NavbarContent>
+
+				<NavbarContent justify="end" className="hidden gap-1 xl:flex">
+					<Button variant="light" onPress={handleCreateBlank}>
+						全新创建
+					</Button>
+					<Button
+						variant="light"
+						isDisabled={isImporting}
+						onPress={() => fileInputRef.current?.click()}
+					>
+						上传资源包（ZIP）
+					</Button>
+					<Button
+						ref={desktopExportTriggerRef}
+						variant="light"
+						isDisabled={isExporting}
+						onPress={() => {
+							activeExportTriggerRef.current =
+								desktopExportTriggerRef.current;
+							void handleExport();
+						}}
+					>
+						导出资源包（ZIP）
+					</Button>
+					<NavbarItem className="ml-2">
+						<Dropdown>
+							<DropdownTrigger>
+								<Button variant="light">更多</Button>
+							</DropdownTrigger>
+							<DropdownMenu
+								aria-label="应用操作"
+								selectionMode="none"
+								onAction={(key) => {
+									if (String(key) === 'announcement') {
+										openAnnouncementModal();
+									} else if (String(key) === 'github') {
+										openGitHub();
+									}
+								}}
+							>
+								<DropdownItem key="announcement">
+									公告
+								</DropdownItem>
+								<DropdownItem key="github">GitHub</DropdownItem>
+							</DropdownMenu>
+						</Dropdown>
+					</NavbarItem>
+				</NavbarContent>
+
+				<NavbarContent
+					justify="end"
+					className="basis-auto pl-2 xl:hidden"
+				>
+					<NavbarMenuToggle
+						id={MOBILE_MENU_TOGGLE_ID}
+						aria-label={isMenuOpen ? '收起菜单' : '打开菜单'}
+						className="h-10 w-10 rounded-small border border-default-200/70 bg-default-100/60 transition-background data-[hover=true]:bg-default-200/70 motion-reduce:transition-none"
+					/>
+				</NavbarContent>
+
+				<NavbarMenu
+					id={MOBILE_MENU_ID}
+					className="mobile-navbar-menu-scroll h-[calc(var(--safe-h-dvh)_-_var(--navbar-height))] gap-4 overflow-y-auto border-t border-divider bg-content1/95 px-4 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-4 backdrop-blur-xl sm:px-6"
+				>
+					{MOBILE_NAV_GROUPS.map((group, groupIndex) => (
+						<NavbarMenuItem key={group.label} className="w-full">
+							<section className="space-y-2">
+								<h2 className="px-1 text-xs font-semibold leading-5 text-foreground-500">
+									{group.label}
+								</h2>
+								<div className="grid grid-cols-[repeat(auto-fit,minmax(9rem,1fr))] gap-2">
+									{group.items.map((item, itemIndex) => {
+										const isCurrent =
+											pathname === item.href;
+										const isFallbackFirst =
+											!hasActiveMobileRoute &&
+											groupIndex === 0 &&
+											itemIndex === 0;
+
+										return (
+											<Button
+												key={item.href}
+												{...(isCurrent ||
+												isFallbackFirst
+													? {
+															ref: mobileMenuFirstItemRef,
+														}
+													: {})}
+												fullWidth
+												aria-current={
+													isCurrent
+														? 'page'
+														: undefined
+												}
+												variant={
+													isCurrent ? 'flat' : 'light'
+												}
+												color={
+													isCurrent
+														? 'primary'
+														: 'default'
+												}
+												className="h-12 justify-start rounded-small border border-default-200/75 bg-content1/45 px-3 text-sm shadow-[0_1px_0_rgba(0,0,0,0.025)]"
+												onPress={() =>
+													handleNavigate(item.href)
+												}
+											>
+												{item.label}
+											</Button>
+										);
+									})}
+								</div>
+							</section>
+						</NavbarMenuItem>
+					))}
+					<NavbarMenuItem className="w-full">
+						<section className="space-y-2">
+							<h2 className="px-1 text-xs font-semibold leading-5 text-foreground-500">
+								资源包操作
+							</h2>
+							<div className="grid grid-cols-2 gap-2">
+								<Button
+									fullWidth
+									variant="light"
+									className="h-12 justify-start rounded-small border border-default-200/75 bg-content1/45 px-3 text-sm"
+									onPress={() => {
+										setIsMenuOpen(false);
+										handleCreateBlank();
+									}}
+								>
+									全新创建
+								</Button>
+								<Button
+									fullWidth
+									variant="light"
+									className="h-12 justify-start rounded-small border border-default-200/75 bg-content1/45 px-3 text-sm"
+									isDisabled={isImporting}
+									onPress={() => {
+										setIsMenuOpen(false);
+										fileInputRef.current?.click();
+									}}
+								>
+									上传资源包（ZIP）
+								</Button>
+								<Button
+									fullWidth
+									variant="light"
+									className="h-12 justify-start rounded-small border border-default-200/75 bg-content1/45 px-3 text-sm"
+									isDisabled={isExporting}
+									onPress={() => {
+										activeExportTriggerRef.current =
+											document.getElementById(
+												MOBILE_MENU_TOGGLE_ID
+											) as HTMLButtonElement | null;
+										setIsMenuOpen(false);
+										void handleExport();
+									}}
+								>
+									导出资源包（ZIP）
+								</Button>
+							</div>
+						</section>
+					</NavbarMenuItem>
+					<NavbarMenuItem className="w-full">
+						<section className="space-y-2">
+							<h2 className="px-1 text-xs font-semibold leading-5 text-foreground-500">
+								更多
+							</h2>
+							<div className="grid grid-cols-2 gap-2">
+								<Button
+									fullWidth
+									variant="light"
+									className="h-12 justify-start rounded-small border border-default-200/75 bg-content1/45 px-3 text-sm"
+									onPress={() => {
+										setIsMenuOpen(false);
+										openAnnouncementModal();
+									}}
+								>
+									公告
+								</Button>
+								<Button
+									fullWidth
+									variant="light"
+									className="h-12 justify-start rounded-small border border-default-200/75 bg-content1/45 px-3 text-sm"
+									onPress={() => {
+										setIsMenuOpen(false);
+										openGitHub();
+									}}
+								>
+									本项目代码仓库
+								</Button>
+							</div>
+						</section>
+					</NavbarMenuItem>
+				</NavbarMenu>
+			</HeroUINavbar>
+
+			<input
+				ref={fileInputRef}
+				type="file"
+				accept=".zip"
+				className="hidden"
+				onChange={handleFileChange}
+			/>
+
+			{validationResult && (
+				<ExportValidationDialog
+					issues={validationResult.issues}
+					onCancel={handleExportCancel}
+					onConfirm={handleExportConfirm}
+				/>
+			)}
+			<ConfirmDialog
+				isOpen={destructiveIntent !== null}
+				title={
+					destructiveIntent?.type === 'create'
+						? '创建全新资源包？'
+						: '导入并覆盖当前资源包？'
+				}
+				description={
+					destructiveIntent?.type === 'create'
+						? '当前有未保存的更改。创建全新资源包会丢失这些更改，此操作不可撤销。'
+						: '当前有未保存的更改。导入新资源包会覆盖当前内容，此操作不可撤销。'
+				}
+				confirmLabel={
+					destructiveIntent?.type === 'create'
+						? '仍然创建'
+						: '仍然导入'
+				}
+				isPending={isImporting}
+				onCancel={() => setDestructiveIntent(null)}
+				onConfirm={handleDestructiveConfirm}
+			/>
+			<ConfirmDialog
+				isOpen={notice !== null}
+				title={notice?.title ?? ''}
+				description={notice?.description}
+				confirmLabel="知道了"
+				onConfirm={() => setNotice(null)}
+			/>
+		</>
+	);
+});

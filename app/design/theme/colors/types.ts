@@ -1,0 +1,26 @@
+import {
+	type BaseColors,
+	type ColorScale,
+	type SemanticBaseColors,
+	type ThemeColors,
+} from '@heroui/theme';
+
+export type THexColor = `#${string}`;
+
+export type TColorScale = Required<
+	Omit<Exclude<ColorScale, string>, 'DEFAULT' | 'foreground'>
+>;
+
+type TPrettify<T> = { [K in keyof T]: T[K] } & {};
+
+type TColor = TPrettify<TColorScale & Exclude<ColorScale, string>>;
+type TBaseColors = Record<
+	Exclude<keyof BaseColors, 'content3' | 'content4'>,
+	TColor
+>;
+
+export type TSemanticBaseColors = Record<keyof SemanticBaseColors, TBaseColors>;
+export type TThemeColors = Record<
+	keyof Omit<ThemeColors, keyof TBaseColors | 'content3' | 'content4'>,
+	TColor
+>;
