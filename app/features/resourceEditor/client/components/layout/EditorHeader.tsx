@@ -22,7 +22,7 @@ export const EditorHeader = memo<IProps>(function EditorHeader({
 			fullWidth
 			shadow="none"
 			className={cn(
-				'flex flex-col gap-3 border border-divider bg-content1/85 p-4 shadow-sm backdrop-blur-md sm:p-6 md:flex-row md:items-center md:justify-between',
+				'flex flex-col gap-3 border border-divider bg-content1/40 p-4 shadow-sm backdrop-blur sm:p-6 md:flex-row md:items-center md:justify-between',
 				className
 			)}
 		>

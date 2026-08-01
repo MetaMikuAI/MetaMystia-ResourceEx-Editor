@@ -506,7 +506,7 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 					{(!rewards || rewards.length === 0) && (
 						<EmptyState
 							title="暂无奖励配置"
-							description="可使用“添加奖励”创建第一项。"
+							description="可使用“添加奖励”创建第一项"
 						/>
 					)}
 				</div>

@@ -643,7 +643,7 @@ export const MissionConditionList = memo<MissionConditionListProps>(
 					{conditions.length === 0 && (
 						<EmptyState
 							title="暂无完成条件"
-							description="可使用“添加完成条件”创建第一项。"
+							description="可使用“添加完成条件”创建第一项"
 						/>
 					)}
 				</div>

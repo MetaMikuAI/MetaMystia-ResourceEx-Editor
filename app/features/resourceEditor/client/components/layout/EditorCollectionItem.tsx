@@ -32,7 +32,7 @@ export const EditorCollectionItem = memo<PropsWithChildren<IProps>>(
 							: 'border-danger/40 bg-danger/10 hover:bg-danger/15'
 						: isSelected
 							? 'border-primary bg-primary/15'
-							: 'border-divider bg-content2/20 hover:bg-default/30',
+							: 'border-divider bg-content1/20 hover:bg-default/30',
 					className
 				)}
 				data-editor-collection-item=""

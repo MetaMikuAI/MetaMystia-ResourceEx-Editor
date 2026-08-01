@@ -192,7 +192,7 @@ export function Portraits({
 					{(!portraits || portraits.length === 0) && (
 						<EmptyState
 							title="暂无立绘配置"
-							description="可使用“添加立绘配置”创建第一项。"
+							description="可使用“添加立绘配置”创建第一项"
 						/>
 					)}
 				</div>

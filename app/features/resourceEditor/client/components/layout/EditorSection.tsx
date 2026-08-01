@@ -12,7 +12,7 @@ export const EditorSection = memo<PropsWithChildren<IProps>>(
 		return (
 			<section
 				className={cn(
-					'flex min-w-0 flex-col gap-4 rounded-large border border-divider bg-content2/30 p-4',
+					'flex min-w-0 flex-col gap-4 rounded-large border border-divider bg-content1/20 p-4',
 					className
 				)}
 			>

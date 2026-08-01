@@ -20,7 +20,7 @@ export function EmptyState({
 		<Placeholder
 			className={cn(
 				variant === 'box' &&
-					'min-h-32 rounded-large border border-dashed border-divider bg-content2/20 p-6 sm:p-8',
+					'min-h-32 rounded-large border border-dashed border-divider bg-content1/15 p-6 sm:p-8',
 				className
 			)}
 		>
