@@ -8,6 +8,7 @@ import type {
 	Request,
 	SpawnConfig,
 	SpawnMarker,
+	TSpawnMarkerRotation,
 } from './contracts/character';
 import type {
 	Dialog,
@@ -424,28 +425,37 @@ function readKizunaInfo(value: unknown, path: string): KizunaInfo {
 	};
 }
 
+function readSpawnMarkerRotation(
+	value: unknown,
+	path: string
+): TSpawnMarkerRotation {
+	return readLiteral(
+		value,
+		path,
+		['Down', 'Up', 'Left', 'Right'],
+		'a supported rotation'
+	);
+}
+
 function readSpawnMarker(value: unknown, path: string): SpawnMarker {
 	const record = readEntity(value, path);
 	readRequired(record, 'mapLabel', path, readString);
 	readRequired(record, 'x', path, readNumber);
 	readRequired(record, 'y', path, readNumber);
-	readLiteral(
-		record['rotation'],
-		`${path}.rotation`,
-		['Down', 'Up', 'Left', 'Right'],
-		'a supported rotation'
-	);
+	validateOptional(record, 'rotation', path, readSpawnMarkerRotation);
 	return {
 		...record,
 		mapLabel: readRequired(record, 'mapLabel', path, readString),
 		x: readRequired(record, 'x', path, readNumber),
 		y: readRequired(record, 'y', path, readNumber),
-		rotation: readLiteral(
-			record['rotation'],
-			`${path}.rotation`,
-			['Down', 'Up', 'Left', 'Right'],
-			'a supported rotation'
-		),
+		...(hasOwn(record, 'rotation')
+			? {
+					rotation: readSpawnMarkerRotation(
+						record['rotation'],
+						`${path}.rotation`
+					),
+				}
+			: {}),
 	};
 }
 
@@ -488,6 +498,7 @@ function readCharacter(value: unknown, path: string): Character {
 		id: readRequired(record, 'id', path, readNumber),
 		name: readRequired(record, 'name', path, readString),
 		label: readRequired(record, 'label', path, readString),
+		...readOptionalProperty(record, 'spawnMarker', path, readSpawnMarker),
 		...(hasOwn(record, 'guest')
 			? {
 					guest: readOptionalValue(

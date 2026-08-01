@@ -3,7 +3,10 @@ import { memo } from 'react';
 import Input from '@/design/ui/components/input';
 
 import { DAY_SCENE_MAP } from '@/domain/data/daySceneMap';
-import type { SpawnMarker } from '@/domain/resourcePack/contracts/character';
+import type {
+	SpawnMarker,
+	TSpawnMarkerRotation,
+} from '@/domain/resourcePack/contracts/character';
 
 import { Label } from '@/features/resourceEditor/client/components/fields/Label';
 import { EditorSection } from '@/features/resourceEditor/client/components/layout/EditorSection';
@@ -47,9 +50,9 @@ export const SpawnMarkerEditor = memo<SpawnMarkerEditorProps>(
 						<Label size="sm" tip="朝向，包括上、下、左、右。">
 							朝向（Rotation）
 						</Label>
-						<Select<SpawnMarker['rotation']>
+						<Select<TSpawnMarkerRotation>
 							ariaLabel="朝向"
-							value={spawnMarker.rotation || 'Down'}
+							value={spawnMarker.rotation ?? 'Down'}
 							onChange={(v) =>
 								onUpdate({ ...spawnMarker, rotation: v })
 							}

@@ -75,11 +75,13 @@ export interface KizunaInfo {
 	commisionAreaLabel?: string;
 }
 
+export type TSpawnMarkerRotation = 'Down' | 'Up' | 'Left' | 'Right';
+
 export interface SpawnMarker {
 	mapLabel: string;
 	x: number;
 	y: number;
-	rotation: 'Down' | 'Up' | 'Left' | 'Right';
+	rotation?: TSpawnMarkerRotation;
 }
 
 export interface Character {
