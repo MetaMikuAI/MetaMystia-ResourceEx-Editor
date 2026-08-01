@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 
+import { COOKER_TYPE_NAMES } from '@/domain/data/cookerTypes';
 import { INGREDIENT_NAMES } from '@/domain/data/ingredients';
 import type {
 	CookerType,
@@ -85,14 +86,6 @@ const COOKER_INDEX: Record<CookerType, number> = {
 	CuttingBoard: 4,
 };
 
-const COOKER_NAME: Record<CookerType, string> = {
-	Pot: '煮锅',
-	Grill: '烧烤架',
-	Fryer: '油锅',
-	Steamer: '蒸锅',
-	CuttingBoard: '料理台',
-};
-
 function AtlasIcon({
 	sprite,
 	index,
@@ -124,7 +117,7 @@ function AtlasIcon({
 }
 
 export function CookerPreviewIcon({ cookerType }: { cookerType: CookerType }) {
-	const name = COOKER_NAME[cookerType];
+	const name = COOKER_TYPE_NAMES[cookerType];
 	return (
 		<AtlasIcon
 			sprite="cooker"

@@ -1,5 +1,6 @@
 import { memo, useCallback, useMemo } from 'react';
 
+import { COOKER_TYPE_NAMES } from '@/domain/data/cookerTypes';
 import { FOOD_NAMES } from '@/domain/data/foods';
 import type { Recipe } from '@/domain/resourcePack/contracts/items';
 
@@ -89,7 +90,8 @@ export const RecipeList = memo<RecipeListProps>(function RecipeList({
 							{isDuplicate && <ErrorBadge>ID重复</ErrorBadge>}
 						</EditorCollectionItemTitle>
 						<EditorCollectionItemMeta>
-							ID：{recipe.id} · 厨具：{recipe.cookerType}
+							ID：{recipe.id} · 厨具：
+							{COOKER_TYPE_NAMES[recipe.cookerType]}
 						</EditorCollectionItemMeta>
 					</EditorCollectionItem>
 				);

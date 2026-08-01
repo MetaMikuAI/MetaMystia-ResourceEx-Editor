@@ -89,7 +89,7 @@ export const IngredientPreviewPopover = memo<IProps>(
 								分类：
 								{categories.length > 0
 									? categories.join('、')
-									: '未分类'}
+									: '其他'}
 							</p>
 						</div>
 

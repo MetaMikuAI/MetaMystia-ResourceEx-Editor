@@ -70,6 +70,8 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 		)
 			? ingredient.prefix
 			: INGREDIENT_PREFIX_NONE_ID;
+		const isOther =
+			!ingredient.isFish && !ingredient.isMeat && !ingredient.isVeg;
 
 		return (
 			<EditorDetailPanel>
@@ -263,6 +265,19 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 							}
 						>
 							蔬菜
+						</Switch>
+						<Switch
+							size="sm"
+							isSelected={isOther}
+							onValueChange={() =>
+								onUpdate({
+									isFish: false,
+									isMeat: false,
+									isVeg: false,
+								})
+							}
+						>
+							其他
 						</Switch>
 					</div>
 				</EditorSection>

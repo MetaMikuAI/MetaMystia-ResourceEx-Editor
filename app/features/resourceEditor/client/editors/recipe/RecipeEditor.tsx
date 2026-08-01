@@ -2,6 +2,7 @@ import { memo, useCallback, useId, useMemo } from 'react';
 
 import Input from '@/design/ui/components/input';
 
+import { COOKER_TYPE_NAMES, COOKER_TYPES } from '@/domain/data/cookerTypes';
 import { FOOD_NAMES } from '@/domain/data/foods';
 import { INGREDIENT_NAMES } from '@/domain/data/ingredients';
 import type { CookerType, Recipe } from '@/domain/resourcePack/contracts/items';
@@ -30,13 +31,11 @@ interface RecipeEditorProps {
 	onUpdate: (updates: Partial<Recipe>) => void;
 }
 
-const COOKER_TYPES: { value: CookerType; label: string }[] = [
-	{ value: 'Pot', label: '煮锅（Pot）' },
-	{ value: 'Grill', label: '烧烤架（Grill）' },
-	{ value: 'Fryer', label: '油锅（Fryer）' },
-	{ value: 'Steamer', label: '蒸锅（Steamer）' },
-	{ value: 'CuttingBoard', label: '料理台（CuttingBoard）' },
-];
+const COOKER_TYPE_OPTIONS: { value: CookerType; label: string }[] =
+	COOKER_TYPES.map((value) => ({
+		value,
+		label: `${COOKER_TYPE_NAMES[value]}（${value}）`,
+	}));
 
 export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
 	recipe,
@@ -192,10 +191,7 @@ export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
 							ariaLabel="厨具类型"
 							value={recipe.cookerType}
 							onChange={(v) => onUpdate({ cookerType: v })}
-							items={COOKER_TYPES.map((c) => ({
-								value: c.value,
-								label: c.label,
-							}))}
+							items={COOKER_TYPE_OPTIONS}
 						/>
 					</div>
 				</div>

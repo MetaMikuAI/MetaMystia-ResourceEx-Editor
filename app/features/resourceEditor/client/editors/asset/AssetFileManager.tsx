@@ -436,12 +436,16 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 		const selectEntry = useCallback(
 			(entry: AssetEntry, additive: boolean) => {
 				setSelectedPaths((prev) => {
-					const next = additive ? new Set(prev) : new Set<string>();
-					if (additive && next.has(entry.path)) {
-						next.delete(entry.path);
-					} else {
-						next.add(entry.path);
+					if (!additive) {
+						return prev.size === 1 && prev.has(entry.path)
+							? new Set()
+							: new Set([entry.path]);
 					}
+
+					const next = new Set(prev);
+					if (next.has(entry.path)) next.delete(entry.path);
+					else next.add(entry.path);
+
 					return next;
 				});
 			},
