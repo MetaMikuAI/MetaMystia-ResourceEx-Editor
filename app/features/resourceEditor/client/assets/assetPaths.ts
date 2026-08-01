@@ -1,4 +1,4 @@
-import type { IAssetPathOperation } from '@/features/resourceEditor/client/assets/contracts';
+import type { IAssetPathOperation } from './contracts';
 
 export type AssetEntryKind = 'folder' | 'image' | 'audio' | 'file';
 

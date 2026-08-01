@@ -3,7 +3,6 @@ import { memo, useCallback, useId, useMemo } from 'react';
 
 import { FOOD_NAMES } from '@/domain/data/foods';
 import { INGREDIENT_NAMES } from '@/domain/data/ingredients';
-
 import type { CookerType, Recipe } from '@/domain/resourcePack/contracts/items';
 
 import { SectionAddButton } from '@/features/resourceEditor/client/components/actions/SectionAddButton';

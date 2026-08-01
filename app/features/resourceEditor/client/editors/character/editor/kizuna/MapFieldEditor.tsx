@@ -1,6 +1,6 @@
 import { memo, useMemo } from 'react';
 
-import { DAYSCENEMAP } from '@/domain/data/daySceneMap';
+import { DAY_SCENE_MAP } from '@/domain/data/daySceneMap';
 
 import {
 	Select,
@@ -18,7 +18,7 @@ export const MapFieldEditor = memo<MapFieldEditorProps>(
 		const mapItems = useMemo<SelectItemSpec<string>[]>(() => {
 			return [
 				{ value: '', label: '无委托采集' }, // 空选项
-				...DAYSCENEMAP.map((map) => ({
+				...DAY_SCENE_MAP.map((map) => ({
 					value: map.label,
 					label: `${map.label} (${map.name})`,
 				})),

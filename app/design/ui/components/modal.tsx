@@ -116,7 +116,6 @@ function ModalScrollBody({
 			};
 		}
 
-		// eslint-disable-next-line compat/compat -- Progressive enhancement; scroll state still updates on scroll and window resize without ResizeObserver.
 		const resizeObserver = new ResizeObserver(handleResize);
 		resizeObserver.observe(scrollElement);
 

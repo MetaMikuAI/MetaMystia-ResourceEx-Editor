@@ -1,5 +1,3 @@
-/* eslint-disable sort-keys */
-
 import { heroui } from '@heroui/theme';
 import { type Config } from 'tailwindcss';
 

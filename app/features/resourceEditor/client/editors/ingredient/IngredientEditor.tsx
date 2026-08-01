@@ -6,7 +6,6 @@ import {
 	INGREDIENT_PREFIXES,
 } from '@/domain/data/ingredientPrefixes';
 import { FOOD_TAGS } from '@/domain/data/tags';
-
 import type { Ingredient } from '@/domain/resourcePack/contracts/items';
 
 import { InfoTip } from '@/features/resourceEditor/client/components/fields/InfoTip';

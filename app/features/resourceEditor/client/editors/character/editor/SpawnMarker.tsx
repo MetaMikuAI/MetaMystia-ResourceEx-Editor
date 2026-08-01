@@ -1,8 +1,7 @@
 import { cn } from '@heroui/theme';
 import { memo } from 'react';
 
-import { DAYSCENEMAP } from '@/domain/data/daySceneMap';
-
+import { DAY_SCENE_MAP } from '@/domain/data/daySceneMap';
 import type { SpawnMarker } from '@/domain/resourcePack/contracts/character';
 
 import { Label } from '@/features/resourceEditor/client/components/fields/Label';
@@ -44,7 +43,7 @@ export const SpawnMarkerEditor = memo<SpawnMarkerEditorProps>(
 							onChange={(v) =>
 								onUpdate({ ...spawnMarker, mapLabel: v })
 							}
-							items={DAYSCENEMAP.map((map) => ({
+							items={DAY_SCENE_MAP.map((map) => ({
 								value: map.label,
 								label: `${map.name} (${map.label})`,
 							}))}

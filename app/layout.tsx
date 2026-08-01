@@ -3,11 +3,9 @@ import { type Metadata } from 'next';
 import { Noto_Sans, Noto_Sans_Mono, Noto_Sans_SC } from 'next/font/google';
 import { type PropsWithChildren } from 'react';
 
-import ThemeScript from '@/design/theme/runtime/themeScript';
-
-import { AppNavbar } from '@/features/appShell/client/AppNavbar';
-import { BackToTop } from '@/features/appShell/client/BackToTop';
-
+import ThemeScript from './design/theme/runtime/themeScript';
+import { AppNavbar } from './features/appShell/client/AppNavbar';
+import { BackToTop } from './features/appShell/client/BackToTop';
 import Providers from './providers';
 
 import './globals.scss';

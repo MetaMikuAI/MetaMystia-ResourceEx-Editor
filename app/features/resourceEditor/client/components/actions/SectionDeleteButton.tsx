@@ -6,6 +6,7 @@ import { memo, type ReactNode } from 'react';
 import Button, { type IButtonProps } from '@/design/ui/components/button';
 
 import { ConfirmPopover } from '@/features/resourceEditor/client/components/confirm/ConfirmPopover';
+
 import { TrashIcon } from './TrashIcon';
 
 interface IProps extends Omit<

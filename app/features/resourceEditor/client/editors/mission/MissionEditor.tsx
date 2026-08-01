@@ -7,7 +7,6 @@ import { FOOD_NAMES } from '@/domain/data/foods';
 import { INGREDIENT_NAMES } from '@/domain/data/ingredients';
 import { RECIPE_NAMES } from '@/domain/data/recipes';
 import { SPECIAL_GUESTS } from '@/domain/data/specialGuest';
-
 import type { Character } from '@/domain/resourcePack/contracts/character';
 import type { DialogPackage } from '@/domain/resourcePack/contracts/dialogue';
 import type { EventNode } from '@/domain/resourcePack/contracts/event';

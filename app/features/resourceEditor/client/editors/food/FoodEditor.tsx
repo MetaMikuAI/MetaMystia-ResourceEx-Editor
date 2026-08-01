@@ -2,7 +2,6 @@ import { cn } from '@heroui/theme';
 import { memo, useCallback, useId } from 'react';
 
 import { FOOD_TAGS } from '@/domain/data/tags';
-
 import type { Food } from '@/domain/resourcePack/contracts/items';
 
 import { Label } from '@/features/resourceEditor/client/components/fields/Label';

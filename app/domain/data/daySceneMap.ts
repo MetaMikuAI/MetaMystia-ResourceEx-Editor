@@ -1,4 +1,4 @@
-export const DAYSCENEMAP = [
+export const DAY_SCENE_MAP = [
 	{ label: 'Home', name: '夜雀小屋' },
 	{ label: 'Basement', name: '地下室' },
 	{ label: 'BeastForest', name: '妖怪兽道' },

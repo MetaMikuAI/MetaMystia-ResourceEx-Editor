@@ -1,6 +1,7 @@
 'use client';
 
 import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
+
 import {
 	ID_RANGE_STATUS_LABEL,
 	useIdRangeValidation,

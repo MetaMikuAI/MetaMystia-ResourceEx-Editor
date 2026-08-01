@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 
 import { SPECIAL_GUESTS } from '@/domain/data/specialGuest';
 import { SPECIAL_PORTRAITS } from '@/domain/data/specialPortraits';
-
 import type { Character } from '@/domain/resourcePack/contracts/character';
 import type { Dialog } from '@/domain/resourcePack/contracts/dialogue';
 

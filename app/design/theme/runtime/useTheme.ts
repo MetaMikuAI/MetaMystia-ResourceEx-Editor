@@ -6,7 +6,6 @@ import { safeStorage } from '../../../infrastructure/browser/storage/safeStorage
 import { COLOR_MAP, MEDIA, STORAGE_KEY, THEME_MAP } from './constants';
 import type { TTheme } from './types';
 
-// eslint-disable-next-line unicorn/prefer-global-this
 const isServer = typeof window === 'undefined';
 
 const themeListeners = new Set<(theme: TTheme) => void>();

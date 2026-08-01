@@ -2,7 +2,6 @@ import { cn } from '@heroui/theme';
 import { memo, useCallback, useId } from 'react';
 
 import { BEVERAGE_TAGS } from '@/domain/data/tags';
-
 import type { Beverage } from '@/domain/resourcePack/contracts/items';
 
 import { Label } from '@/features/resourceEditor/client/components/fields/Label';

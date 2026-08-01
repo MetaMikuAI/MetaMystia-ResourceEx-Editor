@@ -4,7 +4,6 @@ import { BEVERAGE_NAMES } from '@/domain/data/beverages';
 import { FOOD_NAMES } from '@/domain/data/foods';
 import { INGREDIENT_NAMES } from '@/domain/data/ingredients';
 import { RECIPE_NAMES } from '@/domain/data/recipes';
-
 import type {
 	Beverage,
 	Food,

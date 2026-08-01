@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 
 import { EditorField } from '@/features/resourceEditor/client/components/fields/EditorField';
+
 import { TagSelector } from './TagSelector';
 
 interface IProps {

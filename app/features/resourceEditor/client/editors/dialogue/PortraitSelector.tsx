@@ -1,7 +1,6 @@
 import { memo, useId, useMemo } from 'react';
 
 import { SPECIAL_PORTRAITS } from '@/domain/data/specialPortraits';
-
 import type {
 	Character,
 	CharacterType,

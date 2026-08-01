@@ -3,7 +3,6 @@
 import { memo, useMemo } from 'react';
 
 import { SPECIAL_GUESTS } from '@/domain/data/specialGuest';
-
 import type { Character } from '@/domain/resourcePack/contracts/character';
 import type { ScheduledEvent } from '@/domain/resourcePack/contracts/event';
 

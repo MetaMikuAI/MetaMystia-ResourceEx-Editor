@@ -4,11 +4,10 @@ import { HeroUIProvider } from '@heroui/system';
 import { useRouter } from 'next/navigation';
 import { type PropsWithChildren } from 'react';
 
-import { DesignPreferencesProvider } from '@/design/preferences/DesignPreferencesContext';
-import { useTheme } from '@/design/theme/runtime/useTheme';
-
-import { AnnouncementModal } from '@/features/announcements/client/AnnouncementModal';
-import { ResourceEditorProvider } from '@/features/resourceEditor/client/state/ResourceEditorProvider';
+import { DesignPreferencesProvider } from './design/preferences/DesignPreferencesContext';
+import { useTheme } from './design/theme/runtime/useTheme';
+import { AnnouncementModal } from './features/announcements/client/AnnouncementModal';
+import { ResourceEditorProvider } from './features/resourceEditor/client/state/ResourceEditorProvider';
 
 const DESIGN_PREFERENCES = { isHighAppearance: true } as const;
 

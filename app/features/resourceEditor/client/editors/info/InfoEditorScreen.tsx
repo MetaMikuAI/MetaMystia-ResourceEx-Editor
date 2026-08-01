@@ -16,11 +16,11 @@ import { EditorField } from '@/features/resourceEditor/client/components/fields/
 import { EditorHeader } from '@/features/resourceEditor/client/components/layout/EditorHeader';
 import { EditorPanel } from '@/features/resourceEditor/client/components/layout/EditorPanel';
 import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
-import { useVersionValidation } from '@/features/resourceEditor/client/editors/info/useVersionValidation';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import { DependencySelector } from './DependencySelector';
 import { IdRangeEditor } from './IdRangeEditor';
+import { useVersionValidation } from './useVersionValidation';
 
 export function InfoEditorScreen() {
 	const {

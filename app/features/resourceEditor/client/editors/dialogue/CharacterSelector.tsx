@@ -1,7 +1,6 @@
 import { memo, useId, useMemo } from 'react';
 
 import { SPECIAL_GUESTS } from '@/domain/data/specialGuest';
-
 import type {
 	Character,
 	CharacterType,

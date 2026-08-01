@@ -10,7 +10,8 @@ import type { PackInfo } from '@/domain/resourcePack/contracts/resourceEx';
 
 import { EditorField } from '@/features/resourceEditor/client/components/fields/EditorField';
 import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
-import { useIdRangeEditor } from '@/features/resourceEditor/client/editors/info/useIdRangeEditor';
+
+import { useIdRangeEditor } from './useIdRangeEditor';
 
 interface IdRangeEditorProps {
 	packInfo: PackInfo;
