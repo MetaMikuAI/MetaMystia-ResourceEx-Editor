@@ -5,6 +5,10 @@ import { useCallback, useMemo, useState } from 'react';
 import type { Clothes } from '@/domain/resourcePack/contracts/items';
 
 import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
+import {
+	findNextAvailableInteger,
+	findNextAvailableSuffixedValue,
+} from '@/features/resourceEditor/client/editorValueAllocation';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import { ClothesEditor } from './ClothesEditor';
@@ -15,15 +19,24 @@ export function ClothesEditorScreen() {
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
 	const addClothes = useCallback(() => {
-		const newId = 9000 + (data.clothes?.length || 0);
+		const clothes = data.clothes ?? [];
+		const newId = findNextAvailableInteger(
+			clothes.map((item) => item.id),
+			9000
+		);
+		const newName = findNextAvailableSuffixedValue(
+			clothes.map((item) => item.name),
+			'新衣服'
+		);
+		const packLabel = data.packInfo.label || 'ResourceExample';
 		const newClothes: Clothes = {
 			id: newId,
-			name: `新服装${(data.clothes?.length || 0) + 1}`,
+			name: newName,
 			description: '',
 			spritePath: `assets/Clothes/${newId}/icon.png`,
 			portraitPath: `assets/Clothes/${newId}/portrait.png`,
 			pixelFullConfig: {
-				name: `_ResourceExample_Clothes_${newId}`,
+				name: `_${packLabel}_Clothes_${newId}_${newName}`,
 				mainSprite: Array(12)
 					.fill('')
 					.map(
@@ -50,7 +63,7 @@ export function ClothesEditorScreen() {
 					),
 			},
 		};
-		const newClothesList = [...(data.clothes || []), newClothes];
+		const newClothesList = [...clothes, newClothes];
 		updateResourcePack(() => ({ ...data, clothes: newClothesList }));
 		setSelectedIndex(newClothesList.length - 1);
 	}, [data, updateResourcePack]);

@@ -42,7 +42,7 @@ export function validateResourcePackRules(
 		issues.push({
 			severity: 'warning',
 			category: '基础信息',
-			message: '资源包 Label 未设置',
+			message: '资源包标识符（Label）未设置',
 		});
 	} else if (
 		KNOWN_DEPENDENCIES.some((dependency) => dependency === packLabel)
@@ -50,13 +50,13 @@ export function validateResourcePackRules(
 		issues.push({
 			severity: 'error',
 			category: '基础信息',
-			message: `资源包标识符 (Label) 不能使用保留关键字 "${packLabel}"`,
+			message: `资源包标识符（Label）不能使用保留关键字“${packLabel}”`,
 		});
 	} else if (!isValidPackLabel(packLabel)) {
 		issues.push({
 			severity: 'error',
 			category: '基础信息',
-			message: `资源包 Label "${packLabel}" 含非法字符。${PACK_LABEL_ALLOWED_DESCRIPTION}。`,
+			message: `资源包标识符（Label）“${packLabel}”含非法字符。${PACK_LABEL_ALLOWED_DESCRIPTION}。`,
 		});
 	}
 
@@ -68,7 +68,7 @@ export function validateResourcePackRules(
 			issues.push({
 				severity: 'warning',
 				category: '基础信息',
-				message: `版本号 "${version}" 不符合语义化版本规范 (SemVer)`,
+				message: `版本号“${version}”不符合语义化版本规范（SemVer）`,
 			});
 		}
 	}
@@ -82,15 +82,14 @@ export function validateResourcePackRules(
 			issues.push({
 				severity: 'warning',
 				category: '基础信息',
-				message:
-					'已设置 ID 分配段，但缺少签名，ID 合法性无法被游戏验证',
+				message: '已设置ID分配段，但缺少签名，ID合法性无法被游戏验证',
 			});
 		} else if (packLabel) {
 			if (options.isIdSignatureValid === false) {
 				issues.push({
 					severity: 'error',
 					category: '基础信息',
-					message: `ID 段签名无效（Label: ${packLabel}, 分配段: ${idRangeStart}–${idRangeEnd}）`,
+					message: `ID段签名无效（资源包标识符（Label）：${packLabel}，分配段：${idRangeStart}～${idRangeEnd}）`,
 				});
 			}
 		}
@@ -103,13 +102,13 @@ export function validateResourcePackRules(
 			issues.push({
 				severity: 'error',
 				category: entityType,
-				message: `${entityName} 的 ID (${id}) 超出有效范围`,
+				message: `${entityName}的ID（${id}）超出有效范围`,
 			});
 		} else if (id <= GAME_ID_MAX) {
 			issues.push({
 				severity: 'error',
 				category: entityType,
-				message: `${entityName} 的 ID (${id}) 位于游戏保留段 (0–${GAME_ID_MAX})`,
+				message: `${entityName}的ID（${id}）位于游戏保留段（0～${GAME_ID_MAX}）`,
 			});
 		} else if (
 			id < UNMANAGED_ID_MIN &&
@@ -119,13 +118,13 @@ export function validateResourcePackRules(
 			issues.push({
 				severity: 'error',
 				category: entityType,
-				message: `${entityName} 的 ID (${id}) 超出已分配的 ID 段 (${idRangeStart}–${idRangeEnd})`,
+				message: `${entityName}的ID（${id}）超出已分配的ID段（${idRangeStart}～${idRangeEnd}）`,
 			});
 		} else if (id >= UNMANAGED_ID_MIN) {
 			issues.push({
 				severity: 'warning',
 				category: entityType,
-				message: `${entityName} 的 ID (${id}) 位于不受管理区域`,
+				message: `${entityName}的ID（${id}）位于不受管理区域`,
 			});
 		}
 	}
@@ -141,7 +140,7 @@ export function validateResourcePackRules(
 				issues.push({
 					severity: 'error',
 					category: entityType,
-					message: `${getLabel(i)} 与 ${getLabel(seen.get(id)!)} 的 ID (${id}) 重复`,
+					message: `${getLabel(i)}与${getLabel(seen.get(id)!)}的ID（${id}）重复`,
 				});
 			} else {
 				seen.set(id, i);
@@ -161,7 +160,7 @@ export function validateResourcePackRules(
 			issues.push({
 				severity: 'warning',
 				category: entityType,
-				message: `${entityName} 的标识 "${label}" 未以 "${prefix}" 开头`,
+				message: `${entityName}的标识“${label}”未以“${prefix}”开头`,
 			});
 		}
 	}
@@ -186,7 +185,7 @@ export function validateResourcePackRules(
 			issues.push({
 				severity: 'error',
 				category: '角色',
-				message: `${name} 的标签 "${char.label}" 必须以 _ 开头`,
+				message: `${name}的标签“${char.label}”必须以_开头`,
 			});
 		}
 
@@ -195,7 +194,7 @@ export function validateResourcePackRules(
 		// Sprite set name
 		if (char.characterSpriteSetCompact) {
 			const spriteName = char.characterSpriteSetCompact.name;
-			checkLabelPrefix(spriteName, '角色小人', `${name} 的小人名称`);
+			checkLabelPrefix(spriteName, '角色小人', `${name}的小人名称`);
 		}
 	});
 
@@ -209,7 +208,7 @@ export function validateResourcePackRules(
 			issues.push({
 				severity: 'error',
 				category: '对话包',
-				message: `${displayName} 与 对话包#${dialogNamesSeen.get(pkg.name)! + 1} 的名称重复`,
+				message: `${displayName}与对话包#${dialogNamesSeen.get(pkg.name)! + 1}的名称重复`,
 			});
 		} else if (pkg.name) {
 			dialogNamesSeen.set(pkg.name, i);
@@ -223,7 +222,7 @@ export function validateResourcePackRules(
 		const pkgName = pkg.name || `对话包#${pkgIndex + 1}`;
 		pkg.dialogList.forEach((dlg, dlgIndex) => {
 			(dlg.actions ?? []).forEach((act, actIndex) => {
-				const where = `${pkgName} 第 ${dlgIndex + 1} 条对话的动作 #${actIndex + 1}`;
+				const where = `${pkgName}第${dlgIndex + 1}条对话的动作#${actIndex + 1}`;
 				const maxJump = pkg.dialogList.length + 1;
 
 				if (act.actionType === 'Branch') {
@@ -231,19 +230,19 @@ export function validateResourcePackRules(
 						issues.push({
 							severity: 'error',
 							category: '对话动作',
-							message: `${where} (Branch) 至少需要一个选项`,
+							message: `${where}（Branch）至少需要一个选项`,
 						});
 						return;
 					}
 
 					act.options.forEach((option, optionIndex) => {
-						const optionWhere = `${where} (Branch) 选项 #${optionIndex + 1}`;
+						const optionWhere = `${where}（Branch）选项#${optionIndex + 1}`;
 						const jump = option.jump ?? 1;
 						if (!option.text?.trim()) {
 							issues.push({
 								severity: 'error',
 								category: '对话动作',
-								message: `${optionWhere} 未设置选项文字`,
+								message: `${optionWhere}未设置选项文字`,
 							});
 						}
 						if (
@@ -254,7 +253,7 @@ export function validateResourcePackRules(
 							issues.push({
 								severity: 'error',
 								category: '对话动作',
-								message: `${optionWhere} 的跳转目标 ${jump} 无效，应为 1-${maxJump}`,
+								message: `${optionWhere}的跳转目标${jump}无效，应为1～${maxJump}`,
 							});
 						}
 						if (
@@ -265,7 +264,7 @@ export function validateResourcePackRules(
 							issues.push({
 								severity: 'error',
 								category: '对话动作',
-								message: `${optionWhere} 的价格必须为空或非负整数`,
+								message: `${optionWhere}的价格必须为空或非负整数`,
 							});
 						}
 					});
@@ -281,7 +280,7 @@ export function validateResourcePackRules(
 						issues.push({
 							severity: 'error',
 							category: '对话动作',
-							message: `${where} (Goto) 的跳转目标 ${act.index ?? '未设置'} 无效，应为 1-${maxJump}`,
+							message: `${where}（Goto）的跳转目标${act.index ?? '未设置'}无效，应为1～${maxJump}`,
 						});
 					}
 					return;
@@ -295,7 +294,7 @@ export function validateResourcePackRules(
 						issues.push({
 							severity: 'error',
 							category: '对话动作',
-							message: `${where} (End) 的退出码必须是整数或留空`,
+							message: `${where}（End）的退出码必须是整数或留空`,
 						});
 					}
 					return;
@@ -306,7 +305,7 @@ export function validateResourcePackRules(
 						issues.push({
 							severity: 'error',
 							category: '对话动作',
-							message: `${where} (Sound) 未设置 sound 路径`,
+							message: `${where}（Sound）未设置音频路径（sound）`,
 						});
 						return;
 					}
@@ -314,21 +313,21 @@ export function validateResourcePackRules(
 						issues.push({
 							severity: 'warning',
 							category: '对话动作',
-							message: `${where} 的 sound "${act.sound}" 未位于推荐目录 assets/Audio/`,
+							message: `${where}的音频路径（sound）“${act.sound}”未位于推荐目录assets/Audio/`,
 						});
 					}
 					if (!act.sound.toLowerCase().endsWith('.wav')) {
 						issues.push({
 							severity: 'warning',
 							category: '对话动作',
-							message: `${where} 的 sound "${act.sound}" 不是 .wav 文件，MOD 目前仅支持 .wav`,
+							message: `${where}的音频路径（sound）“${act.sound}”不是.wav文件，MOD目前仅支持.wav`,
 						});
 					}
 					if (assetSet && !assetSet.has(act.sound)) {
 						issues.push({
 							severity: 'error',
 							category: '对话动作',
-							message: `${where} 引用的音频 "${act.sound}" 在当前项目中不存在`,
+							message: `${where}引用的音频“${act.sound}”在当前项目中不存在`,
 						});
 					}
 					return;
@@ -344,7 +343,7 @@ export function validateResourcePackRules(
 						issues.push({
 							severity: 'warning',
 							category: '对话动作',
-							message: `${where} (${act.actionType}) 标记为清空但仍带有 sprite 字段，导出时将会丢弃`,
+							message: `${where}（${act.actionType}）标记为清空但仍带有贴图路径（sprite）字段，导出时将会丢弃`,
 						});
 					}
 					return;
@@ -354,7 +353,7 @@ export function validateResourcePackRules(
 					issues.push({
 						severity: 'error',
 						category: '对话动作',
-						message: `${where} (${act.actionType}) 既未设置 sprite 也未标记清空`,
+						message: `${where}（${act.actionType}）既未设置贴图路径（sprite）也未标记清空`,
 					});
 					return;
 				}
@@ -365,7 +364,7 @@ export function validateResourcePackRules(
 					issues.push({
 						severity: 'warning',
 						category: '对话动作',
-						message: `${where} 的 sprite "${act.sprite}" 未位于推荐目录 ${expectedFolder}`,
+						message: `${where}的贴图路径（sprite）“${act.sprite}”未位于推荐目录${expectedFolder}`,
 					});
 				}
 
@@ -373,7 +372,7 @@ export function validateResourcePackRules(
 					issues.push({
 						severity: 'error',
 						category: '对话动作',
-						message: `${where} 引用的资产 "${act.sprite}" 在当前项目中不存在`,
+						message: `${where}引用的资产“${act.sprite}”在当前项目中不存在`,
 					});
 				}
 			});
@@ -397,14 +396,14 @@ export function validateResourcePackRules(
 
 	// ── Ingredients ───────────────────────────────────────
 	const ingNames = (i: number) =>
-		data.ingredients[i]?.name || `原料#${i + 1}`;
+		data.ingredients[i]?.name || `食材#${i + 1}`;
 	checkIdDuplicate(
 		data.ingredients.map((it) => it.id),
-		'原料',
+		'食材',
 		ingNames
 	);
 	data.ingredients.forEach((it, i) => {
-		checkId(it.id, '原料', it.name || `原料#${i + 1}`);
+		checkId(it.id, '食材', it.name || `食材#${i + 1}`);
 	});
 
 	// ── Foods ─────────────────────────────────────────────
@@ -432,26 +431,26 @@ export function validateResourcePackRules(
 
 	// ── Recipes ───────────────────────────────────────────
 	const recipeNames = (i: number) =>
-		`菜谱#${i + 1}(ID:${data.recipes[i]?.id})`;
+		`食谱#${i + 1}（ID：${data.recipes[i]?.id}）`;
 	checkIdDuplicate(
 		data.recipes.map((r) => r.id),
-		'菜谱',
+		'食谱',
 		recipeNames
 	);
 	data.recipes.forEach((r, i) => {
-		checkId(r.id, '菜谱', `菜谱#${i + 1}`);
+		checkId(r.id, '食谱', `食谱#${i + 1}`);
 	});
 
 	// ── Clothes ───────────────────────────────────────────
 	const clothesNames = (i: number) =>
-		(data.clothes || [])[i]?.name || `服装#${i + 1}`;
+		(data.clothes || [])[i]?.name || `衣服#${i + 1}`;
 	checkIdDuplicate(
 		(data.clothes || []).map((c) => c.id),
-		'服装',
+		'衣服',
 		clothesNames
 	);
 	(data.clothes || []).forEach((c, i) => {
-		checkId(c.id, '服装', c.name || `服装#${i + 1}`);
+		checkId(c.id, '衣服', c.name || `衣服#${i + 1}`);
 	});
 
 	return issues;

@@ -2,13 +2,16 @@ import { cn } from '@heroui/theme';
 import { useState } from 'react';
 
 import Button from '@/design/ui/components/button';
+import Input from '@/design/ui/components/input';
 
 import type { CharacterPortrait } from '@/domain/resourcePack/contracts/character';
 
 import { SectionAddButton } from '@/features/resourceEditor/client/components/actions/SectionAddButton';
+import { SectionDeleteButton } from '@/features/resourceEditor/client/components/actions/SectionDeleteButton';
 import { Label } from '@/features/resourceEditor/client/components/fields/Label';
 import { ChevronRight } from '@/features/resourceEditor/client/components/icons/ChevronRight';
 import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
+import { EditorSection } from '@/features/resourceEditor/client/components/layout/EditorSection';
 import { PortraitUploader } from '@/features/resourceEditor/client/components/uploads/PortraitUploader';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
@@ -47,167 +50,153 @@ export function Portraits({
 	};
 
 	return (
-		<div className="flex flex-col gap-4">
-			<div className="ml-1 flex items-center justify-between">
-				<div
-					className="flex cursor-pointer select-none items-center gap-2"
-					onClick={() => setIsExpanded(!isExpanded)}
+		<EditorSection
+			title={
+				<Button
+					variant="light"
+					size="sm"
+					aria-expanded={isExpanded}
+					className="-ml-2 h-10 px-2 text-base font-semibold text-foreground-700 sm:h-8"
+					startContent={
+						<ChevronRight
+							className={cn(
+								'h-4 w-4 transition-transform duration-200 motion-reduce:transition-none',
+								isExpanded && 'rotate-90'
+							)}
+						/>
+					}
+					onPress={() => setIsExpanded((value) => !value)}
 				>
-					<ChevronRight
-						className={cn(
-							'transition-transform duration-200',
-							isExpanded && 'rotate-90'
-						)}
-					/>
-					<Label
-						className="cursor-pointer text-base font-semibold normal-case opacity-100"
-						tip="为角色配置不同的立绘表情，可用于对话系统和小碎骨笔记本图鉴"
-					>
-						立绘配置（Portraits）
-						{portraits?.length ? `(${portraits.length})` : ''}
-					</Label>
-				</div>
+					{`立绘配置（Portraits）${portraits.length ? `（${portraits.length}）` : ''}`}
+				</Button>
+			}
+			actions={
 				<SectionAddButton onPress={onAdd}>
 					添加立绘配置
 				</SectionAddButton>
-			</div>
+			}
+		>
+			<p className="text-sm leading-6 text-foreground-600">
+				为角色配置不同的立绘表情，可用于对话系统和小碎骨笔记本图鉴。
+			</p>
 			{isExpanded && (
-				<div className="grid grid-cols-1 gap-3 duration-200">
-					{portraits?.map((portrait, i) => {
+				<div className="grid grid-cols-1 gap-3">
+					{portraits.map((portrait, i) => {
 						const duplicatePid = isPidDuplicate(portrait.pid, i);
 
 						return (
-							<div
+							<article
 								key={i}
 								className={cn(
-									'flex w-full flex-wrap items-end gap-3 rounded-xl border bg-black/10 p-4 transition-all',
+									'flex min-w-0 flex-col gap-4 rounded-large border bg-content1/50 p-4',
 									duplicatePid
-										? 'border-danger/50 bg-danger/5'
-										: 'border-white/5'
+										? 'border-danger/50 bg-danger/10'
+										: 'border-divider'
 								)}
 							>
-								<div className="flex w-20 flex-col gap-1">
-									<div className="ml-1 flex items-center justify-between">
-										<Label
-											size="sm"
-											className="ml-1"
-											tip={
-												'角色立绘的唯一标识符，用于在对话系统中调用对应立绘。'
-											}
-										>
-											PID
-										</Label>
-										{duplicatePid && (
-											<span className="text-[8px] font-bold text-danger">
-												重复
-											</span>
-										)}
+								<div className="flex min-w-0 items-center justify-between gap-3 border-b border-divider pb-3">
+									<div className="min-w-0">
+										<h4 className="text-sm font-semibold text-foreground-700">
+											立绘配置{i + 1}
+										</h4>
+										<p className="mt-1 truncate font-mono text-xs text-foreground-500">
+											{portrait.path}
+										</p>
 									</div>
-									<input
-										type="number"
-										value={portrait.pid}
-										onChange={(e) =>
-											onUpdate(i, {
-												pid:
-													parseInt(e.target.value) ||
-													0,
-											})
+									<SectionDeleteButton
+										iconOnly
+										confirmTitle="确定要删除这个立绘配置吗？"
+										onPress={() => onRemove(i)}
+									>
+										删除立绘配置
+									</SectionDeleteButton>
+								</div>
+								<div className="grid min-w-0 gap-5 lg:grid-cols-[16rem_minmax(0,1fr)] lg:items-start">
+									<PortraitUploader
+										className="mx-auto lg:mx-0"
+										spritePath={portrait.path}
+										onUpload={(file) =>
+											handleUpload(i, file, portrait.pid)
 										}
-										className={cn(
-											'rounded-lg border bg-black/10 p-2 text-sm transition-all focus:outline-none focus:ring-1',
-											duplicatePid
-												? 'border-danger focus:ring-danger/50'
-												: 'border-white/10 focus:ring-primary/50'
-										)}
 									/>
-								</div>
-								<div className="flex flex-1 flex-col gap-1">
-									<Label
-										size="sm"
-										className="ml-1"
-										tip="用于给立绘添加备注，但不会注入游戏"
-									>
-										备注标签
-									</Label>
-									<div className="flex gap-2">
-										<input
-											type="text"
-											value={portrait.label || ''}
-											onChange={(e) =>
-												onUpdate(i, {
-													label: e.target.value,
-												})
-											}
-											placeholder="例如：大妖精 低沉"
-											className="flex-1 rounded-lg border border-white/10 bg-black/10 p-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50"
-										/>
-										<label
-											className={cn(
-												'flex cursor-pointer items-center gap-2 rounded px-3 py-1 transition-colors',
-												faceInNoteBook === portrait.pid
-													? 'bg-primary/20 text-primary'
-													: 'bg-black/10 text-white/50 hover:bg-black/20 hover:text-white/70'
-											)}
-										>
-											<input
-												type="radio"
-												name={`default-portrait-${characterId}`}
-												checked={
-													faceInNoteBook ===
-													portrait.pid
+									<div className="grid min-w-0 content-start gap-4">
+										<div className="flex min-w-0 flex-col gap-2">
+											<div className="flex items-center justify-between gap-2">
+												<Label
+													tip={
+														'角色立绘的唯一标识符，用于在对话系统中调用对应立绘。'
+													}
+												>
+													PID
+												</Label>
+												{duplicatePid && (
+													<span className="text-xs font-semibold text-danger">
+														PID重复
+													</span>
+												)}
+											</div>
+											<Input
+												type="number"
+												value={String(portrait.pid)}
+												onChange={(e) =>
+													onUpdate(i, {
+														pid:
+															parseInt(
+																e.target.value
+															) || 0,
+													})
 												}
-												onChange={() =>
-													onSetDefault(portrait.pid)
-												}
-												className="accent-primary"
+												isInvalid={duplicatePid}
 											/>
-											<span className="whitespace-nowrap text-xs font-bold">
-												设为图鉴立绘
-											</span>
-										</label>
+										</div>
+										<div className="flex min-w-0 flex-col gap-2">
+											<Label tip="用于给立绘添加备注，但不会注入游戏">
+												备注标签
+											</Label>
+											<Input
+												type="text"
+												value={portrait.label || ''}
+												onChange={(e) =>
+													onUpdate(i, {
+														label: e.target.value,
+													})
+												}
+												placeholder="例如：大妖精 低沉"
+											/>
+										</div>
+										<Button
+											size="sm"
+											color="primary"
+											variant={
+												faceInNoteBook === portrait.pid
+													? 'flat'
+													: 'bordered'
+											}
+											aria-pressed={
+												faceInNoteBook === portrait.pid
+											}
+											className="h-10 justify-self-start px-4 sm:h-8"
+											onPress={() =>
+												onSetDefault(portrait.pid)
+											}
+										>
+											{faceInNoteBook === portrait.pid
+												? '当前图鉴立绘'
+												: '设为图鉴立绘'}
+										</Button>
 									</div>
 								</div>
-								<PortraitUploader
-									spritePath={portrait.path}
-									onUpload={(file) =>
-										handleUpload(i, file, portrait.pid)
-									}
-								/>
-								<div className="flex flex-col justify-end">
-									<button
-										onClick={() => onRemove(i)}
-										className="flex h-9 w-9 items-center justify-center rounded-lg border border-danger/20 bg-danger/10 p-2 text-danger transition-all hover:bg-danger/20 active:scale-90"
-										title="删除立绘"
-									>
-										×
-									</button>
-								</div>
-							</div>
+							</article>
 						);
 					})}
-					{portraits && portraits.length > 0 && (
-						<div className="mt-2 flex justify-end gap-2 border-t border-white/5 pt-4">
-							<SectionAddButton onPress={onAdd}>
-								添加立绘配置
-							</SectionAddButton>
-							<Button
-								variant="light"
-								size="sm"
-								onPress={() => setIsExpanded(false)}
-								className="h-8 rounded-md px-3 text-xs"
-							>
-								收起列表
-							</Button>
-						</div>
-					)}
 					{(!portraits || portraits.length === 0) && (
 						<EmptyState
 							title="暂无立绘配置"
-							description="点击右上角“添加立绘配置”按钮创建"
+							description="可使用“添加立绘配置”创建第一项。"
 						/>
 					)}
 				</div>
 			)}
-		</div>
+		</EditorSection>
 	);
 }

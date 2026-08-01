@@ -16,6 +16,7 @@ export default memo<IProps>(function Button({
 	color,
 	disableAnimation,
 	endContent,
+	radius,
 	variant,
 	...props
 }) {
@@ -203,6 +204,7 @@ export default memo<IProps>(function Button({
 			color={color}
 			disableAnimation={disableAnimation ?? isReducedMotion}
 			endContent={endContent}
+			radius={radius ?? 'md'}
 			variant={variant}
 			className={cn(
 				'transform-gpu',

@@ -20,18 +20,18 @@ export const EditorHeader = memo<IProps>(function EditorHeader({
 		<Card
 			as="header"
 			fullWidth
-			shadow="sm"
+			shadow="none"
 			className={cn(
-				'flex flex-col gap-3 bg-content1/40 p-4 backdrop-blur md:flex-row md:items-center md:justify-between',
+				'flex flex-col gap-3 border border-divider bg-content1/85 p-4 shadow-sm backdrop-blur-md sm:p-6 md:flex-row md:items-center md:justify-between',
 				className
 			)}
 		>
 			<div className="min-w-0 space-y-1">
-				<h1 className="break-words text-xl font-semibold leading-7 text-foreground-900">
+				<h1 className="break-words text-2xl font-bold leading-8 text-foreground">
 					{title}
 				</h1>
 				{description !== undefined && (
-					<p className="break-words text-sm leading-5 text-foreground-500">
+					<p className="break-words text-sm leading-5 text-foreground-600">
 						{description}
 					</p>
 				)}

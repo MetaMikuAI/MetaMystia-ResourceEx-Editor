@@ -56,12 +56,12 @@ export const PortraitSelector = memo<PortraitSelectorProps>(
 					value={value}
 					onChange={(v) => onChange(v)}
 					placeholder={
-						portraits.length === 0 ? '无可用立绘' : '请选择...'
+						portraits.length === 0 ? '无可用立绘' : '请选择…'
 					}
 					isDisabled={portraits.length === 0}
 					items={portraits.map(({ name, pid }) => ({
 						value: pid,
-						label: `(${pid}) ${name}`,
+						label: `（${pid}） ${name}`,
 					}))}
 				/>
 			</div>

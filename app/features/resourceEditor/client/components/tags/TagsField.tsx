@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 
 import { EditorField } from '@/features/resourceEditor/client/components/fields/EditorField';
 
+import { type TTagTone } from './TagButton';
 import { TagSelector } from './TagSelector';
 
 interface IProps {
@@ -9,7 +10,7 @@ interface IProps {
 	tags: number[];
 	tagPool: { id: number; name: string }[];
 	onChange: (newTags: number[]) => void;
-	variant?: 'normal' | 'ban';
+	tone?: TTagTone;
 }
 
 export function TagsField({
@@ -17,7 +18,7 @@ export function TagsField({
 	onChange,
 	tagPool,
 	tags,
-	variant = 'normal',
+	tone = 'neutral',
 }: IProps) {
 	const toggleTag = useCallback(
 		(tagId: number) => {
@@ -36,7 +37,7 @@ export function TagsField({
 				tags={tags}
 				tagPool={tagPool}
 				onToggle={toggleTag}
-				variant={variant}
+				tone={tone}
 			/>
 		</EditorField>
 	);

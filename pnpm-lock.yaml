@@ -64,6 +64,9 @@ importers:
       '@heroui/select':
         specifier: 2.4.10
         version: 2.4.10(patch_hash=32ce2bff8e9a382fce98fce3408298fc7120961cdd4fc0ab80ddaad3c11d7768)(@heroui/system@2.4.7(@heroui/theme@2.4.6(patch_hash=fb0d75d37bc94345a4f3ffda1d0462745e537c631d6c4a9c67df40c7e912366c)(tailwindcss@3.4.19(yaml@2.9.0)))(@react-spectrum/provider@3.11.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(framer-motion@12.17.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@heroui/theme@2.4.6(patch_hash=fb0d75d37bc94345a4f3ffda1d0462745e537c631d6c4a9c67df40c7e912366c)(tailwindcss@3.4.19(yaml@2.9.0)))(@react-spectrum/provider@3.11.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(framer-motion@12.17.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@heroui/shared-icons':
+        specifier: 2.1.2
+        version: 2.1.2(react@19.2.8)
       '@heroui/switch':
         specifier: 2.2.9
         version: 2.2.9(@heroui/system@2.4.7(@heroui/theme@2.4.6(patch_hash=fb0d75d37bc94345a4f3ffda1d0462745e537c631d6c4a9c67df40c7e912366c)(tailwindcss@3.4.19(yaml@2.9.0)))(@react-spectrum/provider@3.11.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(framer-motion@12.17.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@heroui/theme@2.4.6(patch_hash=fb0d75d37bc94345a4f3ffda1d0462745e537c631d6c4a9c67df40c7e912366c)(tailwindcss@3.4.19(yaml@2.9.0)))(@react-spectrum/provider@3.11.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)

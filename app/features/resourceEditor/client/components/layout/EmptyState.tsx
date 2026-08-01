@@ -20,13 +20,13 @@ export function EmptyState({
 		<Placeholder
 			className={cn(
 				variant === 'box' &&
-					'rounded-large border border-dashed border-divider p-8',
+					'min-h-32 rounded-large border border-dashed border-divider bg-content2/20 p-6 sm:p-8',
 				className
 			)}
 		>
-			<p className="text-sm">{title}</p>
+			<p className="text-sm font-semibold text-foreground-700">{title}</p>
 			{description !== undefined && (
-				<p className="mt-1 text-xs font-normal opacity-70">
+				<p className="max-w-prose text-xs font-normal leading-relaxed text-foreground-500">
 					{description}
 				</p>
 			)}

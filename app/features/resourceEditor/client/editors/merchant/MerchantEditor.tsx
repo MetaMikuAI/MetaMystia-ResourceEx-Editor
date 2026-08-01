@@ -1,6 +1,6 @@
 import { memo, useCallback, useId, useMemo, useState } from 'react';
 
-import Button from '@/design/ui/components/button';
+import Input from '@/design/ui/components/input';
 
 import type { Character } from '@/domain/resourcePack/contracts/character';
 import type { DialogPackage } from '@/domain/resourcePack/contracts/dialogue';
@@ -15,7 +15,13 @@ import type {
 	MerchantConfig,
 } from '@/domain/resourcePack/contracts/merchant';
 
+import { SectionDeleteButton } from '@/features/resourceEditor/client/components/actions/SectionDeleteButton';
 import { Label } from '@/features/resourceEditor/client/components/fields/Label';
+import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
+import { EditorDetailEmptyState } from '@/features/resourceEditor/client/components/layout/EditorDetailEmptyState';
+import { EditorDetailHeader } from '@/features/resourceEditor/client/components/layout/EditorDetailHeader';
+import { EditorDetailPanel } from '@/features/resourceEditor/client/components/layout/EditorDetailPanel';
+import { EditorSection } from '@/features/resourceEditor/client/components/layout/EditorSection';
 import {
 	Select,
 	type SelectItem as SelectItemSpec,
@@ -53,7 +59,7 @@ export const MerchantEditor = memo<MerchantEditorProps>(
 		const characterItems = useMemo<SelectItemSpec<string>[]>(() => {
 			return allCharacters.map((char) => ({
 				value: char.label,
-				label: `${char.name} (${char.label})`,
+				label: `${char.name}（${char.label}）`,
 			}));
 		}, [allCharacters]);
 
@@ -119,30 +125,18 @@ export const MerchantEditor = memo<MerchantEditorProps>(
 		);
 
 		if (!merchant) {
-			return (
-				<div className="col-span-2 flex h-96 items-center justify-center rounded-lg bg-white/10 p-4 shadow-md backdrop-blur">
-					<p className="text-center text-black/40 dark:text-white/40">
-						请从左侧选择一个商人进行编辑
-					</p>
-				</div>
-			);
+			return <EditorDetailEmptyState itemLabel="商人" />;
 		}
 
 		return (
-			<div className="col-span-2 flex flex-col gap-6 overflow-y-auto rounded-lg bg-white/10 p-6 font-sans shadow-md backdrop-blur">
-				<div className="flex items-center justify-between border-b border-black/5 pb-4 dark:border-white/5">
-					<h2 className="text-2xl font-bold">商人编辑</h2>
-				</div>
+			<EditorDetailPanel>
+				<EditorDetailHeader title="商人编辑" />
 
-				{/* 基本信息 */}
-				<div className="flex flex-col gap-4 rounded-lg bg-white/20 p-4 dark:bg-white/5">
-					<h3 className="text-sm font-bold uppercase tracking-wider opacity-60">
-						基本信息
-					</h3>
+				<EditorSection title="基本信息">
 					<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 						{/* Key - Character select */}
 						<div className="flex flex-col gap-1 md:col-span-2">
-							<Label htmlFor={idKey}>角色 (key)</Label>
+							<Label htmlFor={idKey}>角色（key）</Label>
 							<Select<string>
 								id={idKey}
 								ariaLabel="角色"
@@ -154,98 +148,88 @@ export const MerchantEditor = memo<MerchantEditorProps>(
 
 						{/* Price Multiplier Min/Max */}
 						<div className="flex flex-col gap-1">
-							<Label htmlFor={idPriceMin}>价格倍率 (下界)</Label>
-							<input
+							<Label htmlFor={idPriceMin}>价格倍率（下界）</Label>
+							<Input
 								id={idPriceMin}
 								type="number"
 								min={0}
 								step={0.01}
-								value={merchant.priceMultiplierMin}
-								onChange={(e) =>
+								value={String(merchant.priceMultiplierMin)}
+								onChange={(e) => {
+									const value = parseFloat(e.target.value);
 									onUpdate({
-										priceMultiplierMin:
-											parseFloat(e.target.value) || 1,
-									})
-								}
-								className="rounded-lg border border-white/10 bg-black/10 px-3 py-2 transition-all focus:outline-none focus:ring-2 focus:ring-primary/50"
+										priceMultiplierMin: Number.isNaN(value)
+											? 1
+											: value,
+									});
+								}}
 							/>
 						</div>
 						<div className="flex flex-col gap-1">
-							<Label htmlFor={idPriceMax}>价格倍率 (上界)</Label>
-							<input
+							<Label htmlFor={idPriceMax}>价格倍率（上界）</Label>
+							<Input
 								id={idPriceMax}
 								type="number"
 								min={0}
 								step={0.01}
-								value={merchant.priceMultiplierMax}
-								onChange={(e) =>
+								value={String(merchant.priceMultiplierMax)}
+								onChange={(e) => {
+									const value = parseFloat(e.target.value);
 									onUpdate({
-										priceMultiplierMax:
-											parseFloat(e.target.value) || 1,
-									})
-								}
-								className="rounded-lg border border-white/10 bg-black/10 px-3 py-2 transition-all focus:outline-none focus:ring-2 focus:ring-primary/50"
+										priceMultiplierMax: Number.isNaN(value)
+											? 1
+											: value,
+									});
+								}}
 							/>
 						</div>
 
 						{/* Least Sell Num */}
 						<div className="flex flex-col gap-1">
 							<Label htmlFor={idLeastSellNum}>最低出售数量</Label>
-							<input
+							<Input
 								id={idLeastSellNum}
 								type="number"
 								min={1}
-								value={merchant.leastSellNum}
+								value={String(merchant.leastSellNum)}
 								onChange={(e) =>
 									onUpdate({
 										leastSellNum:
 											parseInt(e.target.value) || 1,
 									})
 								}
-								className="rounded-lg border border-white/10 bg-black/10 px-3 py-2 transition-all focus:outline-none focus:ring-2 focus:ring-primary/50"
 							/>
 						</div>
 					</div>
-				</div>
+				</EditorSection>
 
-				{/* 欢迎对话包 */}
-				<div className="flex flex-col gap-4 rounded-lg bg-white/20 p-4 dark:bg-white/5">
-					<h3 className="text-sm font-bold uppercase tracking-wider opacity-60">
-						欢迎对话包 (welcomeDialogPackageNames)
-					</h3>
+				<EditorSection title="欢迎对话包（welcomeDialogPackageNames）">
 					<DialogPackageArrayField
 						dialogs={merchant.welcomeDialogPackageNames}
 						allDialogPackages={allDialogPackages}
 						onAdd={handleWelcomeDialogAdd}
 						onRemove={handleWelcomeDialogRemove}
 					/>
-				</div>
+				</EditorSection>
 
-				{/* 售罄对话包 */}
-				<div className="flex flex-col gap-4 rounded-lg bg-white/20 p-4 dark:bg-white/5">
-					<h3 className="text-sm font-bold uppercase tracking-wider opacity-60">
-						售罄对话包 (nullDialogPackageNames)
-					</h3>
+				<EditorSection title="售罄对话包（nullDialogPackageNames）">
 					<DialogPackageArrayField
 						dialogs={merchant.nullDialogPackageNames}
 						allDialogPackages={allDialogPackages}
 						onAdd={handleNullDialogAdd}
 						onRemove={handleNullDialogRemove}
 					/>
-				</div>
+				</EditorSection>
 
-				{/* 商品列表 */}
-				<div className="flex flex-col gap-4 rounded-lg bg-white/20 p-4 dark:bg-white/5">
-					<MerchandiseListEditor
-						merchandiseList={merchant.merchandise}
-						extFoods={extFoods}
-						extIngredients={extIngredients}
-						extBeverages={extBeverages}
-						extRecipes={extRecipes}
-						onUpdate={handleMerchandiseUpdate}
-					/>
-				</div>
-			</div>
+				<MerchandiseListEditor
+					merchandiseList={merchant.merchandise}
+					extFoods={extFoods}
+					extIngredients={extIngredients}
+					extBeverages={extBeverages}
+					extRecipes={extRecipes}
+					onUpdate={handleMerchandiseUpdate}
+				/>
+			</EditorDetailPanel>
 		);
 	}
 );
@@ -288,25 +272,26 @@ const DialogPackageArrayField = memo<DialogPackageArrayFieldProps>(
 
 		return (
 			<div className="flex flex-col gap-2">
+				{dialogs.length === 0 && (
+					<EmptyState variant="text" title="暂无已选对话包" />
+				)}
 				{dialogs.length > 0 && (
 					<div className="flex flex-col gap-1">
 						{dialogs.map((name, idx) => (
 							<div
 								key={idx}
-								className="flex items-center justify-between rounded bg-black/5 px-3 py-2 dark:bg-white/5"
+								className="flex min-w-0 items-center justify-between rounded-medium border border-divider bg-content1/50 px-3 py-2"
 							>
 								<span className="truncate font-mono text-sm">
 									{name}
 								</span>
-								<Button
-									color="danger"
-									size="sm"
-									radius="full"
+								<SectionDeleteButton
+									iconOnly
 									onPress={() => onRemove(idx)}
-									className="ml-2 h-6 min-w-0 shrink-0 px-2 text-xs"
+									className="ml-2 shrink-0"
 								>
-									移除
-								</Button>
+									移除对话包
+								</SectionDeleteButton>
 							</div>
 						))}
 					</div>
@@ -314,7 +299,7 @@ const DialogPackageArrayField = memo<DialogPackageArrayFieldProps>(
 				<Select<string>
 					value={selectedValue}
 					onChange={handleAdd}
-					placeholder="添加对话包..."
+					placeholder="添加对话包…"
 					items={dialogItems}
 				/>
 			</div>

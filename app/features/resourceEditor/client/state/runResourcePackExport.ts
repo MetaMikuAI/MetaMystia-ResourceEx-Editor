@@ -37,10 +37,10 @@ function getLabelExportError(resourcePack: ResourceEx) {
 	const label = resourcePack.packInfo.label;
 	if (!label) return null;
 	if (KNOWN_DEPENDENCIES.some((dependency) => dependency === label)) {
-		return `资源包标识符 (Label) 不能使用保留关键字 "${label}"`;
+		return `资源包标识符（Label）不能使用保留关键字“${label}”`;
 	}
 	if (!isValidPackLabel(label)) {
-		return `资源包标识符 (Label) "${label}" 含非法字符。${PACK_LABEL_ALLOWED_DESCRIPTION}。`;
+		return `资源包标识符（Label）“${label}”含非法字符。${PACK_LABEL_ALLOWED_DESCRIPTION}。`;
 	}
 	return null;
 }

@@ -1,5 +1,7 @@
 import { memo, useCallback, useMemo } from 'react';
 
+import Input from '@/design/ui/components/input';
+
 import { BEVERAGE_NAMES } from '@/domain/data/beverages';
 import { FOOD_NAMES } from '@/domain/data/foods';
 import { INGREDIENT_NAMES } from '@/domain/data/ingredients';
@@ -16,26 +18,12 @@ import type {
 } from '@/domain/resourcePack/contracts/merchant';
 
 import { Label } from '@/features/resourceEditor/client/components/fields/Label';
+import { PRODUCT_TYPE_OPTIONS } from '@/features/resourceEditor/client/components/select/productTypeOptions';
 import {
 	Select,
 	type SelectItem as SelectItemSpec,
 } from '@/features/resourceEditor/client/components/select/Select';
 import { WarningNotice } from '@/features/resourceEditor/client/components/status/WarningNotice';
-
-const ALL_PRODUCT_TYPES: { value: ProductType; label: string }[] = [
-	{ value: 'Food', label: 'Food' },
-	{ value: 'Ingredient', label: 'Ingredient' },
-	{ value: 'Beverage', label: 'Beverage' },
-	{ value: 'Recipe', label: 'Recipe' },
-	{ value: 'Money', label: 'Money' },
-	{ value: 'Mission', label: 'Mission' },
-	{ value: 'Item', label: 'Item' },
-	{ value: 'Izakaya', label: 'Izakaya' },
-	{ value: 'Cooker', label: 'Cooker' },
-	{ value: 'Partner', label: 'Partner' },
-	{ value: 'Badge', label: 'Badge' },
-	{ value: 'Trophy', label: 'Trophy' },
-];
 
 const SUPPORTED_TYPES: ProductType[] = [
 	'Food',
@@ -113,7 +101,7 @@ export const ProductEditor = memo<ProductEditorProps>(function ProductEditor({
 				const extItems = extRecipes.map((r) => {
 					const foodName =
 						extFoods.find((f) => f.id === r.foodId)?.name ||
-						`菜谱#${r.id}`;
+						`食谱#${r.id}`;
 					return { id: r.id, name: `${foodName}`, source: '扩展' };
 				});
 				return [...gameItems, ...extItems];
@@ -130,9 +118,9 @@ export const ProductEditor = memo<ProductEditorProps>(function ProductEditor({
 	]);
 
 	const typeItems = useMemo<SelectItemSpec<ProductType>[]>(() => {
-		return ALL_PRODUCT_TYPES.map((type) => ({
+		return PRODUCT_TYPE_OPTIONS.map((type) => ({
 			value: type.value,
-			label: `${type.label}${!SUPPORTED_TYPES.includes(type.value) ? ' (暂未实现)' : ''}`,
+			label: `${type.label}${!SUPPORTED_TYPES.includes(type.value) ? '（暂未实现）' : ''}`,
 			isDisabled: !SUPPORTED_TYPES.includes(type.value),
 		}));
 	}, []);
@@ -161,7 +149,7 @@ export const ProductEditor = memo<ProductEditorProps>(function ProductEditor({
 	);
 
 	return (
-		<div className="flex flex-col gap-3 rounded-lg bg-black/5 p-3 dark:bg-white/5">
+		<div className="flex min-w-0 flex-col gap-3 rounded-large border border-divider bg-content2/30 p-3">
 			<div className="grid grid-cols-1 gap-3 md:grid-cols-2">
 				{/* Product Type */}
 				<div className="flex flex-col gap-1">
@@ -177,22 +165,17 @@ export const ProductEditor = memo<ProductEditorProps>(function ProductEditor({
 				{/* Product Amount */}
 				<div className="flex flex-col gap-1">
 					<Label size="sm">商品数量</Label>
-					<input
-						type="number"
-						value={1}
-						disabled
-						className="cursor-not-allowed rounded-lg border border-white/10 bg-black/10 px-3 py-2 text-sm opacity-50"
-					/>
+					<Input isDisabled type="number" value="1" />
 				</div>
 			</div>
 
 			{!isSupported ? (
 				<WarningNotice>
-					⚠ 暂不支持配置 {product.productType} 类型商品
+					暂不支持配置{product.productType}类型商品
 				</WarningNotice>
 			) : (
 				<div className="flex flex-col gap-1">
-					<Label size="sm">选择商品 (productId)</Label>
+					<Label size="sm">选择商品（productId）</Label>
 					<Select<number>
 						value={product.productId}
 						onChange={(value) => onUpdate({ productId: value })}

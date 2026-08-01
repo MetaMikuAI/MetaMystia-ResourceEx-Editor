@@ -1,4 +1,6 @@
-import { memo } from 'react';
+import { memo, useEffect, useState } from 'react';
+
+import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
 
 interface PortraitPreviewProps {
 	portraitPath: string | null;
@@ -16,42 +18,40 @@ export const PortraitPreview = memo<PortraitPreviewProps>(
 		pid,
 		portraitName,
 	}) {
+		const [isLoadError, setIsLoadError] = useState(false);
+
+		useEffect(() => setIsLoadError(false), [portraitPath]);
+
 		if (!portraitPath) {
 			return (
-				<div className="flex h-80 w-full flex-col items-center justify-center gap-2 rounded-lg border-dashed border-black/10 bg-white/60 text-black/40 dark:border-white/10 dark:bg-white/5 dark:text-white/40">
-					<span className="text-2xl opacity-20">🖼️</span>
-					<span className="text-xs font-medium">无立绘预览</span>
-				</div>
+				<EmptyState
+					className="h-80"
+					title="无立绘预览"
+					description="选择角色和立绘后在此显示。"
+				/>
 			);
 		}
 
 		return (
 			<div className="group flex flex-col gap-2">
-				<div className="bg-checkerboard relative h-80 w-full overflow-hidden rounded-lg border border-black/10 shadow-inner">
-					<img
-						draggable="false"
-						src={portraitPath}
-						className="image-rendering-pixelated h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
-						onError={(e) => {
-							const { currentTarget: target } = e;
-							target.style.display = 'none';
-							const errorDiv =
-								target.nextElementSibling as HTMLElement;
-							if (errorDiv) {
-								errorDiv.style.display = 'flex';
-							}
-						}}
-					/>
-					<div className="hidden h-full w-full flex-col items-center justify-center gap-2 bg-danger bg-opacity-10 p-4 text-center">
-						<span className="text-2xl">⚠️</span>
-						<span className="text-xs font-medium">
+				<div className="bg-checkerboard relative h-80 w-full overflow-hidden rounded-large border border-divider">
+					{isLoadError ? (
+						<div className="flex h-full w-full items-center justify-center bg-danger/10 p-4 text-center text-sm font-medium text-danger-700 dark:text-danger">
 							图片加载失败
-						</span>
-					</div>
+						</div>
+					) : (
+						<img
+							draggable="false"
+							src={portraitPath}
+							alt={`${charName} ${portraitName}立绘`}
+							className="image-rendering-pixelated h-full w-full object-contain transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+							onError={() => setIsLoadError(true)}
+						/>
+					)}
 				</div>
-				<div className="rounded-lg bg-black/5 px-2 py-1 text-center dark:bg-white/5">
-					<div className="text-[10px] font-medium opacity-60">
-						({characterId}){charName}&nbsp;&nbsp; ({pid})
+				<div className="rounded-medium bg-content2/50 px-2 py-1 text-center">
+					<div className="text-xs font-medium text-foreground-600">
+						（{characterId}）{charName}&nbsp;&nbsp;（{pid}）
 						{portraitName}
 					</div>
 				</div>

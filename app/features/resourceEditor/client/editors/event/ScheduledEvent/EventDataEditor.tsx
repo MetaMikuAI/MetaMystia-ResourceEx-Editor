@@ -5,6 +5,7 @@ import { memo } from 'react';
 import type { DialogPackage } from '@/domain/resourcePack/contracts/dialogue';
 import type { ScheduledEvent } from '@/domain/resourcePack/contracts/event';
 
+import { Label } from '@/features/resourceEditor/client/components/fields/Label';
 import { Select } from '@/features/resourceEditor/client/components/select/Select';
 import { WarningNotice } from '@/features/resourceEditor/client/components/status/WarningNotice';
 
@@ -19,41 +20,42 @@ interface EventDataEditorProps {
 export const EventDataEditor = memo<EventDataEditorProps>(
 	function EventDataEditor({ eventData, allDialogPackages, onChange }) {
 		return (
-			<div className="flex flex-col gap-2 rounded-lg border border-black/10 bg-black/5 p-4 dark:border-white/10 dark:bg-white/5">
+			<div className="flex min-w-0 flex-col gap-3 rounded-large border border-divider bg-content1/50 p-4">
 				<div className="flex flex-col gap-1">
-					<label className="text-xs font-medium opacity-70">
-						Event Type
-					</label>
+					<Label size="sm">事件类型（Event Type）</Label>
 					<Select<EventType>
-						ariaLabel="Event Type"
+						ariaLabel="事件类型"
 						value={eventData?.eventType || 'Null'}
 						onChange={(newType) => {
-							const newEventData: any = { eventType: newType };
-							if (
+							const newEventData: NonNullable<
+								ScheduledEvent['eventData']
+							> =
 								newType === 'Dialog' &&
 								eventData?.dialogPackageName
-							) {
-								newEventData.dialogPackageName =
-									eventData.dialogPackageName;
-							}
+									? {
+											eventType: newType,
+											dialogPackageName:
+												eventData.dialogPackageName,
+										}
+									: { eventType: newType };
 							onChange(newEventData);
 						}}
 						items={[
-							{ value: 'Null', label: 'Null' },
-							{ value: 'Timeline', label: 'Timeline' },
-							{ value: 'Dialog', label: 'Dialog' },
+							{ value: 'Null', label: '无（Null）' },
+							{ value: 'Timeline', label: '时间轴（Timeline）' },
+							{ value: 'Dialog', label: '对话（Dialog）' },
 						]}
 					/>
 				</div>
 
 				{eventData?.eventType === 'Dialog' && (
 					<div className="flex flex-col gap-1">
-						<label className="text-xs font-medium opacity-70">
-							Dialog Package Name
-						</label>
+						<Label size="sm">
+							对话包名称（Dialog Package Name）
+						</Label>
 						<Select<string>
-							ariaLabel="Dialog Package Name"
-							placeholder="Select Package..."
+							ariaLabel="对话包名称"
+							placeholder="请选择对话包…"
 							value={eventData?.dialogPackageName ?? ''}
 							onChange={(v) =>
 								onChange({
@@ -63,15 +65,16 @@ export const EventDataEditor = memo<EventDataEditorProps>(
 							}
 							items={allDialogPackages.map((pkg, index) => ({
 								value: pkg.name,
-								label: pkg.name || `Dialog Package ${index}`,
-								textValue: `${pkg.name}-${index}`,
+								label: pkg.name || `对话包${index + 1}`,
 							}))}
 						/>
 					</div>
 				)}
 
 				{eventData?.eventType === 'Timeline' && (
-					<WarningNotice>⚠ 暂不支持配置 Timeline</WarningNotice>
+					<WarningNotice>
+						暂不支持配置时间轴（Timeline）
+					</WarningNotice>
 				)}
 			</div>
 		);

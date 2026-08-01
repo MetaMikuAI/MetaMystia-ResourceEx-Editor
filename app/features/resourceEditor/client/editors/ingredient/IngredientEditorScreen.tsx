@@ -5,6 +5,10 @@ import { useCallback, useMemo, useState } from 'react';
 import type { Ingredient } from '@/domain/resourcePack/contracts/items';
 
 import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
+import {
+	findNextAvailableInteger,
+	findNextAvailableSuffixedValue,
+} from '@/features/resourceEditor/client/editorValueAllocation';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import { IngredientEditor } from './IngredientEditor';
@@ -15,10 +19,16 @@ export function IngredientEditorScreen() {
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
 	const addIngredient = useCallback(() => {
-		const newId = 11000 + data.ingredients.length;
+		const newId = findNextAvailableInteger(
+			data.ingredients.map((ingredient) => ingredient.id),
+			11000
+		);
 		const newIngredient: Ingredient = {
 			id: newId,
-			name: `新原料${data.ingredients.length + 1}`,
+			name: findNextAvailableSuffixedValue(
+				data.ingredients.map((ingredient) => ingredient.name),
+				'新食材'
+			),
 			description: '',
 			level: 1,
 			prefix: -1,

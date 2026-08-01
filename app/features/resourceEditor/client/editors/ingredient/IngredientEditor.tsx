@@ -1,5 +1,8 @@
-import { cn } from '@heroui/theme';
 import { memo, useCallback, useId, useMemo } from 'react';
+
+import Input from '@/design/ui/components/input';
+import Switch from '@/design/ui/components/switch';
+import Textarea from '@/design/ui/components/textarea';
 
 import {
 	INGREDIENT_PREFIX_NONE_ID,
@@ -8,8 +11,11 @@ import {
 import { FOOD_TAGS } from '@/domain/data/tags';
 import type { Ingredient } from '@/domain/resourcePack/contracts/items';
 
-import { InfoTip } from '@/features/resourceEditor/client/components/fields/InfoTip';
 import { Label } from '@/features/resourceEditor/client/components/fields/Label';
+import { EditorDetailEmptyState } from '@/features/resourceEditor/client/components/layout/EditorDetailEmptyState';
+import { EditorDetailHeader } from '@/features/resourceEditor/client/components/layout/EditorDetailHeader';
+import { EditorDetailPanel } from '@/features/resourceEditor/client/components/layout/EditorDetailPanel';
+import { EditorSection } from '@/features/resourceEditor/client/components/layout/EditorSection';
 import { Select } from '@/features/resourceEditor/client/components/select/Select';
 import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
 import { TagsField } from '@/features/resourceEditor/client/components/tags/TagsField';
@@ -54,13 +60,7 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 		);
 
 		if (!ingredient) {
-			return (
-				<div className="col-span-2 flex h-96 items-center justify-center rounded-lg bg-white/10 p-4 shadow-md backdrop-blur">
-					<p className="text-center text-black/40 dark:text-white/40">
-						请从左侧选择一个原料进行编辑
-					</p>
-				</div>
-			);
+			return <EditorDetailEmptyState itemLabel="食材" />;
 		}
 
 		const spriteUrl = getAssetUrl(ingredient.spritePath);
@@ -72,16 +72,10 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 			: INGREDIENT_PREFIX_NONE_ID;
 
 		return (
-			<div className="col-span-2 flex flex-col gap-6 overflow-y-auto rounded-lg bg-white/10 p-6 shadow-md backdrop-blur">
-				<div className="flex items-center justify-between border-b border-black/5 pb-4 dark:border-white/5">
-					<h2 className="text-2xl font-bold">原料编辑</h2>
-				</div>
+			<EditorDetailPanel>
+				<EditorDetailHeader title="食材编辑" />
 
-				{/* 基本信息 */}
-				<div className="flex flex-col gap-4 rounded-lg bg-white/20 p-4 dark:bg-white/5">
-					<h3 className="text-sm font-bold uppercase tracking-wider opacity-60">
-						基本信息
-					</h3>
+				<EditorSection title="基本信息">
 					<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 						<div className="flex flex-col gap-1">
 							<div className="flex items-center justify-between">
@@ -93,11 +87,13 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 									<IdRangeBadge id={ingredient.id} />
 								</div>
 							</div>
-							<input
+							<Input
 								id={idId}
 								type="number"
 								value={
-									isNaN(ingredient.id) ? '' : ingredient.id
+									isNaN(ingredient.id)
+										? ''
+										: String(ingredient.id)
 								}
 								onChange={(e) => {
 									const val = parseInt(e.target.value);
@@ -110,74 +106,65 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 										});
 									}
 								}}
-								className={cn(
-									'h-9 w-full rounded-lg border bg-white/40 px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:bg-black/10 dark:focus:border-white/30 dark:focus:ring-white/10',
-									isIdTooSmall
-										? 'border-danger bg-danger text-white opacity-50 focus:border-danger'
-										: 'border-black/10 dark:border-white/10'
-								)}
+								isInvalid={Boolean(isIdTooSmall)}
 							/>
 						</div>
 
 						<div className="flex flex-col gap-1">
-							<Label htmlFor={idName}>名称 (Name)</Label>
-							<input
+							<Label htmlFor={idName}>名称（Name）</Label>
+							<Input
 								id={idName}
 								type="text"
 								value={ingredient.name}
 								onChange={(e) =>
 									onUpdate({ name: e.target.value })
 								}
-								className="h-9 w-full rounded-lg border border-black/10 bg-white/40 px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:border-white/10 dark:bg-black/10 dark:focus:border-white/10 dark:focus:ring-white/10"
 							/>
 						</div>
 
 						<div className="col-span-full flex flex-col gap-1">
 							<Label htmlFor={idDescription}>
-								描述 (Description)
+								描述（Description）
 							</Label>
-							<textarea
+							<Textarea
 								id={idDescription}
 								value={ingredient.description}
 								onChange={(e) =>
 									onUpdate({ description: e.target.value })
 								}
-								rows={3}
-								className="w-full rounded-lg border border-black/10 bg-white/40 px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:border-white/10 dark:bg-black/10 dark:focus:border-white/10 dark:focus:ring-white/10"
+								minRows={3}
 							/>
 						</div>
 					</div>
-				</div>
+				</EditorSection>
 
-				{/* 属性 */}
-				<div className="flex flex-col gap-4 rounded-lg bg-white/20 p-4 dark:bg-white/5">
-					<h3 className="text-sm font-bold uppercase tracking-wider opacity-60">
-						属性
-					</h3>
+				<EditorSection title="属性">
 					<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 						<div className="flex flex-col gap-1">
-							<Label htmlFor={idLevel}>等级 (Level)</Label>
-							<input
+							<Label htmlFor={idLevel} wrapperClassName="min-h-6">
+								等级（Level）
+							</Label>
+							<Input
 								id={idLevel}
 								type="number"
 								value={
 									isNaN(ingredient.level)
 										? ''
-										: ingredient.level
+										: String(ingredient.level)
 								}
 								onChange={(e) =>
 									onUpdate({
 										level: parseInt(e.target.value),
 									})
 								}
-								className="h-9 w-full rounded-lg border border-black/10 bg-white/40 px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:border-white/10 dark:bg-black/10 dark:focus:border-white/10 dark:focus:ring-white/10"
 							/>
 						</div>
 
 						<div className="flex flex-col gap-1">
-							<div className="flex items-center gap-1">
-								<Label htmlFor={idPrefix}>前缀 (Prefix)</Label>
-								<InfoTip>
+							<Label
+								htmlFor={idPrefix}
+								wrapperClassName="min-h-6"
+								tip={
 									<div className="max-w-xs space-y-1 text-xs leading-relaxed">
 										<p>
 											此字段为
@@ -200,11 +187,13 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 										</p>
 										<p>默认值为「[-1] 无」。</p>
 									</div>
-								</InfoTip>
-							</div>
+								}
+							>
+								前缀（Prefix）
+							</Label>
 							<Select<number>
 								id={idPrefix}
-								ariaLabel="原料前缀"
+								ariaLabel="食材前缀"
 								value={prefixValue}
 								onChange={(v) => onUpdate({ prefix: v })}
 								items={prefixItems}
@@ -212,90 +201,90 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 						</div>
 
 						<div className="flex flex-col gap-1">
-							<Label htmlFor={idBaseValue}>
-								价格 (BaseValue)
+							<Label
+								htmlFor={idBaseValue}
+								wrapperClassName="min-h-6"
+							>
+								价格（BaseValue）
 							</Label>
-							<input
+							<Input
 								id={idBaseValue}
 								type="number"
 								value={
 									isNaN(ingredient.baseValue)
 										? ''
-										: ingredient.baseValue
+										: String(ingredient.baseValue)
 								}
 								onChange={(e) =>
 									onUpdate({
 										baseValue: parseInt(e.target.value),
 									})
 								}
-								className="h-9 w-full rounded-lg border border-black/10 bg-white/40 px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:border-white/10 dark:bg-black/10 dark:focus:border-white/10 dark:focus:ring-white/10"
 							/>
 						</div>
 					</div>
 
-					{/* 类型复选框 */}
-					<div className="flex flex-wrap gap-4">
-						<label className="flex items-center gap-2">
-							<input
-								type="checkbox"
-								checked={ingredient.isFish}
-								onChange={(e) =>
-									onUpdate({ isFish: e.target.checked })
-								}
-								className="h-4 w-4 rounded border-black/20 text-primary focus:ring-2 focus:ring-primary dark:border-white/20"
-							/>
-							<span className="text-sm">鱼类</span>
-						</label>
-						<label className="flex items-center gap-2">
-							<input
-								type="checkbox"
-								checked={ingredient.isMeat}
-								onChange={(e) =>
-									onUpdate({ isMeat: e.target.checked })
-								}
-								className="h-4 w-4 rounded border-black/20 text-primary focus:ring-2 focus:ring-primary dark:border-white/20"
-							/>
-							<span className="text-sm">肉类</span>
-						</label>
-						<label className="flex items-center gap-2">
-							<input
-								type="checkbox"
-								checked={ingredient.isVeg}
-								onChange={(e) =>
-									onUpdate({ isVeg: e.target.checked })
-								}
-								className="h-4 w-4 rounded border-black/20 text-primary focus:ring-2 focus:ring-primary dark:border-white/20"
-							/>
-							<span className="text-sm">蔬菜</span>
-						</label>
+					<div className="flex flex-wrap gap-x-6 gap-y-3">
+						<Switch
+							size="sm"
+							isSelected={ingredient.isFish}
+							onValueChange={(isSelected) =>
+								onUpdate({
+									isFish: isSelected,
+									isMeat: false,
+									isVeg: false,
+								})
+							}
+						>
+							鱼类
+						</Switch>
+						<Switch
+							size="sm"
+							isSelected={ingredient.isMeat}
+							onValueChange={(isSelected) =>
+								onUpdate({
+									isFish: false,
+									isMeat: isSelected,
+									isVeg: false,
+								})
+							}
+						>
+							肉类
+						</Switch>
+						<Switch
+							size="sm"
+							isSelected={ingredient.isVeg}
+							onValueChange={(isSelected) =>
+								onUpdate({
+									isFish: false,
+									isMeat: false,
+									isVeg: isSelected,
+								})
+							}
+						>
+							蔬菜
+						</Switch>
 					</div>
-				</div>
+				</EditorSection>
 
-				{/* 标签 */}
-				<div className="flex flex-col gap-4 rounded-lg bg-white/20 p-4 dark:bg-white/5">
-					<h3 className="text-sm font-bold uppercase tracking-wider opacity-60">
-						标签 (Food Tags)
-					</h3>
+				<EditorSection title="标签（Food Tags）">
 					<TagsField
 						label=""
 						tags={ingredient.tags}
 						tagPool={FOOD_TAGS}
 						onChange={(newTags) => onUpdate({ tags: newTags })}
+						tone="ingredient"
 					/>
-				</div>
+				</EditorSection>
 
-				{/* 贴图 */}
-				<div className="flex flex-col gap-4 rounded-lg bg-white/20 p-4 dark:bg-white/5">
-					<h3 className="text-sm font-bold uppercase tracking-wider opacity-60">
-						贴图 (预期 26×26)
-					</h3>
+				<EditorSection title="贴图（预期26×26）">
 					<SpriteUploader
 						spriteUrl={spriteUrl ?? null}
 						spritePath={ingredient.spritePath}
 						onUpload={handleSpriteUpdate}
 					/>
-				</div>
-			</div>
+				</EditorSection>
+			</EditorDetailPanel>
 		);
 	}
 );

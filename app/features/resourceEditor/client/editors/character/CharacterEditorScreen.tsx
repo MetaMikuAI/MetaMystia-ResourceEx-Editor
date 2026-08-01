@@ -8,6 +8,10 @@ import type {
 } from '@/domain/resourcePack/contracts/character';
 
 import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
+import {
+	findNextAvailableInteger,
+	findNextAvailableSuffixedValue,
+} from '@/features/resourceEditor/client/editorValueAllocation';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import { CharacterEditor } from './CharacterEditor';
@@ -42,16 +46,19 @@ export function CharacterEditorScreen() {
 	}, []);
 
 	const addCharacter = useCallback(() => {
-		const newId =
-			data.characters.length > 0
-				? Math.max(...data.characters.map((c) => c.id)) + 1
-				: 9000;
+		const newId = findNextAvailableInteger(
+			data.characters.map((character) => character.id),
+			9000
+		);
 		const packLabel = data.packInfo.label;
 		const labelPrefix = packLabel ? `_${packLabel}_` : '_';
 		const newChar: Character = {
 			...DEFAULT_CHARACTER,
 			id: newId,
-			label: labelPrefix,
+			label: findNextAvailableSuffixedValue(
+				data.characters.map((character) => character.label),
+				`${labelPrefix}Character_`
+			),
 		};
 		const newCharacters = sortCharacters([...data.characters, newChar]);
 		updateResourcePack(() => ({ ...data, characters: newCharacters }));
@@ -105,12 +112,7 @@ export function CharacterEditorScreen() {
 			return null;
 		}
 
-		const char = data.characters[selectedIndex];
-		if (char === undefined) {
-			throw new ReferenceError('Selected character not found');
-		}
-
-		return char;
+		return data.characters[selectedIndex] ?? null;
 	}, [data.characters, selectedIndex]);
 
 	const isIdDuplicate = useCallback(

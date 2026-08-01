@@ -1,6 +1,6 @@
 import { memo, type ReactNode, useCallback } from 'react';
 
-import Button from '@/design/ui/components/button';
+import Input from '@/design/ui/components/input';
 
 import { BEVERAGE_TAGS, FOOD_TAGS } from '@/domain/data/tags';
 import type {
@@ -10,8 +10,11 @@ import type {
 } from '@/domain/resourcePack/contracts/mission';
 
 import { SectionAddButton } from '@/features/resourceEditor/client/components/actions/SectionAddButton';
-import { EditorField } from '@/features/resourceEditor/client/components/fields/EditorField';
+import { SectionDeleteButton } from '@/features/resourceEditor/client/components/actions/SectionDeleteButton';
+import { Label } from '@/features/resourceEditor/client/components/fields/Label';
 import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
+import { EditorSection } from '@/features/resourceEditor/client/components/layout/EditorSection';
+import { PRODUCT_TYPE_OPTIONS } from '@/features/resourceEditor/client/components/select/productTypeOptions';
 import { Select } from '@/features/resourceEditor/client/components/select/Select';
 import { WarningNotice } from '@/features/resourceEditor/client/components/status/WarningNotice';
 import { TagsField } from '@/features/resourceEditor/client/components/tags/TagsField';
@@ -26,8 +29,8 @@ const CONDITION_TYPES: { type: ConditionType; label: string }[] = [
 	{ type: 'InspectInteractable', label: '【未实现】调查白天交互物品' },
 	{ type: 'SubmitItem', label: '交付目标物品' },
 	{ type: 'ServeInWork', label: '请角色品尝料理' },
-	{ type: 'SubmitByTag', label: '交付包含Tag的对应物品' },
-	{ type: 'SubmitByTags', label: '交付包含多个Tag的对应物品' },
+	{ type: 'SubmitByTag', label: '交付包含标签的对应物品' },
+	{ type: 'SubmitByTags', label: '交付包含多个标签的对应物品' },
 	{ type: 'SellInWork', label: '【未实现】在工作中售卖料理' },
 	{ type: 'SubmitByIngredients', label: '交付包含食材的料理' },
 	{
@@ -36,37 +39,22 @@ const CONDITION_TYPES: { type: ConditionType; label: string }[] = [
 	},
 	{
 		type: 'CompleteSpecifiedFollowingTasksSubCondition',
-		label: '【未实现】(完成以下任务中的几个)操作的任务条件',
+		label: '【未实现】（完成以下任务中的几个）操作的任务条件',
 	},
 	{
 		type: 'ReachTargetCharacterKisunaLevel',
-		label: '达到目标角色的羁绊等级LV',
+		label: '达到目标角色的指定羁绊等级',
 	},
 	{
 		type: 'FakeMission',
-		label: '【未实现】表示某种事情发生(不会自动完成，需要手动完成或者取消计划)',
+		label: '【未实现】表示某种事情发生（不会自动完成，需要手动完成或者取消计划）',
 	},
-	{ type: 'SubmitByAnyOneTag', label: '交付包含其中任意一个Tag的对应物品' },
+	{ type: 'SubmitByAnyOneTag', label: '交付包含其中任意一个标签的对应物品' },
 	{
 		type: 'CompleteSpecifiedFollowingEvents',
-		label: '【未实现】完成以下事件中的X(指定数量)个',
+		label: '【未实现】完成以下事件中的X（指定数量）个',
 	},
-	{ type: 'SubmitByLevel', label: '【未实现】交付指定Level的对应物品' },
-];
-
-const PRODUCT_TYPES: { value: string; label: string }[] = [
-	{ value: 'Food', label: '料理 Food' },
-	{ value: 'Ingredient', label: '原料 Ingredient' },
-	{ value: 'Beverage', label: '酒水 Beverage' },
-	{ value: 'Money', label: 'Money' },
-	{ value: 'Mission', label: 'Mission' },
-	{ value: 'Item', label: 'Item' },
-	{ value: 'Recipe', label: 'Recipe' },
-	{ value: 'Izakaya', label: 'Izakaya' },
-	{ value: 'Cooker', label: 'Cooker' },
-	{ value: 'Partner', label: 'Partner' },
-	{ value: 'Badge', label: 'Badge' },
-	{ value: 'Trophy', label: 'Trophy' },
+	{ type: 'SubmitByLevel', label: '【未实现】交付指定等级的对应物品' },
 ];
 
 const SUPPORTED_PRODUCT_TYPES = new Set(['Food', 'Ingredient', 'Beverage']);
@@ -87,9 +75,6 @@ const SUPPORTED_CONDITION_TYPES = new Set<ConditionType>([
 // 本地表单原语
 // -----------------------------------------------------------------------------
 
-const FIELD_CLASS =
-	'rounded border border-black/10 bg-white/50 px-2 py-1 text-sm focus:border-primary focus:outline-none dark:border-white/10 dark:bg-black/50';
-
 interface FieldProps {
 	label: string;
 	children: ReactNode;
@@ -98,7 +83,7 @@ interface FieldProps {
 function Field({ label, children }: FieldProps) {
 	return (
 		<div className="flex flex-col gap-1">
-			<label className="text-xs font-medium opacity-70">{label}</label>
+			<Label size="sm">{label}</Label>
 			{children}
 		</div>
 	);
@@ -112,7 +97,7 @@ interface SelectOption {
 interface SelectFieldProps {
 	label: string;
 	value: string | number | undefined;
-	options: SelectOption[];
+	options: readonly SelectOption[];
 	placeholder?: string;
 	disabled?: boolean;
 	onChange: (value: string) => void;
@@ -162,13 +147,12 @@ function NumberField({
 }: NumberFieldProps) {
 	return (
 		<Field label={label}>
-			<input
+			<Input
 				type="number"
 				min={min}
 				{...(max !== undefined ? { max } : {})}
-				value={value ?? defaultValue}
+				value={String(value ?? defaultValue)}
 				onChange={(e) => onChange(Number(e.target.value))}
-				className={FIELD_CLASS}
 			/>
 		</Field>
 	);
@@ -255,7 +239,7 @@ function SubmitItemEditor({ condition, ctx, onUpdate }: ConditionEditorProps) {
 	const isSupported =
 		!productType || SUPPORTED_PRODUCT_TYPES.has(productType);
 
-	const idLabel = `Product ID (${productType || 'Food'})`;
+	const idLabel = `商品ID（${productType || 'Food'}）`;
 	const idOptions =
 		productType === 'Ingredient'
 			? toIdOptions(ctx.allIngredients)
@@ -264,25 +248,25 @@ function SubmitItemEditor({ condition, ctx, onUpdate }: ConditionEditorProps) {
 				: toIdOptions(ctx.allFoods);
 	const idPlaceholder =
 		productType === 'Ingredient'
-			? '请选择食材...'
+			? '请选择食材…'
 			: productType === 'Beverage'
-				? '请选择酒水...'
-				: '请选择料理...';
+				? '请选择酒水…'
+				: '请选择料理…';
 
 	return (
 		<div className="flex flex-col gap-3">
 			<SelectField
-				label="Product Type"
+				label="商品类型（Product Type）"
 				value={productType}
-				placeholder="请选择类型..."
-				options={PRODUCT_TYPES}
+				placeholder="请选择类型…"
+				options={PRODUCT_TYPE_OPTIONS}
 				onChange={(v) =>
 					onUpdate(patch({ productType: v || undefined }))
 				}
 			/>
 			{!isSupported && (
 				<WarningNotice>
-					⚠ 当前编辑器尚未支持配置此条件的详细参数
+					当前编辑器尚未支持配置此条件的详细参数。
 				</WarningNotice>
 			)}
 			{isSupported && (
@@ -301,7 +285,7 @@ function SubmitItemEditor({ condition, ctx, onUpdate }: ConditionEditorProps) {
 						}
 					/>
 					<NumberField
-						label="Amount"
+						label="数量（Amount）"
 						min={1}
 						defaultValue={1}
 						value={condition.productAmount}
@@ -317,26 +301,26 @@ function ServeInWorkEditor({ condition, ctx, onUpdate }: ConditionEditorProps) {
 	return (
 		<div className="flex flex-col gap-3">
 			<SelectField
-				label="Sellable Type"
+				label="可交付类型（Sellable Type）"
 				value={condition.sellableType || 'Food'}
 				disabled
 				options={[
-					{ value: 'Food', label: 'Food' },
-					{ value: 'Beverage', label: 'Beverage' },
+					{ value: 'Food', label: '料理（Food）' },
+					{ value: 'Beverage', label: '酒水（Beverage）' },
 				]}
 				onChange={() => {}}
 			/>
 			<SelectField
-				label="目标角色 (Label)"
+				label="目标角色（Label）"
 				value={condition.label}
-				placeholder="请选择角色..."
+				placeholder="请选择角色…"
 				options={ctx.characterOptions}
 				onChange={(v) => onUpdate({ label: v })}
 			/>
 			<SelectField
-				label="指定料理 (Food ID)"
+				label="指定料理（Food ID）"
 				value={condition.amount ?? ''}
-				placeholder="请选择料理..."
+				placeholder="请选择料理…"
 				options={toIdOptions(ctx.allFoods)}
 				onChange={(v) =>
 					onUpdate(
@@ -355,24 +339,24 @@ function SubmitByTagEditor({ condition, onUpdate }: ConditionEditorProps) {
 	return (
 		<div className="flex flex-col gap-3">
 			<SelectField
-				label="Sellable Type"
+				label="可交付类型（Sellable Type）"
 				value={sellableType}
 				options={[
-					{ value: 'Food', label: '料理 Food' },
-					{ value: 'Beverage', label: '酒水 Beverage' },
+					{ value: 'Food', label: '料理（Food）' },
+					{ value: 'Beverage', label: '酒水（Beverage）' },
 				]}
 				onChange={(v) =>
 					onUpdate({ sellableType: v as 'Food' | 'Beverage', tag: 0 })
 				}
 			/>
 			<SelectField
-				label="Tag"
+				label="标签（Tag）"
 				value={condition.tag ?? 0}
 				options={toIdOptions(tagOptions)}
 				onChange={(v) => onUpdate({ tag: Number(v) })}
 			/>
 			<NumberField
-				label="Amount"
+				label="数量（Amount）"
 				value={condition.amount}
 				onChange={(v) => onUpdate({ amount: v })}
 			/>
@@ -387,11 +371,11 @@ function SubmitByTagsEditor({ condition, onUpdate }: ConditionEditorProps) {
 	return (
 		<div className="flex flex-col gap-3">
 			<SelectField
-				label="Sellable Type"
+				label="可交付类型（Sellable Type）"
 				value={sellableType}
 				options={[
-					{ value: 'Food', label: '料理 Food' },
-					{ value: 'Beverage', label: '酒水 Beverage' },
+					{ value: 'Food', label: '料理（Food）' },
+					{ value: 'Beverage', label: '酒水（Beverage）' },
 				]}
 				onChange={(v) =>
 					onUpdate({
@@ -401,13 +385,14 @@ function SubmitByTagsEditor({ condition, onUpdate }: ConditionEditorProps) {
 				}
 			/>
 			<TagsField
-				label={`Tags (已选 ${(condition.tags ?? []).length})`}
+				label={`标签（Tags，已选${(condition.tags ?? []).length}个）`}
 				tags={condition.tags ?? []}
 				tagPool={tagPool}
 				onChange={(newTags) => onUpdate({ tags: newTags })}
+				tone={sellableType === 'Food' ? 'positive' : 'beverage'}
 			/>
 			<NumberField
-				label="Amount"
+				label="数量（Amount）"
 				value={condition.amount}
 				onChange={(v) => onUpdate({ amount: v })}
 			/>
@@ -423,13 +408,13 @@ function SubmitByIngredientsEditor({
 	return (
 		<div className="flex flex-col gap-3">
 			<TagsField
-				label={`所需食材 (已选 ${(condition.tags ?? []).length})`}
+				label={`所需食材（已选${(condition.tags ?? []).length}）`}
 				tags={condition.tags ?? []}
 				tagPool={ctx.allIngredients}
 				onChange={(newTags) => onUpdate({ tags: newTags })}
 			/>
 			<NumberField
-				label="Amount (需提交的料理份数)"
+				label="数量（需提交的料理份数）"
 				value={condition.amount}
 				onChange={(v) => onUpdate({ amount: v })}
 			/>
@@ -447,12 +432,12 @@ function ReachTargetCharacterKisunaLevelEditor({
 			<SelectField
 				label="目标角色"
 				value={condition.label}
-				placeholder="请选择角色..."
+				placeholder="请选择角色…"
 				options={ctx.characterOptions}
 				onChange={(v) => onUpdate({ label: v })}
 			/>
 			<NumberField
-				label="羁绊等级 LV (0~5)"
+				label="羁绊等级（LV0～LV5）"
 				value={condition.amount}
 				min={0}
 				max={5}
@@ -487,7 +472,7 @@ function TalkWithCharacterEditor({
 			<SelectField
 				label="目标角色"
 				value={condition.label}
-				placeholder="请选择角色..."
+				placeholder="请选择角色…"
 				options={ctx.characterOptions}
 				onChange={(v) => onUpdate({ label: v })}
 			/>
@@ -530,28 +515,26 @@ function ConditionItem({
 	const isSupported = SUPPORTED_CONDITION_TYPES.has(condition.conditionType);
 
 	return (
-		<div className="flex flex-col gap-3 rounded-lg border border-black/5 bg-black/5 p-4 dark:border-white/5 dark:bg-white/5">
-			<div className="flex items-center justify-between gap-4">
+		<div className="flex min-w-0 flex-col gap-3 rounded-large border border-divider bg-content1/50 p-4">
+			<div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
 				<Select<ConditionType>
-					ariaLabel="Condition Type"
-					baseClassName="flex-1"
+					ariaLabel="完成条件类型"
+					baseClassName="min-w-0 flex-1"
 					value={condition.conditionType}
 					onChange={(v) =>
 						onUpdate(getCleanCondition(v as ConditionType))
 					}
 					items={CONDITION_TYPES.map((t) => ({
 						value: t.type,
-						label: `${t.label} (${t.type})`,
+						label: `${t.label}（${t.type}）`,
 					}))}
 				/>
-				<Button
-					variant="light"
-					size="sm"
+				<SectionDeleteButton
+					className="h-10 shrink-0 text-sm sm:h-10 sm:text-sm"
 					onPress={onRemove}
-					className="text-xs text-danger hover:bg-danger/10"
 				>
-					删除
-				</Button>
+					删除条件
+				</SectionDeleteButton>
 			</div>
 
 			{Editor && (
@@ -559,7 +542,7 @@ function ConditionItem({
 			)}
 			{!isSupported && (
 				<WarningNotice>
-					⚠ 当前编辑器尚未支持配置此条件的详细参数
+					当前编辑器尚未支持配置此条件的详细参数。
 				</WarningNotice>
 			)}
 		</div>
@@ -589,23 +572,32 @@ export const MissionConditionList = memo<MissionConditionListProps>(
 		onUpdate,
 	}) {
 		const conditions = mission.finishConditions ?? [];
+		const updateConditions = useCallback(
+			(nextConditions: MissionCondition[]) => {
+				const hasBillRepayment = nextConditions.some(
+					(condition) => condition.conditionType === 'BillRepayment'
+				);
+				onUpdate({
+					finishConditions: nextConditions,
+					isTimedMission: hasBillRepayment,
+					...(hasBillRepayment ? { reciever: '' } : {}),
+				});
+			},
+			[onUpdate]
+		);
 
 		const addCondition = useCallback(() => {
-			onUpdate({
-				finishConditions: [
-					...conditions,
-					{ conditionType: 'ServeInWork', sellableType: 'Food' },
-				],
-			});
-		}, [conditions, onUpdate]);
+			updateConditions([
+				...conditions,
+				{ conditionType: 'ServeInWork', sellableType: 'Food' },
+			]);
+		}, [conditions, updateConditions]);
 
 		const removeCondition = useCallback(
 			(index: number) => {
-				onUpdate({
-					finishConditions: conditions.filter((_, i) => i !== index),
-				});
+				updateConditions(conditions.filter((_, i) => i !== index));
 			},
-			[conditions, onUpdate]
+			[conditions, updateConditions]
 		);
 
 		const updateCondition = useCallback(
@@ -615,9 +607,9 @@ export const MissionConditionList = memo<MissionConditionListProps>(
 					...next[index],
 					...updates,
 				} as MissionCondition;
-				onUpdate({ finishConditions: next });
+				updateConditions(next);
 			},
-			[conditions, onUpdate]
+			[conditions, updateConditions]
 		);
 
 		const ctx: ConditionEditorContext = {
@@ -628,9 +620,8 @@ export const MissionConditionList = memo<MissionConditionListProps>(
 		};
 
 		return (
-			<EditorField
-				className="gap-4"
-				label={`Finish Conditions (${conditions.length})`}
+			<EditorSection
+				title={`完成条件（Finish Conditions）（${conditions.length}）`}
 				actions={
 					<SectionAddButton onPress={addCondition}>
 						添加完成条件
@@ -650,10 +641,13 @@ export const MissionConditionList = memo<MissionConditionListProps>(
 						/>
 					))}
 					{conditions.length === 0 && (
-						<EmptyState variant="text" title="暂无完成条件" />
+						<EmptyState
+							title="暂无完成条件"
+							description="可使用“添加完成条件”创建第一项。"
+						/>
 					)}
 				</div>
-			</EditorField>
+			</EditorSection>
 		);
 	}
 );

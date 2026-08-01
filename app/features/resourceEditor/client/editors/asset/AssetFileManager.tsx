@@ -22,7 +22,9 @@ import type { IAssetPathOperation } from '@/features/resourceEditor/client/asset
 import { PlusIcon } from '@/features/resourceEditor/client/components/actions/PlusIcon';
 import { TrashIcon } from '@/features/resourceEditor/client/components/actions/TrashIcon';
 import { ConfirmDialog } from '@/features/resourceEditor/client/components/confirm/ConfirmDialog';
+import { Label } from '@/features/resourceEditor/client/components/fields/Label';
 import { ChevronRight } from '@/features/resourceEditor/client/components/icons/ChevronRight';
+import { EditorPanel } from '@/features/resourceEditor/client/components/layout/EditorPanel';
 import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
 import {
 	Select,
@@ -66,126 +68,18 @@ interface IConfirmationResolver {
 const DEFAULT_ROOT = 'assets/';
 const VIEW_MODE_STORAGE_KEY = 'assetFileManager.viewMode';
 
-function FileIcon({ kind }: { kind: AssetEntry['kind'] }) {
-	if (kind === 'folder') {
-		return (
-			<svg
-				viewBox="0 0 24 24"
-				className="h-5 w-5"
-				fill="none"
-				stroke="currentColor"
-				strokeWidth={2}
-				strokeLinecap="round"
-				strokeLinejoin="round"
-			>
-				<path d="M3 6.5A2.5 2.5 0 0 1 5.5 4H10l2 2h6.5A2.5 2.5 0 0 1 21 8.5v9A2.5 2.5 0 0 1 18.5 20h-13A2.5 2.5 0 0 1 3 17.5z" />
-			</svg>
-		);
-	}
-	if (kind === 'audio') {
-		return (
-			<svg
-				viewBox="0 0 24 24"
-				className="h-5 w-5"
-				fill="none"
-				stroke="currentColor"
-				strokeWidth={2}
-				strokeLinecap="round"
-				strokeLinejoin="round"
-			>
-				<path d="M9 18V5l12-2v13" />
-				<circle cx="6" cy="18" r="3" />
-				<circle cx="18" cy="16" r="3" />
-			</svg>
-		);
-	}
-	return (
-		<svg
-			viewBox="0 0 24 24"
-			className="h-5 w-5"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth={2}
-			strokeLinecap="round"
-			strokeLinejoin="round"
-		>
-			<path d="M4 4h16v16H4z" />
-			<path d="m4 15 4-4 4 4 2-2 6 6" />
-			<circle cx="9" cy="9" r="1.5" />
-		</svg>
-	);
-}
+const ASSET_KIND_LABELS = {
+	audio: '音频',
+	file: '文件',
+	folder: '目录',
+	image: '图片',
+} as const satisfies Record<AssetEntry['kind'], string>;
 
-function CopyIcon() {
+function FileKindBadge({ kind }: { kind: AssetEntry['kind'] }) {
 	return (
-		<svg
-			viewBox="0 0 24 24"
-			className="h-3.5 w-3.5"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth={2}
-			strokeLinecap="round"
-			strokeLinejoin="round"
-		>
-			<rect width="14" height="14" x="8" y="8" rx="2" />
-			<path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
-		</svg>
-	);
-}
-
-function ScissorsIcon() {
-	return (
-		<svg
-			viewBox="0 0 24 24"
-			className="h-3.5 w-3.5"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth={2}
-			strokeLinecap="round"
-			strokeLinejoin="round"
-		>
-			<circle cx="6" cy="6" r="3" />
-			<circle cx="6" cy="18" r="3" />
-			<path d="M20 4 8.1 15.9" />
-			<path d="m14.5 14.5 5.5 5.5" />
-			<path d="M8.1 8.1 12 12" />
-		</svg>
-	);
-}
-
-function PasteIcon() {
-	return (
-		<svg
-			viewBox="0 0 24 24"
-			className="h-3.5 w-3.5"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth={2}
-			strokeLinecap="round"
-			strokeLinejoin="round"
-		>
-			<path d="M8 4h8" />
-			<path d="M9 2h6v4H9z" />
-			<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-		</svg>
-	);
-}
-
-function UploadIcon() {
-	return (
-		<svg
-			viewBox="0 0 24 24"
-			className="h-3.5 w-3.5"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth={2}
-			strokeLinecap="round"
-			strokeLinejoin="round"
-		>
-			<path d="M12 3v12" />
-			<path d="m7 8 5-5 5 5" />
-			<path d="M5 21h14" />
-		</svg>
+		<span className="inline-flex min-w-10 items-center justify-center rounded-small bg-default/40 px-2 py-1 text-xs font-semibold text-foreground-600">
+			{ASSET_KIND_LABELS[kind]}
+		</span>
 	);
 }
 
@@ -193,7 +87,7 @@ function FilePreview({ entry }: { entry: AssetEntry }) {
 	if (entry.kind === 'folder') {
 		return (
 			<div className="flex h-full w-full items-center justify-center bg-primary/10 text-primary">
-				<FileIcon kind="folder" />
+				<FileKindBadge kind="folder" />
 			</div>
 		);
 	}
@@ -221,8 +115,8 @@ function FilePreview({ entry }: { entry: AssetEntry }) {
 		);
 	}
 	return (
-		<div className="flex h-full w-full items-center justify-center bg-black/5 text-foreground/40 dark:bg-white/5">
-			<FileIcon kind="file" />
+		<div className="flex h-full w-full items-center justify-center bg-content2/30">
+			<FileKindBadge kind={entry.kind} />
 		</div>
 	);
 }
@@ -240,6 +134,34 @@ function getStoredViewMode(): ViewMode {
 function buildRexUri(packLabel: string | undefined, path: string): string {
 	const label = packLabel?.trim() || 'packlabel';
 	return `rex://${label}/${path}`;
+}
+
+function buildUploadPath(
+	file: File,
+	targetFolder: string,
+	normalizedRoot: string
+): string {
+	const relativePath = file.webkitRelativePath?.trim() || file.name;
+	const pathSegments = relativePath
+		.replace(/\\/g, '/')
+		.split('/')
+		.filter(Boolean)
+		.map((segment) => {
+			const normalized = normalizeAssetFilename(segment);
+			return normalized === '.' || normalized === '..'
+				? 'untitled'
+				: normalized;
+		});
+	const filename = pathSegments.pop() ?? normalizeAssetFilename(file.name);
+	const uploadFolder =
+		pathSegments.length > 0
+			? normalizeAssetFolderPath(
+					`${targetFolder}${pathSegments.join('/')}`,
+					normalizedRoot
+				)
+			: targetFolder;
+
+	return joinAssetPath(uploadFolder ?? targetFolder, filename);
 }
 
 export const AssetFileManager = memo<AssetFileManagerProps>(
@@ -402,7 +324,6 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 					.map((folder) => ({
 						value: folder,
 						label: formatFolderLabel(folder, normalizedRoot),
-						textValue: folder,
 					})),
 			[currentFolder, knownFolders, normalizedRoot]
 		);
@@ -451,8 +372,11 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 				for (const file of Array.from(files)) {
 					if (!isOperationActive(operationId)) return;
 					if (!file.name) continue;
-					const safeName = normalizeAssetFilename(file.name);
-					const path = joinAssetPath(normalizedTarget, safeName);
+					const path = buildUploadPath(
+						file,
+						normalizedTarget,
+						normalizedRoot
+					);
 					if (assetUrls[path]) {
 						if (!isOperationActive(operationId)) return;
 						const shouldOverwrite = await requestConfirmation(
@@ -537,26 +461,46 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 					navigateTo(entry.path);
 					return;
 				}
-				onSelectFile?.(entry.path);
+				if (selectionMode === 'select') {
+					onSelectFile?.(entry.path);
+				}
 			},
-			[navigateTo, onSelectFile]
+			[navigateTo, onSelectFile, selectionMode]
 		);
 
-		const handleCopyPaths = useCallback(() => {
+		const writeClipboardText = useCallback(async (value: string) => {
+			try {
+				if (!navigator.clipboard)
+					throw new Error('Clipboard unavailable');
+				await navigator.clipboard.writeText(value);
+				setOperationError(null);
+				return true;
+			} catch {
+				setOperationError('复制失败，请检查浏览器剪贴板权限后重试。');
+				return false;
+			}
+		}, []);
+
+		const handleCopyPaths = useCallback(async () => {
 			const text =
 				selectedPaths.size > 0
 					? Array.from(selectedPaths).join('\n')
 					: currentFolder;
-			navigator.clipboard?.writeText(text).catch(() => {});
-		}, [currentFolder, selectedPaths]);
+			await writeClipboardText(text);
+		}, [currentFolder, selectedPaths, writeClipboardText]);
 
-		const copyText = useCallback((key: string, value: string) => {
-			navigator.clipboard?.writeText(value).catch(() => {});
-			setCopiedKey(key);
-			window.setTimeout(() => {
-				setCopiedKey((current) => (current === key ? null : current));
-			}, 1200);
-		}, []);
+		const copyText = useCallback(
+			async (key: string, value: string) => {
+				if (!(await writeClipboardText(value))) return;
+				setCopiedKey(key);
+				window.setTimeout(() => {
+					setCopiedKey((current) =>
+						current === key ? null : current
+					);
+				}, 1200);
+			},
+			[writeClipboardText]
+		);
 
 		const handleDelete = useCallback(async () => {
 			if (selectedPaths.size === 0) return;
@@ -569,7 +513,7 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 			const shouldDelete = await requestConfirmation(
 				{
 					title: '确定删除选中的资产吗？',
-					description: `将删除 ${expanded.length} 个文件和 ${folders.length} 个目录。此操作不可撤销。`,
+					description: `将删除${expanded.length}个文件和${folders.length}个目录。此操作不可撤销。`,
 					confirmLabel: '确认删除',
 				},
 				operationId
@@ -617,7 +561,7 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 				const shouldOverwrite = await requestConfirmation(
 					{
 						title: '覆盖同名文件？',
-						description: `将覆盖 ${existingTargets.length} 个同名文件。`,
+						description: `将覆盖${existingTargets.length}个同名文件。`,
 						confirmLabel: '继续粘贴',
 					},
 					operationId
@@ -666,7 +610,7 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 					const shouldOverwrite = await requestConfirmation(
 						{
 							title: '覆盖同名文件？',
-							description: `将覆盖 ${existingTargets.length} 个同名文件。`,
+							description: `将覆盖${existingTargets.length}个同名文件。`,
 							confirmLabel: '继续移动',
 						},
 						operationId
@@ -715,7 +659,7 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 					const shouldOverwrite = await requestConfirmation(
 						{
 							title: '覆盖同名文件？',
-							description: `将覆盖 ${existingTargets.length} 个同名文件。`,
+							description: `将覆盖${existingTargets.length}个同名文件。`,
 							confirmLabel: '继续复制',
 						},
 						operationId
@@ -782,406 +726,554 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 		}, [isCreateFolderOpen]);
 
 		return (
-			<div
-				onDragEnter={handleDragEnter}
-				onDragOver={handleDragOver}
-				onDragLeave={handleDragLeave}
-				onDrop={handleDrop}
+			<EditorPanel
 				className={cn(
-					'relative flex min-h-[520px] flex-col gap-4 rounded-lg bg-white/10 p-4 shadow-md backdrop-blur',
+					'min-h-[520px] overflow-hidden p-0',
 					isDragging && 'ring-2 ring-primary',
 					className
 				)}
 			>
-				<ConfirmDialog
-					isOpen={confirmation !== null}
-					title={confirmation?.title ?? ''}
-					description={confirmation?.description}
-					confirmLabel={confirmation?.confirmLabel}
-					onCancel={() => finishConfirmation(false)}
-					onConfirm={() => finishConfirmation(true)}
-				/>
-				{isDragging && (
-					<div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center rounded-lg bg-primary/10 backdrop-blur-sm">
-						<span className="rounded-md bg-white/80 px-4 py-2 text-sm font-medium text-foreground shadow dark:bg-black/60">
-							松开鼠标以上传到{' '}
-							<code className="font-mono">{currentFolder}</code>
-						</span>
-					</div>
-				)}
-
-				<div className="flex flex-col gap-3 border-b border-black/5 pb-4 dark:border-white/5">
-					<div className="flex flex-wrap items-center justify-between gap-2">
-						<div>
-							<h2 className="text-xl font-semibold">资产文件</h2>
-							<p className="text-xs opacity-60">
-								{currentFolder} · {stats.folders} 个目录 ·{' '}
-								{stats.files} 个文件
-							</p>
+				<div
+					onDragEnter={handleDragEnter}
+					onDragOver={handleDragOver}
+					onDragLeave={handleDragLeave}
+					onDrop={handleDrop}
+					className="relative flex min-h-[520px] flex-1 flex-col gap-4 p-4"
+				>
+					<ConfirmDialog
+						isOpen={confirmation !== null}
+						title={confirmation?.title ?? ''}
+						description={confirmation?.description}
+						confirmLabel={confirmation?.confirmLabel}
+						onCancel={() => finishConfirmation(false)}
+						onConfirm={() => finishConfirmation(true)}
+					/>
+					{isDragging && (
+						<div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-primary/10 backdrop-blur-sm">
+							<span className="rounded-medium border border-divider bg-content1/90 px-4 py-2 text-sm font-medium text-foreground shadow-sm">
+								松开鼠标以上传到{' '}
+								<code className="font-mono">
+									{currentFolder}
+								</code>
+							</span>
 						</div>
-						<div className="flex flex-wrap items-center gap-2">
-							<Button
-								variant="light"
-								size="sm"
-								onPress={() =>
-									navigateTo(
-										getAssetParentFolder(
-											currentFolder,
-											normalizedRoot
-										)
-									)
-								}
-								isDisabled={currentFolder === normalizedRoot}
-								className="h-8 rounded-md px-3 text-xs"
-							>
-								上一级
-							</Button>
-							<Button
-								color={
-									viewMode === 'grid' ? 'primary' : 'default'
-								}
-								variant={viewMode === 'grid' ? 'flat' : 'light'}
-								size="sm"
-								onPress={() => setViewMode('grid')}
-								className="h-8 rounded-md px-3 text-xs"
-							>
-								网格
-							</Button>
-							<Button
-								color={
-									viewMode === 'list' ? 'primary' : 'default'
-								}
-								variant={viewMode === 'list' ? 'flat' : 'light'}
-								size="sm"
-								onPress={() => setViewMode('list')}
-								className="h-8 rounded-md px-3 text-xs"
-							>
-								列表
-							</Button>
-						</div>
-					</div>
+					)}
 
-					<div className="flex flex-col gap-2">
-						<div className="flex flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
-							<div className="flex min-w-0 flex-wrap items-center gap-1 text-xs">
-								{breadcrumbs.map((crumb, index) => (
-									<div
-										key={crumb.path}
-										className="flex min-w-0 items-center gap-1"
-									>
-										{index > 0 && (
-											<ChevronRight className="h-3 w-3 shrink-0 opacity-40" />
-										)}
-										<button
-											onClick={() =>
-												navigateTo(crumb.path)
-											}
-											className={cn(
-												'max-w-[10rem] truncate rounded px-1.5 py-1 font-mono transition-colors hover:bg-black/5 sm:max-w-[14rem] dark:hover:bg-white/5',
-												crumb.path === currentFolder
-													? 'text-foreground'
-													: 'text-primary'
-											)}
-											title={crumb.path}
-										>
-											{crumb.label}
-										</button>
-									</div>
-								))}
+					<div className="flex flex-col gap-3 border-b border-divider pb-4">
+						<div className="flex flex-wrap items-center justify-between gap-2">
+							<div>
+								<h2 className="text-xl font-semibold">
+									资产文件
+								</h2>
+								<p className="text-xs leading-relaxed text-foreground-600">
+									{currentFolder} · {stats.folders}个目录 ·{' '}
+									{stats.files}个文件
+								</p>
 							</div>
-
-							<div className="flex shrink-0 flex-wrap items-center gap-2 xl:justify-end">
+							<div className="flex flex-wrap items-center gap-2">
+								<Button
+									variant="light"
+									size="sm"
+									onPress={() =>
+										navigateTo(
+											getAssetParentFolder(
+												currentFolder,
+												normalizedRoot
+											)
+										)
+									}
+									isDisabled={
+										currentFolder === normalizedRoot
+									}
+									className="min-h-11 rounded-medium px-3 text-xs sm:min-h-8"
+								>
+									上一级
+								</Button>
 								<Button
 									color={
-										isCreateFolderOpen
+										viewMode === 'grid'
 											? 'primary'
 											: 'default'
 									}
 									variant={
-										isCreateFolderOpen ? 'flat' : 'light'
+										viewMode === 'grid' ? 'flat' : 'light'
 									}
 									size="sm"
-									startContent={
-										<PlusIcon className="h-3.5 w-3.5" />
-									}
-									onPress={() =>
-										setIsCreateFolderOpen((v) => !v)
-									}
-									className="h-8 rounded-md px-3 text-xs"
+									onPress={() => setViewMode('grid')}
+									className="min-h-11 rounded-medium px-3 text-xs sm:min-h-8"
 								>
-									新建文件夹
+									网格
 								</Button>
 								<Button
-									color="primary"
-									size="sm"
-									startContent={<UploadIcon />}
-									onPress={() =>
-										fileInputRef.current?.click()
+									color={
+										viewMode === 'list'
+											? 'primary'
+											: 'default'
 									}
-									className="h-8 rounded-md px-3 text-xs"
-								>
-									上传文件
-								</Button>
-								<Button
-									variant="flat"
-									size="sm"
-									onPress={() =>
-										folderInputRef.current?.click()
+									variant={
+										viewMode === 'list' ? 'flat' : 'light'
 									}
-									className="h-8 rounded-md px-3 text-xs"
+									size="sm"
+									onPress={() => setViewMode('list')}
+									className="min-h-11 rounded-medium px-3 text-xs sm:min-h-8"
 								>
-									上传目录
+									列表
 								</Button>
-								<input
-									ref={fileInputRef}
-									type="file"
-									accept={acceptedFileTypes}
-									multiple
-									className="hidden"
-									onChange={(e) => {
-										uploadFiles(e.target.files);
-										e.target.value = '';
-									}}
-								/>
-								<input
-									ref={folderInputRef}
-									type="file"
-									multiple
-									className="hidden"
-									onChange={(e) => {
-										uploadFiles(e.target.files);
-										e.target.value = '';
-									}}
-									{...{ webkitdirectory: '', directory: '' }}
-								/>
 							</div>
 						</div>
-						{isCreateFolderOpen && (
-							<div className="flex flex-col gap-2 rounded-lg border border-dashed border-black/10 bg-black/5 p-3 sm:flex-row sm:items-end dark:border-white/10 dark:bg-white/5">
-								<div className="flex flex-1 flex-col gap-1">
-									<label
-										htmlFor="asset-new-folder-name"
-										className="text-[11px] font-medium opacity-70"
-									>
-										在当前目录下新建
-									</label>
-									<Input
-										id="asset-new-folder-name"
-										value={newFolderName}
-										onChange={(e) =>
-											setNewFolderName(e.target.value)
-										}
-										onKeyDown={(e) => {
-											if (e.key === 'Enter') {
-												handleCreateFolder();
-											}
-											if (e.key === 'Escape') {
-												setIsCreateFolderOpen(false);
-											}
-										}}
-										placeholder="FolderName"
-										className="font-mono"
-									/>
+
+						<div className="flex flex-col gap-2">
+							<div className="flex flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
+								<div className="flex min-w-0 flex-wrap items-center gap-1 text-xs">
+									{breadcrumbs.map((crumb, index) => (
+										<div
+											key={crumb.path}
+											className="flex min-w-0 items-center gap-1"
+										>
+											{index > 0 && (
+												<ChevronRight className="h-3 w-3 shrink-0 text-foreground-400" />
+											)}
+											<Button
+												variant="light"
+												size="sm"
+												onPress={() =>
+													navigateTo(crumb.path)
+												}
+												className={cn(
+													'h-8 min-w-0 max-w-[10rem] truncate rounded-medium px-2 font-mono text-xs sm:max-w-[14rem]',
+													crumb.path === currentFolder
+														? 'bg-default/40 text-foreground'
+														: 'text-primary-600'
+												)}
+												title={crumb.path}
+											>
+												{crumb.label}
+											</Button>
+										</div>
+									))}
 								</div>
-								<div className="flex gap-2">
+
+								<div className="flex shrink-0 flex-wrap items-center gap-2 xl:justify-end">
+									<Button
+										color={
+											isCreateFolderOpen
+												? 'primary'
+												: 'default'
+										}
+										variant={
+											isCreateFolderOpen
+												? 'flat'
+												: 'light'
+										}
+										size="sm"
+										startContent={
+											<PlusIcon className="h-3.5 w-3.5" />
+										}
+										onPress={() =>
+											setIsCreateFolderOpen((v) => !v)
+										}
+										className="min-h-11 rounded-medium px-3 text-xs sm:min-h-8"
+									>
+										新建文件夹
+									</Button>
 									<Button
 										color="primary"
 										size="sm"
-										onPress={handleCreateFolder}
-										isDisabled={!newFolderName.trim()}
-										className="h-9 rounded-md px-3 text-xs"
+										onPress={() =>
+											fileInputRef.current?.click()
+										}
+										className="min-h-11 rounded-medium px-3 text-xs sm:min-h-8"
 									>
-										创建并进入
+										上传文件
+									</Button>
+									<Button
+										variant="flat"
+										size="sm"
+										onPress={() =>
+											folderInputRef.current?.click()
+										}
+										className="min-h-11 rounded-medium px-3 text-xs sm:min-h-8"
+									>
+										上传目录
+									</Button>
+									<input
+										ref={fileInputRef}
+										type="file"
+										accept={acceptedFileTypes}
+										multiple
+										className="hidden"
+										onChange={(e) => {
+											uploadFiles(e.target.files);
+											e.target.value = '';
+										}}
+									/>
+									<input
+										ref={folderInputRef}
+										type="file"
+										multiple
+										className="hidden"
+										onChange={(e) => {
+											uploadFiles(e.target.files);
+											e.target.value = '';
+										}}
+										{...{
+											webkitdirectory: '',
+											directory: '',
+										}}
+									/>
+								</div>
+							</div>
+							{isCreateFolderOpen && (
+								<div className="flex flex-col gap-3 rounded-large border border-dashed border-divider bg-content2/30 p-3 sm:flex-row sm:items-end">
+									<div className="flex flex-1 flex-col gap-1">
+										<Label
+											htmlFor="asset-new-folder-name"
+											size="sm"
+										>
+											在当前目录下新建
+										</Label>
+										<Input
+											id="asset-new-folder-name"
+											value={newFolderName}
+											onChange={(e) =>
+												setNewFolderName(e.target.value)
+											}
+											onKeyDown={(e) => {
+												if (e.key === 'Enter') {
+													handleCreateFolder();
+												}
+												if (e.key === 'Escape') {
+													setIsCreateFolderOpen(
+														false
+													);
+												}
+											}}
+											placeholder="FolderName"
+											className="font-mono"
+										/>
+									</div>
+									<div className="flex gap-2">
+										<Button
+											color="primary"
+											size="sm"
+											onPress={handleCreateFolder}
+											isDisabled={!newFolderName.trim()}
+											className="h-10 rounded-medium px-3 text-xs"
+										>
+											创建并进入
+										</Button>
+										<Button
+											variant="light"
+											size="sm"
+											onPress={() => {
+												setNewFolderName('');
+												setIsCreateFolderOpen(false);
+											}}
+											className="h-10 rounded-medium px-3 text-xs"
+										>
+											取消
+										</Button>
+									</div>
+								</div>
+							)}
+						</div>
+					</div>
+					{operationError !== null && (
+						<WarningNotice>{operationError}</WarningNotice>
+					)}
+
+					<div className="flex flex-col items-stretch gap-3 rounded-large border border-divider bg-content2/30 p-3 sm:flex-row sm:items-center sm:justify-between">
+						<div className="text-xs leading-relaxed text-foreground-600">
+							已选择{selectedPaths.size}项
+							{selectedAssetPaths.length > 0 &&
+								`，包含${selectedAssetPaths.length}个文件`}
+						</div>
+						<div className="flex w-full flex-wrap gap-1 sm:w-auto sm:justify-end">
+							{isSelectOnly &&
+								selectedPaths.size === 1 &&
+								!Array.from(selectedPaths).some((p) =>
+									p.endsWith('/')
+								) && (
+									<Button
+										color="primary"
+										size="sm"
+										onPress={handleConfirmSelect}
+										className="h-10 rounded-medium px-3 text-xs font-semibold sm:h-8"
+									>
+										确定选择
+									</Button>
+								)}
+							<Button
+								variant="light"
+								size="sm"
+								onPress={handleCopyPaths}
+								className="h-10 rounded-medium px-3 text-xs sm:h-8"
+							>
+								复制路径
+							</Button>
+							{!isSelectOnly && (
+								<>
+									<Button
+										variant="light"
+										size="sm"
+										onPress={() =>
+											setClipboard({
+												mode: 'copy',
+												paths: new Set(selectedPaths),
+											})
+										}
+										isDisabled={selectedPaths.size === 0}
+										className="h-10 rounded-medium px-3 text-xs sm:h-8"
+									>
+										复制
 									</Button>
 									<Button
 										variant="light"
 										size="sm"
-										onPress={() => {
-											setNewFolderName('');
-											setIsCreateFolderOpen(false);
-										}}
-										className="h-9 rounded-md px-3 text-xs"
+										onPress={() =>
+											setClipboard({
+												mode: 'move',
+												paths: new Set(selectedPaths),
+											})
+										}
+										isDisabled={selectedPaths.size === 0}
+										className="h-10 rounded-medium px-3 text-xs sm:h-8"
 									>
-										取消
+										移动
 									</Button>
-								</div>
-							</div>
-						)}
-					</div>
-				</div>
-				{operationError !== null && (
-					<WarningNotice>{operationError}</WarningNotice>
-				)}
-
-				<div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-black/5 bg-black/[0.03] p-2 dark:border-white/5 dark:bg-white/[0.03]">
-					<div className="text-xs opacity-60">
-						已选择 {selectedPaths.size} 项
-						{selectedAssetPaths.length > 0 &&
-							`，包含 ${selectedAssetPaths.length} 个文件`}
-					</div>
-					<div className="flex flex-wrap gap-1">
-						{isSelectOnly &&
-							selectedPaths.size === 1 &&
-							!Array.from(selectedPaths).some((p) =>
-								p.endsWith('/')
-							) && (
-								<Button
-									color="primary"
-									size="sm"
-									onPress={handleConfirmSelect}
-									className="h-7 rounded px-3 text-xs font-semibold"
-								>
-									确定选择
-								</Button>
+									<Button
+										variant="light"
+										size="sm"
+										onPress={handleClipboardPaste}
+										isDisabled={!clipboard}
+										className="h-10 rounded-medium px-3 text-xs sm:h-8"
+									>
+										粘贴
+									</Button>
+									<Select<string>
+										value={undefined}
+										onChange={handleCopyToFolder}
+										items={moveTargetItems}
+										ariaLabel="复制到"
+										placeholder="复制到…"
+										size="sm"
+										isDisabled={selectedPaths.size === 0}
+										baseClassName="w-full sm:w-36"
+										className="rounded-medium px-2 py-0 text-xs"
+										menuMaxHeight={320}
+									/>
+									<Select<string>
+										value={undefined}
+										onChange={handleMoveToFolder}
+										items={moveTargetItems}
+										ariaLabel="移动到"
+										placeholder="移动到…"
+										size="sm"
+										isDisabled={selectedPaths.size === 0}
+										baseClassName="w-full sm:w-36"
+										className="rounded-medium px-2 py-0 text-xs"
+										menuMaxHeight={320}
+									/>
+									<Button
+										color="danger"
+										variant="flat"
+										size="sm"
+										startContent={
+											<TrashIcon className="h-3.5 w-3.5" />
+										}
+										onPress={handleDelete}
+										isDisabled={selectedPaths.size === 0}
+										className="h-10 rounded-medium px-3 text-xs sm:h-8"
+									>
+										删除
+									</Button>
+								</>
 							)}
-						<Button
-							variant="light"
-							size="sm"
-							startContent={<CopyIcon />}
-							onPress={handleCopyPaths}
-							className="h-7 rounded px-2 text-xs"
-						>
-							复制路径
-						</Button>
-						{!isSelectOnly && (
-							<>
-								<Button
-									variant="light"
-									size="sm"
-									startContent={<CopyIcon />}
-									onPress={() =>
-										setClipboard({
-											mode: 'copy',
-											paths: new Set(selectedPaths),
-										})
-									}
-									isDisabled={selectedPaths.size === 0}
-									className="h-7 rounded px-2 text-xs"
-								>
-									复制
-								</Button>
-								<Button
-									variant="light"
-									size="sm"
-									startContent={<ScissorsIcon />}
-									onPress={() =>
-										setClipboard({
-											mode: 'move',
-											paths: new Set(selectedPaths),
-										})
-									}
-									isDisabled={selectedPaths.size === 0}
-									className="h-7 rounded px-2 text-xs"
-								>
-									移动
-								</Button>
-								<Button
-									color="primary"
-									variant="flat"
-									size="sm"
-									startContent={<PasteIcon />}
-									onPress={handleClipboardPaste}
-									isDisabled={!clipboard}
-									className="h-7 rounded px-2 text-xs"
-								>
-									粘贴
-								</Button>
-								<Select<string>
-									value={undefined}
-									onChange={handleCopyToFolder}
-									items={moveTargetItems}
-									ariaLabel="复制到"
-									placeholder="复制到..."
-									size="sm"
-									isDisabled={selectedPaths.size === 0}
-									baseClassName="w-36"
-									className="h-7 rounded px-2 py-0 text-xs"
-									menuMaxHeight={320}
-								/>
-								<Select<string>
-									value={undefined}
-									onChange={handleMoveToFolder}
-									items={moveTargetItems}
-									ariaLabel="移动到"
-									placeholder="移动到..."
-									size="sm"
-									isDisabled={selectedPaths.size === 0}
-									baseClassName="w-36"
-									className="h-7 rounded px-2 py-0 text-xs"
-									menuMaxHeight={320}
-								/>
-								<Button
-									color="danger"
-									variant="flat"
-									size="sm"
-									startContent={
-										<TrashIcon className="h-3.5 w-3.5" />
-									}
-									onPress={handleDelete}
-									isDisabled={selectedPaths.size === 0}
-									className="h-7 rounded px-2 text-xs"
-								>
-									删除
-								</Button>
-							</>
-						)}
+						</div>
 					</div>
-				</div>
 
-				{entries.length === 0 ? (
-					<EmptyState
-						title="此目录为空"
-						description="点击上传文件、上传目录，或将文件拖拽到本面板。"
-						className="my-auto"
-					/>
-				) : viewMode === 'grid' ? (
-					<div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 3xl:grid-cols-6">
-						{entries.map((entry) => (
-							<div
-								key={entry.path}
-								onClick={(e) =>
-									selectEntry(entry, e.ctrlKey || e.metaKey)
-								}
-								onDoubleClick={() => handleEntryOpen(entry)}
-								className={cn(
-									'group flex min-h-0 cursor-pointer flex-col overflow-hidden rounded-lg border text-left transition-all',
-									selectedPaths.has(entry.path)
-										? 'border-primary bg-primary/20 shadow-inner'
-										: 'border-black/10 bg-white/40 hover:border-primary/40 hover:bg-white/60 dark:border-white/10 dark:bg-black/10 dark:hover:bg-white/10'
-								)}
-								title={entry.path}
-							>
+					{entries.length === 0 ? (
+						<EmptyState
+							title="此目录为空"
+							description="点击上传文件、上传目录，或将文件拖拽到本面板。"
+							className="my-auto"
+						/>
+					) : viewMode === 'grid' ? (
+						<div className="grid grid-cols-1 gap-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 3xl:grid-cols-6">
+							{entries.map((entry) => (
 								<div
+									key={entry.path}
+									onClick={(e) =>
+										selectEntry(
+											entry,
+											e.ctrlKey || e.metaKey
+										)
+									}
+									onDoubleClick={
+										entry.kind === 'folder' || isSelectOnly
+											? () => handleEntryOpen(entry)
+											: undefined
+									}
 									className={cn(
-										'flex h-28 items-center justify-center overflow-hidden',
-										entry.kind === 'image' ||
-											entry.kind === 'file'
-											? 'bg-checkerboard'
-											: ''
+										'group flex min-h-0 cursor-pointer flex-col overflow-hidden rounded-large border text-left transition-colors',
+										selectedPaths.has(entry.path)
+											? 'border-primary bg-primary/15'
+											: 'border-divider bg-content2/30 hover:border-primary/40 hover:bg-default/30'
 									)}
+									title={entry.path}
 								>
-									<FilePreview entry={entry} />
-								</div>
-								<div className="flex min-w-0 flex-col gap-1 p-2">
-									<div className="flex min-w-0 items-center gap-1.5">
-										<FileIcon kind={entry.kind} />
-										<span className="truncate text-xs font-semibold">
-											{entry.name}
-										</span>
+									<div
+										className={cn(
+											'flex h-28 items-center justify-center overflow-hidden',
+											entry.kind === 'image' ||
+												entry.kind === 'file'
+												? 'bg-checkerboard'
+												: ''
+										)}
+									>
+										<FilePreview entry={entry} />
 									</div>
-									<span className="truncate font-mono text-[10px] opacity-50">
-										{entry.path}
-									</span>
+									<div className="flex min-w-0 flex-col gap-1 p-2">
+										<div className="flex min-w-0 items-center gap-1.5">
+											<FileKindBadge kind={entry.kind} />
+											<span className="truncate text-xs font-semibold">
+												{entry.name}
+											</span>
+										</div>
+										<span className="truncate font-mono text-xs text-foreground-500">
+											{entry.path}
+										</span>
+										<div
+											onClick={(event) =>
+												event.stopPropagation()
+											}
+											className="mt-1 flex flex-wrap gap-1"
+										>
+											{entry.kind !== 'folder' && (
+												<>
+													<Button
+														variant="bordered"
+														size="sm"
+														onPress={() =>
+															copyText(
+																`path:${entry.path}`,
+																entry.path
+															)
+														}
+														className={cn(
+															'h-8 min-w-0 rounded-medium border-divider px-2 font-mono text-xs',
+															copiedKey ===
+																`path:${entry.path}` &&
+																'border-success text-success'
+														)}
+														title="复制assets/...路径"
+													>
+														{copiedKey ===
+														`path:${entry.path}`
+															? '已复制'
+															: 'path'}
+													</Button>
+													<Button
+														variant="bordered"
+														size="sm"
+														onPress={() =>
+															copyText(
+																`uri:${entry.path}`,
+																buildRexUri(
+																	packLabel,
+																	entry.path
+																)
+															)
+														}
+														className={cn(
+															'h-8 min-w-0 rounded-medium border-divider px-2 font-mono text-xs',
+															copiedKey ===
+																`uri:${entry.path}` &&
+																'border-success text-success'
+														)}
+														title="复制rex:// URI"
+													>
+														{copiedKey ===
+														`uri:${entry.path}`
+															? '已复制'
+															: 'URI'}
+													</Button>
+												</>
+											)}
+											{(entry.kind === 'folder' ||
+												isSelectOnly) && (
+												<Button
+													variant="flat"
+													size="sm"
+													onPress={() =>
+														handleEntryOpen(entry)
+													}
+													className="h-10 min-w-0 flex-1 rounded-medium px-2 text-xs sm:h-8"
+												>
+													{entry.kind === 'folder'
+														? '打开'
+														: '选择'}
+												</Button>
+											)}
+										</div>
+									</div>
+								</div>
+							))}
+						</div>
+					) : (
+						<div className="overflow-hidden rounded-large border border-divider bg-content2/20">
+							{entries.map((entry) => (
+								<div
+									key={entry.path}
+									onClick={(e) =>
+										selectEntry(
+											entry,
+											e.ctrlKey || e.metaKey
+										)
+									}
+									onDoubleClick={
+										entry.kind === 'folder' || isSelectOnly
+											? () => handleEntryOpen(entry)
+											: undefined
+									}
+									className={cn(
+										'grid w-full cursor-pointer grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border-b border-divider px-3 py-3 text-left text-sm last:border-b-0 sm:grid-cols-[auto_minmax(0,1fr)_auto]',
+										selectedPaths.has(entry.path)
+											? 'bg-primary/15'
+											: 'hover:bg-default/30'
+									)}
+									title={entry.path}
+								>
+									<div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-medium bg-default/30">
+										{entry.kind === 'image' && entry.url ? (
+											<img
+												src={entry.url}
+												alt={entry.name}
+												className="h-full w-full object-contain"
+												draggable={false}
+											/>
+										) : (
+											<FileKindBadge kind={entry.kind} />
+										)}
+									</div>
+									<div className="min-w-0">
+										<div className="truncate font-medium">
+											{entry.name}
+										</div>
+										<div className="truncate font-mono text-xs text-foreground-500">
+											{entry.path}
+										</div>
+									</div>
 									<div
 										onClick={(event) =>
 											event.stopPropagation()
 										}
-										className="mt-1 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100"
+										className="col-span-2 flex flex-wrap items-center justify-end gap-1 sm:col-span-1"
 									>
-										{entry.kind !== 'folder' && (
+										{entry.kind !== 'folder' ? (
 											<>
 												<Button
-													variant="light"
+													variant="bordered"
 													size="sm"
 													onPress={() =>
 														copyText(
@@ -1190,12 +1282,12 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 														)
 													}
 													className={cn(
-														'h-6 min-w-0 rounded border border-black/10 px-2 font-mono text-[10px] dark:border-white/10',
+														'h-8 min-w-0 rounded-medium border-divider px-2 font-mono text-xs',
 														copiedKey ===
 															`path:${entry.path}` &&
 															'border-success text-success'
 													)}
-													title="复制 assets/... 路径"
+													title="复制assets/...路径"
 												>
 													{copiedKey ===
 													`path:${entry.path}`
@@ -1203,7 +1295,7 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 														: 'path'}
 												</Button>
 												<Button
-													variant="light"
+													variant="bordered"
 													size="sm"
 													onPress={() =>
 														copyText(
@@ -1215,12 +1307,12 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 														)
 													}
 													className={cn(
-														'h-6 min-w-0 rounded border border-black/10 px-2 font-mono text-[10px] dark:border-white/10',
+														'h-8 min-w-0 rounded-medium border-divider px-2 font-mono text-xs',
 														copiedKey ===
 															`uri:${entry.path}` &&
 															'border-success text-success'
 													)}
-													title="复制 rex:// URI"
+													title="复制rex:// URI"
 												>
 													{copiedKey ===
 													`uri:${entry.path}`
@@ -1228,126 +1320,18 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 														: 'URI'}
 												</Button>
 											</>
+										) : (
+											<span className="text-xs text-foreground-500">
+												目录
+											</span>
 										)}
-										<Button
-											variant="light"
-											size="sm"
-											onPress={() =>
-												handleEntryOpen(entry)
-											}
-											className="h-6 min-w-0 flex-1 rounded px-2 text-[11px]"
-										>
-											{entry.kind === 'folder'
-												? '打开'
-												: '选择'}
-										</Button>
 									</div>
 								</div>
-							</div>
-						))}
-					</div>
-				) : (
-					<div className="overflow-hidden rounded-lg border border-black/10 bg-white/30 dark:border-white/10 dark:bg-black/10">
-						{entries.map((entry) => (
-							<div
-								key={entry.path}
-								onClick={(e) =>
-									selectEntry(entry, e.ctrlKey || e.metaKey)
-								}
-								onDoubleClick={() => handleEntryOpen(entry)}
-								className={cn(
-									'grid w-full cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-3 border-b border-black/5 px-3 py-2 text-left text-sm last:border-b-0 dark:border-white/5',
-									selectedPaths.has(entry.path)
-										? 'bg-primary/20'
-										: 'hover:bg-black/5 dark:hover:bg-white/5'
-								)}
-								title={entry.path}
-							>
-								<div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded bg-black/5 dark:bg-white/5">
-									{entry.kind === 'image' && entry.url ? (
-										<img
-											src={entry.url}
-											alt=""
-											className="h-full w-full object-contain"
-											draggable={false}
-										/>
-									) : (
-										<FileIcon kind={entry.kind} />
-									)}
-								</div>
-								<div className="min-w-0">
-									<div className="truncate font-medium">
-										{entry.name}
-									</div>
-									<div className="truncate font-mono text-[10px] opacity-50">
-										{entry.path}
-									</div>
-								</div>
-								<div
-									onClick={(event) => event.stopPropagation()}
-									className="flex items-center gap-1"
-								>
-									{entry.kind !== 'folder' ? (
-										<>
-											<Button
-												variant="light"
-												size="sm"
-												onPress={() =>
-													copyText(
-														`path:${entry.path}`,
-														entry.path
-													)
-												}
-												className={cn(
-													'h-6 min-w-0 rounded border border-black/10 px-2 font-mono text-[10px] dark:border-white/10',
-													copiedKey ===
-														`path:${entry.path}` &&
-														'border-success text-success'
-												)}
-												title="复制 assets/... 路径"
-											>
-												{copiedKey ===
-												`path:${entry.path}`
-													? '已复制'
-													: 'path'}
-											</Button>
-											<Button
-												variant="light"
-												size="sm"
-												onPress={() =>
-													copyText(
-														`uri:${entry.path}`,
-														buildRexUri(
-															packLabel,
-															entry.path
-														)
-													)
-												}
-												className={cn(
-													'h-6 min-w-0 rounded border border-black/10 px-2 font-mono text-[10px] dark:border-white/10',
-													copiedKey ===
-														`uri:${entry.path}` &&
-														'border-success text-success'
-												)}
-												title="复制 rex:// URI"
-											>
-												{copiedKey ===
-												`uri:${entry.path}`
-													? '已复制'
-													: 'URI'}
-											</Button>
-										</>
-									) : (
-										<span className="text-xs opacity-50">
-											目录
-										</span>
-									)}
-								</div>
-							</div>
-						))}
-					</div>
-				)}
-			</div>
+							))}
+						</div>
+					)}
+				</div>
+			</EditorPanel>
 		);
 	}
 );

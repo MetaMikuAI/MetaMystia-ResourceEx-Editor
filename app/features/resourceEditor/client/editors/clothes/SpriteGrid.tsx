@@ -1,6 +1,6 @@
 import { memo, useCallback, useState } from 'react';
 
-import { InfoTip } from '@/features/resourceEditor/client/components/fields/InfoTip';
+import { Label } from '@/features/resourceEditor/client/components/fields/Label';
 import { WarningNotice } from '@/features/resourceEditor/client/components/status/WarningNotice';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
@@ -34,12 +34,12 @@ export const SpriteGrid = memo<SpriteGridProps>(function SpriteGrid({
 			try {
 				dimensions = await readImageDimensions(file);
 			} catch {
-				setUploadError('无法读取 Sprite 贴图尺寸。');
+				setUploadError('无法读取衣服小人贴图尺寸。');
 				return;
 			}
 			if (dimensions.width !== 64 || dimensions.height !== 64) {
 				setUploadError(
-					`错误: Sprite 贴图尺寸必须为 64x64，当前为 ${dimensions.width}x${dimensions.height}`
+					`错误：衣服小人贴图尺寸必须为64×64，当前为${dimensions.width}×${dimensions.height}。`
 				);
 				return;
 			}
@@ -56,10 +56,9 @@ export const SpriteGrid = memo<SpriteGridProps>(function SpriteGrid({
 
 	return (
 		<div className="flex flex-col gap-4">
-			<label className="ml-1 text-sm font-bold opacity-70">
+			<Label tip={tip} wrapperClassName="ml-1">
 				{label}
-				<InfoTip>{tip}</InfoTip>
-			</label>
+			</Label>
 			{uploadError !== null && (
 				<WarningNotice>{uploadError}</WarningNotice>
 			)}
@@ -72,10 +71,10 @@ export const SpriteGrid = memo<SpriteGridProps>(function SpriteGrid({
 				{paths.map((path, i) => (
 					<div
 						key={i}
-						className="group relative flex flex-col gap-2 rounded-lg border border-white/5 bg-black/10 p-2 transition-colors hover:bg-black/20"
+						className="group relative flex flex-col gap-2 rounded-large border border-divider bg-content1/50 p-2 transition-colors hover:bg-default/30"
 					>
 						<label
-							className="bg-checkerboard relative aspect-square cursor-pointer overflow-hidden rounded border border-white/10 hover:border-primary/50"
+							className="bg-checkerboard relative aspect-square cursor-pointer overflow-hidden rounded-medium border border-divider transition-colors hover:border-primary/50"
 							onDragOver={(e) => e.preventDefault()}
 							onDrop={(e) => {
 								e.preventDefault();
@@ -85,7 +84,7 @@ export const SpriteGrid = memo<SpriteGridProps>(function SpriteGrid({
 								}
 							}}
 						>
-							<span className="absolute left-1 top-1 z-10 rounded bg-black/50 px-1 text-[10px] text-white">
+							<span className="absolute left-1 top-1 z-10 rounded-small bg-content1/80 px-1 text-[10px] text-foreground-700">
 								{i}
 							</span>
 							{getAssetUrl(path) ? (
@@ -95,12 +94,12 @@ export const SpriteGrid = memo<SpriteGridProps>(function SpriteGrid({
 									alt=""
 								/>
 							) : (
-								<div className="flex h-full w-full flex-col items-center justify-center text-black/30">
+								<div className="flex h-full w-full flex-col items-center justify-center text-foreground-500">
 									<span className="text-xs">上传</span>
 								</div>
 							)}
-							<div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-								<span className="text-xs font-bold text-white">
+							<div className="absolute inset-0 flex items-center justify-center bg-background/75 opacity-0 transition-opacity group-hover:opacity-100">
+								<span className="text-xs font-semibold text-foreground">
 									更换
 								</span>
 							</div>
@@ -114,7 +113,7 @@ export const SpriteGrid = memo<SpriteGridProps>(function SpriteGrid({
 								}}
 							/>
 						</label>
-						<p className="truncate text-center text-[10px] text-black">
+						<p className="truncate text-center text-[10px] text-foreground-600">
 							{path.split('/').pop()}
 						</p>
 					</div>

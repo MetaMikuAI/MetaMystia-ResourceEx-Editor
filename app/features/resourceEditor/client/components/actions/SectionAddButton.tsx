@@ -24,8 +24,11 @@ export const SectionAddButton = memo<IProps>(function SectionAddButton({
 			color="primary"
 			variant="flat"
 			size="sm"
-			startContent={<PlusIcon className="h-3.5 w-3.5" />}
-			className={cn('h-8 rounded-md px-3 text-xs font-medium', className)}
+			startContent={<PlusIcon className="h-4 w-4" />}
+			className={cn(
+				'h-10 rounded-medium px-3 text-sm font-medium sm:h-8 sm:text-xs',
+				className
+			)}
 			{...props}
 		>
 			{children}

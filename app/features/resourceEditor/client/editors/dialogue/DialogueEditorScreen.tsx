@@ -8,6 +8,7 @@ import type {
 } from '@/domain/resourcePack/contracts/dialogue';
 
 import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
+import { findNextAvailableSuffixedValue } from '@/features/resourceEditor/client/editorValueAllocation';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import { DialogEditor } from './DialogEditor';
@@ -29,7 +30,10 @@ export function DialogueEditorScreen() {
 		const packLabel = data.packInfo.label;
 		const namePrefix = packLabel ? `_${packLabel}_` : '_';
 		const newPkg: DialogPackage = {
-			name: `${namePrefix}Dialog_${data.dialogPackages.length + 1}`,
+			name: findNextAvailableSuffixedValue(
+				data.dialogPackages.map((dialogPackage) => dialogPackage.name),
+				`${namePrefix}Dialog_`
+			),
 			dialogList: [],
 		};
 		const newPackages = [...data.dialogPackages, newPkg];
@@ -61,10 +65,11 @@ export function DialogueEditorScreen() {
 				return;
 			}
 			const newPackages = [...data.dialogPackages];
-			newPackages[index] = {
-				...newPackages[index],
-				...updates,
-			} as DialogPackage;
+			const currentPackage = newPackages[index];
+			if (!currentPackage) {
+				return;
+			}
+			newPackages[index] = { ...currentPackage, ...updates };
 			updateResourcePack(() => ({
 				...data,
 				dialogPackages: newPackages,
@@ -137,11 +142,13 @@ export function DialogueEditorScreen() {
 								: DEFAULT_DIALOG.position,
 					};
 
+			const dialogList = [...pkg.dialogList];
 			if (insertIndex !== undefined) {
-				pkg.dialogList.splice(insertIndex, 0, newDialog);
+				dialogList.splice(insertIndex, 0, newDialog);
 			} else {
-				pkg.dialogList = [...pkg.dialogList, newDialog];
+				dialogList.push(newDialog);
 			}
+			newPackages[selectedIndex] = { ...pkg, dialogList };
 			updateResourcePack(() => ({
 				...data,
 				dialogPackages: newPackages,
@@ -161,7 +168,10 @@ export function DialogueEditorScreen() {
 				return;
 			}
 
-			pkg.dialogList = pkg.dialogList.filter((_, i) => i !== dialogIndex);
+			newPackages[selectedIndex] = {
+				...pkg,
+				dialogList: pkg.dialogList.filter((_, i) => i !== dialogIndex),
+			};
 			updateResourcePack(() => ({
 				...data,
 				dialogPackages: newPackages,
@@ -182,10 +192,13 @@ export function DialogueEditorScreen() {
 				return;
 			}
 
-			pkg.dialogList[dialogIndex] = {
-				...pkg.dialogList[dialogIndex],
-				...updates,
-			} as Dialog;
+			const currentDialog = pkg.dialogList[dialogIndex];
+			if (!currentDialog) {
+				return;
+			}
+			const dialogList = [...pkg.dialogList];
+			dialogList[dialogIndex] = { ...currentDialog, ...updates };
+			newPackages[selectedIndex] = { ...pkg, dialogList };
 			updateResourcePack(() => ({
 				...data,
 				dialogPackages: newPackages,

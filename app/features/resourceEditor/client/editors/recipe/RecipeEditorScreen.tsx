@@ -5,7 +5,7 @@ import { useCallback, useMemo, useState } from 'react';
 import type { Recipe } from '@/domain/resourcePack/contracts/items';
 
 import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
-import { FoodPreviewDialog } from '@/features/resourceEditor/client/editors/food/FoodPreviewDialog';
+import { findNextAvailableInteger } from '@/features/resourceEditor/client/editorValueAllocation';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import { RecipeEditor } from './RecipeEditor';
@@ -14,7 +14,6 @@ import { RecipeList } from './RecipeList';
 export function RecipeEditorScreen() {
 	const { resourcePack: data, updateResourcePack } = useResourceEditor();
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-	const [previewFoodId, setPreviewFoodId] = useState<number | null>(null);
 
 	const customIngredients = useMemo(
 		() => data.ingredients.map((ing) => ({ id: ing.id, name: ing.name })),
@@ -32,7 +31,10 @@ export function RecipeEditorScreen() {
 
 	const addRecipe = useCallback(() => {
 		const newRecipe: Recipe = {
-			id: 11000 + (data.recipes?.length || 0),
+			id: findNextAvailableInteger(
+				(data.recipes ?? []).map((recipe) => recipe.id),
+				11000
+			),
 			foodId: -1,
 			ingredients: [],
 			cookTime: 1,
@@ -87,13 +89,7 @@ export function RecipeEditorScreen() {
 				selectedIndex={selectedIndex}
 				onAdd={addRecipe}
 				onRemove={removeRecipe}
-				onPreview={setPreviewFoodId}
 				onSelect={setSelectedIndex}
-			/>
-			<FoodPreviewDialog
-				foodId={previewFoodId}
-				isOpen={previewFoodId !== null}
-				onClose={() => setPreviewFoodId(null)}
 			/>
 
 			<RecipeEditor

@@ -26,8 +26,8 @@ export const ScheduledEventEditor = memo<ScheduledEventEditorProps>(
 		onUpdate,
 	}) {
 		return (
-			<div className="flex flex-col gap-4 rounded-lg border border-black/10 bg-black/5 p-4 dark:border-white/10 dark:bg-white/5">
-				<EditorField label="Trigger">
+			<div className="flex min-w-0 flex-col gap-4">
+				<EditorField label="触发条件（Trigger）">
 					<TriggerEditor
 						trigger={scheduledEvent?.trigger}
 						allCharacters={allCharacters}
@@ -40,7 +40,7 @@ export const ScheduledEventEditor = memo<ScheduledEventEditorProps>(
 					/>
 				</EditorField>
 
-				<EditorField label="Event Data">
+				<EditorField label="事件数据（Event Data）">
 					<EventDataEditor
 						eventData={scheduledEvent?.eventData}
 						allDialogPackages={allDialogPackages}

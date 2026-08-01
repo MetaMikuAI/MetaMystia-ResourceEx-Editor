@@ -2,13 +2,18 @@ import { cn } from '@heroui/theme';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import Button from '@/design/ui/components/button';
-import Card from '@/design/ui/components/card';
 
 import type { DialogPackage } from '@/domain/resourcePack/contracts/dialogue';
 
-import { ConfirmPopover } from '@/features/resourceEditor/client/components/confirm/ConfirmPopover';
+import { SectionDeleteButton } from '@/features/resourceEditor/client/components/actions/SectionDeleteButton';
 import { ChevronRight } from '@/features/resourceEditor/client/components/icons/ChevronRight';
-import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
+import {
+	EditorCollectionItem,
+	EditorCollectionItemMeta,
+	EditorCollectionItemTitle,
+} from '@/features/resourceEditor/client/components/layout/EditorCollectionItem';
+import { EditorCollectionPanel } from '@/features/resourceEditor/client/components/layout/EditorCollectionPanel';
+import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
 import { WarningBadge } from '@/features/resourceEditor/client/components/status/WarningBadge';
 import { usePackLabelPrefix } from '@/features/resourceEditor/client/hooks/useLabelPrefixValidation';
 
@@ -142,24 +147,29 @@ function GroupHeader({
 	isTopLevel?: boolean;
 }) {
 	return (
-		<button
-			onClick={onToggle}
+		<Button
+			variant="light"
+			size="sm"
+			onPress={onToggle}
+			aria-expanded={expanded}
 			className={cn(
-				'flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-black/5 dark:hover:bg-white/5',
+				'h-auto min-h-10 w-full justify-start rounded-medium px-2 py-1.5 text-left sm:min-h-8',
 				isTopLevel
-					? 'text-sm font-semibold'
-					: 'text-xs font-medium opacity-80'
+					? 'text-sm font-semibold text-foreground-700'
+					: 'text-xs font-medium text-foreground-600'
 			)}
 		>
 			<ChevronRight
 				className={cn(
-					'h-3.5 w-3.5 shrink-0 transition-transform duration-200',
+					'h-3.5 w-3.5 shrink-0 transition-transform duration-200 motion-reduce:transition-none',
 					expanded && 'rotate-90'
 				)}
 			/>
 			<span className="truncate">{label}</span>
-			<span className="ml-auto shrink-0 text-xs opacity-40">{count}</span>
-		</button>
+			<span className="ml-auto shrink-0 text-xs text-foreground-500">
+				{count}
+			</span>
+		</Button>
 	);
 }
 
@@ -179,57 +189,31 @@ function DialogTreeItem({
 	onRemove: () => void;
 }) {
 	return (
-		<Card
-			className={cn(
-				'group flex-col items-stretch border px-3 py-2',
-				isSelected
-					? isDuplicate
-						? 'border-danger bg-danger/20 shadow-inner'
-						: 'border-primary bg-primary/20 shadow-inner'
-					: isDuplicate
-						? 'border-danger/50 bg-danger/10 hover:bg-danger/20'
-						: 'border-transparent bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10'
-			)}
-		>
-			<div className="flex w-full items-start justify-between gap-2">
-				<button
-					onClick={onSelect}
-					className="flex min-w-0 flex-1 flex-col gap-1 text-left"
-					title={item.pkg.name}
+		<EditorCollectionItem
+			isInvalid={isDuplicate}
+			isSelected={isSelected}
+			onSelect={onSelect}
+			actions={
+				<SectionDeleteButton
+					iconOnly
+					confirmTitle="确定要删除这个对话包吗？"
+					onPress={onRemove}
 				>
-					<div className="flex items-center gap-2">
-						<span className="truncate text-sm font-bold text-foreground">
-							{item.displayName}
-						</span>
-						{isDuplicate && (
-							<span className="shrink-0 rounded bg-danger px-1.5 py-0.5 text-[10px] font-medium">
-								命名重复
-							</span>
-						)}
-						{hasPrefixWarning && (
-							<WarningBadge>前缀不规范</WarningBadge>
-						)}
-					</div>
-					<div className="font-mono text-xs text-foreground opacity-80">
-						{item.pkg.dialogList.length}条对话
-					</div>
-				</button>
-				<ConfirmPopover
-					title="确定要删除这个对话包吗？"
-					onConfirm={onRemove}
-					trigger={
-						<Button
-							color="danger"
-							size="sm"
-							radius="full"
-							className="pointer-events-none h-6 min-w-0 shrink-0 px-2 text-xs opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
-						>
-							删除
-						</Button>
-					}
-				/>
-			</div>
-		</Card>
+					删除对话包
+				</SectionDeleteButton>
+			}
+		>
+			<EditorCollectionItemTitle>
+				<span className="min-w-0 truncate" title={item.pkg.name}>
+					{item.displayName}
+				</span>
+				{isDuplicate && <ErrorBadge>命名重复</ErrorBadge>}
+				{hasPrefixWarning && <WarningBadge>前缀不规范</WarningBadge>}
+			</EditorCollectionItemTitle>
+			<EditorCollectionItemMeta>
+				{item.pkg.dialogList.length}条对话
+			</EditorCollectionItemMeta>
+		</EditorCollectionItem>
 	);
 }
 
@@ -261,7 +245,7 @@ function TreeGroup({
 	);
 
 	return (
-		<div className="ml-3 flex flex-col gap-0.5 border-l border-black/10 pl-2 dark:border-white/10">
+		<div className="ml-3 flex min-w-0 flex-col gap-1 border-l border-divider pl-2">
 			{sortedChildren.map(([key, childNode]) => {
 				const path = parentPath ? `${parentPath}/${key}` : key;
 				const isExpanded = expandedGroups.has(path);
@@ -447,246 +431,117 @@ export const DialogPackageList = memo<DialogPackageListProps>(
 		const hasConforming =
 			conforming.items.length > 0 || conforming.children.size > 0;
 		const hasNonConforming = nonConforming.length > 0;
-		const [isCollapsed, setIsCollapsed] = useState(false);
 
 		return (
-			<div className="flex h-min flex-col gap-4 overflow-y-auto rounded-lg bg-white/10 p-4 shadow-md backdrop-blur lg:sticky lg:top-24 lg:max-h-[calc(100dvh-7rem)]">
-				<div className="flex items-center justify-between">
-					<h2 className="text-xl font-semibold">对话包列表</h2>
-					<div className="flex items-center gap-1">
-						<Button
-							isIconOnly
-							variant="light"
-							size="sm"
-							className="h-8 w-8 lg:hidden"
-							onPress={() => setIsCollapsed((v) => !v)}
-							aria-label={isCollapsed ? '展开列表' : '折叠列表'}
-						>
-							<svg
-								viewBox="0 0 24 24"
-								className={cn(
-									'h-4 w-4 transition-transform duration-200',
-									isCollapsed ? '-rotate-90' : 'rotate-0'
-								)}
-								fill="none"
-								stroke="currentColor"
-								strokeWidth={2}
-								strokeLinecap="round"
-								strokeLinejoin="round"
-							>
-								<path d="m9 18 6-6-6-6" />
-							</svg>
-						</Button>
-						<Button
-							isIconOnly
-							variant="light"
-							size="sm"
-							onPress={onAdd}
-							className="h-8 w-8 text-lg"
-						>
-							+
-						</Button>
-					</div>
-				</div>
-
-				<div
-					className={cn(
-						'grid transition-all duration-300',
-						isCollapsed
-							? 'grid-rows-[0fr] lg:grid-rows-[1fr]'
-							: 'grid-rows-[1fr]'
-					)}
-					style={{ overflow: isCollapsed ? 'hidden' : undefined }}
-				>
-					<div className="min-h-0">
-						<div className="flex flex-col gap-1">
-							{hasPrefix ? (
-								<>
-									{/* 符合命名规范的分组树 */}
-									{hasConforming && (
-										<div>
-											<GroupHeader
-												label={packLabelPrefix}
-												count={countTreeItems(
-													conforming
-												)}
-												expanded={expandedGroups.has(
-													CONFORMING_KEY
-												)}
-												onToggle={() =>
-													toggleGroup(CONFORMING_KEY)
-												}
-												isTopLevel
-											/>
-											{expandedGroups.has(
-												CONFORMING_KEY
-											) && (
-												<TreeGroup
-													node={conforming}
-													parentPath=""
-													depth={0}
-													expandedGroups={
-														expandedGroups
-													}
-													onToggleGroup={toggleGroup}
-													selectedIndex={
-														selectedIndex
-													}
-													isNameDuplicate={
-														isNameDuplicate
-													}
-													isNamePrefixInvalid={
-														isNamePrefixInvalid
-													}
-													onSelect={onSelect}
-													onRemove={onRemove}
-												/>
-											)}
-										</div>
+			<EditorCollectionPanel
+				title="对话包列表"
+				addLabel="新建对话包"
+				emptyTitle="暂无对话包"
+				hasItems={packages.length > 0}
+				onAdd={onAdd}
+			>
+				<div className="flex min-w-0 flex-col gap-1">
+					{hasPrefix ? (
+						<>
+							{/* 符合命名规范的分组树 */}
+							{hasConforming && (
+								<div>
+									<GroupHeader
+										label={packLabelPrefix}
+										count={countTreeItems(conforming)}
+										expanded={expandedGroups.has(
+											CONFORMING_KEY
+										)}
+										onToggle={() =>
+											toggleGroup(CONFORMING_KEY)
+										}
+										isTopLevel
+									/>
+									{expandedGroups.has(CONFORMING_KEY) && (
+										<TreeGroup
+											node={conforming}
+											parentPath=""
+											depth={0}
+											expandedGroups={expandedGroups}
+											onToggleGroup={toggleGroup}
+											selectedIndex={selectedIndex}
+											isNameDuplicate={isNameDuplicate}
+											isNamePrefixInvalid={
+												isNamePrefixInvalid
+											}
+											onSelect={onSelect}
+											onRemove={onRemove}
+										/>
 									)}
-
-									{/* 不符合命名规范的条目 */}
-									{hasNonConforming && (
-										<div>
-											{hasConforming && (
-												<div className="my-1 border-t border-black/10 dark:border-white/10" />
-											)}
-											<GroupHeader
-												label="其他"
-												count={nonConforming.length}
-												expanded={expandedGroups.has(
-													OTHER_KEY
-												)}
-												onToggle={() =>
-													toggleGroup(OTHER_KEY)
-												}
-												isTopLevel
-											/>
-											{expandedGroups.has(OTHER_KEY) && (
-												<div className="ml-3 flex flex-col gap-0.5 border-l border-black/10 pl-2 dark:border-white/10">
-													{nonConforming.map(
-														(item) => (
-															<DialogTreeItem
-																key={item.index}
-																item={item}
-																isSelected={
-																	selectedIndex ===
-																	item.index
-																}
-																isDuplicate={isNameDuplicate(
-																	item.pkg
-																		.name,
-																	item.index
-																)}
-																hasPrefixWarning={isNamePrefixInvalid(
-																	item.pkg
-																		.name
-																)}
-																onSelect={() =>
-																	onSelect(
-																		item.index
-																	)
-																}
-																onRemove={() =>
-																	onRemove(
-																		item.index
-																	)
-																}
-															/>
-														)
-													)}
-												</div>
-											)}
-										</div>
-									)}
-								</>
-							) : (
-								/* 无前缀时保持扁平列表 */
-								<div className="flex flex-col gap-2">
-									{packages.map((pkg, index) => {
-										const isDuplicate = isNameDuplicate(
-											pkg.name,
-											index
-										);
-										const hasPrefixWarning =
-											isNamePrefixInvalid(pkg.name);
-										return (
-											<Card
-												key={index}
-												className={cn(
-													'group flex-col items-stretch border p-4',
-													selectedIndex === index
-														? isDuplicate
-															? 'border-danger bg-danger/20 shadow-inner'
-															: 'border-primary bg-primary/20 shadow-inner'
-														: isDuplicate
-															? 'border-danger/50 bg-danger/10 hover:bg-danger/20'
-															: 'border-transparent bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10'
-												)}
-											>
-												<div className="flex w-full items-start justify-between gap-2">
-													<button
-														onClick={() =>
-															onSelect(index)
-														}
-														className="flex flex-1 flex-col gap-2 text-left"
-													>
-														<div className="flex items-center gap-2">
-															<span className="text-lg font-bold text-foreground">
-																{pkg.name}
-															</span>
-															{isDuplicate && (
-																<span className="rounded bg-danger px-1.5 py-0.5 text-[10px] font-medium">
-																	命名重复
-																</span>
-															)}{' '}
-															{hasPrefixWarning && (
-																<WarningBadge>
-																	前缀不规范
-																</WarningBadge>
-															)}{' '}
-														</div>
-														<div className="font-mono text-xs text-foreground opacity-80">
-															{
-																pkg.dialogList
-																	.length
-															}
-															条对话
-														</div>
-													</button>
-													<ConfirmPopover
-														title="确定要删除这个对话包吗？"
-														onConfirm={() =>
-															onRemove(index)
-														}
-														trigger={
-															<Button
-																color="danger"
-																size="sm"
-																radius="full"
-																className="pointer-events-none opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
-															>
-																删除
-															</Button>
-														}
-													/>
-												</div>
-											</Card>
-										);
-									})}
 								</div>
 							)}
 
-							{packages.length === 0 && (
-								<EmptyState
-									title="暂无对话包"
-									description="点击上方 + 按钮创建"
-								/>
+							{/* 不符合命名规范的条目 */}
+							{hasNonConforming && (
+								<div>
+									{hasConforming && (
+										<div className="my-1 border-t border-divider" />
+									)}
+									<GroupHeader
+										label="其他"
+										count={nonConforming.length}
+										expanded={expandedGroups.has(OTHER_KEY)}
+										onToggle={() => toggleGroup(OTHER_KEY)}
+										isTopLevel
+									/>
+									{expandedGroups.has(OTHER_KEY) && (
+										<div className="ml-3 flex min-w-0 flex-col gap-1 border-l border-divider pl-2">
+											{nonConforming.map((item) => (
+												<DialogTreeItem
+													key={item.index}
+													item={item}
+													isSelected={
+														selectedIndex ===
+														item.index
+													}
+													isDuplicate={isNameDuplicate(
+														item.pkg.name,
+														item.index
+													)}
+													hasPrefixWarning={isNamePrefixInvalid(
+														item.pkg.name
+													)}
+													onSelect={() =>
+														onSelect(item.index)
+													}
+													onRemove={() =>
+														onRemove(item.index)
+													}
+												/>
+											))}
+										</div>
+									)}
+								</div>
 							)}
+						</>
+					) : (
+						/* 无前缀时保持扁平列表 */
+						<div className="flex min-w-0 flex-col gap-2">
+							{packages.map((pkg, index) => (
+								<DialogTreeItem
+									key={index}
+									item={{ pkg, index, displayName: pkg.name }}
+									isSelected={selectedIndex === index}
+									isDuplicate={isNameDuplicate(
+										pkg.name,
+										index
+									)}
+									hasPrefixWarning={isNamePrefixInvalid(
+										pkg.name
+									)}
+									onSelect={() => onSelect(index)}
+									onRemove={() => onRemove(index)}
+								/>
+							))}
 						</div>
-					</div>
+					)}
 				</div>
-			</div>
+			</EditorCollectionPanel>
 		);
 	}
 );

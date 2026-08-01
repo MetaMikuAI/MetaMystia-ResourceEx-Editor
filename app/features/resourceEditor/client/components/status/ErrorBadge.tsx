@@ -10,7 +10,7 @@ export function ErrorBadge({ children, className }: IProps) {
 	return (
 		<span
 			className={cn(
-				'rounded bg-danger px-1.5 py-0.5 text-[10px] font-medium text-white',
+				'rounded-small bg-danger px-1.5 py-0.5 text-[10px] font-medium text-danger-foreground',
 				className
 			)}
 		>

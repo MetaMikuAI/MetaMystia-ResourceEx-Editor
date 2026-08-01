@@ -18,13 +18,15 @@ export const Label = memo<IProps>(function Label({
 	...props
 }) {
 	return (
-		<div className={cn('flex items-center gap-1', wrapperClassName)}>
+		<div
+			className={cn('flex min-h-6 items-center gap-1', wrapperClassName)}
+		>
 			<label
 				className={cn(
-					'font-medium uppercase',
+					'font-medium leading-5',
 					size === 'sm'
-						? 'text-[10px] opacity-40'
-						: 'text-xs opacity-60',
+						? 'text-xs text-foreground-600'
+						: 'text-sm text-foreground-700',
 					className
 				)}
 				{...props}

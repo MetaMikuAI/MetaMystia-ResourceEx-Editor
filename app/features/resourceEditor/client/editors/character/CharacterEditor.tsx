@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect } from 'react';
+import { memo, useCallback } from 'react';
 
 import Switch from '@/design/ui/components/switch';
 
@@ -14,6 +14,10 @@ import type { DialogPackage } from '@/domain/resourcePack/contracts/dialogue';
 import type { EventNode } from '@/domain/resourcePack/contracts/event';
 
 import { SectionDeleteButton } from '@/features/resourceEditor/client/components/actions/SectionDeleteButton';
+import { EditorDetailEmptyState } from '@/features/resourceEditor/client/components/layout/EditorDetailEmptyState';
+import { EditorDetailHeader } from '@/features/resourceEditor/client/components/layout/EditorDetailHeader';
+import { EditorDetailPanel } from '@/features/resourceEditor/client/components/layout/EditorDetailPanel';
+import { EditorSection } from '@/features/resourceEditor/client/components/layout/EditorSection';
 
 import { BasicInfo } from './editor/BasicInfo';
 import { Descriptions } from './editor/Descriptions';
@@ -41,39 +45,6 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 		onRemove,
 		onUpdate,
 	}) {
-		// Ensure default portrait is set if portraits exist
-		useEffect(() => {
-			const portraits = character?.portraits;
-			if (
-				portraits &&
-				portraits.length > 0 &&
-				character?.faceInNoteBook === undefined
-			) {
-				const hasPid0 = portraits.some((p) => p.pid === 0);
-				const targetPid = hasPid0 ? 0 : portraits[0]!.pid;
-				onUpdate({ faceInNoteBook: targetPid });
-			}
-		}, [
-			character?.portraits,
-			character?.faceInNoteBook,
-			onUpdate,
-			character?.id,
-		]);
-
-		// Ensure spawnMarker exists
-		useEffect(() => {
-			if (character && !character.spawnMarker) {
-				onUpdate({
-					spawnMarker: {
-						mapLabel: 'BeastForest',
-						x: 0,
-						y: 0,
-						rotation: 'Down',
-					},
-				});
-			}
-		}, [character?.spawnMarker, onUpdate, character]);
-
 		const updateDescription = useCallback(
 			(index: number, value: string) => {
 				if (!character) {
@@ -332,37 +303,34 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 		}, [character, updateSpriteSet]);
 
 		if (!character) {
-			return (
-				<div className="flex flex-col items-center justify-center rounded-lg bg-white/10 p-4 shadow-md backdrop-blur lg:col-span-2">
-					<div className="flex items-center justify-center text-center font-semibold italic opacity-30">
-						请从左侧选择一个角色进行编辑，或点击 + 按钮添加新角色
-					</div>
-				</div>
-			);
+			return <EditorDetailEmptyState itemLabel="角色" />;
 		}
 
 		return (
-			<div className="flex flex-col gap-8 overflow-y-auto rounded-lg bg-white/10 p-4 shadow-md backdrop-blur lg:col-span-2">
-				<div className="flex items-center justify-between border-b border-white/10 pb-4">
-					<div className="flex items-center gap-2">
-						<h2 className="text-xl font-semibold">
+			<EditorDetailPanel className="gap-8">
+				<EditorDetailHeader
+					title={
+						<>
 							<span className="hidden md:inline">编辑角色：</span>
 							<span className="font-bold">
 								{character.name || '未命名角色'}
 							</span>
-						</h2>
+						</>
+					}
+					meta={
 						<span className="rounded-full bg-primary/20 px-3 py-1 text-sm font-medium text-primary">
 							{character.type || '未知类型'}
 						</span>
-					</div>
-					<SectionDeleteButton
-						confirmTitle="确定要删除这个角色吗？"
-						confirmDescription="此操作不可撤销。"
-						onPress={onRemove}
-					>
-						删除角色
-					</SectionDeleteButton>
-				</div>
+					}
+					actions={
+						<SectionDeleteButton
+							confirmTitle="确定要删除这个角色吗？"
+							onPress={onRemove}
+						>
+							删除角色
+						</SectionDeleteButton>
+					}
+				/>
 
 				<BasicInfo
 					character={character}
@@ -387,40 +355,51 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 					onUpdate={updateSpawnMarker}
 				/>
 
-				<div className="flex items-center justify-between gap-4">
-					<div className="flex items-center gap-2">
-						<span className="whitespace-nowrap text-sm">
-							在图鉴中隐藏
-						</span>
-						<Switch
-							size="sm"
-							isSelected={character.hideInAlbum ?? false}
-							onValueChange={(v) => onUpdate({ hideInAlbum: v })}
-						/>
+				<EditorSection title="显示与分类">
+					<div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+						<div className="flex min-h-10 items-center justify-between gap-3 rounded-medium border border-divider bg-content1/50 px-3">
+							<span className="text-sm text-foreground-700">
+								在图鉴中隐藏
+							</span>
+							<Switch
+								size="sm"
+								aria-label="在图鉴中隐藏"
+								isSelected={character.hideInAlbum ?? false}
+								onValueChange={(v) =>
+									onUpdate({ hideInAlbum: v })
+								}
+							/>
+						</div>
+						<div className="flex min-h-10 items-center justify-between gap-3 rounded-medium border border-divider bg-content1/50 px-3">
+							<span className="text-sm text-foreground-700">
+								是特殊客人
+							</span>
+							<Switch
+								size="sm"
+								aria-label="是特殊客人"
+								isSelected={character.isParticular ?? false}
+								onValueChange={(v) =>
+									onUpdate({ isParticular: v })
+								}
+							/>
+						</div>
+						<div className="flex min-h-10 items-center justify-between gap-3 rounded-medium border border-divider bg-content1/50 px-3">
+							<span className="text-sm text-foreground-700">
+								是联动客人
+							</span>
+							<Switch
+								size="sm"
+								aria-label="是联动客人"
+								isSelected={
+									character.isCollabCharacter ?? false
+								}
+								onValueChange={(v) =>
+									onUpdate({ isCollabCharacter: v })
+								}
+							/>
+						</div>
 					</div>
-					<div className="flex items-center gap-2">
-						<span className="whitespace-nowrap text-sm">
-							是特殊客人
-						</span>
-						<Switch
-							size="sm"
-							isSelected={character.isParticular ?? false}
-							onValueChange={(v) => onUpdate({ isParticular: v })}
-						/>
-					</div>
-					<div className="flex items-center gap-2">
-						<span className="whitespace-nowrap text-sm">
-							是联动客人
-						</span>
-						<Switch
-							size="sm"
-							isSelected={character.isCollabCharacter ?? false}
-							onValueChange={(v) =>
-								onUpdate({ isCollabCharacter: v })
-							}
-						/>
-					</div>
-				</div>
+				</EditorSection>
 
 				<Portraits
 					characterId={character.id}
@@ -457,7 +436,7 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 					onDisable={disableSpriteSet}
 					onGenerateDefaults={generateDefaultSprites}
 				/>
-			</div>
+			</EditorDetailPanel>
 		);
 	}
 );

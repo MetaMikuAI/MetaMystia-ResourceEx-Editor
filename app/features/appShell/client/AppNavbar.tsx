@@ -14,7 +14,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 
 import Button from '@/design/ui/components/button';
-import Card from '@/design/ui/components/card';
 import Dropdown, {
 	DropdownItem,
 	DropdownMenu,
@@ -31,6 +30,16 @@ import {
 	validateResourcePackForExport,
 } from '@/features/resourceEditor/client/validation/validateResourcePackForExport';
 
+interface INavItem {
+	readonly href: string;
+	readonly label: string;
+}
+
+interface INavGroup {
+	readonly items: readonly INavItem[];
+	readonly label: string;
+}
+
 const NAV_GROUPS = [
 	{
 		label: '角色',
@@ -43,11 +52,11 @@ const NAV_GROUPS = [
 	{
 		label: '素材',
 		items: [
-			{ href: '/ingredient', label: '原料' },
+			{ href: '/ingredient', label: '食材' },
 			{ href: '/food', label: '料理' },
-			{ href: '/recipe', label: '菜谱' },
+			{ href: '/recipe', label: '食谱' },
 			{ href: '/beverage', label: '酒水' },
-			{ href: '/clothes', label: '服装' },
+			{ href: '/clothes', label: '衣服' },
 		],
 	},
 	{
@@ -57,14 +66,23 @@ const NAV_GROUPS = [
 			{ href: '/event', label: '事件节点' },
 		],
 	},
+] as const satisfies readonly INavGroup[];
+
+const MOBILE_NAV_GROUPS: readonly INavGroup[] = [
+	{ label: '资源包', items: [{ href: '/info', label: '基础信息' }] },
+	...NAV_GROUPS,
+	{ label: '资产', items: [{ href: '/asset', label: '资产管理' }] },
 ] as const;
 
+const MOBILE_NAV_ITEMS = MOBILE_NAV_GROUPS.flatMap((group) => group.items);
+
 const GITHUB_URL = 'https://github.com/MetaMystia/MetaMystia-ResourceEx-Editor';
+const MOBILE_MENU_ID = 'app-navbar-mobile-menu';
 const MOBILE_MENU_TOGGLE_ID = 'app-navbar-mobile-menu-toggle';
 
 interface INavDropdownProps {
 	label: string;
-	items: readonly { readonly href: string; readonly label: string }[];
+	items: readonly INavItem[];
 }
 
 const NavDropdown = memo<INavDropdownProps>(function NavDropdown({
@@ -107,19 +125,6 @@ const NavDropdown = memo<INavDropdownProps>(function NavDropdown({
 	);
 });
 
-function GitHubIcon() {
-	return (
-		<svg
-			viewBox="0 0 24 24"
-			className="h-6 w-6"
-			fill="currentColor"
-			aria-hidden
-		>
-			<path d="M12 .5C5.73.5.79 5.44.79 11.71c0 4.94 3.2 9.13 7.64 10.61.56.1.77-.24.77-.54 0-.27-.01-1.16-.02-2.11-3.11.68-3.77-1.32-3.77-1.32-.51-1.29-1.25-1.64-1.25-1.64-1.02-.7.08-.69.08-.69 1.13.08 1.72 1.16 1.72 1.16 1 1.71 2.63 1.22 3.27.94.1-.73.39-1.22.71-1.5-2.49-.28-5.11-1.25-5.11-5.55 0-1.23.44-2.23 1.16-3.02-.12-.28-.5-1.43.11-2.99 0 0 .94-.3 3.09 1.15.9-.25 1.86-.37 2.82-.38.96.01 1.92.13 2.82.38 2.15-1.45 3.09-1.15 3.09-1.15.61 1.56.23 2.71.11 2.99.72.79 1.16 1.79 1.16 3.02 0 4.31-2.62 5.27-5.12 5.55.4.34.76 1.02.76 2.05 0 1.48-.01 2.67-.01 3.04 0 .3.2.65.78.54 4.43-1.49 7.62-5.67 7.62-10.61C23.21 5.44 18.27.5 12 .5z" />
-		</svg>
-	);
-}
-
 type TDestructiveIntent = { type: 'create' } | { type: 'import'; file: File };
 
 interface INotice {
@@ -134,7 +139,6 @@ export const AppNavbar = memo(function AppNavbar() {
 	const activeExportTriggerRef = useRef<HTMLButtonElement | null>(null);
 	const desktopExportTriggerRef = useRef<HTMLButtonElement>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
-	const mobileExportTriggerRef = useRef<HTMLButtonElement>(null);
 	const mobileMenuFirstItemRef = useRef<HTMLButtonElement>(null);
 	const {
 		assets: { urls: assetUrls },
@@ -160,15 +164,40 @@ export const AppNavbar = memo(function AppNavbar() {
 		if (!isMenuOpen) return;
 
 		const focusFrame = requestAnimationFrame(() => {
-			mobileMenuFirstItemRef.current?.focus();
+			mobileMenuFirstItemRef.current?.focus({ preventScroll: true });
 		});
 		const handleKeyDown = (event: KeyboardEvent) => {
-			if (event.key !== 'Escape') return;
-			event.preventDefault();
-			setIsMenuOpen(false);
-			requestAnimationFrame(() =>
-				document.getElementById(MOBILE_MENU_TOGGLE_ID)?.focus()
-			);
+			if (event.key === 'Escape') {
+				event.preventDefault();
+				setIsMenuOpen(false);
+				requestAnimationFrame(() =>
+					document.getElementById(MOBILE_MENU_TOGGLE_ID)?.focus()
+				);
+				return;
+			}
+
+			if (event.key !== 'Tab') return;
+			const menu = document.getElementById(MOBILE_MENU_ID);
+			if (!menu) return;
+			const focusableElements = Array.from(
+				menu.querySelectorAll<HTMLElement>(
+					'button:not([disabled]), a[href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+				)
+			).filter((element) => element.getClientRects().length > 0);
+			const firstElement = focusableElements[0];
+			const lastElement = focusableElements.at(-1);
+			if (!firstElement || !lastElement) return;
+
+			if (event.shiftKey && document.activeElement === firstElement) {
+				event.preventDefault();
+				lastElement.focus();
+			} else if (
+				!event.shiftKey &&
+				document.activeElement === lastElement
+			) {
+				event.preventDefault();
+				firstElement.focus();
+			}
 		};
 		document.addEventListener('keydown', handleKeyDown);
 		return () => {
@@ -185,6 +214,9 @@ export const AppNavbar = memo(function AppNavbar() {
 		(href: string) => {
 			setIsMenuOpen(false);
 			router.push(href);
+			requestAnimationFrame(() =>
+				document.getElementById(MOBILE_MENU_TOGGLE_ID)?.focus()
+			);
 		},
 		[router]
 	);
@@ -264,6 +296,9 @@ export const AppNavbar = memo(function AppNavbar() {
 	const openGitHub = useCallback(() => {
 		window.open(GITHUB_URL, '_blank', 'noopener,noreferrer');
 	}, []);
+	const hasActiveMobileRoute = MOBILE_NAV_ITEMS.some(
+		(item) => item.href === pathname
+	);
 
 	return (
 		<>
@@ -274,6 +309,7 @@ export const AppNavbar = memo(function AppNavbar() {
 				disableAnimation={isReducedMotion}
 				isMenuOpen={isMenuOpen}
 				onMenuOpenChange={setIsMenuOpen}
+				shouldBlockScroll={false}
 				classNames={{
 					base: 'z-50',
 					wrapper:
@@ -282,15 +318,25 @@ export const AppNavbar = memo(function AppNavbar() {
 			>
 				<NavbarContent
 					justify="start"
-					className="basis-full gap-4 lg:basis-1/5"
+					className="min-w-0 flex-1 gap-5 xl:basis-1/5"
 				>
-					<NavbarBrand className="max-w-fit">
-						<span className="image-rendering-pixelated h-10 w-10 shrink-0 rounded-full bg-logo bg-cover bg-no-repeat" />
-						<span className="ml-1 hidden whitespace-nowrap text-lg font-bold sm:inline-block">
-							ResourceEx Editor
-						</span>
+					<NavbarBrand className="max-w-none shrink-0 grow-0 basis-auto">
+						<Link
+							href="/info"
+							aria-label="ResourceEx Editor首页"
+							className="flex shrink-0 items-center gap-2 rounded-small"
+							onClick={() => setIsMenuOpen(false)}
+						>
+							<span
+								aria-hidden
+								className="image-rendering-pixelated h-9 w-9 shrink-0 rounded-full bg-logo bg-cover bg-no-repeat sm:h-10 sm:w-10"
+							/>
+							<span className="shrink-0 whitespace-nowrap text-[13px] font-bold sm:text-base xl:text-lg">
+								ResourceEx Editor
+							</span>
+						</Link>
 					</NavbarBrand>
-					<nav className="hidden items-center gap-1 lg:flex">
+					<nav className="hidden shrink-0 items-center gap-1 xl:flex">
 						<NavbarItem>
 							<Button
 								as={Link}
@@ -327,20 +373,7 @@ export const AppNavbar = memo(function AppNavbar() {
 					</nav>
 				</NavbarContent>
 
-				<NavbarContent justify="end" className="hidden gap-1 lg:flex">
-					<NavbarItem>
-						<Button
-							isIconOnly
-							variant="light"
-							aria-label="GitHub"
-							onPress={openGitHub}
-						>
-							<GitHubIcon />
-						</Button>
-					</NavbarItem>
-					<Button variant="light" onPress={openAnnouncementModal}>
-						公告
-					</Button>
+				<NavbarContent justify="end" className="hidden gap-1 xl:flex">
 					<Button variant="light" onPress={handleCreateBlank}>
 						全新创建
 					</Button>
@@ -349,11 +382,11 @@ export const AppNavbar = memo(function AppNavbar() {
 						isDisabled={isImporting}
 						onPress={() => fileInputRef.current?.click()}
 					>
-						上传资源包(ZIP)
+						上传资源包（ZIP）
 					</Button>
 					<Button
 						ref={desktopExportTriggerRef}
-						color="primary"
+						variant="light"
 						isDisabled={isExporting}
 						onPress={() => {
 							activeExportTriggerRef.current =
@@ -361,129 +394,177 @@ export const AppNavbar = memo(function AppNavbar() {
 							void handleExport();
 						}}
 					>
-						导出资源包(ZIP)
+						导出资源包（ZIP）
 					</Button>
+					<NavbarItem className="ml-2">
+						<Dropdown>
+							<DropdownTrigger>
+								<Button variant="light">更多</Button>
+							</DropdownTrigger>
+							<DropdownMenu
+								aria-label="应用操作"
+								selectionMode="none"
+								onAction={(key) => {
+									if (String(key) === 'announcement') {
+										openAnnouncementModal();
+									} else if (String(key) === 'github') {
+										openGitHub();
+									}
+								}}
+							>
+								<DropdownItem key="announcement">
+									公告
+								</DropdownItem>
+								<DropdownItem key="github">GitHub</DropdownItem>
+							</DropdownMenu>
+						</Dropdown>
+					</NavbarItem>
 				</NavbarContent>
 
-				<NavbarContent justify="end" className="gap-1 lg:hidden">
-					<NavbarItem>
-						<Button
-							ref={mobileExportTriggerRef}
-							color="primary"
-							size="sm"
-							isDisabled={isExporting}
-							onPress={() => {
-								activeExportTriggerRef.current =
-									mobileExportTriggerRef.current;
-								void handleExport();
-							}}
-						>
-							导出资源包(ZIP)
-						</Button>
-					</NavbarItem>
+				<NavbarContent
+					justify="end"
+					className="basis-auto pl-2 xl:hidden"
+				>
 					<NavbarMenuToggle
 						id={MOBILE_MENU_TOGGLE_ID}
 						aria-label={isMenuOpen ? '收起菜单' : '打开菜单'}
+						className="h-10 w-10 rounded-small border border-default-200/70 bg-default-100/60 transition-background data-[hover=true]:bg-default-200/70 motion-reduce:transition-none"
 					/>
 				</NavbarContent>
 
-				<NavbarMenu className="mobile-navbar-menu-scroll gap-3 overflow-y-auto pb-8 pt-4">
-					{[
-						{
-							label: '资源包',
-							items: [{ href: '/info', label: '基础信息' }],
-						},
-						...NAV_GROUPS,
-						{
-							label: '资产',
-							items: [{ href: '/asset', label: '资产管理' }],
-						},
-					].map((group, groupIndex) => (
-						<NavbarMenuItem key={group.label}>
-							<Card className="gap-1 bg-content1/50 p-2">
-								<p className="px-2 py-1 text-xs font-semibold uppercase tracking-wider text-default-500">
+				<NavbarMenu
+					id={MOBILE_MENU_ID}
+					className="mobile-navbar-menu-scroll h-[calc(var(--safe-h-dvh)_-_var(--navbar-height))] gap-4 overflow-y-auto border-t border-divider bg-content1/95 px-4 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-4 backdrop-blur-xl sm:px-6"
+				>
+					{MOBILE_NAV_GROUPS.map((group, groupIndex) => (
+						<NavbarMenuItem key={group.label} className="w-full">
+							<section className="space-y-2">
+								<h2 className="px-1 text-xs font-semibold leading-5 text-foreground-500">
 									{group.label}
-								</p>
-								{group.items.map((item, itemIndex) => (
-									<Button
-										key={item.href}
-										{...(groupIndex === 0 && itemIndex === 0
-											? { ref: mobileMenuFirstItemRef }
-											: {})}
-										fullWidth
-										variant={
-											pathname === item.href
-												? 'flat'
-												: 'light'
-										}
-										color={
-											pathname === item.href
-												? 'primary'
-												: 'default'
-										}
-										className="justify-start"
-										onPress={() =>
-											handleNavigate(item.href)
-										}
-									>
-										{item.label}
-									</Button>
-								))}
-							</Card>
+								</h2>
+								<div className="grid grid-cols-[repeat(auto-fit,minmax(9rem,1fr))] gap-2">
+									{group.items.map((item, itemIndex) => {
+										const isCurrent =
+											pathname === item.href;
+										const isFallbackFirst =
+											!hasActiveMobileRoute &&
+											groupIndex === 0 &&
+											itemIndex === 0;
+
+										return (
+											<Button
+												key={item.href}
+												{...(isCurrent ||
+												isFallbackFirst
+													? {
+															ref: mobileMenuFirstItemRef,
+														}
+													: {})}
+												fullWidth
+												aria-current={
+													isCurrent
+														? 'page'
+														: undefined
+												}
+												variant={
+													isCurrent ? 'flat' : 'light'
+												}
+												color={
+													isCurrent
+														? 'primary'
+														: 'default'
+												}
+												className="h-12 justify-start rounded-small border border-default-200/75 bg-content1/45 px-3 text-sm shadow-[0_1px_0_rgba(0,0,0,0.025)]"
+												onPress={() =>
+													handleNavigate(item.href)
+												}
+											>
+												{item.label}
+											</Button>
+										);
+									})}
+								</div>
+							</section>
 						</NavbarMenuItem>
 					))}
-					<NavbarMenuItem>
-						<Card className="gap-1 bg-content1/50 p-2">
-							<p className="px-2 py-1 text-xs font-semibold uppercase tracking-wider text-default-500">
-								操作
-							</p>
-							<Button
-								fullWidth
-								variant="light"
-								className="justify-start"
-								onPress={() => {
-									setIsMenuOpen(false);
-									openAnnouncementModal();
-								}}
-							>
-								公告
-							</Button>
-							<Button
-								fullWidth
-								variant="light"
-								className="justify-start"
-								onPress={() => {
-									setIsMenuOpen(false);
-									handleCreateBlank();
-								}}
-							>
-								全新创建
-							</Button>
-							<Button
-								fullWidth
-								variant="light"
-								className="justify-start"
-								isDisabled={isImporting}
-								onPress={() => {
-									setIsMenuOpen(false);
-									fileInputRef.current?.click();
-								}}
-							>
-								上传资源包(ZIP)
-							</Button>
-							<Button
-								fullWidth
-								variant="light"
-								className="justify-start"
-								startContent={<GitHubIcon />}
-								onPress={() => {
-									setIsMenuOpen(false);
-									openGitHub();
-								}}
-							>
-								本项目代码仓库
-							</Button>
-						</Card>
+					<NavbarMenuItem className="w-full">
+						<section className="space-y-2">
+							<h2 className="px-1 text-xs font-semibold leading-5 text-foreground-500">
+								资源包操作
+							</h2>
+							<div className="grid grid-cols-2 gap-2">
+								<Button
+									fullWidth
+									variant="light"
+									className="h-12 justify-start rounded-small border border-default-200/75 bg-content1/45 px-3 text-sm"
+									onPress={() => {
+										setIsMenuOpen(false);
+										handleCreateBlank();
+									}}
+								>
+									全新创建
+								</Button>
+								<Button
+									fullWidth
+									variant="light"
+									className="h-12 justify-start rounded-small border border-default-200/75 bg-content1/45 px-3 text-sm"
+									isDisabled={isImporting}
+									onPress={() => {
+										setIsMenuOpen(false);
+										fileInputRef.current?.click();
+									}}
+								>
+									上传资源包（ZIP）
+								</Button>
+								<Button
+									fullWidth
+									variant="light"
+									className="h-12 justify-start rounded-small border border-default-200/75 bg-content1/45 px-3 text-sm"
+									isDisabled={isExporting}
+									onPress={() => {
+										activeExportTriggerRef.current =
+											document.getElementById(
+												MOBILE_MENU_TOGGLE_ID
+											) as HTMLButtonElement | null;
+										setIsMenuOpen(false);
+										void handleExport();
+									}}
+								>
+									导出资源包（ZIP）
+								</Button>
+							</div>
+						</section>
+					</NavbarMenuItem>
+					<NavbarMenuItem className="w-full">
+						<section className="space-y-2">
+							<h2 className="px-1 text-xs font-semibold leading-5 text-foreground-500">
+								更多
+							</h2>
+							<div className="grid grid-cols-2 gap-2">
+								<Button
+									fullWidth
+									variant="light"
+									className="h-12 justify-start rounded-small border border-default-200/75 bg-content1/45 px-3 text-sm"
+									onPress={() => {
+										setIsMenuOpen(false);
+										openAnnouncementModal();
+									}}
+								>
+									公告
+								</Button>
+								<Button
+									fullWidth
+									variant="light"
+									className="h-12 justify-start rounded-small border border-default-200/75 bg-content1/45 px-3 text-sm"
+									onPress={() => {
+										setIsMenuOpen(false);
+										openGitHub();
+									}}
+								>
+									本项目代码仓库
+								</Button>
+							</div>
+						</section>
 					</NavbarMenuItem>
 				</NavbarMenu>
 			</HeroUINavbar>

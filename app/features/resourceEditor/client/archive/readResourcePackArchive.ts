@@ -30,14 +30,14 @@ export async function readResourcePackArchive(
 	try {
 		zip = await JSZip.loadAsync(archiveInput);
 	} catch (error) {
-		throw new ResourcePackArchiveError('无法读取 ZIP 压缩包', {
+		throw new ResourcePackArchiveError('无法读取ZIP压缩包', {
 			cause: error,
 		});
 	}
 
 	const resourcePackEntry = zip.file('ResourceEx.json');
 	if (!resourcePackEntry) {
-		throw new ResourcePackArchiveError('压缩包中未找到 ResourceEx.json');
+		throw new ResourcePackArchiveError('压缩包中未找到ResourceEx.json');
 	}
 
 	let resourcePack: IReadResourcePackArchiveResult['resourcePack'];
@@ -46,7 +46,7 @@ export async function readResourcePackArchive(
 		resourcePack = normalizeResourcePack(JSON.parse(resourcePackText));
 	} catch (error) {
 		throw new ResourcePackArchiveError(
-			`ResourceEx.json 无效: ${error instanceof Error ? error.message : String(error)}`,
+			`ResourceEx.json无效：${error instanceof Error ? error.message : String(error)}`,
 			{ cause: error }
 		);
 	}

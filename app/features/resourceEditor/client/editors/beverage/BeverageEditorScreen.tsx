@@ -5,6 +5,10 @@ import { useCallback, useMemo, useState } from 'react';
 import type { Beverage } from '@/domain/resourcePack/contracts/items';
 
 import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
+import {
+	findNextAvailableInteger,
+	findNextAvailableSuffixedValue,
+} from '@/features/resourceEditor/client/editorValueAllocation';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import { BeverageEditor } from './BeverageEditor';
@@ -15,17 +19,24 @@ export function BeverageEditorScreen() {
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
 	const addBeverage = useCallback(() => {
-		const newId = 11000 + (data.beverages?.length || 0);
+		const beverages = data.beverages ?? [];
+		const newId = findNextAvailableInteger(
+			beverages.map((beverage) => beverage.id),
+			11000
+		);
 		const newBeverage: Beverage = {
 			id: newId,
-			name: `新酒水${(data.beverages?.length || 0) + 1}`,
+			name: findNextAvailableSuffixedValue(
+				beverages.map((beverage) => beverage.name),
+				'新酒水'
+			),
 			description: '',
 			level: 1,
 			baseValue: 1,
 			tags: [],
 			spritePath: `assets/Beverage/${newId}.png`,
 		};
-		const newBeverages = [...(data.beverages || []), newBeverage];
+		const newBeverages = [...beverages, newBeverage];
 		updateResourcePack(() => ({ ...data, beverages: newBeverages }));
 		setSelectedIndex(newBeverages.length - 1);
 	}, [data, updateResourcePack]);

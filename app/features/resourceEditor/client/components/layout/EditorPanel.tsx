@@ -14,8 +14,11 @@ export const EditorPanel = memo<PropsWithChildren<IProps>>(
 			<Card
 				as={as}
 				fullWidth
-				shadow="sm"
-				className={cn('bg-content1/40 p-4 backdrop-blur', className)}
+				shadow="none"
+				className={cn(
+					'border border-divider bg-content1/85 p-4 shadow-sm backdrop-blur-md',
+					className
+				)}
 			>
 				{children}
 			</Card>

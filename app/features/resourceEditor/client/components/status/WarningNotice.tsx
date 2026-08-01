@@ -10,7 +10,7 @@ export function WarningNotice({ children, className }: IProps) {
 	return (
 		<div
 			className={cn(
-				'rounded bg-warning/10 p-2 text-xs text-warning-600 dark:text-warning-400',
+				'rounded-medium border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-foreground-700',
 				className
 			)}
 		>

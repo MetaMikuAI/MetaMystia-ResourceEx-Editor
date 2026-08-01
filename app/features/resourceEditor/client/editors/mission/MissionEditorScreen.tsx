@@ -9,6 +9,7 @@ import type {
 } from '@/domain/resourcePack/contracts/mission';
 
 import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
+import { findNextAvailableSuffixedValue } from '@/features/resourceEditor/client/editorValueAllocation';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import MissionEditor from './MissionEditor';
@@ -36,7 +37,10 @@ export function MissionEditorScreen() {
 		const labelPrefix = packLabel ? `_${packLabel}_` : '_';
 		const newMission: MissionNode = {
 			...DEFAULT_MISSION,
-			label: labelPrefix,
+			label: findNextAvailableSuffixedValue(
+				data.missionNodes.map((mission) => mission.label),
+				`${labelPrefix}Mission_`
+			),
 		};
 		const newMissions = [...data.missionNodes, newMission];
 		updateResourcePack(() => ({ ...data, missionNodes: newMissions }));

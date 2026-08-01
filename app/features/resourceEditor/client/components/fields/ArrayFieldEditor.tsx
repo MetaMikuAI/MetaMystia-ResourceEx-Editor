@@ -2,8 +2,9 @@
 
 import { type ReactNode } from 'react';
 
-import Button from '@/design/ui/components/button';
 import Input from '@/design/ui/components/input';
+
+import { SectionDeleteButton } from '@/features/resourceEditor/client/components/actions/SectionDeleteButton';
 
 interface IProps<T = string> {
 	items: T[];
@@ -31,20 +32,19 @@ export function ArrayFieldEditor<T = string>({
 		index: number,
 		onChange: (value: T) => void
 	) => (
-		<div key={index} className="flex gap-2">
+		<div key={index} className="flex items-center gap-2">
 			<Input
 				value={item as string}
 				onValueChange={(value) => onChange(value as T)}
 				placeholder={placeholder}
 			/>
-			<Button
-				variant="light"
-				size="sm"
-				color="danger"
+			<SectionDeleteButton
+				iconOnly
+				className="h-10 w-10 shrink-0 sm:h-10 sm:w-10"
 				onPress={() => onRemove(index)}
 			>
-				删除
-			</Button>
+				删除作者
+			</SectionDeleteButton>
 		</div>
 	);
 
@@ -58,7 +58,7 @@ export function ArrayFieldEditor<T = string>({
 						)
 			)}
 			{items.length === 0 && (
-				<div className="rounded border border-dashed border-divider p-4 text-center text-xs opacity-40">
+				<div className="rounded-medium border border-dashed border-divider p-4 text-center text-xs text-foreground-500">
 					{emptyMessage}
 				</div>
 			)}

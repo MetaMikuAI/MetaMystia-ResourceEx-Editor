@@ -75,7 +75,7 @@ export function useDialogDisplay(
 					({ pid }) => pid === dialog.pid
 				);
 				if (portrait) {
-					portraitName = portrait.label || `立绘 ${portrait.pid}`;
+					portraitName = portrait.label || `立绘${portrait.pid}`;
 				}
 			}
 		}

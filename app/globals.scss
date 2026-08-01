@@ -43,13 +43,12 @@
 :root {
 	--navbar-height: 4rem;
 	--safe-h-dvh: 100vh;
-	--safe-h-dvh-half: 50vh;
+	scrollbar-gutter: stable;
 }
 
 @supports (height: 100dvh) {
 	:root {
 		--safe-h-dvh: 100dvh;
-		--safe-h-dvh-half: 50dvh;
 	}
 }
 

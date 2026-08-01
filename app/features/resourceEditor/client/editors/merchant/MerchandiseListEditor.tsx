@@ -1,7 +1,6 @@
-import { cn } from '@heroui/theme';
 import { memo, useCallback } from 'react';
 
-import Button from '@/design/ui/components/button';
+import Input from '@/design/ui/components/input';
 
 import type {
 	Beverage,
@@ -15,9 +14,10 @@ import type {
 } from '@/domain/resourcePack/contracts/merchant';
 
 import { SectionAddButton } from '@/features/resourceEditor/client/components/actions/SectionAddButton';
-import { ConfirmPopover } from '@/features/resourceEditor/client/components/confirm/ConfirmPopover';
+import { SectionDeleteButton } from '@/features/resourceEditor/client/components/actions/SectionDeleteButton';
 import { Label } from '@/features/resourceEditor/client/components/fields/Label';
 import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
+import { EditorSection } from '@/features/resourceEditor/client/components/layout/EditorSection';
 
 import { ProductEditor } from './ProductEditor';
 
@@ -89,20 +89,18 @@ export const MerchandiseListEditor = memo<MerchandiseListEditorProps>(
 		);
 
 		return (
-			<div className="flex flex-col gap-4">
-				<div className="flex items-center justify-between">
-					<h3 className="text-sm font-bold uppercase tracking-wider opacity-60">
-						商品列表 ({merchandiseList.length})
-					</h3>
+			<EditorSection
+				title={`商品列表（${merchandiseList.length}）`}
+				actions={
 					<SectionAddButton onPress={handleAdd}>
 						添加商品
 					</SectionAddButton>
-				</div>
-
+				}
+			>
 				{merchandiseList.length === 0 && (
 					<EmptyState
 						title="暂无商品"
-						description='点击"添加商品"按钮创建'
+						description="可使用“添加商品”创建第一项"
 					/>
 				)}
 
@@ -111,28 +109,20 @@ export const MerchandiseListEditor = memo<MerchandiseListEditorProps>(
 						merchandiseList.map((merch, index) => (
 							<div
 								key={index}
-								className={cn(
-									'group relative flex flex-col gap-3 rounded-xl border border-white/10 bg-black/5 p-4 dark:bg-white/5'
-								)}
+								className="flex min-w-0 flex-col gap-3 rounded-large border border-divider bg-content1/50 p-4"
 							>
 								<div className="flex items-center justify-between">
-									<span className="text-sm font-semibold opacity-70">
-										商品 #{index + 1}
+									<span className="text-sm font-semibold text-foreground-700">
+										商品#{index + 1}
 									</span>
-									<ConfirmPopover
+									<SectionDeleteButton
+										iconOnly
 										title="确定要删除这个商品吗？"
-										onConfirm={() => handleRemove(index)}
-										trigger={
-											<Button
-												color="danger"
-												size="sm"
-												radius="full"
-												className="h-7 min-w-0 px-3 text-xs opacity-0 transition-opacity group-hover:opacity-100"
-											>
-												删除
-											</Button>
-										}
-									/>
+										confirmTitle="确定要删除这个商品吗？"
+										onPress={() => handleRemove(index)}
+									>
+										删除商品
+									</SectionDeleteButton>
 								</div>
 
 								{/* Product config */}
@@ -150,11 +140,13 @@ export const MerchandiseListEditor = memo<MerchandiseListEditorProps>(
 								{/* Merchandise fields */}
 								<div className="grid grid-cols-1 gap-3 md:grid-cols-3">
 									<div className="flex flex-col gap-1">
-										<Label size="sm">数量范围 (下界)</Label>
-										<input
+										<Label size="sm">
+											数量范围（下界）
+										</Label>
+										<Input
 											type="number"
 											min={0}
-											value={merch.itemAmountMin}
+											value={String(merch.itemAmountMin)}
 											onChange={(e) =>
 												handleUpdateItem(index, {
 													itemAmountMin:
@@ -163,15 +155,16 @@ export const MerchandiseListEditor = memo<MerchandiseListEditorProps>(
 														) || 0,
 												})
 											}
-											className="rounded-lg border border-white/10 bg-black/10 px-3 py-2 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary/50"
 										/>
 									</div>
 									<div className="flex flex-col gap-1">
-										<Label size="sm">数量范围 (上界)</Label>
-										<input
+										<Label size="sm">
+											数量范围（上界）
+										</Label>
+										<Input
 											type="number"
 											min={0}
-											value={merch.itemAmountMax}
+											value={String(merch.itemAmountMax)}
 											onChange={(e) =>
 												handleUpdateItem(index, {
 													itemAmountMax:
@@ -180,17 +173,20 @@ export const MerchandiseListEditor = memo<MerchandiseListEditorProps>(
 														) || 0,
 												})
 											}
-											className="rounded-lg border border-white/10 bg-black/10 px-3 py-2 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary/50"
 										/>
 									</div>
 									<div className="flex flex-col gap-1">
-										<Label size="sm">出售概率 (0~1)</Label>
-										<input
+										<Label size="sm">
+											出售概率（0～1）
+										</Label>
+										<Input
 											type="number"
 											min={0}
 											max={1}
 											step={0.01}
-											value={merch.sellProbability}
+											value={String(
+												merch.sellProbability
+											)}
 											onChange={(e) =>
 												handleUpdateItem(index, {
 													sellProbability:
@@ -199,7 +195,6 @@ export const MerchandiseListEditor = memo<MerchandiseListEditorProps>(
 														) || 0,
 												})
 											}
-											className="rounded-lg border border-white/10 bg-black/10 px-3 py-2 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary/50"
 										/>
 									</div>
 								</div>
@@ -209,14 +204,11 @@ export const MerchandiseListEditor = memo<MerchandiseListEditorProps>(
 
 				{/* Bottom add button */}
 				{merchandiseList.length > 0 && (
-					<button
-						onClick={handleAdd}
-						className="flex w-full items-center justify-center gap-1 rounded-lg border border-dashed border-black/10 py-3 text-sm opacity-60 transition-all hover:border-primary/50 hover:opacity-100 dark:border-white/10"
-					>
-						+ 追加商品
-					</button>
+					<SectionAddButton onPress={handleAdd} className="w-full">
+						追加商品
+					</SectionAddButton>
 				)}
-			</div>
+			</EditorSection>
 		);
 	}
 );

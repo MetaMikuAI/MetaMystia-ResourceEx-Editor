@@ -73,7 +73,7 @@ export function Select<V extends TSelectValue = TSelectValue>({
 	items,
 	menuMaxHeight = 240,
 	onChange,
-	placeholder = '请选择...',
+	placeholder = '请选择…',
 	size = 'md',
 	value,
 }: ISelectProps<V>) {
@@ -121,7 +121,7 @@ export function Select<V extends TSelectValue = TSelectValue>({
 		classNameOverride ??
 		cn(
 			'w-full min-w-0 bg-default/40 backdrop-blur',
-			size === 'sm' ? 'h-8 min-h-8' : 'h-9 min-h-9',
+			size === 'sm' ? 'h-10 min-h-10 sm:h-8 sm:min-h-8' : 'h-10 min-h-10',
 			className
 		);
 
@@ -134,6 +134,8 @@ export function Select<V extends TSelectValue = TSelectValue>({
 			disabledKeys={disabledKeys}
 			selectionMode="single"
 			size={size}
+			radius="md"
+			isVirtualized={false}
 			{...(isDisabled === undefined ? {} : { isDisabled })}
 			{...(isInvalid === undefined ? {} : { isInvalid })}
 			maxListboxHeight={menuMaxHeight}

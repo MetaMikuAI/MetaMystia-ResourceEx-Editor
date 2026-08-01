@@ -5,6 +5,7 @@ import { useCallback, useState } from 'react';
 import type { EventNode } from '@/domain/resourcePack/contracts/event';
 
 import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
+import { findNextAvailableSuffixedValue } from '@/features/resourceEditor/client/editorValueAllocation';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import EventEditor from './EventEditor';
@@ -23,8 +24,15 @@ export function EventEditorScreen() {
 	const addEvent = useCallback(() => {
 		const packLabel = data.packInfo.label;
 		const labelPrefix = packLabel ? `_${packLabel}_` : '_';
-		const newEvent: EventNode = { ...DEFAULT_EVENT, label: labelPrefix };
-		const newEvents = [...(data.eventNodes || []), newEvent];
+		const eventNodes = data.eventNodes ?? [];
+		const newEvent: EventNode = {
+			...DEFAULT_EVENT,
+			label: findNextAvailableSuffixedValue(
+				eventNodes.map((eventNode) => eventNode.label),
+				`${labelPrefix}Event_`
+			),
+		};
+		const newEvents = [...eventNodes, newEvent];
 		updateResourcePack(() => ({ ...data, eventNodes: newEvents }));
 		setSelectedIndex(newEvents.length - 1);
 	}, [data, updateResourcePack]);

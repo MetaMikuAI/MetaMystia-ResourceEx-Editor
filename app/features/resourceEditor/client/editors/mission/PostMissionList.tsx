@@ -1,11 +1,10 @@
 import { memo, useCallback } from 'react';
 
-import Button from '@/design/ui/components/button';
-
 import type { MissionNode } from '@/domain/resourcePack/contracts/mission';
 
 import { SectionAddButton } from '@/features/resourceEditor/client/components/actions/SectionAddButton';
-import { EditorField } from '@/features/resourceEditor/client/components/fields/EditorField';
+import { SectionDeleteButton } from '@/features/resourceEditor/client/components/actions/SectionDeleteButton';
+import { EditorSection } from '@/features/resourceEditor/client/components/layout/EditorSection';
 import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
 import { Select } from '@/features/resourceEditor/client/components/select/Select';
 
@@ -43,11 +42,10 @@ export const PostMissionList = memo<PostMissionListProps>(
 		);
 
 		return (
-			<EditorField
-				className="gap-4"
-				label={`后继任务(postMissionsAfterPerformance) (${
+			<EditorSection
+				title={`后继任务（postMissionsAfterPerformance）（${
 					postMissions?.length || 0
-				})`}
+				}）`}
 				actions={
 					<SectionAddButton onPress={addPostMission}>
 						添加后继任务
@@ -58,35 +56,32 @@ export const PostMissionList = memo<PostMissionListProps>(
 					{(postMissions || []).map((pm, index) => (
 						<div
 							key={index}
-							className="flex flex-col gap-3 rounded-lg border border-black/5 bg-black/5 p-4 dark:border-white/5 dark:bg-white/5"
+							className="flex min-w-0 flex-col gap-3 rounded-large border border-divider bg-content1/40 p-3 sm:p-4"
 						>
 							<div className="flex flex-col gap-1">
-								<label className="text-xs font-medium opacity-70">
-									任务 Label
-								</label>
-								<div className="flex items-center justify-between gap-4">
+								<p className="text-xs font-medium text-foreground-600">
+									任务标签（Label）
+								</p>
+								<div className="flex min-w-0 items-center gap-3">
 									<Select<string>
 										baseClassName="flex-1"
-										ariaLabel="任务 Label"
-										placeholder="请选择任务..."
+										ariaLabel="任务标签（Label）"
+										placeholder="请选择任务…"
 										value={pm}
 										onChange={(v) =>
 											updatePostMission(index, v)
 										}
-										items={allMissions.map((m, i) => ({
+										items={allMissions.map((m) => ({
 											value: m.label,
-											label: `${m.title || m.label} (${m.label})`,
-											textValue: `${m.label}-${i}`,
+											label: `${m.title || m.label}（${m.label}）`,
 										}))}
 									/>
-									<Button
-										variant="light"
-										size="sm"
+									<SectionDeleteButton
+										iconOnly
+										className="shrink-0 sm:h-10 sm:w-10"
+										aria-label={`删除后继任务${index + 1}`}
 										onPress={() => removePostMission(index)}
-										className="text-xs text-danger hover:bg-danger/10"
-									>
-										删除
-									</Button>
+									/>
 								</div>
 							</div>
 						</div>
@@ -95,7 +90,7 @@ export const PostMissionList = memo<PostMissionListProps>(
 						<EmptyState variant="text" title="暂无后继任务配置" />
 					)}
 				</div>
-			</EditorField>
+			</EditorSection>
 		);
 	}
 );

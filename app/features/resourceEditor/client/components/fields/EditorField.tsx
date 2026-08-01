@@ -19,11 +19,11 @@ export function EditorField({
 	return (
 		<div className={cn('flex flex-col gap-2', className)}>
 			{(label || actions) && (
-				<div className="flex items-center justify-between gap-2">
+				<div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
 					{label && (
 						<label
 							className={cn(
-								'font-medium text-foreground',
+								'min-w-0 text-sm font-medium leading-5 text-foreground-700',
 								labelClassName
 							)}
 						>

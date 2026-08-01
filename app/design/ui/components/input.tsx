@@ -13,6 +13,8 @@ interface IProps extends InputProps {}
 export default memo<IProps>(function Input({
 	classNames,
 	disableAnimation,
+	radius,
+	size,
 	...props
 }) {
 	const isReducedMotion = useReducedMotion();
@@ -21,10 +23,13 @@ export default memo<IProps>(function Input({
 	return (
 		<HeroUIInput
 			disableAnimation={disableAnimation ?? isReducedMotion}
+			radius={radius ?? 'md'}
+			size={size}
 			classNames={{
 				...classNames,
 				inputWrapper: cn(
 					'bg-default/40 transition-background data-[hover=true]:bg-default-200 group-data-[focus=true]:bg-default group-data-[focus=true]:group-data-[invalid=true]:!bg-danger/40 group-data-[invalid=true]:!bg-danger/20 data-[hover=true]:group-data-[invalid=true]:!bg-danger/30 motion-reduce:transition-none',
+					size === 'sm' && 'h-10 min-h-10 sm:h-8 sm:min-h-8',
 					isHighAppearance &&
 						'bg-default/40 backdrop-blur data-[hover=true]:bg-default-400/40 group-data-[focus=true]:bg-default/70',
 					classNames?.inputWrapper

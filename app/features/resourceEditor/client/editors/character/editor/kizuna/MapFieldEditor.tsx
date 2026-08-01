@@ -2,6 +2,7 @@ import { memo, useMemo } from 'react';
 
 import { DAY_SCENE_MAP } from '@/domain/data/daySceneMap';
 
+import { Label } from '@/features/resourceEditor/client/components/fields/Label';
 import {
 	Select,
 	type SelectItem as SelectItemSpec,
@@ -20,19 +21,20 @@ export const MapFieldEditor = memo<MapFieldEditorProps>(
 				{ value: '', label: '无委托采集' }, // 空选项
 				...DAY_SCENE_MAP.map((map) => ({
 					value: map.label,
-					label: `${map.label} (${map.name})`,
+					label: `${map.label}（${map.name}）`,
 				})),
 			];
 		}, []);
 
 		return (
-			<div className="flex flex-col gap-2">
-				<label className="text-sm font-bold opacity-70">{label}</label>
+			<div className="flex min-w-0 flex-col gap-2">
+				<Label>{label}</Label>
 				<Select<string>
 					value={value}
 					onChange={onChange}
 					placeholder="无委托采集"
 					items={mapItems}
+					size="sm"
 				/>
 			</div>
 		);

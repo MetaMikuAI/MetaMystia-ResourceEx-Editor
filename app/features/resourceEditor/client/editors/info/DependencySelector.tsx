@@ -2,6 +2,8 @@
 
 import { cn } from '@heroui/theme';
 
+import Button from '@/design/ui/components/button';
+
 import { KNOWN_DEPENDENCIES } from '@/domain/resourcePack/constants';
 
 interface DependencySelectorProps {
@@ -26,19 +28,22 @@ export function DependencySelector({
 			{KNOWN_DEPENDENCIES.map((dep) => {
 				const selected = value.includes(dep);
 				return (
-					<button
+					<Button
 						key={dep}
-						type="button"
-						onClick={() => toggle(dep)}
+						aria-pressed={selected}
+						variant={selected ? 'flat' : 'bordered'}
+						color={selected ? 'primary' : 'default'}
+						size="sm"
+						onPress={() => toggle(dep)}
 						className={cn(
-							'rounded-md border px-3 py-1.5 text-sm font-medium transition-colors',
+							'h-10 rounded-medium border px-3 text-sm font-medium sm:h-8',
 							selected
-								? 'border-primary bg-primary/15 text-primary'
-								: 'border-black/10 bg-transparent text-foreground/60 hover:border-black/20 hover:bg-white/5 dark:border-white/10 dark:hover:border-white/20'
+								? 'border-primary bg-primary/20 text-primary-700 dark:text-primary'
+								: 'border-divider bg-content1/40 text-foreground-700'
 						)}
 					>
 						{dep}
-					</button>
+					</Button>
 				);
 			})}
 		</div>

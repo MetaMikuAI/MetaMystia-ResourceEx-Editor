@@ -1,6 +1,7 @@
 import { memo, useCallback, useMemo, useState } from 'react';
 
 import Button from '@/design/ui/components/button';
+import Input from '@/design/ui/components/input';
 
 import { BEVERAGE_NAMES } from '@/domain/data/beverages';
 import type {
@@ -10,8 +11,12 @@ import type {
 } from '@/domain/resourcePack/contracts/mission';
 
 import { SectionAddButton } from '@/features/resourceEditor/client/components/actions/SectionAddButton';
-import { EditorField } from '@/features/resourceEditor/client/components/fields/EditorField';
+import { SectionDeleteButton } from '@/features/resourceEditor/client/components/actions/SectionDeleteButton';
+import { TrashIcon } from '@/features/resourceEditor/client/components/actions/TrashIcon';
+import { Label } from '@/features/resourceEditor/client/components/fields/Label';
 import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
+import { EditorSection } from '@/features/resourceEditor/client/components/layout/EditorSection';
+import { PRODUCT_TYPE_LABELS } from '@/features/resourceEditor/client/components/select/productTypeOptions';
 import {
 	type ISelectOption,
 	Select,
@@ -65,32 +70,34 @@ function AddRewardItemRow({
 	}, [objectType, allFoods, allIngredients, allRecipes]);
 
 	return (
-		<div className="mt-2 flex items-center gap-2">
+		<div className="mt-2 flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
 			<Select<number>
 				ariaLabel="选择物品"
-				baseClassName="flex-1"
-				placeholder="选择物品..."
+				baseClassName="min-w-0 flex-1"
+				placeholder="选择物品…"
 				value={selectedId}
 				onChange={(v) => setSelectedId(v)}
 				items={items}
 			/>
-			<input
+			<Input
 				type="number"
-				value={count}
+				value={String(count)}
 				onChange={(e) => setCount(parseInt(e.target.value) || 1)}
-				className="w-16 rounded border border-black/10 bg-white/50 px-2 py-1 text-sm focus:border-primary focus:outline-none dark:border-white/10 dark:bg-black/50"
+				className="w-full sm:w-24"
+				aria-label="物品数量"
 				placeholder="数量"
 				min={1}
 			/>
 			<Button
-				variant="light"
+				variant="flat"
+				color="primary"
 				size="sm"
 				onPress={() => {
 					if (selectedId === undefined) return;
 					onAdd(selectedId, count);
 					setCount(1);
 				}}
-				className="h-full px-3 text-sm"
+				className="h-10 shrink-0 rounded-medium px-3 text-sm"
 			>
 				添加
 			</Button>
@@ -190,8 +197,8 @@ const REWARD_TYPES: { type: RewardType; label: string }[] = [
 	{ type: 'FinishFakeMission', label: '【未实现】完成伪造任务' },
 	{ type: 'ForceCompleteMission', label: '【未实现】强制完成计划中的任务' },
 	{ type: 'RefreshRandomSpawnNpc', label: '【未实现】刷新随机生成的NPC' },
-	{ type: 'AddLockedRecipe', label: '【未实现】添加固定菜谱' },
-	{ type: 'ClearLockedRecipe', label: '【未实现】移除固定菜谱' },
+	{ type: 'AddLockedRecipe', label: '【未实现】添加固定食谱' },
+	{ type: 'ClearLockedRecipe', label: '【未实现】移除固定食谱' },
 	{ type: 'AddEffectiveSGuestMapping', label: '【未实现】添加稀客映射' },
 	{ type: 'RemoveEffectiveSGuestMapping', label: '【未实现】移除稀客映射' },
 	{ type: 'FinishEvent', label: '【未实现】完成目标事件' },
@@ -233,7 +240,7 @@ interface MissionRewardListProps {
 
 export const MissionRewardList = memo<MissionRewardListProps>(
 	function MissionRewardList({
-		title = 'Rewards',
+		title = '奖励（Rewards）',
 		rewards,
 		characterOptions,
 		allFoods,
@@ -273,9 +280,8 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 		);
 
 		return (
-			<EditorField
-				className="gap-4"
-				label={`${title} (${rewards?.length || 0})`}
+			<EditorSection
+				title={`${title}（${rewards?.length || 0}）`}
 				actions={
 					<SectionAddButton onPress={addReward}>
 						添加奖励
@@ -286,39 +292,37 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 					{(rewards || []).map((reward, index) => (
 						<div
 							key={index}
-							className="flex flex-col gap-3 rounded-lg border border-black/5 bg-black/5 p-4 dark:border-white/5 dark:bg-white/5"
+							className="flex min-w-0 flex-col gap-3 rounded-large border border-divider bg-content1/50 p-4"
 						>
-							<div className="flex items-center justify-between gap-4">
+							<div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
 								<Select<RewardType>
-									ariaLabel="Reward Type"
-									baseClassName="flex-1"
+									ariaLabel="奖励类型"
+									baseClassName="min-w-0 flex-1"
 									value={reward.rewardType}
 									onChange={(v) =>
 										updateReward(index, { rewardType: v })
 									}
 									items={REWARD_TYPES.map((t) => ({
 										value: t.type,
-										label: `${t.label} (${t.type})`,
+										label: `${t.label}（${t.type}）`,
 									}))}
 								/>
-								<Button
-									variant="light"
-									size="sm"
+								<SectionDeleteButton
+									className="h-10 shrink-0 text-sm sm:h-10 sm:text-sm"
 									onPress={() => removeReward(index)}
-									className="text-xs text-danger hover:bg-danger/10"
 								>
-									删除
-								</Button>
+									删除奖励
+								</SectionDeleteButton>
 							</div>
 
 							{reward.rewardType === 'GiveItem' && (
-								<div className="flex flex-col gap-3 rounded bg-black/5 p-2 dark:bg-white/5">
+								<div className="flex flex-col gap-3 rounded-large border border-divider bg-content2/30 p-3">
 									<div className="flex flex-col gap-1">
-										<label className="text-xs font-medium opacity-70">
-											物品类型 (Object Type)
-										</label>
+										<Label size="sm">
+											物品类型（Object Type）
+										</Label>
 										<Select<ObjectType>
-											ariaLabel="Object Type"
+											ariaLabel="物品类型"
 											value={reward.objectType || 'Food'}
 											onChange={(v) =>
 												updateReward(index, {
@@ -340,7 +344,9 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 												] as ObjectType[]
 											).map((type) => ({
 												value: type,
-												label: type,
+												label: PRODUCT_TYPE_LABELS[
+													type
+												],
 											}))}
 										/>
 										{![
@@ -351,21 +357,20 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 										].includes(
 											reward.objectType || 'Food'
 										) && (
-											<div className="text-xs text-yellow-600 dark:text-yellow-400">
-												⚠{' '}
-												此类型尚未完全支持，可能会出现不可预期的行为
-											</div>
+											<WarningNotice>
+												此类型尚未完全支持，可能会出现不可预期的行为。
+											</WarningNotice>
 										)}
 									</div>
 
 									<div className="flex flex-col gap-1">
-										<label className="text-xs font-medium opacity-70">
-											物品列表 (Item List)
-										</label>
+										<Label size="sm">
+											物品列表（Item List）
+										</Label>
 										<div className="flex flex-wrap gap-2 text-xs">
 											{(reward.rewardIntArray || []).map(
 												(itemId, i) => {
-													let name = `ID: ${itemId}`;
+													let name = `ID：${itemId}`;
 													const type =
 														reward.objectType ||
 														'Food';
@@ -404,18 +409,26 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 																	itemId
 															);
 														if (r) {
-															name = `菜谱: ${r.name}`;
+															name = `食谱：${r.name}`;
 														}
 													}
 
 													return (
 														<span
 															key={i}
-															className="flex items-center gap-1 rounded bg-primary/10 px-2 py-1 text-primary"
+															className="flex min-w-0 items-center gap-1 rounded-small bg-primary/15 py-1 pl-2 pr-1 text-primary-700 dark:text-primary"
 														>
-															{name}
-															<button
-																onClick={() => {
+															<span className="truncate">
+																{name}
+															</span>
+															<Button
+																isIconOnly
+																size="sm"
+																variant="light"
+																color="danger"
+																aria-label={`移除${name}`}
+																className="h-6 w-6 min-w-6"
+																onPress={() => {
 																	const newArray =
 																		[
 																			...(reward.rewardIntArray ||
@@ -433,10 +446,9 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 																		}
 																	);
 																}}
-																className="ml-1 text-xs opacity-50 hover:opacity-100"
 															>
-																×
-															</button>
+																<TrashIcon className="h-3 w-3" />
+															</Button>
 														</span>
 													);
 												}
@@ -465,12 +477,12 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 
 							{reward.rewardType === 'UpgradeKizunaLevel' && (
 								<div className="flex flex-col gap-1">
-									<label className="text-xs font-medium opacity-70">
-										目标角色 (Reward ID)
-									</label>
+									<Label size="sm">
+										目标角色（Reward ID）
+									</Label>
 									<Select<string>
 										ariaLabel="目标角色"
-										placeholder="请选择角色..."
+										placeholder="请选择角色…"
 										value={reward.rewardId ?? ''}
 										onChange={(v) =>
 											updateReward(index, { rewardId: v })
@@ -486,17 +498,19 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 							{reward.rewardType !== 'UpgradeKizunaLevel' &&
 								reward.rewardType !== 'GiveItem' && (
 									<WarningNotice>
-										⚠
-										当前编辑器尚未支持配置此奖励类型的详细参数
+										当前编辑器尚未支持配置此奖励类型的详细参数。
 									</WarningNotice>
 								)}
 						</div>
 					))}
 					{(!rewards || rewards.length === 0) && (
-						<EmptyState variant="text" title="暂无奖励配置" />
+						<EmptyState
+							title="暂无奖励配置"
+							description="可使用“添加奖励”创建第一项。"
+						/>
 					)}
 				</div>
-			</EditorField>
+			</EditorSection>
 		);
 	}
 );

@@ -1,6 +1,8 @@
 import { cn } from '@heroui/theme';
 import { useState } from 'react';
 
+import Button from '@/design/ui/components/button';
+import Input from '@/design/ui/components/input';
 import Switch from '@/design/ui/components/switch';
 
 import type { CharacterSpriteSet } from '@/domain/resourcePack/contracts/character';
@@ -10,6 +12,7 @@ import { InfoTip } from '@/features/resourceEditor/client/components/fields/Info
 import { Label } from '@/features/resourceEditor/client/components/fields/Label';
 import { ChevronRight } from '@/features/resourceEditor/client/components/icons/ChevronRight';
 import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
+import { EditorSection } from '@/features/resourceEditor/client/components/layout/EditorSection';
 import { WarningBadge } from '@/features/resourceEditor/client/components/status/WarningBadge';
 import { WarningNotice } from '@/features/resourceEditor/client/components/status/WarningNotice';
 import { useLabelPrefixValidation } from '@/features/resourceEditor/client/hooks/useLabelPrefixValidation';
@@ -68,12 +71,12 @@ export function SpriteSetEditor({
 		try {
 			dimensions = await readImageDimensions(file);
 		} catch {
-			setUploadError('无法读取 Sprite Set 贴图尺寸。');
+			setUploadError('无法读取角色小人贴图尺寸。');
 			return;
 		}
 		if (dimensions.width !== 64 || dimensions.height !== 64) {
 			setUploadError(
-				`错误: Sprite Set 贴图尺寸必须为 64x64，当前为 ${dimensions.width}x${dimensions.height}`
+				`错误：角色小人贴图尺寸必须为64×64，当前为${dimensions.width}×${dimensions.height}。`
 			);
 			return;
 		}
@@ -96,31 +99,35 @@ export function SpriteSetEditor({
 	};
 
 	return (
-		<div className="flex flex-col gap-4">
-			<div className="ml-1 flex items-center justify-between">
-				<div
-					className="flex cursor-pointer select-none items-center gap-2"
-					onClick={() => setIsExpanded(!isExpanded)}
-				>
-					<ChevronRight
-						className={cn(
-							'transition-transform duration-200',
-							isExpanded && 'rotate-90'
-						)}
-					/>
-					<label className="cursor-pointer font-semibold">
+		<EditorSection
+			title={
+				<div className="flex min-w-0 items-center gap-1">
+					<Button
+						variant="light"
+						size="sm"
+						aria-expanded={isExpanded}
+						className="-ml-2 h-10 px-2 text-base font-semibold text-foreground-700 sm:h-8"
+						startContent={
+							<ChevronRight
+								className={cn(
+									'h-4 w-4 transition-transform duration-200 motion-reduce:transition-none',
+									isExpanded && 'rotate-90'
+								)}
+							/>
+						}
+						onPress={() => setIsExpanded((value) => !value)}
+					>
 						角色小人配置（Sprite Set）
-						<InfoTip>
-							配置角色的小人贴图，包括主身体和眼睛的贴图。贴图大小为
-							64x64。主身体为 12 张，一共 4 个方向，每个方向 3
-							张。如需尝试创作，可以在群文件中找到游戏原始资源，或使用
-							MetaMystia 提供的资源包
-						</InfoTip>
-					</label>
+					</Button>
+					<InfoTip>
+						配置角色的小人贴图，包括主身体和眼睛的贴图。贴图大小为64×64。主身体为12张，一共4个方向，每个方向3张。如需尝试创作，可以在群文件中找到游戏原始资源，或使用MetaMystia提供的资源包。
+					</InfoTip>
 				</div>
+			}
+			actions={
 				<div className="flex items-center gap-2">
-					<span className="whitespace-nowrap text-xs font-medium">
-						{spriteSet ? '已启用小人配置' : '启用小人配置'}
+					<span className="whitespace-nowrap text-xs font-medium text-foreground-600">
+						{spriteSet ? '已启用角色小人配置' : '启用角色小人配置'}
 					</span>
 					{spriteSet ? (
 						<ConfirmPopover
@@ -145,6 +152,7 @@ export function SpriteSetEditor({
 						/>
 					) : (
 						<Switch
+							aria-label="启用角色小人配置"
 							size="sm"
 							isSelected={false}
 							onValueChange={(isSelected) => {
@@ -153,56 +161,53 @@ export function SpriteSetEditor({
 						/>
 					)}
 				</div>
-			</div>
+			}
+		>
 			{uploadError !== null && (
 				<WarningNotice>{uploadError}</WarningNotice>
 			)}
 
 			{isExpanded && spriteSet && (
-				<div className="animate-in fade-in slide-in-from-top-2 flex flex-col gap-6 rounded-2xl border border-white/5 bg-black/5 p-6 duration-200">
+				<div className="flex min-w-0 flex-col gap-6">
 					<div className="flex flex-col gap-2">
-						<div className="ml-1 flex items-center justify-between">
-							<Label
-								className="text-sm font-bold opacity-70"
-								tip="角色小人名称，建议以 _{资源包label}_ 开头，如：_MyPack_Daiyousei"
-							>
-								角色小人名称 (Name)
+						<div className="flex flex-wrap items-center justify-between gap-2">
+							<Label tip="角色小人名称，建议以_{资源包标识符}_开头，如：_MyPack_Daiyousei。">
+								角色小人名称（Name）
 							</Label>
 							<div className="flex items-center gap-2">
 								{showPrefixWarning && (
 									<WarningBadge>
-										建议以 {expectedPrefix} 开头
+										建议以{expectedPrefix}开头
 									</WarningBadge>
 								)}
-								<button
-									onClick={onGenerateDefaults}
-									className="rounded border border-white/10 bg-white/10 px-2 py-0.5 text-[10px] transition-all hover:bg-white/20 active:scale-95"
+								<Button
+									size="sm"
+									variant="bordered"
+									className="h-10 sm:h-8"
+									onPress={onGenerateDefaults}
 								>
 									刷新默认填充
-								</button>
+								</Button>
 							</div>
 						</div>
-						<input
+						<Input
 							type="text"
 							value={spriteSet.name}
 							onChange={(e) => onUpdate({ name: e.target.value })}
-							placeholder="默认为角色 Label"
-							className="rounded-xl border border-white/10 bg-black/10 p-3 transition-all focus:outline-none focus:ring-2 focus:ring-primary/50"
+							placeholder="默认为角色标签（Label）"
 						/>
 					</div>
 
 					<div className="flex flex-col gap-4">
-						<label className="ml-1 text-sm font-bold opacity-70">
-							主身体贴图 (Main Sprites - 12张)
-						</label>
-						<div className="grid grid-cols-3 gap-3">
+						<Label>主身体贴图（Main Sprites，12张）</Label>
+						<div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
 							{spriteSet.mainSprite.map((path, i) => (
 								<div
 									key={i}
-									className="group relative flex flex-col gap-2 rounded-lg border border-white/5 bg-black/10 p-2 transition-colors hover:bg-black/20"
+									className="group relative flex min-w-0 flex-col gap-2 rounded-large border border-divider bg-content1/50 p-2 transition-colors hover:bg-content1 motion-reduce:transition-none"
 								>
 									<label
-										className="bg-checkerboard relative aspect-square cursor-pointer overflow-hidden rounded border border-white/10 hover:border-primary/50"
+										className="bg-checkerboard relative aspect-square cursor-pointer overflow-hidden rounded-medium border border-divider hover:border-primary/50"
 										onDragOver={(e) => e.preventDefault()}
 										onDrop={(e) => {
 											e.preventDefault();
@@ -220,24 +225,24 @@ export function SpriteSetEditor({
 											}
 										}}
 									>
-										<span className="absolute left-1 top-1 z-10 rounded bg-black/50 px-1 text-[10px] text-white">
+										<span className="absolute left-1 top-1 z-10 rounded bg-background/80 px-1 text-xs text-foreground">
 											{i}
 										</span>
 										{getAssetUrl(path) ? (
 											<img
 												src={getAssetUrl(path)}
 												className="image-rendering-pixelated h-full w-full object-contain"
-												alt=""
+												alt={`第${i + 1}张主身体贴图`}
 											/>
 										) : (
-											<div className="flex h-full w-full flex-col items-center justify-center text-black/30">
-												<span className="text-xs">
+											<div className="flex h-full w-full flex-col items-center justify-center text-foreground-500">
+												<span className="text-xs font-medium">
 													上传
 												</span>
 											</div>
 										)}
-										<div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-											<span className="text-xs font-bold text-white">
+										<div className="absolute inset-0 flex items-center justify-center bg-background/75 opacity-0 transition-opacity group-hover:opacity-100 motion-reduce:transition-none">
+											<span className="text-xs font-semibold text-foreground">
 												更换
 											</span>
 										</div>
@@ -257,7 +262,7 @@ export function SpriteSetEditor({
 											}}
 										/>
 									</label>
-									<p className="truncate text-center text-[10px] text-black">
+									<p className="truncate text-center text-xs text-foreground-500">
 										{path.split('/').pop()}
 									</p>
 								</div>
@@ -266,17 +271,15 @@ export function SpriteSetEditor({
 					</div>
 
 					<div className="flex flex-col gap-4">
-						<label className="ml-1 text-sm font-bold opacity-70">
-							眼睛贴图 (Eye Sprites - 24张)
-						</label>
-						<div className="grid grid-cols-4 gap-3">
+						<Label>眼睛贴图（Eye Sprites，24张）</Label>
+						<div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
 							{spriteSet.eyeSprite.map((path, i) => (
 								<div
 									key={i}
-									className="group relative flex flex-col gap-2 rounded-lg border border-white/5 bg-black/10 p-2 transition-colors hover:bg-black/20"
+									className="group relative flex min-w-0 flex-col gap-2 rounded-large border border-divider bg-content1/50 p-2 transition-colors hover:bg-content1 motion-reduce:transition-none"
 								>
 									<label
-										className="bg-checkerboard relative aspect-square cursor-pointer overflow-hidden rounded border border-white/10 hover:border-primary/50"
+										className="bg-checkerboard relative aspect-square cursor-pointer overflow-hidden rounded-medium border border-divider hover:border-primary/50"
 										onDragOver={(e) => e.preventDefault()}
 										onDrop={(e) => {
 											e.preventDefault();
@@ -294,24 +297,24 @@ export function SpriteSetEditor({
 											}
 										}}
 									>
-										<span className="absolute left-1 top-1 z-10 rounded bg-black/50 px-1 text-[10px] text-white">
+										<span className="absolute left-1 top-1 z-10 rounded bg-background/80 px-1 text-xs text-foreground">
 											{i}
 										</span>
 										{getAssetUrl(path) ? (
 											<img
 												src={getAssetUrl(path)}
 												className="image-rendering-pixelated h-full w-full object-contain"
-												alt=""
+												alt={`第${i + 1}张眼睛贴图`}
 											/>
 										) : (
-											<div className="flex h-full w-full flex-col items-center justify-center text-black/30">
-												<span className="text-xs">
+											<div className="flex h-full w-full flex-col items-center justify-center text-foreground-500">
+												<span className="text-xs font-medium">
 													上传
 												</span>
 											</div>
 										)}
-										<div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-											<span className="text-xs font-bold text-white">
+										<div className="absolute inset-0 flex items-center justify-center bg-background/75 opacity-0 transition-opacity group-hover:opacity-100 motion-reduce:transition-none">
+											<span className="text-xs font-semibold text-foreground">
 												更换
 											</span>
 										</div>
@@ -331,7 +334,7 @@ export function SpriteSetEditor({
 											}}
 										/>
 									</label>
-									<p className="truncate text-center text-[10px] text-black">
+									<p className="truncate text-center text-xs text-foreground-500">
 										{path.split('/').pop()}
 									</p>
 								</div>
@@ -343,9 +346,9 @@ export function SpriteSetEditor({
 			{isExpanded && !spriteSet && (
 				<EmptyState
 					title="暂未启用角色小人配置"
-					description="点击右侧开关启用"
+					description="可使用右侧开关启用角色小人配置。"
 				/>
 			)}
-		</div>
+		</EditorSection>
 	);
 }

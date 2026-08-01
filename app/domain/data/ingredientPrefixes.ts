@@ -45,5 +45,5 @@ const PREFIX_LABEL_MAP = new Map(
 );
 
 export function getIngredientPrefixLabel(id: number): string {
-	return PREFIX_LABEL_MAP.get(id) ?? `未知(${id})`;
+	return PREFIX_LABEL_MAP.get(id) ?? `未知（${id}）`;
 }

@@ -79,7 +79,7 @@ async function importPrivateKey(pem: string): Promise<CryptoKey> {
 	}
 
 	throw new Error(
-		'请使用 PKCS#8 格式的私钥。如果你的私钥是 "BEGIN RSA PRIVATE KEY" 格式，请使用以下命令转换：\n' +
+		'请使用PKCS#8格式的私钥。如果你的私钥是"BEGIN RSA PRIVATE KEY"格式，请使用以下命令转换：\n' +
 			'openssl pkcs8 -topk8 -nocrypt -in rsa_private.pem -out private_key.pem'
 	);
 }
@@ -113,7 +113,7 @@ export async function signIdRange(
 	} catch (error) {
 		console.error('[signIdRange] 签名失败:', error);
 		throw new Error(
-			`签名失败: ${error instanceof Error ? error.message : String(error)}`
+			`签名失败：${error instanceof Error ? error.message : String(error)}`
 		);
 	}
 }

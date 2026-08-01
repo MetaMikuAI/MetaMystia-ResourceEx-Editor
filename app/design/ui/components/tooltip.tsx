@@ -52,7 +52,11 @@ export default memo<IProps>(function Tooltip({
 			showArrow={isHighAppearance ? false : Boolean(showArrow)}
 			classNames={{
 				...classNames,
-				content: cn(styleBlur, classNames?.content),
+				content: cn(
+					'max-w-xs whitespace-pre-line break-all',
+					styleBlur,
+					classNames?.content
+				),
 			}}
 			{...props}
 		/>

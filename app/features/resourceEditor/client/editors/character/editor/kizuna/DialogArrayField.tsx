@@ -2,6 +2,7 @@ import { memo, useMemo } from 'react';
 
 import type { DialogPackage } from '@/domain/resourcePack/contracts/dialogue';
 
+import { Label } from '@/features/resourceEditor/client/components/fields/Label';
 import {
 	Select,
 	type SelectItem as SelectItemSpec,
@@ -36,12 +37,11 @@ export const DialogArrayField = memo<DialogArrayFieldProps>(
 		);
 
 		return (
-			<div className="flex flex-col gap-2">
-				<label className="text-sm font-bold opacity-70">{label}</label>
+			<div className="flex min-w-0 flex-col gap-2">
+				<Label>{label}</Label>
 				<div className="flex flex-col gap-2">
-					{/* Dialog List */}
 					{dialogs.length > 0 && (
-						<div className="flex flex-col gap-1">
+						<div className="flex min-w-0 flex-col gap-1">
 							{dialogs.map((dialog, idx) => (
 								<DialogItem
 									key={idx}
@@ -51,15 +51,15 @@ export const DialogArrayField = memo<DialogArrayFieldProps>(
 							))}
 						</div>
 					)}
-					{/* Add Dialog Dropdown */}
 					<Select<string>
 						ariaLabel="添加对话包"
-						placeholder="添加对话包..."
+						placeholder="添加对话包…"
 						value={undefined}
 						onChange={(v) => {
 							if (v) onAdd(v);
 						}}
 						items={items}
+						size="sm"
 					/>
 				</div>
 			</div>

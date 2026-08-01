@@ -1,11 +1,10 @@
 import { memo, useCallback, useMemo } from 'react';
 
-import Button from '@/design/ui/components/button';
-
 import type { EventNode } from '@/domain/resourcePack/contracts/event';
 
 import { SectionAddButton } from '@/features/resourceEditor/client/components/actions/SectionAddButton';
-import { EditorField } from '@/features/resourceEditor/client/components/fields/EditorField';
+import { SectionDeleteButton } from '@/features/resourceEditor/client/components/actions/SectionDeleteButton';
+import { EditorSection } from '@/features/resourceEditor/client/components/layout/EditorSection';
 import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
 import {
 	Select,
@@ -26,7 +25,7 @@ export const PostEventList = memo<PostEventListProps>(function PostEventList({
 	const eventItems = useMemo<SelectItemSpec<string>[]>(() => {
 		return allEvents.map((e) => ({
 			value: e.label,
-			label: `${e.debugLabel || e.label} (${e.label})`,
+			label: `${e.debugLabel || e.label}（${e.label}）`,
 		}));
 	}, [allEvents]);
 
@@ -56,9 +55,8 @@ export const PostEventList = memo<PostEventListProps>(function PostEventList({
 	);
 
 	return (
-		<EditorField
-			className="gap-4"
-			label={`后继事件(postEvents) (${postEvents?.length || 0})`}
+		<EditorSection
+			title={`后继事件（postEvents）（${postEvents?.length || 0}）`}
 			actions={
 				<SectionAddButton onPress={addPostEvent}>
 					添加后继事件
@@ -69,30 +67,29 @@ export const PostEventList = memo<PostEventListProps>(function PostEventList({
 				{(postEvents || []).map((pe, index) => (
 					<div
 						key={index}
-						className="flex flex-col gap-3 rounded-lg border border-black/5 bg-black/5 p-4 dark:border-white/5 dark:bg-white/5"
+						className="flex min-w-0 flex-col gap-3 rounded-large border border-divider bg-content1/40 p-3 sm:p-4"
 					>
 						<div className="flex flex-col gap-1">
-							<label className="text-xs font-medium opacity-70">
-								事件 Label
-							</label>
-							<div className="flex items-center justify-between gap-4">
+							<p className="text-xs font-medium text-foreground-600">
+								事件标签（Label）
+							</p>
+							<div className="flex min-w-0 items-center gap-3">
 								<Select<string>
 									baseClassName="flex-1"
+									ariaLabel="事件标签（Label）"
 									value={pe}
 									onChange={(value) =>
 										updatePostEvent(index, value)
 									}
-									placeholder="请选择事件..."
+									placeholder="请选择事件…"
 									items={eventItems}
 								/>
-								<Button
-									variant="light"
-									size="sm"
+								<SectionDeleteButton
+									iconOnly
+									className="shrink-0 sm:h-10 sm:w-10"
+									aria-label={`删除后继事件${index + 1}`}
 									onPress={() => removePostEvent(index)}
-									className="text-xs text-danger hover:bg-danger/10"
-								>
-									删除
-								</Button>
+								/>
 							</div>
 						</div>
 					</div>
@@ -101,6 +98,6 @@ export const PostEventList = memo<PostEventListProps>(function PostEventList({
 					<EmptyState variant="text" title="暂无后继事件配置" />
 				)}
 			</div>
-		</EditorField>
+		</EditorSection>
 	);
 });

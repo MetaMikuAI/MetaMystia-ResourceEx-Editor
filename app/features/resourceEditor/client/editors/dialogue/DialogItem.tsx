@@ -44,15 +44,15 @@ export const DialogItem = memo<DialogItemProps>(function DialogItem({
 	);
 
 	return (
-		<div className="relative flex flex-col gap-4 rounded-lg bg-white/40 p-4 shadow-sm dark:bg-white/5">
+		<div className="relative flex min-w-0 flex-col gap-4 overflow-hidden rounded-large border border-divider bg-content1/50 p-4">
 			{/* Position indicator stripe */}
 			<div
 				className={`absolute top-0 h-full w-1 ${
 					dialog.position === 'Left'
-						? 'left-0 rounded-l-lg bg-blue-500'
-						: 'right-0 rounded-r-lg bg-orange-500'
+						? 'left-0 bg-primary'
+						: 'right-0 bg-secondary'
 				}`}
-				title={`位置: ${dialog.position === 'Left' ? '左侧' : '右侧'}`}
+				title={`位置：${dialog.position === 'Left' ? '左侧' : '右侧'}`}
 			/>
 			<DialogItemHeader
 				index={index}

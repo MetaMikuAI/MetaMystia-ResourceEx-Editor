@@ -5,22 +5,31 @@ import { useCallback, useMemo, useState } from 'react';
 import type { Food } from '@/domain/resourcePack/contracts/items';
 
 import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
+import {
+	findNextAvailableInteger,
+	findNextAvailableSuffixedValue,
+} from '@/features/resourceEditor/client/editorValueAllocation';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import { FoodEditor } from './FoodEditor';
 import { FoodList } from './FoodList';
-import { FoodPreviewDialog } from './FoodPreviewDialog';
 
 export function FoodEditorScreen() {
 	const { resourcePack: data, updateResourcePack } = useResourceEditor();
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-	const [previewFoodId, setPreviewFoodId] = useState<number | null>(null);
 
 	const addFood = useCallback(() => {
-		const newId = 11000 + (data.foods?.length || 0);
+		const foods = data.foods ?? [];
+		const newId = findNextAvailableInteger(
+			foods.map((food) => food.id),
+			11000
+		);
 		const newFood: Food = {
 			id: newId,
-			name: `新料理${(data.foods?.length || 0) + 1}`,
+			name: findNextAvailableSuffixedValue(
+				foods.map((food) => food.name),
+				'新料理'
+			),
 			description: '',
 			level: 1,
 			baseValue: 1,
@@ -28,7 +37,7 @@ export function FoodEditorScreen() {
 			banTags: [],
 			spritePath: `assets/Food/${newId}.png`,
 		};
-		const newFoods = [...(data.foods || []), newFood];
+		const newFoods = [...foods, newFood];
 		updateResourcePack(() => ({ ...data, foods: newFoods }));
 		setSelectedIndex(newFoods.length - 1);
 	}, [data, updateResourcePack]);
@@ -73,13 +82,7 @@ export function FoodEditorScreen() {
 				selectedIndex={selectedIndex}
 				onAdd={addFood}
 				onRemove={removeFood}
-				onPreview={setPreviewFoodId}
 				onSelect={setSelectedIndex}
-			/>
-			<FoodPreviewDialog
-				foodId={previewFoodId}
-				isOpen={previewFoodId !== null}
-				onClose={() => setPreviewFoodId(null)}
 			/>
 
 			<FoodEditor

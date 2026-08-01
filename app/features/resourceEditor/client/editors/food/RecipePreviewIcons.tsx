@@ -148,7 +148,7 @@ export function IngredientPreviewIcon({
 	const name =
 		ingredient?.name ??
 		INGREDIENT_NAMES[builtinIndex]?.name ??
-		`未知原料 (${id})`;
+		`未知食材（${id}）`;
 
 	if (spriteUrl) {
 		return (

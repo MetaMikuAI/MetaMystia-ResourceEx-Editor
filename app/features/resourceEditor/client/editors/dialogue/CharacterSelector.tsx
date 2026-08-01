@@ -34,7 +34,7 @@ export const CharacterSelector = memo<CharacterSelectorProps>(
 					section: '游戏角色',
 					options: SPECIAL_GUESTS.map(({ id, name }) => ({
 						value: `Special:${id}`,
-						label: `(${id}) ${name}`,
+						label: `（${id}） ${name}`,
 					})),
 				},
 			];
@@ -43,7 +43,7 @@ export const CharacterSelector = memo<CharacterSelectorProps>(
 					section: '自定义角色',
 					options: customCharacters.map(({ id, name, type }) => ({
 						value: `${type}:${id}`,
-						label: `(${id}) ${name} [${type}]`,
+						label: `（${id}） ${name} [${type}]`,
 					})),
 				});
 			}

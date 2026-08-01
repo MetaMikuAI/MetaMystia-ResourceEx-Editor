@@ -1,5 +1,6 @@
 'use client';
 
+import { InfoIcon, WarningIcon } from '@heroui/shared-icons';
 import { cn } from '@heroui/theme';
 import { memo, useMemo, useState } from 'react';
 
@@ -41,11 +42,13 @@ function IssueGroup({
 					)}
 				/>
 				<span className="text-sm font-semibold">{category}</span>
-				<span className="text-xs opacity-40">({items.length})</span>
+				<span className="text-xs text-foreground-500">
+					（{items.length}）
+				</span>
 			</div>
-			<div className="ml-4 flex flex-col gap-0.5">
+			<ul className="ml-8 flex list-disc flex-col gap-0.5">
 				{items.map((item, index) => (
-					<p
+					<li
 						key={`${item.message}-${index}`}
 						className={cn(
 							'text-sm',
@@ -54,10 +57,10 @@ function IssueGroup({
 								: 'text-warning-600 dark:text-warning-400'
 						)}
 					>
-						• {item.message}
-					</p>
+						{item.message}
+					</li>
 				))}
-			</div>
+			</ul>
 		</div>
 	);
 }
@@ -85,14 +88,16 @@ export const ExportValidationDialog = memo<IProps>(
 			<Modal isOpen onClose={onCancel} size="2xl">
 				<div className="flex flex-col gap-4">
 					<div className="flex items-center gap-3">
-						<span className="text-2xl">
-							{errors.length > 0 ? '⚠️' : '📋'}
-						</span>
+						{errors.length > 0 ? (
+							<WarningIcon className="h-6 w-6 shrink-0 text-danger" />
+						) : (
+							<InfoIcon className="h-6 w-6 shrink-0 text-warning" />
+						)}
 						<div>
 							<h2 className="text-xl font-bold">
 								资源包导出检查
 							</h2>
-							<p className="text-sm text-foreground/60">
+							<p className="text-sm text-foreground-600">
 								{errors.length > 0
 									? '存在以下问题，建议修正后再导出'
 									: '存在部分建议项，可确认后继续导出'}
@@ -113,7 +118,7 @@ export const ExportValidationDialog = memo<IProps>(
 									)
 								}
 							>
-								{errors.length} 个错误
+								{errors.length}个错误
 							</Button>
 						)}
 						{warnings.length > 0 && (
@@ -133,7 +138,7 @@ export const ExportValidationDialog = memo<IProps>(
 									)
 								}
 							>
-								{warnings.length} 个警告
+								{warnings.length}个警告
 							</Button>
 						)}
 					</div>

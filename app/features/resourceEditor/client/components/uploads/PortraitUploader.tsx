@@ -1,7 +1,9 @@
 'use client';
 
 import { cn } from '@heroui/theme';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
+import Button from '@/design/ui/components/button';
 
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
@@ -24,6 +26,7 @@ export function PortraitUploader({
 }: IProps) {
 	const { getAssetUrl } = useResourceEditor();
 	const [warning, setWarning] = useState('');
+	const fileInputRef = useRef<HTMLInputElement>(null);
 	const assetUrl = getAssetUrl(spritePath);
 
 	const handleFile = useCallback(
@@ -35,10 +38,10 @@ export function PortraitUploader({
 						dimensions.width === width &&
 							dimensions.height === height
 							? ''
-							: `尺寸警告: ${dimensions.width}x${dimensions.height} (期望 ${width}x${height})`
+							: `当前尺寸${dimensions.width}×${dimensions.height}，期望${width}×${height}。`
 					);
 				})
-				.catch(() => setWarning('无法读取图片尺寸'));
+				.catch(() => setWarning('无法读取图片尺寸。'));
 			onUpload(file);
 		},
 		[height, onUpload, width]
@@ -47,18 +50,25 @@ export function PortraitUploader({
 	useEffect(() => setWarning(''), [spritePath]);
 
 	return (
-		<div className={cn('flex flex-col gap-1', className)}>
-			<div className="flex items-center justify-between">
-				<label className="ml-1 text-[10px] font-bold opacity-50">
-					预览 (点击/拖拽上传)
-				</label>
+		<div
+			className={cn('flex w-full flex-col gap-1', className)}
+			style={{ maxWidth: `${width}px` }}
+		>
+			<div className="flex min-w-0 flex-col gap-1">
+				<p className="text-xs font-medium text-foreground-600">
+					立绘预览
+				</p>
 				{warning && (
-					<span className="text-xs text-warning" role="status">
+					<p
+						className="break-words text-xs leading-5 text-warning-700 dark:text-warning-600"
+						role="status"
+					>
 						{warning}
-					</span>
+					</p>
 				)}
 			</div>
 			<input
+				ref={fileInputRef}
 				type="file"
 				accept="image/png"
 				className="hidden"
@@ -68,13 +78,12 @@ export function PortraitUploader({
 					event.target.value = '';
 				}}
 			/>
-			<label
-				htmlFor={`upload-portrait-${spritePath}`}
+			<div
 				className={cn(
-					'bg-checkerboard flex cursor-pointer flex-col items-center justify-center overflow-hidden rounded-lg border-2 border-dashed transition-all hover:border-primary/50 hover:opacity-90',
+					'bg-checkerboard relative flex w-full flex-col items-center justify-center overflow-hidden rounded-large border-2 border-dashed transition-colors hover:border-primary/50 motion-reduce:transition-none',
 					warning ? 'border-warning/50' : 'border-divider'
 				)}
-				style={{ height: `${height}px`, width: `${width}px` }}
+				style={{ aspectRatio: `${width} / ${height}` }}
 				onDragOver={(event) => event.preventDefault()}
 				onDrop={(event) => {
 					event.preventDefault();
@@ -83,20 +92,41 @@ export function PortraitUploader({
 				}}
 			>
 				{assetUrl ? (
-					<img
-						src={assetUrl}
-						className="image-rendering-pixelated h-full w-full object-contain"
-						alt="立绘预览"
-					/>
+					<>
+						<img
+							src={assetUrl}
+							className="image-rendering-pixelated h-full w-full object-contain"
+							alt="立绘预览"
+						/>
+						<Button
+							size="sm"
+							variant="flat"
+							color="primary"
+							className="absolute bottom-3"
+							onPress={() => fileInputRef.current?.click()}
+						>
+							更换立绘
+						</Button>
+					</>
 				) : (
-					<div className="flex flex-col items-center gap-2 text-foreground/30">
-						<span className="text-2xl">📷</span>
-						<span className="text-[10px]">
-							{width} x {height}
-						</span>
+					<div className="flex flex-col items-center gap-3 text-center">
+						<p className="text-sm font-medium text-foreground-600">
+							暂无立绘
+						</p>
+						<p className="text-xs text-foreground-500">
+							{width}×{height}
+						</p>
+						<Button
+							size="sm"
+							variant="flat"
+							color="primary"
+							onPress={() => fileInputRef.current?.click()}
+						>
+							选择立绘
+						</Button>
 					</div>
 				)}
-			</label>
+			</div>
 		</div>
 	);
 }

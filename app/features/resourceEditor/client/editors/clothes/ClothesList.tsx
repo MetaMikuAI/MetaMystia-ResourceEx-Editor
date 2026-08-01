@@ -1,13 +1,14 @@
-import { cn } from '@heroui/theme';
-import { memo, useCallback, useState } from 'react';
-
-import Button from '@/design/ui/components/button';
-import Card from '@/design/ui/components/card';
+import { memo, useCallback } from 'react';
 
 import type { Clothes } from '@/domain/resourcePack/contracts/items';
 
-import { ConfirmPopover } from '@/features/resourceEditor/client/components/confirm/ConfirmPopover';
-import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
+import { SectionDeleteButton } from '@/features/resourceEditor/client/components/actions/SectionDeleteButton';
+import {
+	EditorCollectionItem,
+	EditorCollectionItemMeta,
+	EditorCollectionItemTitle,
+} from '@/features/resourceEditor/client/components/layout/EditorCollectionItem';
+import { EditorCollectionPanel } from '@/features/resourceEditor/client/components/layout/EditorCollectionPanel';
 import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
 
 interface ClothesListProps {
@@ -26,128 +27,52 @@ export const ClothesList = memo<ClothesListProps>(function ClothesList({
 	onRemove,
 }) {
 	const isIdDuplicate = useCallback(
-		(id: number, index: number) => {
-			return clothes.some((c, i) => i !== index && c.id === id);
-		},
+		(id: number, index: number) =>
+			clothes.some(
+				(item, itemIndex) => itemIndex !== index && item.id === id
+			),
 		[clothes]
 	);
 
-	const [isCollapsed, setIsCollapsed] = useState(false);
-
 	return (
-		<div className="flex h-min flex-col gap-4 overflow-y-auto rounded-lg bg-white/10 p-4 shadow-md backdrop-blur lg:sticky lg:top-24 lg:max-h-[calc(100dvh-7rem)]">
-			<div className="flex items-center justify-between">
-				<h2 className="text-xl font-semibold">服装列表</h2>
-				<div className="flex items-center gap-1">
-					<Button
-						isIconOnly
-						variant="light"
-						size="sm"
-						className="h-8 w-8 lg:hidden"
-						onPress={() => setIsCollapsed((v) => !v)}
-						aria-label={isCollapsed ? '展开列表' : '折叠列表'}
+		<EditorCollectionPanel
+			title="衣服列表"
+			addLabel="新建衣服"
+			emptyTitle="暂无衣服"
+			hasItems={clothes.length > 0}
+			onAdd={onAdd}
+		>
+			{clothes.map((item, index) => {
+				const isDuplicate = isIdDuplicate(item.id, index);
+
+				return (
+					<EditorCollectionItem
+						key={index}
+						isInvalid={isDuplicate}
+						isSelected={selectedIndex === index}
+						onSelect={() => onSelect(index)}
+						actions={
+							<SectionDeleteButton
+								iconOnly
+								confirmTitle="删除这件衣服？"
+								onPress={() => onRemove(index)}
+							>
+								删除衣服
+							</SectionDeleteButton>
+						}
 					>
-						<svg
-							viewBox="0 0 24 24"
-							className={cn(
-								'h-4 w-4 transition-transform duration-200',
-								isCollapsed ? '-rotate-90' : 'rotate-0'
-							)}
-							fill="none"
-							stroke="currentColor"
-							strokeWidth={2}
-							strokeLinecap="round"
-							strokeLinejoin="round"
-						>
-							<path d="m9 18 6-6-6-6" />
-						</svg>
-					</Button>
-					<Button
-						isIconOnly
-						variant="light"
-						size="sm"
-						onPress={onAdd}
-						className="h-8 w-8 text-lg"
-					>
-						+
-					</Button>
-				</div>
-			</div>
-			<div
-				className={cn(
-					'grid transition-all duration-300',
-					isCollapsed
-						? 'grid-rows-[0fr] lg:grid-rows-[1fr]'
-						: 'grid-rows-[1fr]'
-				)}
-				style={{ overflow: isCollapsed ? 'hidden' : undefined }}
-			>
-				<div className="min-h-0">
-					<div className="flex flex-col gap-2">
-						{clothes.map((item, index) => {
-							const isDuplicate = isIdDuplicate(item.id, index);
-							return (
-								<Card
-									key={index}
-									className={cn(
-										'group border p-4',
-										selectedIndex === index
-											? isDuplicate
-												? 'border-danger bg-danger/20 shadow-inner'
-												: 'border-primary bg-primary/20 shadow-inner'
-											: isDuplicate
-												? 'border-danger/50 bg-danger/10 hover:bg-danger/20'
-												: 'border-transparent bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10'
-									)}
-								>
-									<div className="flex w-full items-start justify-between gap-2">
-										<button
-											onClick={() => {
-												onSelect(index);
-											}}
-											className="flex flex-1 flex-col gap-2 text-left"
-										>
-											<div className="flex items-center gap-2">
-												<span className="text-lg font-bold text-foreground">
-													{item.name || '未命名服装'}
-												</span>
-												{isDuplicate && (
-													<ErrorBadge>
-														ID重复
-													</ErrorBadge>
-												)}
-											</div>
-											<div className="font-mono text-xs text-foreground opacity-80">
-												ID: {item.id}
-											</div>
-										</button>
-										<ConfirmPopover
-											title="删除这个服装？"
-											onConfirm={() => onRemove(index)}
-											trigger={
-												<Button
-													color="danger"
-													size="sm"
-													radius="full"
-													className="pointer-events-none opacity-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
-												>
-													删除
-												</Button>
-											}
-										/>
-									</div>
-								</Card>
-							);
-						})}
-						{clothes.length === 0 && (
-							<EmptyState
-								title="暂无服装"
-								description="点击上方 + 按钮创建"
-							/>
-						)}
-					</div>
-				</div>
-			</div>
-		</div>
+						<EditorCollectionItemTitle>
+							<span className="min-w-0 break-words">
+								{item.name || '未命名衣服'}
+							</span>
+							{isDuplicate && <ErrorBadge>ID重复</ErrorBadge>}
+						</EditorCollectionItemTitle>
+						<EditorCollectionItemMeta>
+							ID：{item.id}
+						</EditorCollectionItemMeta>
+					</EditorCollectionItem>
+				);
+			})}
+		</EditorCollectionPanel>
 	);
 });

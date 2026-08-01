@@ -10,7 +10,10 @@ import type {
 	DialogBranchOption,
 } from '@/domain/resourcePack/contracts/dialogue';
 
+import { SectionAddButton } from '@/features/resourceEditor/client/components/actions/SectionAddButton';
+import { SectionDeleteButton } from '@/features/resourceEditor/client/components/actions/SectionDeleteButton';
 import { Label } from '@/features/resourceEditor/client/components/fields/Label';
+import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
 import {
 	Select,
 	type SelectItem as SelectItemSpec,
@@ -130,32 +133,27 @@ export const DialogActionsEditor = memo<DialogActionsEditorProps>(
 		);
 
 		return (
-			<div className="flex flex-col gap-2 rounded-lg border border-dashed border-black/10 bg-black/[0.02] p-3 dark:border-white/10 dark:bg-white/[0.02]">
+			<div className="flex min-w-0 flex-col gap-3 rounded-large border border-divider bg-content2/30 p-3">
 				<div className="flex flex-wrap items-center justify-between gap-2">
-					<span className="text-xs font-medium opacity-70">
+					<span className="text-xs font-semibold text-foreground-600">
 						动作列表（{list.length}）
 					</span>
 					<div className="flex flex-wrap gap-1">
 						{ACTION_TYPES.map((type) => (
-							<Button
+							<SectionAddButton
 								key={type}
-								variant="light"
-								size="sm"
 								onPress={() => {
 									handleAdd(type);
 								}}
-								className="rounded-md border border-black/10 px-2 py-0.5 text-xs hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
 							>
-								+ {ACTION_LABEL[type]}
-							</Button>
+								{ACTION_LABEL[type]}
+							</SectionAddButton>
 						))}
 					</div>
 				</div>
 
 				{list.length === 0 ? (
-					<p className="py-1 text-center text-[11px] italic opacity-40">
-						无附加动作
-					</p>
+					<EmptyState variant="text" title="无附加动作" />
 				) : (
 					<div className="flex flex-col gap-2">
 						{list.map((action, index) => (
@@ -215,47 +213,40 @@ const DialogActionRow = memo<DialogActionRowProps>(function DialogActionRow({
 	const isEndAction = action.actionType === 'End';
 
 	return (
-		<div className="flex flex-col gap-2 rounded-md border border-black/10 bg-black/5 p-2 dark:border-white/10 dark:bg-white/5">
+		<div className="flex min-w-0 flex-col gap-3 rounded-large border border-divider bg-content1/50 p-3">
 			<div className="flex items-center justify-between gap-2">
 				<div className="flex items-center gap-2">
-					<span className="rounded bg-primary/10 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide text-primary">
+					<span className="rounded-small bg-primary/15 px-2 py-1 font-mono text-xs text-primary-700 dark:text-primary">
 						#{index + 1}
 					</span>
 					<span className="text-xs font-medium">
 						{ACTION_LABEL[action.actionType]}
 					</span>
 				</div>
-				<div className="flex items-center gap-1">
+				<div className="flex flex-wrap items-center justify-end gap-1">
 					<Button
 						variant="light"
 						size="sm"
-						isIconOnly
 						onPress={onMoveUp}
 						isDisabled={index === 0}
-						className="h-6 w-6 min-w-0 rounded text-xs opacity-60"
+						className="h-10 min-w-0 rounded-medium px-2 text-xs sm:h-8"
 						title="上移"
 					>
-						↑
+						上移
 					</Button>
 					<Button
 						variant="light"
 						size="sm"
-						isIconOnly
 						onPress={onMoveDown}
 						isDisabled={index === total - 1}
-						className="h-6 w-6 min-w-0 rounded text-xs opacity-60"
+						className="h-10 min-w-0 rounded-medium px-2 text-xs sm:h-8"
 						title="下移"
 					>
-						↓
+						下移
 					</Button>
-					<Button
-						color="danger"
-						size="sm"
-						onPress={onRemove}
-						className="h-6 min-w-0 rounded px-2 text-xs"
-					>
-						删除
-					</Button>
+					<SectionDeleteButton onPress={onRemove}>
+						删除动作
+					</SectionDeleteButton>
 				</div>
 			</div>
 
@@ -295,7 +286,6 @@ const SpriteActionFields = memo<SpriteActionFieldsProps>(
 	function SpriteActionFields({ action, onUpdate }) {
 		const mode = getSpriteMode(action);
 		const folder = ACTION_FOLDER[action.actionType] ?? 'assets/';
-		const radioName = useId();
 		const selectId = useId();
 
 		const {
@@ -321,7 +311,7 @@ const SpriteActionFields = memo<SpriteActionFieldsProps>(
 
 		const spriteItems = useMemo<SelectItemSpec<string>[]>(() => {
 			const items: SelectItemSpec<string>[] = [
-				{ value: '', label: '— 选择资产 —' },
+				{ value: '', label: '请选择资产…' },
 			];
 			if (isMissing && action.sprite) {
 				items.push({
@@ -347,30 +337,32 @@ const SpriteActionFields = memo<SpriteActionFieldsProps>(
 
 		return (
 			<div className="flex flex-col gap-2">
-				<div className="flex flex-wrap items-center gap-3 text-xs">
-					<label className="flex cursor-pointer items-center gap-1">
-						<input
-							type="radio"
-							name={radioName}
-							checked={mode === 'set'}
-							onChange={() => handleModeChange('set')}
-						/>
+				<div className="flex flex-wrap items-center gap-2">
+					<Button
+						size="sm"
+						color="primary"
+						variant={mode === 'set' ? 'flat' : 'bordered'}
+						aria-pressed={mode === 'set'}
+						className="h-10 sm:h-8"
+						onPress={() => handleModeChange('set')}
+					>
 						设置图片
-					</label>
-					<label className="flex cursor-pointer items-center gap-1">
-						<input
-							type="radio"
-							name={radioName}
-							checked={mode === 'clear'}
-							onChange={() => handleModeChange('clear')}
-						/>
-						清空（shouldSet:false）
-					</label>
+					</Button>
+					<Button
+						size="sm"
+						color="primary"
+						variant={mode === 'clear' ? 'flat' : 'bordered'}
+						aria-pressed={mode === 'clear'}
+						className="h-10 sm:h-8"
+						onPress={() => handleModeChange('clear')}
+					>
+						清空（shouldSet：false）
+					</Button>
 				</div>
 
 				{mode === 'set' && (
 					<div className="flex flex-col gap-2 sm:flex-row">
-						<div className="bg-checkerboard flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-md border border-black/10 dark:border-white/10">
+						<div className="bg-checkerboard flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-medium border border-divider">
 							{previewUrl ? (
 								<img
 									src={previewUrl}
@@ -379,61 +371,47 @@ const SpriteActionFields = memo<SpriteActionFieldsProps>(
 									draggable={false}
 								/>
 							) : (
-								<span className="text-[10px] opacity-40">
+								<span className="text-xs text-foreground-500">
 									无预览
 								</span>
 							)}
 						</div>
 						<div className="flex flex-1 flex-col gap-1">
 							<div className="flex items-center justify-between gap-2">
-								<Label
-									htmlFor={selectId}
-									className="text-xs normal-case opacity-70"
-								>
-									资产路径（来自 {folder}）
+								<Label htmlFor={selectId} size="sm">
+									资产路径（来自{folder}）
 								</Label>
 								{isMissing && (
 									<WarningBadge>资产未注册</WarningBadge>
 								)}
 							</div>
-							<div className="flex items-center gap-1">
+							<div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
 								<Select<string>
 									id={selectId}
 									ariaLabel="资产路径"
 									size="sm"
 									isInvalid={isMissing}
-									placeholder="— 选择资产 —"
+									placeholder="请选择资产…"
 									value={action.sprite ?? ''}
 									onChange={(v) =>
 										onUpdate({ sprite: v || undefined })
 									}
 									items={spriteItems}
-									baseClassName="flex-1"
+									baseClassName="min-w-0 flex-1"
 								/>
 								<Button
-									variant="light"
+									variant="bordered"
 									size="sm"
-									isIconOnly
 									onPress={() => setIsPickerOpen(true)}
-									className="h-8 w-8 min-w-0 rounded-md"
+									className="h-10 shrink-0 rounded-medium px-3 sm:h-8"
 									title="浏览资产"
 								>
-									<svg
-										viewBox="0 0 24 24"
-										className="h-4 w-4"
-										fill="none"
-										stroke="currentColor"
-										strokeWidth={2}
-										strokeLinecap="round"
-										strokeLinejoin="round"
-									>
-										<path d="M3 6.5A2.5 2.5 0 0 1 5.5 4H10l2 2h6.5A2.5 2.5 0 0 1 21 8.5v9A2.5 2.5 0 0 1 18.5 20h-13A2.5 2.5 0 0 1 3 17.5z" />
-									</svg>
+									浏览资产
 								</Button>
 							</div>
 							{availableAssets.length === 0 && (
-								<p className="text-[10px] opacity-50">
-									{folder} 下暂无资源，请前往「资产」页上传。
+								<p className="text-xs text-foreground-500">
+									{folder}下暂无资产，请前往「资产」页上传。
 								</p>
 							)}
 						</div>
@@ -493,36 +471,30 @@ const BranchActionFields = memo<BranchActionFieldsProps>(
 		return (
 			<div className="flex flex-col gap-2">
 				<div className="flex flex-wrap items-center justify-between gap-2">
-					<p className="text-[11px] opacity-60">
-						跳转目标使用左侧显示的对话编号，范围 1-
-						{finishTarget}，{finishTarget} 表示结束当前对话包。
+					<p className="text-xs leading-5 text-foreground-500">
+						{`跳转目标使用左侧显示的对话编号，范围1～${finishTarget}，${finishTarget}表示结束当前对话包。`}
 					</p>
-					<Button
-						variant="light"
-						size="sm"
+					<SectionAddButton
 						onPress={() =>
 							updateOptions([...options, { text: '', jump: 1 }])
 						}
-						className="h-7 rounded-md border border-black/10 px-2 text-xs dark:border-white/10"
 					>
-						+ 选项
-					</Button>
+						添加选项
+					</SectionAddButton>
 				</div>
 				{options.length === 0 ? (
-					<p className="rounded-md border border-warning/30 bg-warning/10 px-2 py-1 text-[11px] text-warning-700 dark:text-warning-300">
-						Branch 至少需要一个选项，否则运行时会被当作普通对话行。
+					<p className="rounded-medium border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning-700 dark:text-warning-600">
+						Branch至少需要一个选项，否则运行时会被当作普通对话行。
 					</p>
 				) : (
 					<div className="flex flex-col gap-2">
 						{options.map((option, optionIndex) => (
 							<div
 								key={optionIndex}
-								className="grid gap-2 rounded-md border border-black/10 bg-background/50 p-2 sm:grid-cols-[minmax(0,1fr)_112px_auto] dark:border-white/10"
+								className="grid min-w-0 gap-3 rounded-large border border-divider bg-content2/30 p-3 sm:grid-cols-[minmax(0,1fr)_112px_auto]"
 							>
 								<div className="flex flex-col gap-1">
-									<Label className="text-[10px] normal-case opacity-60">
-										选项文本
-									</Label>
+									<Label size="sm">选项文本</Label>
 									<Input
 										value={option.text}
 										onChange={(e) =>
@@ -530,14 +502,12 @@ const BranchActionFields = memo<BranchActionFieldsProps>(
 												text: e.target.value,
 											})
 										}
-										placeholder="请输入选项文本..."
-										className="h-8 text-xs"
+										placeholder="请输入选项文本…"
+										size="sm"
 									/>
 								</div>
 								<div className="flex flex-col gap-1">
-									<Label className="text-[10px] normal-case opacity-60">
-										跳转
-									</Label>
+									<Label size="sm">跳转</Label>
 									<Input
 										type="number"
 										min={1}
@@ -554,14 +524,13 @@ const BranchActionFields = memo<BranchActionFieldsProps>(
 												),
 											})
 										}
-										className="h-8 text-xs"
+										size="sm"
 									/>
 								</div>
 								<div className="flex items-end gap-1">
 									<Button
 										variant="light"
 										size="sm"
-										isIconOnly
 										onPress={() =>
 											moveOption(
 												optionIndex,
@@ -569,15 +538,14 @@ const BranchActionFields = memo<BranchActionFieldsProps>(
 											)
 										}
 										isDisabled={optionIndex === 0}
-										className="h-8 w-8 min-w-0 rounded-md text-xs opacity-60"
+										className="h-10 min-w-0 rounded-medium px-2 text-xs sm:h-8"
 										title="上移选项"
 									>
-										↑
+										上移
 									</Button>
 									<Button
 										variant="light"
 										size="sm"
-										isIconOnly
 										onPress={() =>
 											moveOption(
 												optionIndex,
@@ -587,21 +555,19 @@ const BranchActionFields = memo<BranchActionFieldsProps>(
 										isDisabled={
 											optionIndex === options.length - 1
 										}
-										className="h-8 w-8 min-w-0 rounded-md text-xs opacity-60"
+										className="h-10 min-w-0 rounded-medium px-2 text-xs sm:h-8"
 										title="下移选项"
 									>
-										↓
+										下移
 									</Button>
-									<Button
-										color="danger"
-										size="sm"
+									<SectionDeleteButton
+										iconOnly
 										onPress={() =>
 											removeOption(optionIndex)
 										}
-										className="h-8 min-w-0 rounded-md px-2 text-xs"
 									>
-										删除
-									</Button>
+										删除选项
+									</SectionDeleteButton>
 								</div>
 							</div>
 						))}
@@ -626,9 +592,7 @@ const GotoActionFields = memo<GotoActionFieldsProps>(function GotoActionFields({
 	const finishTarget = dialogCount + 1;
 	return (
 		<div className="flex flex-col gap-1">
-			<Label className="text-xs normal-case opacity-70">
-				跳转目标对话编号
-			</Label>
+			<Label size="sm">跳转目标对话编号</Label>
 			<div className="flex flex-col gap-1 sm:flex-row sm:items-center">
 				<Input
 					type="number"
@@ -638,11 +602,11 @@ const GotoActionFields = memo<GotoActionFieldsProps>(function GotoActionFields({
 					onChange={(e) =>
 						onUpdate({ index: numberOrOne(e.target.value) })
 					}
-					className="h-8 text-xs sm:w-32"
+					className="h-10 text-xs sm:h-8 sm:w-32"
 				/>
-				<p className="text-[11px] opacity-60">
-					使用左侧显示的对话编号，范围 1-{finishTarget}，
-					{finishTarget} 表示结束当前对话包。
+				<p className="text-xs leading-5 text-foreground-500">
+					使用左侧显示的对话编号，范围1～{finishTarget}，
+					{finishTarget}表示结束当前对话包。
 				</p>
 			</div>
 		</div>
@@ -660,7 +624,7 @@ const EndActionFields = memo<EndActionFieldsProps>(function EndActionFields({
 }) {
 	return (
 		<div className="flex flex-col gap-1">
-			<Label className="text-xs normal-case opacity-70">退出码</Label>
+			<Label size="sm">退出码</Label>
 			<div className="flex flex-col gap-1 sm:flex-row sm:items-center">
 				<Input
 					type="number"
@@ -668,11 +632,10 @@ const EndActionFields = memo<EndActionFieldsProps>(function EndActionFields({
 					onChange={(e) =>
 						onUpdate({ exitCode: numberOrZero(e.target.value) })
 					}
-					className="h-8 text-xs sm:w-32"
+					className="h-10 text-xs sm:h-8 sm:w-32"
 				/>
-				<p className="text-[11px] opacity-60">
-					结束当前对话包。普通对话保持 0 即可，只有需要读取 ExitCode
-					的调用会使用这个值。
+				<p className="text-xs leading-5 text-foreground-500">
+					结束当前对话包。普通对话保持0即可，只有需要读取ExitCode的调用会使用这个值。
 				</p>
 			</div>
 		</div>
@@ -723,7 +686,7 @@ const SoundActionFields = memo<SoundActionFieldsProps>(
 
 		const soundItems = useMemo<SelectItemSpec<string>[]>(() => {
 			const items: SelectItemSpec<string>[] = [
-				{ value: '', label: '— 选择音频 —' },
+				{ value: '', label: '请选择音频…' },
 			];
 			if (isMissing && action.sound) {
 				items.push({
@@ -741,53 +704,38 @@ const SoundActionFields = memo<SoundActionFieldsProps>(
 			<div className="flex flex-col gap-2">
 				<div className="flex flex-col gap-1">
 					<div className="flex items-center justify-between gap-2">
-						<Label
-							htmlFor={selectId}
-							className="text-xs normal-case opacity-70"
-						>
-							音频路径（来自 {folder}，仅支持 .wav）
+						<Label htmlFor={selectId} size="sm">
+							音频路径（来自{folder}，仅支持.wav）
 						</Label>
 						{isMissing && <WarningBadge>资产未注册</WarningBadge>}
 					</div>
-					<div className="flex items-center gap-1">
+					<div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
 						<Select<string>
 							id={selectId}
 							ariaLabel="音频路径"
 							size="sm"
 							isInvalid={isMissing}
-							placeholder="— 选择音频 —"
+							placeholder="请选择音频…"
 							value={action.sound ?? ''}
 							onChange={(v) =>
 								onUpdate({ sound: v || undefined })
 							}
 							items={soundItems}
-							baseClassName="flex-1"
+							baseClassName="min-w-0 flex-1"
 						/>
 						<Button
-							variant="light"
+							variant="bordered"
 							size="sm"
-							isIconOnly
 							onPress={() => setIsPickerOpen(true)}
-							className="h-8 w-8 min-w-0 rounded-md"
+							className="h-10 shrink-0 rounded-medium px-3 sm:h-8"
 							title="浏览资产"
 						>
-							<svg
-								viewBox="0 0 24 24"
-								className="h-4 w-4"
-								fill="none"
-								stroke="currentColor"
-								strokeWidth={2}
-								strokeLinecap="round"
-								strokeLinejoin="round"
-							>
-								<path d="M3 6.5A2.5 2.5 0 0 1 5.5 4H10l2 2h6.5A2.5 2.5 0 0 1 21 8.5v9A2.5 2.5 0 0 1 18.5 20h-13A2.5 2.5 0 0 1 3 17.5z" />
-							</svg>
+							浏览资产
 						</Button>
 					</div>
 					{availableAssets.length === 0 && (
-						<p className="text-[10px] opacity-50">
-							{folder} 下暂无音频，请前往「资产」页上传 .wav
-							文件。
+						<p className="text-xs text-foreground-500">
+							{folder}下暂无音频，请前往「资产」页上传.wav文件。
 						</p>
 					)}
 				</div>

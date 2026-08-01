@@ -3,6 +3,8 @@
 import { cn } from '@heroui/theme';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 
+import Button from '@/design/ui/components/button';
+
 import { ConfirmDialog } from '@/features/resourceEditor/client/components/confirm/ConfirmDialog';
 import { WarningNotice } from '@/features/resourceEditor/client/components/status/WarningNotice';
 
@@ -38,6 +40,7 @@ export const SpriteUploader = memo<IProps>(function SpriteUploader({
 		null
 	);
 	const activeReadControllerRef = useRef<AbortController | null>(null);
+	const fileInputRef = useRef<HTMLInputElement>(null);
 	const isMountedRef = useRef(false);
 	const operationIdRef = useRef(0);
 	const spritePathRef = useRef(spritePath);
@@ -147,7 +150,7 @@ export const SpriteUploader = memo<IProps>(function SpriteUploader({
 		<>
 			<div className={cn('flex flex-col gap-4 md:flex-row', className)}>
 				<div className="flex flex-col gap-2">
-					<label
+					<div
 						onDrop={(event) => {
 							event.preventDefault();
 							event.stopPropagation();
@@ -167,7 +170,7 @@ export const SpriteUploader = memo<IProps>(function SpriteUploader({
 							setIsDragging(false);
 						}}
 						className={cn(
-							'bg-checkerboard group relative flex h-32 w-32 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed transition-all',
+							'bg-checkerboard relative flex h-32 w-32 shrink-0 flex-col items-center justify-center gap-2 overflow-hidden rounded-large border-2 border-dashed transition-colors motion-reduce:transition-none',
 							isDragging
 								? 'border-primary bg-primary/10'
 								: spriteUrl
@@ -183,14 +186,20 @@ export const SpriteUploader = memo<IProps>(function SpriteUploader({
 								draggable={false}
 							/>
 						) : (
-							<div className="flex flex-col items-center gap-2 text-foreground/40">
-								<span className="text-2xl">🖼️</span>
-								<span className="text-xs font-medium">
-									点击设置贴图
-								</span>
-							</div>
+							<p className="text-xs font-medium text-foreground-600">
+								暂无贴图
+							</p>
 						)}
+						<Button
+							size="sm"
+							variant="flat"
+							color="primary"
+							onPress={() => fileInputRef.current?.click()}
+						>
+							{spriteUrl ? '更换贴图' : '选择贴图'}
+						</Button>
 						<input
+							ref={fileInputRef}
 							type="file"
 							accept="image/*"
 							className="hidden"
@@ -200,16 +209,15 @@ export const SpriteUploader = memo<IProps>(function SpriteUploader({
 								event.target.value = '';
 							}}
 						/>
-					</label>
+					</div>
 					{error && <WarningNotice>{error}</WarningNotice>}
 				</div>
-				<div className="flex flex-col justify-end gap-1 pb-1">
-					<p className="text-xs font-medium opacity-60">
-						贴图建议尺寸: {recommendedSize.width} ×{' '}
-						{recommendedSize.height} 像素
+				<div className="flex min-w-0 flex-col justify-end gap-1 pb-1">
+					<p className="text-xs font-medium text-foreground-600">
+						{`贴图建议尺寸：${recommendedSize.width}×${recommendedSize.height}像素`}
 					</p>
-					<p className="text-[10px] opacity-40">
-						资源路径: {spritePath}
+					<p className="break-all text-xs leading-relaxed text-foreground-500">
+						资产路径：{spritePath}
 					</p>
 				</div>
 			</div>
@@ -219,7 +227,7 @@ export const SpriteUploader = memo<IProps>(function SpriteUploader({
 				description={
 					visiblePendingUpload === null
 						? undefined
-						: `当前图片尺寸为 ${visiblePendingUpload.actualSize.width}x${visiblePendingUpload.actualSize.height}，建议尺寸为 ${visiblePendingUpload.recommendedSize.width}x${visiblePendingUpload.recommendedSize.height} 像素。是否继续上传？`
+						: `当前图片尺寸为${visiblePendingUpload.actualSize.width}×${visiblePendingUpload.actualSize.height}，建议尺寸为${visiblePendingUpload.recommendedSize.width}×${visiblePendingUpload.recommendedSize.height}像素。是否继续上传？`
 				}
 				color="warning"
 				confirmLabel="继续上传"

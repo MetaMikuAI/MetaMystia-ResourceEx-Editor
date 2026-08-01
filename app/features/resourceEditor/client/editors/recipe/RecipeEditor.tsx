@@ -1,5 +1,6 @@
-import { cn } from '@heroui/theme';
 import { memo, useCallback, useId, useMemo } from 'react';
+
+import Input from '@/design/ui/components/input';
 
 import { FOOD_NAMES } from '@/domain/data/foods';
 import { INGREDIENT_NAMES } from '@/domain/data/ingredients';
@@ -8,6 +9,10 @@ import type { CookerType, Recipe } from '@/domain/resourcePack/contracts/items';
 import { SectionAddButton } from '@/features/resourceEditor/client/components/actions/SectionAddButton';
 import { SectionDeleteButton } from '@/features/resourceEditor/client/components/actions/SectionDeleteButton';
 import { Label } from '@/features/resourceEditor/client/components/fields/Label';
+import { EditorDetailEmptyState } from '@/features/resourceEditor/client/components/layout/EditorDetailEmptyState';
+import { EditorDetailHeader } from '@/features/resourceEditor/client/components/layout/EditorDetailHeader';
+import { EditorDetailPanel } from '@/features/resourceEditor/client/components/layout/EditorDetailPanel';
+import { EditorSection } from '@/features/resourceEditor/client/components/layout/EditorSection';
 import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
 import {
 	Select,
@@ -26,11 +31,11 @@ interface RecipeEditorProps {
 }
 
 const COOKER_TYPES: { value: CookerType; label: string }[] = [
-	{ value: 'Pot', label: '煮锅 (Pot)' },
-	{ value: 'Grill', label: '烧烤架 (Grill)' },
-	{ value: 'Fryer', label: '油锅 (Fryer)' },
-	{ value: 'Steamer', label: '蒸锅 (Steamer)' },
-	{ value: 'CuttingBoard', label: '料理台 (CuttingBoard)' },
+	{ value: 'Pot', label: '煮锅（Pot）' },
+	{ value: 'Grill', label: '烧烤架（Grill）' },
+	{ value: 'Fryer', label: '油锅（Fryer）' },
+	{ value: 'Steamer', label: '蒸锅（Steamer）' },
+	{ value: 'CuttingBoard', label: '料理台（CuttingBoard）' },
 ];
 
 export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
@@ -71,7 +76,7 @@ export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
 	const ingredientItems = useMemo<SelectItemSpec<number>[]>(() => {
 		const sections: SelectItemSpec<number>[] = [
 			{
-				section: '游戏内原料',
+				section: '游戏内食材',
 				options: INGREDIENT_NAMES.map((i) => ({
 					value: i.id,
 					label: `[${i.id}] ${i.name}`,
@@ -80,7 +85,7 @@ export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
 		];
 		if (customIngredients.length > 0) {
 			sections.push({
-				section: '自定义原料',
+				section: '自定义食材',
 				options: customIngredients.map((i) => ({
 					value: i.id,
 					label: `[${i.id}] ${i.name}`,
@@ -119,30 +124,18 @@ export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
 	);
 
 	if (!recipe) {
-		return (
-			<div className="col-span-2 flex h-96 items-center justify-center rounded-lg bg-white/10 p-4 shadow-md backdrop-blur">
-				<p className="text-center text-black/40 dark:text-white/40">
-					请从左侧选择一个菜谱进行编辑
-				</p>
-			</div>
-		);
+		return <EditorDetailEmptyState itemLabel="食谱" />;
 	}
 
 	return (
-		<div className="col-span-2 flex flex-col gap-6 overflow-y-auto rounded-lg bg-white/10 p-6 shadow-md backdrop-blur">
-			<div className="flex items-center justify-between border-b border-black/5 pb-4 dark:border-white/5">
-				<h2 className="text-2xl font-bold">菜谱编辑</h2>
-			</div>
+		<EditorDetailPanel>
+			<EditorDetailHeader title="食谱编辑" />
 
-			{/* 基本信息 */}
-			<div className="flex flex-col gap-4 rounded-lg bg-white/20 p-4 dark:bg-white/5">
-				<h3 className="text-sm font-bold uppercase tracking-wider opacity-60">
-					基本信息
-				</h3>
+			<EditorSection title="基本信息">
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 					<div className="flex flex-col gap-1">
 						<div className="flex items-center justify-between">
-							<Label htmlFor={idId}>菜谱ID</Label>
+							<Label htmlFor={idId}>食谱ID</Label>
 							<div className="flex gap-2">
 								{isIdTooSmall && (
 									<ErrorBadge>ID需&ge;9000</ErrorBadge>
@@ -150,24 +143,19 @@ export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
 								<IdRangeBadge id={recipe.id} />
 							</div>
 						</div>
-						<input
+						<Input
 							id={idId}
 							type="number"
-							value={isNaN(recipe.id) ? '' : recipe.id}
+							value={isNaN(recipe.id) ? '' : String(recipe.id)}
 							onChange={(e) =>
 								onUpdate({ id: parseInt(e.target.value) })
 							}
-							className={cn(
-								'h-9 w-full rounded-lg border bg-white/40 px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:bg-black/10 dark:focus:border-white/30 dark:focus:ring-white/10',
-								isIdTooSmall
-									? 'border-danger bg-danger text-white opacity-50 focus:border-danger'
-									: 'border-black/10 dark:border-white/10'
-							)}
+							isInvalid={Boolean(isIdTooSmall)}
 						/>
 					</div>
 
 					<div className="flex flex-col gap-1">
-						<Label htmlFor={idFoodId}>料理ID (Food ID)</Label>
+						<Label htmlFor={idFoodId}>料理ID（Food ID）</Label>
 						<Select<number>
 							id={idFoodId}
 							ariaLabel="料理ID"
@@ -178,23 +166,26 @@ export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
 					</div>
 
 					<div className="flex flex-col gap-1">
-						<Label htmlFor={idCookTime}>烹饪时间 (Cook Time)</Label>
-						<input
+						<Label htmlFor={idCookTime}>
+							烹饪时间（Cook Time）
+						</Label>
+						<Input
 							id={idCookTime}
 							type="number"
 							value={
-								isNaN(recipe.cookTime) ? '' : recipe.cookTime
+								isNaN(recipe.cookTime)
+									? ''
+									: String(recipe.cookTime)
 							}
 							onChange={(e) =>
 								onUpdate({ cookTime: parseInt(e.target.value) })
 							}
-							className="h-9 w-full rounded-lg border border-black/10 bg-white/40 px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:border-white/10 dark:bg-black/10 dark:focus:border-white/10 dark:focus:ring-white/10"
 						/>
 					</div>
 
 					<div className="flex flex-col gap-1">
 						<Label htmlFor={idCookerType}>
-							厨具类型 (Cooker Type)
+							厨具类型（Cooker Type）
 						</Label>
 						<Select<CookerType>
 							id={idCookerType}
@@ -208,35 +199,33 @@ export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
 						/>
 					</div>
 				</div>
-			</div>
+			</EditorSection>
 
-			{/* 原料配置 */}
-			<div className="flex flex-col gap-4 rounded-lg bg-white/20 p-4 dark:bg-white/5">
-				<div className="flex items-center justify-between">
-					<h3 className="text-sm font-bold uppercase tracking-wider opacity-60">
-						原料配置 (最多5个)
-					</h3>
+			<EditorSection
+				title="食材配置（最多5个）"
+				actions={
 					<SectionAddButton
 						onPress={addIngredient}
 						isDisabled={recipe.ingredients.length >= 5}
 					>
-						添加原料
+						添加食材
 					</SectionAddButton>
-				</div>
+				}
+			>
 				{recipe.ingredients.length >= 5 && (
-					<WarningNotice>已达到最多 5 个原料的上限。</WarningNotice>
+					<WarningNotice>已达到最多5个食材的上限。</WarningNotice>
 				)}
 				<div className="flex flex-col gap-3">
 					{recipe.ingredients.map((ingredientId, index) => (
 						<div
 							key={index}
-							className="flex items-center gap-3 rounded-lg border border-black/10 bg-white/40 p-3 dark:border-white/10 dark:bg-black/10"
+							className="flex items-center gap-3 rounded-large border border-divider bg-content1/50 p-3"
 						>
-							<span className="w-8 text-center text-sm font-medium opacity-60">
+							<span className="w-8 text-center text-sm font-medium text-foreground-500">
 								#{index + 1}
 							</span>
 							<Select<number>
-								ariaLabel={`原料 #${index + 1}`}
+								ariaLabel={`食材#${index + 1}`}
 								baseClassName="flex-1"
 								value={ingredientId}
 								onChange={(v) =>
@@ -246,19 +235,20 @@ export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
 							/>
 							<SectionDeleteButton
 								iconOnly
+								className="sm:h-10 sm:w-10 sm:rounded-medium"
 								onPress={() => removeIngredient(index)}
-								aria-label={`删除原料 #${index + 1}`}
+								aria-label={`删除食材#${index + 1}`}
 							/>
 						</div>
 					))}
 					{recipe.ingredients.length === 0 && (
 						<EmptyState
-							title="暂无原料配置"
-							description='点击"添加原料"按钮开始配置'
+							title="暂无食材配置"
+							description="点击“添加食材”按钮开始配置。"
 						/>
 					)}
 				</div>
-			</div>
-		</div>
+			</EditorSection>
+		</EditorDetailPanel>
 	);
 });

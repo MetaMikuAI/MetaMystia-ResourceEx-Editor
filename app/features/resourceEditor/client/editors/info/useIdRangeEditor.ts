@@ -58,10 +58,10 @@ export function useIdRangeEditor({
 			return '请同时填写起始和结束';
 		}
 		if (idRangeStart < MANAGED_ID_MIN) {
-			return `起始ID不能小于 ${MANAGED_ID_MIN}`;
+			return `起始ID不能小于${MANAGED_ID_MIN}`;
 		}
 		if (idRangeEnd > MANAGED_ID_MAX) {
-			return `结束ID不能大于 ${MANAGED_ID_MAX}`;
+			return `结束ID不能大于${MANAGED_ID_MAX}`;
 		}
 		if (idRangeStart > idRangeEnd) return '起始ID不能大于结束ID';
 		return null;
@@ -70,7 +70,7 @@ export function useIdRangeEditor({
 	const sign = useCallback(
 		(privateKey: string) => {
 			if (!label || idRangeStart == null || idRangeEnd == null) {
-				throw new Error('请先填写有效的资源包 Label 与 ID 段');
+				throw new Error('请先填写有效的资源包标识符（Label）与ID段');
 			}
 			return signIdRange(privateKey, label, idRangeStart, idRangeEnd);
 		},

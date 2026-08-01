@@ -13,6 +13,7 @@ interface IProps extends TextAreaProps {}
 export default memo<IProps>(function Textarea({
 	classNames,
 	disableAnimation,
+	radius,
 	...props
 }) {
 	const isReducedMotion = useReducedMotion();
@@ -21,6 +22,7 @@ export default memo<IProps>(function Textarea({
 	return (
 		<HeroUITextarea
 			disableAnimation={disableAnimation ?? isReducedMotion}
+			radius={radius ?? 'md'}
 			classNames={{
 				...classNames,
 				inputWrapper: cn(

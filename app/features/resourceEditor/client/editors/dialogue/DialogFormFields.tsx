@@ -1,5 +1,8 @@
 import { memo, useId } from 'react';
 
+import Input from '@/design/ui/components/input';
+import Textarea from '@/design/ui/components/textarea';
+
 import { SPECIAL_PORTRAITS } from '@/domain/data/specialPortraits';
 import type { Character } from '@/domain/resourcePack/contracts/character';
 import type { Dialog } from '@/domain/resourcePack/contracts/dialogue';
@@ -81,34 +84,34 @@ export const DialogFormFields = memo<DialogFormFieldsProps>(
 							value={dialog.position}
 							onChange={(v) => onUpdate({ position: v })}
 							items={[
-								{ value: 'Left', label: '左侧 (Left)' },
-								{ value: 'Right', label: '右侧 (Right)' },
+								{ value: 'Left', label: '左侧（Left）' },
+								{ value: 'Right', label: '右侧（Right）' },
 							]}
 						/>
 					</div>
 
 					<div className="flex flex-col gap-1">
 						<Label htmlFor={idType}>角色类型</Label>
-						<input
-							disabled
+						<Input
+							isDisabled
 							id={idType}
 							type="text"
 							value={dialog.characterType}
-							className="h-9 w-full cursor-not-allowed rounded-lg border border-black/10 bg-white/40 px-3 py-2 text-sm text-foreground outline-none disabled:opacity-50 dark:border-white/10 dark:bg-black/10"
 						/>
 					</div>
 				</div>
 
 				<div className="flex flex-1 flex-col gap-1">
 					<Label htmlFor={idText}>对话内容</Label>
-					<textarea
+					<Textarea
 						id={idText}
-						placeholder="在此输入对话文本..."
+						placeholder="在此输入对话文本…"
 						value={dialog.text}
 						onChange={(e) => {
 							onUpdate({ text: e.target.value });
 						}}
-						className="min-h-40 w-full flex-1 rounded-lg border border-black/10 bg-white/40 px-3 py-2 text-sm text-foreground outline-none transition-all focus:border-black/30 focus:ring-2 focus:ring-black/10 dark:border-white/10 dark:bg-black/10 dark:focus:border-white/10 dark:focus:ring-white/10"
+						minRows={6}
+						className="min-w-0 flex-1"
 					/>
 				</div>
 			</div>

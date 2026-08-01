@@ -2,6 +2,7 @@ import { memo, useMemo } from 'react';
 
 import type { EventNode } from '@/domain/resourcePack/contracts/event';
 
+import { Label } from '@/features/resourceEditor/client/components/fields/Label';
 import {
 	Select,
 	type SelectItem as SelectItemSpec,
@@ -19,18 +20,19 @@ export const EventFieldEditor = memo<EventFieldEditorProps>(
 		const eventItems = useMemo<SelectItemSpec<string>[]>(() => {
 			return allEvents.map((e) => ({
 				value: e.label,
-				label: `${e.label} (${e.debugLabel})`,
+				label: `${e.label}（${e.debugLabel}）`,
 			}));
 		}, [allEvents]);
 
 		return (
-			<div className="flex flex-col gap-2">
-				<label className="text-sm font-bold opacity-70">{label}</label>
+			<div className="flex min-w-0 flex-col gap-2">
+				<Label>{label}</Label>
 				<Select<string>
 					value={value}
 					onChange={onChange}
-					placeholder="请选择事件..."
+					placeholder="请选择事件…"
 					items={eventItems}
+					size="sm"
 				/>
 			</div>
 		);

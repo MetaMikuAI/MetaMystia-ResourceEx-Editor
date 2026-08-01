@@ -1,6 +1,8 @@
 import { cn } from '@heroui/theme';
 import { useState } from 'react';
 
+import Button from '@/design/ui/components/button';
+import Input from '@/design/ui/components/input';
 import Switch from '@/design/ui/components/switch';
 
 import { IZAKAYAS } from '@/domain/data/izakayas';
@@ -17,11 +19,17 @@ import type {
 } from '@/domain/resourcePack/contracts/character';
 
 import { SectionAddButton } from '@/features/resourceEditor/client/components/actions/SectionAddButton';
+import { SectionDeleteButton } from '@/features/resourceEditor/client/components/actions/SectionDeleteButton';
 import { ConfirmPopover } from '@/features/resourceEditor/client/components/confirm/ConfirmPopover';
 import { InfoTip } from '@/features/resourceEditor/client/components/fields/InfoTip';
 import { Label } from '@/features/resourceEditor/client/components/fields/Label';
 import { ChevronRight } from '@/features/resourceEditor/client/components/icons/ChevronRight';
 import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
+import { EditorSection } from '@/features/resourceEditor/client/components/layout/EditorSection';
+import {
+	TagBadge,
+	TagButton,
+} from '@/features/resourceEditor/client/components/tags/TagButton';
 
 interface GuestInfoProps {
 	guest: GuestInfo | undefined;
@@ -57,15 +65,28 @@ export function GuestInfoEditor({
 			newTags = currentTags.filter((t) => t.tagId !== tagId);
 		} else {
 			newTags = [...currentTags, { tagId, weight: 1 }];
+			const newRequest = { tagId, request: '', enable: true };
 			if (field === 'likeFoodTag') {
-				const existingReq = newFoodRequests.find(
-					(r) => r.tagId === tagId
-				);
-				if (!existingReq) {
-					newFoodRequests.push({ tagId, request: '', enable: true });
-				}
+				newFoodRequests = newFoodRequests.some(
+					(request) => request.tagId === tagId
+				)
+					? newFoodRequests.map((request) =>
+							request.tagId === tagId
+								? { ...request, enable: true }
+								: request
+						)
+					: [...newFoodRequests, newRequest];
+			} else {
+				newBevRequests = newBevRequests.some(
+					(request) => request.tagId === tagId
+				)
+					? newBevRequests.map((request) =>
+							request.tagId === tagId
+								? { ...request, enable: true }
+								: request
+						)
+					: [...newBevRequests, newRequest];
 			}
-			// Beverage requests are "closed" by default, so we don't add them to bevRequests here
 		}
 
 		newTags.sort((a, b) => a.tagId - b.tagId);
@@ -211,27 +232,34 @@ export function GuestInfoEditor({
 	};
 
 	return (
-		<div className="flex flex-col gap-4">
-			<div className="ml-1 flex items-center justify-between">
-				<div
-					className="flex cursor-pointer select-none items-center gap-2"
-					onClick={() => setIsExpanded(!isExpanded)}
-				>
-					<ChevronRight
-						className={cn(
-							'transition-transform duration-200',
-							isExpanded && 'rotate-90'
-						)}
-					/>
-					<label className="cursor-pointer font-semibold">
+		<EditorSection
+			title={
+				<div className="flex min-w-0 items-center gap-1">
+					<Button
+						variant="light"
+						size="sm"
+						aria-expanded={isExpanded}
+						className="-ml-2 h-10 px-2 text-base font-semibold text-foreground-700 sm:h-8"
+						startContent={
+							<ChevronRight
+								className={cn(
+									'h-4 w-4 transition-transform duration-200 motion-reduce:transition-none',
+									isExpanded && 'rotate-90'
+								)}
+							/>
+						}
+						onPress={() => setIsExpanded((value) => !value)}
+					>
 						顾客配置（Guest Info）
-					</label>
+					</Button>
 					<InfoTip>
 						为角色配置夜间顾客相关信息，包括喜好标签、闲聊文本等
 					</InfoTip>
 				</div>
+			}
+			actions={
 				<div className="flex items-center gap-2">
-					<span className="whitespace-nowrap text-xs font-medium">
+					<span className="whitespace-nowrap text-xs font-medium text-foreground-600">
 						{guest ? '已启用顾客配置' : '启用顾客配置'}
 					</span>
 					{guest ? (
@@ -257,6 +285,7 @@ export function GuestInfoEditor({
 						/>
 					) : (
 						<Switch
+							aria-label="启用顾客配置"
 							size="sm"
 							isSelected={false}
 							onValueChange={(isSelected) => {
@@ -265,57 +294,52 @@ export function GuestInfoEditor({
 						/>
 					)}
 				</div>
-			</div>
-
+			}
+		>
 			{isExpanded && guest && (
-				<div className="animate-in fade-in slide-in-from-top-2 flex flex-col gap-6 rounded-2xl border border-white/5 bg-black/5 p-6 duration-200">
+				<div className="flex min-w-0 flex-col gap-6">
 					{guest.likeFoodTag.some((lt) =>
 						guest?.hateFoodTag.includes(lt.tagId)
 					) && (
-						<div className="flex animate-pulse items-center gap-3 rounded-xl border border-danger/50 bg-danger/20 p-3 text-xs font-bold text-danger">
-							<span className="text-lg">⚠️</span>
-							检测到标签冲突：某些料理标签同时存在于“喜爱”和“厌恶”列表中。
+						<div
+							className="rounded-large border border-danger/40 bg-danger/10 p-3 text-sm text-danger-700 dark:text-danger"
+							role="alert"
+						>
+							<span className="font-semibold">标签冲突：</span>
+							某些料理标签同时存在于“喜爱”和“厌恶”列表中。
 						</div>
 					)}
 					<div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
 						<div className="flex flex-col gap-2">
-							<label className="ml-1 text-sm font-bold opacity-70">
-								携带金钱下限 (Lower)
-							</label>
-							<input
+							<Label>携带金钱下限（Lower）</Label>
+							<Input
 								type="number"
-								value={guest.fundRangeLower}
+								value={String(guest.fundRangeLower)}
 								onChange={(e) =>
 									onUpdate({
 										fundRangeLower:
 											parseInt(e.target.value) || 0,
 									})
 								}
-								className="rounded-xl border border-white/10 bg-black/10 p-3 transition-all focus:outline-none focus:ring-2 focus:ring-primary/50"
 							/>
 						</div>
 						<div className="flex flex-col gap-2">
-							<label className="ml-1 text-sm font-bold opacity-70">
-								携带金钱上限 (Upper)
-							</label>
-							<input
+							<Label>携带金钱上限（Upper）</Label>
+							<Input
 								type="number"
-								value={guest.fundRangeUpper}
+								value={String(guest.fundRangeUpper)}
 								onChange={(e) =>
 									onUpdate({
 										fundRangeUpper:
 											parseInt(e.target.value) || 0,
 									})
 								}
-								className="rounded-xl border border-white/10 bg-black/10 p-3 transition-all focus:outline-none focus:ring-2 focus:ring-primary/50"
 							/>
 						</div>
 					</div>
 
 					<div className="flex flex-col gap-4">
-						<label className="ml-1 text-sm font-bold opacity-70">
-							评价文本 (Evaluations)
-						</label>
+						<Label>评价文本（Evaluations）</Label>
 						<div className="grid grid-cols-1 gap-3">
 							{[
 								'黑评',
@@ -344,13 +368,13 @@ export function GuestInfoEditor({
 										key={i}
 										className="flex flex-col gap-1"
 									>
-										<label className="ml-1 text-[10px] font-bold opacity-50">
+										<Label size="sm">
 											{label}
 											{tips[i] && (
 												<InfoTip>{tips[i]}</InfoTip>
 											)}
-										</label>
-										<input
+										</Label>
+										<Input
 											type="text"
 											value={guest?.evaluation[i] || ''}
 											onChange={(e) =>
@@ -360,7 +384,6 @@ export function GuestInfoEditor({
 												)
 											}
 											placeholder={`请输入${label}文本...`}
-											className="rounded-lg border border-white/10 bg-black/10 p-2 text-sm transition-all focus:outline-none focus:ring-1 focus:ring-primary/50"
 										/>
 									</div>
 								);
@@ -369,12 +392,9 @@ export function GuestInfoEditor({
 					</div>
 
 					<div className="flex flex-col gap-4">
-						<div className="ml-1 flex items-center justify-between">
-							<Label
-								className="text-sm font-bold opacity-70"
-								tip="稀客在等餐时的闲聊文本，可以自由添加多条，也可以重复以控制各文本出现概率"
-							>
-								闲聊文本 (Conversations)
+						<div className="ml-1 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
+							<Label tip="稀客在等餐时的闲聊文本，可以自由添加多条，也可以重复以控制各文本出现概率">
+								闲聊文本（Conversations）
 							</Label>
 							<SectionAddButton onPress={addConversation}>
 								添加闲聊
@@ -382,8 +402,11 @@ export function GuestInfoEditor({
 						</div>
 						<div className="flex flex-col gap-2">
 							{guest?.conversation?.map((conv, i) => (
-								<div key={i} className="flex gap-2">
-									<input
+								<div
+									key={i}
+									className="flex min-w-0 items-center gap-2"
+								>
+									<Input
 										type="text"
 										value={conv}
 										onChange={(e) =>
@@ -392,21 +415,23 @@ export function GuestInfoEditor({
 												e.target.value
 											)
 										}
-										placeholder="请输入闲聊文本..."
-										className="flex-1 rounded-lg border border-white/10 bg-black/10 p-2 text-sm transition-all focus:outline-none focus:ring-1 focus:ring-primary/50"
+										placeholder="请输入闲聊文本…"
+										className="min-w-0 flex-1"
 									/>
-									<button
-										onClick={() => removeConversation(i)}
-										className="flex h-9 w-9 items-center justify-center rounded-lg border border-danger/20 bg-danger/10 text-danger transition-all hover:bg-danger/20"
+									<SectionDeleteButton
+										iconOnly
+										className="h-10 w-10 shrink-0 sm:h-10 sm:w-10"
+										onPress={() => removeConversation(i)}
 									>
-										×
-									</button>
+										删除闲聊文本
+									</SectionDeleteButton>
 								</div>
 							))}
 							{(guest?.conversation?.length || 0) === 0 && (
-								<div className="rounded-xl border border-dashed border-white/5 py-4 text-center text-xs opacity-30">
-									暂无闲聊文本
-								</div>
+								<EmptyState
+									variant="text"
+									title="暂无闲聊文本"
+								/>
 							)}
 						</div>
 					</div>
@@ -414,14 +439,11 @@ export function GuestInfoEditor({
 					<div className="flex flex-col gap-6">
 						<div className="flex flex-col gap-3">
 							<div className="ml-1 flex items-center justify-between">
-								<Label
-									className="text-sm font-bold opacity-70"
-									tip="稀客喜爱的料理tag,在下方选择具体标签，并稍后编写点单请求文本。建议选择 4-8 个"
-								>
-									喜爱料理标签 (Like Food Tags)
+								<Label tip="稀客喜爱的料理tag，在下方选择具体标签，并稍后编写点单请求文本。建议选择4～8个">
+									喜爱料理标签（Like Food Tags）
 								</Label>
 							</div>
-							<div className="flex flex-wrap gap-2 rounded-xl border border-white/10 bg-black/10 p-4">
+							<div className="flex flex-wrap gap-2 rounded-large border border-divider bg-content2/30 p-3 sm:p-4">
 								{FOOD_TAGS.map((tag) => {
 									const isSelected = guest?.likeFoodTag.some(
 										(t) => t.tagId === tag.id
@@ -430,58 +452,34 @@ export function GuestInfoEditor({
 										isSelected &&
 										guest?.hateFoodTag.includes(tag.id);
 									return (
-										<button
+										<TagButton
 											key={tag.id}
+											tag={tag}
+											isSelected={isSelected}
+											isInvalid={isConflict}
+											tone="positive"
 											onClick={() =>
 												toggleLikeTag(
 													'likeFoodTag',
 													tag.id
 												)
 											}
-											className={cn(
-												'relative flex items-center border px-1.5 py-0.5 text-[11px] font-bold transition-all',
-												isSelected
-													? isConflict
-														? 'border-danger bg-danger/40 text-white shadow-[0_0_10px_rgba(239,68,68,0.5)]'
-														: 'border-[#9d5437] bg-[#e6b4a6] text-[#830000]'
-													: 'border-white/20 bg-white/10 hover:bg-white/20'
-											)}
-											title={
-												isConflict
-													? '冲突：该标签同时存在于喜爱和厌恶列表中'
-													: ''
-											}
-										>
-											<span
-												className={cn(
-													'mr-1 transition-opacity',
-													isSelected
-														? 'opacity-100'
-														: 'opacity-40'
-												)}
-											>
-												⦁
-											</span>
-											{tag.name}
-											{isConflict && (
-												<span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full border border-white/10 bg-danger text-[10px] text-white shadow-lg">
-													!
-												</span>
-											)}
-										</button>
+											{...(isConflict
+												? {
+														title: '冲突：该标签同时存在于喜爱和厌恶列表中',
+													}
+												: {})}
+										/>
 									);
 								})}
 							</div>
 						</div>
 
 						<div className="flex flex-col gap-3">
-							<Label
-								className="ml-1 text-sm font-bold text-danger opacity-70"
-								tip="稀客厌恶的料理tag,请谨慎选择，避免与喜爱标签冲突。"
-							>
-								厌恶料理标签 (Hate Food Tags)
+							<Label tip="稀客厌恶的料理标签，请谨慎选择，避免与喜爱标签冲突。">
+								厌恶料理标签（Hate Food Tags）
 							</Label>
-							<div className="flex flex-wrap gap-2 rounded-xl border border-white/10 bg-black/10 p-4">
+							<div className="flex flex-wrap gap-2 rounded-large border border-divider bg-content2/30 p-3 sm:p-4">
 								{FOOD_TAGS.map((tag) => {
 									const isSelected =
 										guest?.hateFoodTag.includes(tag.id);
@@ -491,87 +489,48 @@ export function GuestInfoEditor({
 											(t) => t.tagId === tag.id
 										);
 									return (
-										<button
+										<TagButton
 											key={tag.id}
+											tag={tag}
+											isSelected={isSelected}
+											isInvalid={isConflict}
+											tone="negative"
 											onClick={() =>
 												toggleHateTag(tag.id)
 											}
-											className={cn(
-												'relative flex items-center border px-1.5 py-0.5 text-[11px] font-bold transition-all',
-												isSelected
-													? isConflict
-														? 'border-danger bg-danger/40 text-white shadow-[0_0_10px_rgba(239,68,68,0.5)]'
-														: 'border-danger bg-danger/10 text-danger'
-													: 'border-white/20 bg-white/10 hover:bg-white/20'
-											)}
-											title={
-												isConflict
-													? '冲突：该标签同时存在于喜爱和厌恶列表中'
-													: ''
-											}
-										>
-											{tag.name}
-											<span
-												className={cn(
-													'ml-1 transition-opacity',
-													isSelected
-														? 'opacity-100'
-														: 'opacity-40'
-												)}
-											>
-												✘
-											</span>
-											{isConflict && (
-												<span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full border border-white/10 bg-danger text-[10px] text-white shadow-lg">
-													!
-												</span>
-											)}
-										</button>
+											{...(isConflict
+												? {
+														title: '冲突：该标签同时存在于喜爱和厌恶列表中',
+													}
+												: {})}
+										/>
 									);
 								})}
 							</div>
 						</div>
 
 						<div className="flex flex-col gap-3">
-							<Label
-								className="ml-1 text-sm font-bold text-primary opacity-70"
-								tip="稀客喜爱的酒水tag,在下方选择具体标签，并稍后选择编写酒水点单请求文本"
-							>
-								喜爱酒水标签 (Like Beverage Tags)
+							<Label tip="稀客喜爱的酒水标签，在下方选择具体标签，并稍后编写酒水点单请求文本">
+								喜爱酒水标签（Like Beverage Tags）
 							</Label>
-							<div className="flex flex-wrap gap-2 rounded-xl border border-white/10 bg-black/10 p-4">
+							<div className="flex flex-wrap gap-2 rounded-large border border-divider bg-content2/30 p-3 sm:p-4">
 								{BEVERAGE_TAGS.map((tag) => {
 									const isSelected = guest?.likeBevTag.some(
 										(t) => t.tagId === tag.id
 									);
 									return (
-										<button
+										<TagButton
 											key={tag.id}
+											tag={tag}
+											isSelected={isSelected}
+											tone="beverage"
 											onClick={() =>
 												toggleLikeTag(
 													'likeBevTag',
 													tag.id
 												)
 											}
-											className={cn(
-												'relative flex items-center border px-1.5 py-0.5 text-[11px] font-bold transition-all',
-												isSelected
-													? 'border-[#6f929b] bg-[#b0cfd7] text-[#a45c22]'
-													: 'border-white/20 bg-white/10 hover:bg-white/20'
-											)}
-										>
-											<span
-												className={cn(
-													'mr-1 transition-opacity',
-													isSelected
-														? 'opacity-100'
-														: 'opacity-40'
-												)}
-											>
-												⦁
-											</span>
-											{tag.name}
-										</button>
+										/>
 									);
 								})}
 							</div>
@@ -579,21 +538,21 @@ export function GuestInfoEditor({
 					</div>
 
 					<div className="flex flex-col gap-4">
-						<div className="ml-1 flex items-center justify-between">
+						<div className="ml-1 flex min-w-0 flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between">
 							<Label
-								className="text-sm font-bold opacity-70"
+								wrapperClassName="min-w-0"
 								tip={
 									'根据上方喜爱料理自动同步，在下方为每个标签编写具体的点单请求文本，也可以禁用某些标签的点单请求，游戏会使用默认文本如：“请给我辣的料理”'
 								}
 							>
-								料理点单请求 (Food Requests)
+								料理点单请求（Food Requests）
 							</Label>
-							<span className="text-[10px] italic opacity-40">
+							<span className="text-xs text-foreground-500">
 								根据上方喜爱料理自动同步
 							</span>
 						</div>
 						<div className="grid grid-cols-1 gap-3">
-							{(guest?.likeFoodTag || [])
+							{[...(guest?.likeFoodTag || [])]
 								.sort((a, b) => a.tagId - b.tagId)
 								.map((tag) => {
 									const req = guest?.foodRequests?.find(
@@ -604,45 +563,40 @@ export function GuestInfoEditor({
 										<div
 											key={tag.tagId}
 											className={cn(
-												'flex items-center gap-3 rounded-xl border p-3 transition-all',
+												'flex min-w-0 flex-col gap-3 rounded-large border p-3 sm:flex-row sm:items-center',
 												isEnabled
-													? 'border-white/5 bg-black/10'
-													: 'border-transparent bg-black/5 opacity-60'
+													? 'border-divider bg-content1/50'
+													: 'border-divider bg-content2/30'
 											)}
 										>
-											<div className="flex shrink-0 items-center gap-3">
-												<input
-													type="checkbox"
-													checked={isEnabled}
-													onChange={(e) => {
+											<div className="flex shrink-0 items-center gap-3 sm:w-40">
+												<Switch
+													size="sm"
+													aria-label={`启用${FOOD_TAG_MAP[tag.tagId] || tag.tagId}料理点单请求`}
+													isSelected={isEnabled}
+													onValueChange={(
+														isSelected
+													) => {
 														toggleRequest(
 															'foodRequests',
 															tag.tagId,
-															e.target.checked
+															isSelected
 														);
 													}}
-													className="h-4 w-4 rounded border-white/10 bg-black/10 text-primary focus:ring-primary/50"
 												/>
-												<div
-													className={cn(
-														'border px-1.5 py-0.5 text-[11px] font-medium transition-colors',
-														isEnabled
-															? 'border-[#9d5437] bg-[#e6b4a6] text-[#830000]'
-															: 'border-black/10 bg-black/5 text-black/40 dark:border-white/10 dark:bg-white/5 dark:text-white/40'
-													)}
+												<TagBadge
+													tone="positive"
+													isMuted={!isEnabled}
 												>
-													<span className="mr-1">
-														⦁
-													</span>
 													{FOOD_TAG_MAP[tag.tagId] ||
 														tag.tagId}
-												</div>
+												</TagBadge>
 											</div>
-											<div className="flex flex-1 flex-col gap-1">
-												<input
+											<div className="flex min-w-0 flex-1 flex-col gap-1">
+												<Input
 													type="text"
 													value={req?.request || ''}
-													disabled={!isEnabled}
+													isDisabled={!isEnabled}
 													onChange={(e) => {
 														updateFoodRequest(
 															tag.tagId,
@@ -653,7 +607,6 @@ export function GuestInfoEditor({
 															}
 														);
 													}}
-													className="rounded-lg border border-white/10 bg-black/10 p-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50"
 													placeholder={
 														!isEnabled
 															? '已禁用'
@@ -680,19 +633,19 @@ export function GuestInfoEditor({
 					</div>
 
 					<div className="flex flex-col gap-4">
-						<div className="ml-1 flex items-center justify-between">
+						<div className="ml-1 flex min-w-0 flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between">
 							<Label
-								className="text-sm font-bold opacity-70"
-								tip="根据上方喜爱酒水自动同步，默认为“关闭”状态，形如“请给我清酒的饮料“，也可以启用并自定义文本，为酒水也编写点单请求"
+								wrapperClassName="min-w-0"
+								tip="根据上方喜爱酒水自动同步，选择标签后默认启用，形如“请给我清酒的饮料”，也可以关闭或自定义文本"
 							>
-								酒水点单请求 (Beverage Requests)
+								酒水点单请求（Beverage Requests）
 							</Label>
-							<span className="text-[10px] italic opacity-40">
+							<span className="text-xs text-foreground-500">
 								根据上方喜爱酒水自动同步
 							</span>
 						</div>
 						<div className="grid grid-cols-1 gap-3">
-							{(guest?.likeBevTag || [])
+							{[...(guest?.likeBevTag || [])]
 								.sort((a, b) => a.tagId - b.tagId)
 								.map((tag) => {
 									const req = guest?.bevRequests?.find(
@@ -703,45 +656,43 @@ export function GuestInfoEditor({
 										<div
 											key={tag.tagId}
 											className={cn(
-												'flex items-center gap-3 rounded-xl border p-3 transition-all',
+												'flex min-w-0 flex-col gap-3 rounded-large border p-3 sm:flex-row sm:items-center',
 												isEnabled
-													? 'border-white/5 bg-black/10'
-													: 'border-transparent bg-black/5 opacity-60'
+													? 'border-divider bg-content1/50'
+													: 'border-divider bg-content2/30'
 											)}
 										>
-											<div className="flex shrink-0 items-center gap-3">
-												<input
-													type="checkbox"
-													checked={isEnabled}
-													onChange={(e) => {
+											<div className="flex shrink-0 items-center gap-3 sm:w-40">
+												<Switch
+													size="sm"
+													aria-label={`启用${BEVERAGE_TAG_MAP[tag.tagId] || tag.tagId}酒水点单请求`}
+													isSelected={isEnabled}
+													onValueChange={(
+														isSelected
+													) => {
 														toggleRequest(
 															'bevRequests',
 															tag.tagId,
-															e.target.checked
+															isSelected
 														);
 													}}
-													className="h-4 w-4 rounded border-white/10 bg-black/10 text-primary focus:ring-primary/50"
 												/>
-												<div
-													className={cn(
-														'border px-1.5 py-0.5 text-[11px] font-medium transition-colors',
-														isEnabled
-															? 'border-[#6f929b] bg-[#b0cfd7] text-[#a45c22]'
-															: 'border-black/10 bg-black/5 text-black/40 dark:border-white/10 dark:bg-white/5 dark:text-white/40'
-													)}
+												<TagBadge
+													tone="beverage"
+													isMuted={!isEnabled}
 												>
 													{
 														BEVERAGE_TAG_MAP[
 															tag.tagId
 														]
 													}
-												</div>
+												</TagBadge>
 											</div>
-											<div className="flex flex-1 flex-col gap-1">
-												<input
+											<div className="flex min-w-0 flex-1 flex-col gap-1">
+												<Input
 													type="text"
 													value={req?.request || ''}
-													disabled={!isEnabled}
+													isDisabled={!isEnabled}
 													onChange={(e) => {
 														updateBevRequest(
 															tag.tagId,
@@ -752,7 +703,6 @@ export function GuestInfoEditor({
 															}
 														);
 													}}
-													className="rounded-lg border border-white/10 bg-black/10 p-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50"
 													placeholder={
 														!isEnabled
 															? '已禁用'
@@ -779,42 +729,46 @@ export function GuestInfoEditor({
 					</div>
 
 					<div className="flex flex-col gap-4">
-						<Label
-							className="ml-1 text-sm font-bold opacity-70"
-							tip="出没地点是指稀客夜间可能出现的地点，您可以选择多个地点并设置其相对概率，有一些地图的备注可能让您疑惑，如“神社雀食堂”和“[客流量加倍的]神社雀酒屋”，难以区分时可以都选择"
-						>
-							出没地点 (Spawn Locations)
+						<Label tip="出没地点是指稀客夜间可能出现的地点，您可以选择多个地点并设置其相对概率，有一些地图的备注可能让您疑惑，如“神社雀食堂”和“[客流量加倍的]神社雀酒屋”，难以区分时可以都选择">
+							出没地点（Spawn Locations）
 						</Label>
-						<div className="flex flex-col gap-2 rounded-xl border border-white/10 bg-black/10 p-4">
+						<div className="flex flex-col gap-2 rounded-large border border-divider bg-content2/30 p-3 sm:p-4">
 							<div className="flex flex-wrap gap-2">
 								{IZAKAYAS.map((izakaya) => {
-									const isSelected = guest?.spawn?.some(
-										(s) => s.izakayaId === izakaya.id
+									const isSelected = Boolean(
+										guest?.spawn?.some(
+											(s) => s.izakayaId === izakaya.id
+										)
 									);
 									return (
-										<button
+										<Button
 											key={izakaya.id}
-											onClick={() =>
+											size="sm"
+											color={
+												isSelected
+													? 'primary'
+													: 'default'
+											}
+											variant={
+												isSelected ? 'flat' : 'bordered'
+											}
+											aria-pressed={isSelected}
+											className="h-10 rounded-medium px-3 text-xs sm:h-8"
+											onPress={() =>
 												toggleSpawn(izakaya.id)
 											}
-											className={cn(
-												'flex items-center rounded-lg border px-3 py-1.5 text-[11px] font-medium transition-all',
-												isSelected
-													? 'border-primary bg-primary/20 shadow-[0_0_10px_rgba(var(--primary-rgb),0.2)]'
-													: 'border-white/10 bg-white/5 hover:bg-white/10'
-											)}
 										>
-											<span className="mr-1.5 opacity-50">
-												({izakaya.id})
+											<span className="mr-1.5 text-foreground-500">
+												（{izakaya.id}）
 											</span>
 											{izakaya.name}
-										</button>
+										</Button>
 									);
 								})}
 							</div>
 
 							{guest?.spawn && guest.spawn.length > 0 && (
-								<div className="mt-4 flex flex-col gap-3 border-t border-white/10 pt-4">
+								<div className="mt-4 flex flex-col gap-3 border-t border-divider pt-4">
 									{guest.spawn.map((spawn) => {
 										const izakaya = IZAKAYAS.find(
 											(i) => i.id === spawn.izakayaId
@@ -822,11 +776,11 @@ export function GuestInfoEditor({
 										return (
 											<div
 												key={spawn.izakayaId}
-												className="flex w-full flex-wrap items-center gap-4 rounded-lg border border-white/5 bg-white/5 p-3"
+												className="flex w-full flex-wrap items-center gap-4 rounded-large border border-divider bg-content1/50 p-3"
 											>
-												<div className="w-32 shrink-0 text-[11px] font-bold">
-													<span className="mr-1 opacity-50">
-														({spawn.izakayaId})
+												<div className="w-32 shrink-0 text-xs font-semibold text-foreground-700">
+													<span className="mr-1 text-foreground-500">
+														（{spawn.izakayaId}）
 													</span>
 													{izakaya?.name}
 												</div>
@@ -834,14 +788,14 @@ export function GuestInfoEditor({
 													<div className="flex flex-1 flex-col gap-1">
 														<div className="flex items-center justify-between">
 															<Label
-																className="text-[10px] opacity-70"
+																size="sm"
 																tip={
-																	'并不是某个地图中稀客出现的概率，而是与全部可能稀客出没地点的相对概率。所有地点的相对概率之和不必为 1，游戏会自动归一化处理。因此与其说是相对概率，倒不如说是“权重”更合适一些，数值也不必小于 1。建议取值 0.05-0.30，较高的取值会允许稀客更早地出现'
+																	'并不是某个地图中稀客出现的概率，而是与全部可能稀客出没地点的相对概率。所有地点的相对概率之和不必为1，游戏会自动归一化处理。因此与其说是相对概率，倒不如说是“权重”更合适一些，数值也不必小于1。建议取值0.05～0.30，较高的取值会允许稀客更早地出现'
 																}
 															>
 																相对概率
 															</Label>
-															<span className="text-[10px] opacity-50">
+															<span className="text-xs text-foreground-500">
 																{
 																	spawn.relativeProb
 																}
@@ -850,6 +804,7 @@ export function GuestInfoEditor({
 														<div className="flex items-center gap-2">
 															<input
 																type="range"
+																aria-label={`${izakaya?.name || spawn.izakayaId}相对概率`}
 																min="0"
 																max="1"
 																step="0.01"
@@ -870,14 +825,16 @@ export function GuestInfoEditor({
 																		}
 																	)
 																}
-																className="h-1 flex-1 cursor-pointer appearance-none rounded-lg bg-white/10 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary"
+																className="h-1 flex-1 cursor-pointer appearance-none rounded-lg bg-default-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-content1 disabled:cursor-not-allowed disabled:opacity-50 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-primary [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary"
 															/>
-															<input
+															<Input
 																type="number"
+																size="sm"
+																aria-label={`${izakaya?.name || spawn.izakayaId}相对概率数值`}
 																step="0.01"
-																value={
+																value={String(
 																	spawn.relativeProb
-																}
+																)}
 																onChange={(e) =>
 																	updateSpawn(
 																		spawn.izakayaId,
@@ -892,61 +849,63 @@ export function GuestInfoEditor({
 																		}
 																	)
 																}
-																className="w-12 rounded border border-white/10 bg-black/10 px-1 py-0.5 text-center text-[10px] focus:outline-none focus:ring-1 focus:ring-primary/50"
+																className="w-20 shrink-0"
 															/>
 														</div>
 													</div>
 													<div className="flex gap-4">
 														<div className="flex flex-col items-center gap-1">
 															<Label
-																className="whitespace-nowrap text-[10px] opacity-70"
-																tip="默认为关闭，不过MetaMiku 还没有测试过具体含义哦"
+																size="sm"
+																className="whitespace-nowrap"
+																tip="默认为关闭，不过MetaMiku还没有测试过具体含义哦"
 															>
 																解锁后出现
 															</Label>
-															<input
-																type="checkbox"
-																checked={
+															<Switch
+																size="sm"
+																aria-label={`${izakaya?.name || spawn.izakayaId}解锁后出现`}
+																isSelected={
 																	spawn.onlySpawnAfterUnlocking
 																}
-																onChange={(e) =>
+																onValueChange={(
+																	isSelected
+																) =>
 																	updateSpawn(
 																		spawn.izakayaId,
 																		{
 																			onlySpawnAfterUnlocking:
-																				e
-																					.target
-																					.checked,
+																				isSelected,
 																		}
 																	)
 																}
-																className="rounded border-white/20 bg-black/20 text-primary focus:ring-0"
 															/>
 														</div>
 														<div className="flex flex-col items-center gap-1">
 															<Label
-																className="whitespace-nowrap text-[10px] opacity-70"
-																tip="默认为关闭，不过MetaMiku 还没有测试过具体含义哦"
+																size="sm"
+																className="whitespace-nowrap"
+																tip="默认为关闭，不过MetaMiku还没有测试过具体含义哦"
 															>
 																记录后出现
 															</Label>
-															<input
-																type="checkbox"
-																checked={
+															<Switch
+																size="sm"
+																aria-label={`${izakaya?.name || spawn.izakayaId}记录后出现`}
+																isSelected={
 																	spawn.onlySpawnWhenPlaceBeRecorded
 																}
-																onChange={(e) =>
+																onValueChange={(
+																	isSelected
+																) =>
 																	updateSpawn(
 																		spawn.izakayaId,
 																		{
 																			onlySpawnWhenPlaceBeRecorded:
-																				e
-																					.target
-																					.checked,
+																				isSelected,
 																		}
 																	)
 																}
-																className="rounded border-white/20 bg-black/20 text-primary focus:ring-0"
 															/>
 														</div>
 													</div>
@@ -963,9 +922,9 @@ export function GuestInfoEditor({
 			{isExpanded && !guest && (
 				<EmptyState
 					title="暂未启用顾客配置"
-					description="点击右侧开关启用"
+					description="可使用右侧开关启用顾客配置。"
 				/>
 			)}
-		</div>
+		</EditorSection>
 	);
 }
