@@ -434,7 +434,7 @@ export const AppNavbar = memo(function AppNavbar() {
 
 				<NavbarMenu
 					id={MOBILE_MENU_ID}
-					className="mobile-navbar-menu-scroll h-[calc(var(--safe-h-dvh)_-_var(--navbar-height))] gap-4 overflow-y-auto border-t border-divider bg-content1/95 px-4 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-4 backdrop-blur-xl sm:px-6"
+					className="mobile-navbar-menu-scroll max-h-[calc(var(--safe-h-dvh)_-_var(--navbar-height))] gap-4 overflow-y-auto border-t border-divider bg-content1/95 px-4 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-4 backdrop-blur-xl sm:px-6"
 				>
 					{MOBILE_NAV_GROUPS.map((group, groupIndex) => (
 						<NavbarMenuItem key={group.label} className="w-full">
