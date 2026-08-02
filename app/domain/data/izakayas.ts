@@ -1,65 +1,164 @@
-export const IZAKAYAS = [
-	{ id: -1, name: '?????' },
-	{ id: 0, name: '兽道推车' },
-	{ id: 1, name: '兽道小屋' },
-	{ id: 2, name: '兽道雀食堂' },
-	{ id: 3, name: '人里推车' },
-	{ id: 4, name: '人里小屋' },
-	{ id: 5, name: '人里雀食堂' },
-	{ id: 6, name: '神社推车' },
-	{ id: 7, name: '神社小屋' },
-	{ id: 8, name: '神社雀食堂' },
-	{ id: 9, name: '[客流量加倍]的神社推车' },
-	{ id: 10, name: '红魔馆推车' },
-	{ id: 11, name: '红魔馆小屋' },
-	{ id: 12, name: '红魔馆雀食堂' },
-	{ id: 13, name: '[试炼]白玉楼' },
-	{ id: 14, name: '竹林推车' },
-	{ id: 15, name: '竹林小屋' },
-	{ id: 16, name: '竹林雀食堂' },
-	{ id: 17, name: '[决战]白玉楼' },
-	{ id: 18, name: '[无妹红辉夜]的竹林推车' },
-	{ id: 19, name: '[无因幡帝]的竹林推车' },
-	{ id: 20, name: '[无妹红辉夜]的竹林小屋' },
-	{ id: 21, name: '[无因幡帝]的竹林小屋' },
-	{ id: 22, name: '[无妹红辉夜]的竹林雀食堂' },
-	{ id: 23, name: '[无因幡帝]的竹林雀食堂' },
-	{ id: 24, name: '[客流量加倍]的神社小屋' },
-	{ id: 25, name: '[客流量加倍]的神社雀酒屋' },
-	{ id: 1000, name: '妖怪之山推车' },
-	{ id: 1001, name: '妖怪之山小屋' },
-	{ id: 1002, name: '妖怪之山雀食堂' },
-	{ id: 1003, name: '魔法森林推车' },
-	{ id: 1004, name: '魔法森林小屋' },
-	{ id: 1005, name: '魔法森林雀食堂' },
-	{ id: 1006, name: '血池地狱' },
-	{ id: 2000, name: '旧地狱推车' },
-	{ id: 2001, name: '旧地狱小屋' },
-	{ id: 2002, name: '旧地狱雀食堂' },
-	{ id: 2003, name: '地灵殿推车' },
-	{ id: 2004, name: '地灵殿小屋' },
-	{ id: 2005, name: '地灵殿雀食堂' },
-	{ id: 2006, name: '怪诞料理赛场' },
-	{ id: 3000, name: '命莲寺推车' },
-	{ id: 3001, name: '命莲寺小屋' },
-	{ id: 3002, name: '命莲寺雀食堂' },
-	{ id: 3003, name: '神灵庙推车' },
-	{ id: 3004, name: '神灵庙小屋' },
-	{ id: 3005, name: '神灵庙雀食堂' },
-	{ id: 3006, name: '神灵庙比赛现场' },
-	{ id: 4000, name: '太阳花田推车' },
-	{ id: 4001, name: '太阳花田小屋' },
-	{ id: 4002, name: '太阳花田雀食堂' },
-	{ id: 4003, name: '辉针城推车' },
-	{ id: 4004, name: '辉针城小屋' },
-	{ id: 4005, name: '辉针城雀食堂' },
-	{ id: 4006, name: '抓鬼大赛' },
-	{ id: 5000, name: '月之都推车' },
-	{ id: 5001, name: '月之都小屋' },
-	{ id: 5002, name: '月之都雀食堂' },
-	{ id: 5003, name: '魔界推车' },
-	{ id: 5004, name: '魔界小屋' },
-	{ id: 5005, name: '魔界雀食堂' },
-	{ id: 5006, name: '兽道食堂抓捕圈' },
-	{ id: 5007, name: '月之都试炼' },
-] as const satisfies ReadonlyArray<{ id: number; name: string }>;
+interface IIzakaya {
+	id: number;
+	name: string;
+}
+
+interface IIzakayaGroup {
+	locations: readonly IIzakaya[];
+	name: string;
+}
+
+export const IZAKAYA_GROUPS = [
+	{
+		name: '兽道',
+		locations: [
+			{ id: 0, name: '兽道推车' },
+			{ id: 1, name: '兽道小屋' },
+			{ id: 2, name: '兽道雀食堂' },
+		],
+	},
+	{
+		name: '人里',
+		locations: [
+			{ id: 3, name: '人里推车' },
+			{ id: 4, name: '人里小屋' },
+			{ id: 5, name: '人里雀食堂' },
+		],
+	},
+	{
+		name: '神社',
+		locations: [
+			{ id: 6, name: '神社推车' },
+			{ id: 7, name: '神社小屋' },
+			{ id: 8, name: '神社雀食堂' },
+			{ id: 9, name: '[客流量加倍]的神社推车' },
+			{ id: 24, name: '[客流量加倍]的神社小屋' },
+			{ id: 25, name: '[客流量加倍]的神社雀酒屋' },
+		],
+	},
+	{
+		name: '红魔馆',
+		locations: [
+			{ id: 10, name: '红魔馆推车' },
+			{ id: 11, name: '红魔馆小屋' },
+			{ id: 12, name: '红魔馆雀食堂' },
+		],
+	},
+	{
+		name: '白玉楼',
+		locations: [
+			{ id: 13, name: '[试炼]白玉楼' },
+			{ id: 17, name: '[决战]白玉楼' },
+		],
+	},
+	{
+		name: '竹林',
+		locations: [
+			{ id: 14, name: '竹林推车' },
+			{ id: 15, name: '竹林小屋' },
+			{ id: 16, name: '竹林雀食堂' },
+			{ id: 18, name: '[无妹红辉夜]的竹林推车' },
+			{ id: 19, name: '[无因幡帝]的竹林推车' },
+			{ id: 20, name: '[无妹红辉夜]的竹林小屋' },
+			{ id: 21, name: '[无因幡帝]的竹林小屋' },
+			{ id: 22, name: '[无妹红辉夜]的竹林雀食堂' },
+			{ id: 23, name: '[无因幡帝]的竹林雀食堂' },
+		],
+	},
+	{
+		name: '妖怪之山',
+		locations: [
+			{ id: 1000, name: '妖怪之山推车' },
+			{ id: 1001, name: '妖怪之山小屋' },
+			{ id: 1002, name: '妖怪之山雀食堂' },
+		],
+	},
+	{
+		name: '魔法森林',
+		locations: [
+			{ id: 1003, name: '魔法森林推车' },
+			{ id: 1004, name: '魔法森林小屋' },
+			{ id: 1005, name: '魔法森林雀食堂' },
+		],
+	},
+	{
+		name: '旧地狱',
+		locations: [
+			{ id: 1006, name: '血池地狱' },
+			{ id: 2000, name: '旧地狱推车' },
+			{ id: 2001, name: '旧地狱小屋' },
+			{ id: 2002, name: '旧地狱雀食堂' },
+		],
+	},
+	{
+		name: '地灵殿',
+		locations: [
+			{ id: 2003, name: '地灵殿推车' },
+			{ id: 2004, name: '地灵殿小屋' },
+			{ id: 2005, name: '地灵殿雀食堂' },
+		],
+	},
+	{
+		name: '命莲寺',
+		locations: [
+			{ id: 3000, name: '命莲寺推车' },
+			{ id: 3001, name: '命莲寺小屋' },
+			{ id: 3002, name: '命莲寺雀食堂' },
+		],
+	},
+	{
+		name: '神灵庙',
+		locations: [
+			{ id: 3003, name: '神灵庙推车' },
+			{ id: 3004, name: '神灵庙小屋' },
+			{ id: 3005, name: '神灵庙雀食堂' },
+		],
+	},
+	{
+		name: '太阳花田',
+		locations: [
+			{ id: 4000, name: '太阳花田推车' },
+			{ id: 4001, name: '太阳花田小屋' },
+			{ id: 4002, name: '太阳花田雀食堂' },
+		],
+	},
+	{
+		name: '辉针城',
+		locations: [
+			{ id: 4003, name: '辉针城推车' },
+			{ id: 4004, name: '辉针城小屋' },
+			{ id: 4005, name: '辉针城雀食堂' },
+		],
+	},
+	{
+		name: '月之都',
+		locations: [
+			{ id: 5000, name: '月之都推车' },
+			{ id: 5001, name: '月之都小屋' },
+			{ id: 5002, name: '月之都雀食堂' },
+		],
+	},
+	{
+		name: '魔界',
+		locations: [
+			{ id: 5003, name: '魔界推车' },
+			{ id: 5004, name: '魔界小屋' },
+			{ id: 5005, name: '魔界雀食堂' },
+		],
+	},
+	{
+		name: '特殊地点',
+		locations: [
+			{ id: -1, name: '?????' },
+			{ id: 2006, name: '怪诞料理赛场' },
+			{ id: 3006, name: '神灵庙比赛现场' },
+			{ id: 4006, name: '抓鬼大赛' },
+			{ id: 5006, name: '兽道食堂抓捕圈' },
+			{ id: 5007, name: '月之都试炼' },
+		],
+	},
+] as const satisfies ReadonlyArray<IIzakayaGroup>;
+
+export const IZAKAYAS = IZAKAYA_GROUPS.flatMap<IIzakaya>(
+	(group) => group.locations
+);

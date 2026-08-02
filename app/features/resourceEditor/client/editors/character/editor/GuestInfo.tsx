@@ -5,7 +5,7 @@ import Button from '@/design/ui/components/button';
 import Input from '@/design/ui/components/input';
 import Switch from '@/design/ui/components/switch';
 
-import { IZAKAYAS } from '@/domain/data/izakayas';
+import { IZAKAYAS, IZAKAYA_GROUPS } from '@/domain/data/izakayas';
 import {
 	BEVERAGE_TAG_MAP,
 	BEVERAGE_TAGS,
@@ -744,39 +744,68 @@ export function GuestInfoEditor({
 						<Label tip="出没地点是指稀客夜间可能出现的地点，您可以选择多个地点并设置其相对概率，有一些地图的备注可能让您疑惑，如“神社雀食堂”和“[客流量加倍的]神社雀酒屋”，难以区分时可以都选择">
 							出没地点（Spawn Locations）
 						</Label>
-						<div className="flex flex-col gap-2 rounded-large border border-divider bg-content2/30 p-3 sm:p-4">
-							<div className="flex flex-wrap gap-2">
-								{IZAKAYAS.map((izakaya) => {
-									const isSelected = Boolean(
-										guest?.spawn?.some(
-											(s) => s.izakayaId === izakaya.id
-										)
-									);
-									return (
-										<Button
-											key={izakaya.id}
-											size="sm"
-											color={
-												isSelected
-													? 'primary'
-													: 'default'
-											}
-											variant={
-												isSelected ? 'flat' : 'bordered'
-											}
-											aria-pressed={isSelected}
-											className="h-10 rounded-medium px-3 text-xs sm:h-8"
-											onPress={() =>
-												toggleSpawn(izakaya.id)
-											}
-										>
-											<span className="mr-1.5 text-foreground-500">
-												（{izakaya.id}）
-											</span>
-											{izakaya.name}
-										</Button>
-									);
-								})}
+						<div className="flex flex-col gap-4 rounded-large border border-divider bg-content2/30 p-3 sm:p-4">
+							<div className="flex flex-col gap-2">
+								{IZAKAYA_GROUPS.map((group) => (
+									<section
+										key={group.name}
+										className="flex flex-col gap-2 rounded-medium bg-content1/40 p-3 sm:flex-row sm:items-start"
+									>
+										<h3 className="shrink-0 text-xs font-semibold text-foreground-600 sm:w-24 sm:pt-2">
+											{group.name}
+										</h3>
+										<div className="flex min-w-0 flex-1 flex-wrap gap-2">
+											{group.locations.map((izakaya) => {
+												const isSelected = Boolean(
+													guest?.spawn?.some(
+														(spawn) =>
+															spawn.izakayaId ===
+															izakaya.id
+													)
+												);
+												return (
+													<Button
+														key={izakaya.id}
+														size="sm"
+														color={
+															isSelected
+																? 'primary'
+																: 'default'
+														}
+														variant={
+															isSelected
+																? 'flat'
+																: 'bordered'
+														}
+														aria-pressed={
+															isSelected
+														}
+														className={cn(
+															'h-10 rounded-medium px-3 text-left text-xs font-medium sm:h-8',
+															isSelected
+																? 'font-semibold'
+																: 'text-foreground-700'
+														)}
+														onPress={() =>
+															toggleSpawn(
+																izakaya.id
+															)
+														}
+													>
+														<span className="inline-flex items-baseline gap-1">
+															<span className="opacity-70">
+																（{izakaya.id}）
+															</span>
+															<span>
+																{izakaya.name}
+															</span>
+														</span>
+													</Button>
+												);
+											})}
+										</div>
+									</section>
+								))}
 							</div>
 
 							{guest?.spawn && guest.spawn.length > 0 && (
