@@ -69,7 +69,7 @@ export const FoodPreviewPopover = memo<IProps>(function FoodPreviewPopover({
 	);
 
 	return (
-		<Popover placement="right" showArrow>
+		<Popover showArrow>
 			<PopoverTrigger>{previewButton}</PopoverTrigger>
 			<PopoverContent className="w-80 max-w-[calc(100vw-1rem)] p-3">
 				<div className="grid w-full gap-3 text-sm text-foreground">

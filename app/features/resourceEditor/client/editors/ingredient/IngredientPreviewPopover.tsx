@@ -44,7 +44,7 @@ export const IngredientPreviewPopover = memo<IProps>(
 		].filter((category): category is string => category !== null);
 
 		return (
-			<Popover placement="right" showArrow>
+			<Popover showArrow>
 				<PopoverTrigger>
 					<Button
 						isIconOnly

@@ -38,7 +38,7 @@ export const BeveragePreviewPopover = memo<IProps>(
 		const spriteUrl = getAssetUrl(beverage.spritePath);
 
 		return (
-			<Popover placement="right" showArrow>
+			<Popover showArrow>
 				<PopoverTrigger>
 					<Button
 						isIconOnly
