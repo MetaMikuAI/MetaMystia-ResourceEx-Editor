@@ -370,11 +370,13 @@ export function GuestInfoEditor({
 										key={i}
 										className="flex flex-col gap-1"
 									>
-										<Label size="sm">
+										<Label
+											size="sm"
+											{...(tips[i]
+												? { tip: tips[i] }
+												: {})}
+										>
 											{label}
-											{tips[i] && (
-												<InfoTip>{tips[i]}</InfoTip>
-											)}
 										</Label>
 										<Input
 											type="text"
