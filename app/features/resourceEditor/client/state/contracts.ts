@@ -5,6 +5,10 @@ import type {
 	IAssetPathOperation,
 	IAssetState,
 } from '@/features/resourceEditor/client/assets/contracts';
+import type {
+	TWorkspaceSaveStatus,
+	TWorkspaceStorageMode,
+} from '@/features/resourceEditor/client/workspaces/contracts';
 
 export interface IResourceEditorOperationResult {
 	isSuccess: boolean;
@@ -13,20 +17,25 @@ export interface IResourceEditorOperationResult {
 
 export interface IResourceEditorExportResult extends IResourceEditorOperationResult {
 	filename?: string;
+	warning?: string;
 }
 
 export interface IResourceEditorContext {
-	resourcePack: ResourceEx;
-	license: string;
-	isDirty: boolean;
-	isExporting: boolean;
-	isImporting: boolean;
-	revision: number;
+	activeWorkspaceId: string | null;
 	assets: IAssetState;
+	hasUnexportedChanges: boolean;
+	isExporting: boolean;
+	isLocalSavePending: boolean;
+	license: string;
+	localSaveError: string | null;
+	localSaveStatus: TWorkspaceSaveStatus;
+	resourcePack: ResourceEx;
+	revision: number;
+	storageMode: TWorkspaceStorageMode;
+	flushLocalSave(): Promise<IResourceEditorOperationResult>;
+	retryLocalSave(): void;
 	updateResourcePack(updater: (current: ResourceEx) => ResourceEx): void;
 	replaceLicense(license: string): void;
-	importArchive(file: File): Promise<IResourceEditorOperationResult>;
-	createBlankResourcePack(): void;
 	exportArchive(
 		expectedRevision: number,
 		filename?: string

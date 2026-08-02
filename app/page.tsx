@@ -1,18 +1,10 @@
-'use client';
-
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { WorkspaceManagerScreen } from '@/features/resourceEditor/client/workspaces/components/WorkspaceManagerScreen';
 
 export default function Home() {
-	const router = useRouter();
-
-	useEffect(() => {
-		router.replace('/info');
-	}, [router]);
-
 	return (
-		<noscript>
-			<a href="/info">前往基础信息编辑器</a>
-		</noscript>
+		<>
+			<WorkspaceManagerScreen />
+			<noscript>请启用JavaScript以管理和编辑本地资源包。</noscript>
+		</>
 	);
 }

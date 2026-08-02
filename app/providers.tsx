@@ -8,6 +8,7 @@ import { DesignPreferencesProvider } from './design/preferences/DesignPreference
 import { useTheme } from './design/theme/runtime/useTheme';
 import { AnnouncementModal } from './features/announcements/client/AnnouncementModal';
 import { ResourceEditorProvider } from './features/resourceEditor/client/state/ResourceEditorProvider';
+import { ResourceWorkspaceProvider } from './features/resourceEditor/client/workspaces/ResourceWorkspaceProvider';
 
 const DESIGN_PREFERENCES = { isHighAppearance: true } as const;
 
@@ -19,10 +20,12 @@ export default function Providers({ children }: PropsWithChildren) {
 	return (
 		<DesignPreferencesProvider value={DESIGN_PREFERENCES}>
 			<HeroUIProvider locale="zh-CN" navigate={router.push}>
-				<ResourceEditorProvider>
-					{children}
-					<AnnouncementModal />
-				</ResourceEditorProvider>
+				<ResourceWorkspaceProvider>
+					<ResourceEditorProvider>
+						{children}
+						<AnnouncementModal />
+					</ResourceEditorProvider>
+				</ResourceWorkspaceProvider>
 			</HeroUIProvider>
 		</DesignPreferencesProvider>
 	);

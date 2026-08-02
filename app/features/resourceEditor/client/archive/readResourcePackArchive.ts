@@ -53,14 +53,14 @@ export async function readResourcePackArchive(
 	try {
 		zip = await JSZip.loadAsync(archiveInput);
 	} catch (error) {
-		throw new ResourcePackArchiveError('无法读取ZIP压缩包', {
+		throw new ResourcePackArchiveError('无法读取资源包文件', {
 			cause: error,
 		});
 	}
 
 	const resourcePackEntry = zip.file('ResourceEx.json');
 	if (!resourcePackEntry) {
-		throw new ResourcePackArchiveError('压缩包中未找到ResourceEx.json');
+		throw new ResourcePackArchiveError('资源包文件中未找到ResourceEx.json');
 	}
 
 	let resourcePack: IReadResourcePackArchiveResult['resourcePack'];
@@ -102,14 +102,14 @@ export async function readResourcePackArchive(
 	for (const path of files.keys()) {
 		if (folders.has(`${path}/`)) {
 			throw new ResourcePackArchiveError(
-				`压缩包中的路径同时被用作文件和目录：${path}`
+				`资源包文件中的路径同时被用作文件和目录：${path}`
 			);
 		}
 	}
 	for (const reservedPath of ['ResourceEx.json', 'LICENSE.md']) {
 		if (folders.has(`${reservedPath}/`)) {
 			throw new ResourcePackArchiveError(
-				`压缩包中的保留文件路径被用作目录：${reservedPath}`
+				`资源包文件中的保留文件路径被用作目录：${reservedPath}`
 			);
 		}
 	}

@@ -30,6 +30,9 @@ import {
 	type IResourcePackValidationIssue,
 	validateResourcePackForExport,
 } from '@/features/resourceEditor/client/validation/validateResourcePackForExport';
+import { WorkspaceDuplicateDialog } from '@/features/resourceEditor/client/workspaces/components/WorkspaceDuplicateDialog';
+import { WorkspaceLeaseConflictDialog } from '@/features/resourceEditor/client/workspaces/components/WorkspaceLeaseConflictDialog';
+import { useResourceWorkspaces } from '@/features/resourceEditor/client/workspaces/useResourceWorkspaces';
 
 interface INavItem {
 	readonly href: string;
@@ -115,7 +118,7 @@ const NavDropdown = memo<INavDropdownProps>(function NavDropdown({
 				</Button>
 			</DropdownTrigger>
 			<DropdownMenu
-				aria-label={`${label} navigation`}
+				aria-label={`“${label}”导航`}
 				selectionMode="none"
 				onAction={(key) => {
 					const item = items.find(({ href }) => href === String(key));
@@ -136,8 +139,6 @@ const NavDropdown = memo<INavDropdownProps>(function NavDropdown({
 	);
 });
 
-type TDestructiveIntent = { type: 'create' } | { type: 'import'; file: File };
-
 interface INotice {
 	title: string;
 	description: string;
@@ -152,25 +153,41 @@ export const AppNavbar = memo(function AppNavbar() {
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const mobileMenuFirstItemRef = useRef<HTMLButtonElement>(null);
 	const {
+		activeWorkspaceId,
 		assets: { urls: assetUrls },
-		createBlankResourcePack,
 		exportArchive,
-		importArchive,
-		isDirty,
+		hasUnexportedChanges,
 		isExporting,
-		isImporting,
+		localSaveError,
+		localSaveStatus,
 		resourcePack,
 		revision,
+		storageMode,
 	} = useResourceEditor();
-	const [destructiveIntent, setDestructiveIntent] =
-		useState<TDestructiveIntent | null>(null);
+	const {
+		activeWorkspace,
+		clearPendingWorkspaceExport,
+		createWorkspace,
+		importWorkspace,
+		isReadOnly,
+		lifecycleStatus,
+		pendingExportWorkspaceId,
+		retryPersistentStorage,
+		storageError,
+	} = useResourceWorkspaces();
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const [notice, setNotice] = useState<INotice | null>(null);
 	const [validationResult, setValidationResult] = useState<{
 		issues: IResourcePackValidationIssue[];
 		revision: number;
 	} | null>(null);
-	const isFileOperationPending = isImporting || isExporting;
+	const hasActiveWorkspace =
+		activeWorkspace !== null &&
+		activeWorkspace.workspace.id === activeWorkspaceId;
+	const isFileOperationPending =
+		isExporting ||
+		lifecycleStatus === 'importing' ||
+		lifecycleStatus === 'opening';
 
 	useEffect(() => {
 		if (!isMenuOpen) return;
@@ -235,21 +252,32 @@ export const AppNavbar = memo(function AppNavbar() {
 
 	const runImport = useCallback(
 		async (file: File) => {
-			const result = await importArchive(file);
-			if (!result.isSuccess)
-				showOperationError('读取资源包', result.error);
+			const result = await importWorkspace(file);
+			if (!result.isSuccess) {
+				showOperationError('导入资源包', result.error);
+				return;
+			}
+			if (result.workspaceId) router.push('/');
 		},
-		[importArchive, showOperationError]
+		[importWorkspace, router, showOperationError]
 	);
 
-	const handleCreateBlank = useCallback(() => {
+	const handleCreateBlank = useCallback(async () => {
 		if (isFileOperationPending) return;
-		if (isDirty) {
-			setDestructiveIntent({ type: 'create' });
+		const result = await createWorkspace();
+		if (!result.isSuccess) {
+			showOperationError('新建资源包', result.error);
 			return;
 		}
-		createBlankResourcePack();
-	}, [createBlankResourcePack, isDirty, isFileOperationPending]);
+		if (result.workspaceId) router.push('/info');
+	}, [createWorkspace, isFileOperationPending, router, showOperationError]);
+
+	const handleRetryStorage = useCallback(async () => {
+		const result = await retryPersistentStorage();
+		if (!result.isSuccess) {
+			showOperationError('重试本地存储', result.error);
+		}
+	}, [retryPersistentStorage, showOperationError]);
 
 	const handleFileChange = useCallback(
 		(event: React.ChangeEvent<HTMLInputElement>) => {
@@ -257,27 +285,10 @@ export const AppNavbar = memo(function AppNavbar() {
 			const file = event.target.files?.[0];
 			event.target.value = '';
 			if (!file) return;
-			if (isDirty) {
-				setDestructiveIntent({ type: 'import', file });
-				return;
-			}
 			void runImport(file);
 		},
-		[isDirty, isFileOperationPending, runImport]
+		[isFileOperationPending, runImport]
 	);
-
-	const handleDestructiveConfirm = useCallback(() => {
-		if (isFileOperationPending) return;
-		const intent = destructiveIntent;
-		setDestructiveIntent(null);
-		if (intent?.type === 'create') createBlankResourcePack();
-		if (intent?.type === 'import') void runImport(intent.file);
-	}, [
-		createBlankResourcePack,
-		destructiveIntent,
-		isFileOperationPending,
-		runImport,
-	]);
 
 	const handleExport = useCallback(async () => {
 		if (isFileOperationPending) return;
@@ -291,7 +302,11 @@ export const AppNavbar = memo(function AppNavbar() {
 			return;
 		}
 		const result = await exportArchive(expectedRevision);
-		if (!result.isSuccess) showOperationError('导出资源包', result.error);
+		if (!result.isSuccess) {
+			showOperationError('导出资源包', result.error);
+		} else if (result.warning) {
+			setNotice({ title: '资源包已导出', description: result.warning });
+		}
 	}, [
 		assetUrls,
 		exportArchive,
@@ -310,15 +325,52 @@ export const AppNavbar = memo(function AppNavbar() {
 		if (!validationResult) return;
 		setValidationResult(null);
 		const result = await exportArchive(validationResult.revision);
-		if (!result.isSuccess) showOperationError('导出资源包', result.error);
+		if (!result.isSuccess) {
+			showOperationError('导出资源包', result.error);
+		} else if (result.warning) {
+			setNotice({ title: '资源包已导出', description: result.warning });
+		}
 	}, [exportArchive, showOperationError, validationResult]);
+
+	useEffect(() => {
+		if (
+			!pendingExportWorkspaceId ||
+			pendingExportWorkspaceId !== activeWorkspaceId ||
+			!hasActiveWorkspace ||
+			isFileOperationPending
+		) {
+			return;
+		}
+		clearPendingWorkspaceExport();
+		void handleExport();
+	}, [
+		activeWorkspaceId,
+		clearPendingWorkspaceExport,
+		handleExport,
+		hasActiveWorkspace,
+		isFileOperationPending,
+		pendingExportWorkspaceId,
+	]);
 
 	const openGitHub = useCallback(() => {
 		window.open(GITHUB_URL, '_blank', 'noopener,noreferrer');
 	}, []);
+	const visibleMobileNavGroups = hasActiveWorkspace ? MOBILE_NAV_GROUPS : [];
 	const hasActiveMobileRoute = MOBILE_NAV_ITEMS.some(
 		(item) => item.href === pathname
 	);
+	const localSaveLabel = isReadOnly
+		? '只读查看'
+		: storageMode === 'memory' || localSaveStatus === 'memory-only'
+			? '仅临时保存'
+			: localSaveStatus === 'saving'
+				? '正在保存到本机'
+				: localSaveStatus === 'error' || storageError !== null
+					? '本地保存失败'
+					: '已保存到本机';
+	const isTemporaryStorage =
+		storageMode === 'memory' || localSaveStatus === 'memory-only';
+	const storageWarning = storageError ?? localSaveError;
 
 	return (
 		<>
@@ -342,7 +394,7 @@ export const AppNavbar = memo(function AppNavbar() {
 				>
 					<NavbarBrand className="max-w-none shrink-0 grow-0 basis-auto">
 						<Link
-							href="/info"
+							href="/"
 							aria-label="ResourceEx Editor首页"
 							className="flex shrink-0 items-center gap-2 rounded-small"
 							onClick={() => setIsMenuOpen(false)}
@@ -356,70 +408,111 @@ export const AppNavbar = memo(function AppNavbar() {
 							</span>
 						</Link>
 					</NavbarBrand>
-					<nav className="hidden shrink-0 items-center gap-1 xl:flex">
-						<NavbarItem>
-							<Button
-								as={Link}
-								href="/info"
-								variant={
-									pathname === '/info' ? 'flat' : 'light'
-								}
-								color={
-									pathname === '/info' ? 'primary' : 'default'
-								}
-							>
-								基础信息
-							</Button>
-						</NavbarItem>
-						{NAV_GROUPS.map((group) => (
-							<NavDropdown key={group.label} {...group} />
-						))}
-						<NavbarItem>
-							<Button
-								as={Link}
-								href="/asset"
-								variant={
-									pathname === '/asset' ? 'flat' : 'light'
-								}
-								color={
-									pathname === '/asset'
-										? 'primary'
-										: 'default'
-								}
-							>
-								资产
-							</Button>
-						</NavbarItem>
-					</nav>
+					{hasActiveWorkspace && (
+						<nav className="hidden shrink-0 items-center gap-1 xl:flex">
+							<NavbarItem>
+								<Button
+									as={Link}
+									href="/info"
+									variant={
+										pathname === '/info' ? 'flat' : 'light'
+									}
+									color={
+										pathname === '/info'
+											? 'primary'
+											: 'default'
+									}
+								>
+									基础信息
+								</Button>
+							</NavbarItem>
+							{NAV_GROUPS.map((group) => (
+								<NavDropdown key={group.label} {...group} />
+							))}
+							<NavbarItem>
+								<Button
+									as={Link}
+									href="/asset"
+									variant={
+										pathname === '/asset' ? 'flat' : 'light'
+									}
+									color={
+										pathname === '/asset'
+											? 'primary'
+											: 'default'
+									}
+								>
+									资产
+								</Button>
+							</NavbarItem>
+						</nav>
+					)}
 				</NavbarContent>
 
 				<NavbarContent justify="end" className="hidden gap-1 xl:flex">
-					<Button
-						variant="light"
-						isDisabled={isFileOperationPending}
-						onPress={handleCreateBlank}
-					>
-						全新创建
-					</Button>
-					<Button
-						variant="light"
-						isDisabled={isFileOperationPending}
-						onPress={() => fileInputRef.current?.click()}
-					>
-						上传资源包（ZIP）
-					</Button>
-					<Button
-						ref={desktopExportTriggerRef}
-						variant="light"
-						isDisabled={isFileOperationPending}
-						onPress={() => {
-							activeExportTriggerRef.current =
-								desktopExportTriggerRef.current;
-							void handleExport();
-						}}
-					>
-						导出资源包（ZIP）
-					</Button>
+					{hasActiveWorkspace && (
+						<Link
+							href="/"
+							className="mr-1 hidden max-w-44 text-right text-[11px] leading-4 text-foreground-500 2xl:block"
+						>
+							<span className="block truncate font-medium text-foreground-700">
+								{activeWorkspace.workspace.displayName}
+							</span>
+							<span className="block">{localSaveLabel}</span>
+							<span className="block">
+								{hasUnexportedChanges
+									? '有未导出的更改'
+									: '当前版本已导出'}
+							</span>
+						</Link>
+					)}
+					{pathname !== '/' && (
+						<>
+							{hasActiveWorkspace &&
+								(isTemporaryStorage ||
+									storageError !== null) && (
+									<Button
+										color="warning"
+										variant="flat"
+										isDisabled={isFileOperationPending}
+										onPress={() =>
+											void handleRetryStorage()
+										}
+									>
+										重试本地存储
+									</Button>
+								)}
+							<Button
+								variant="light"
+								isDisabled={isFileOperationPending}
+								onPress={() => void handleCreateBlank()}
+							>
+								新建资源包
+							</Button>
+							<Button
+								variant="light"
+								isDisabled={isFileOperationPending}
+								onPress={() => fileInputRef.current?.click()}
+							>
+								导入资源包
+							</Button>
+							<Button
+								ref={desktopExportTriggerRef}
+								variant="light"
+								isDisabled={
+									isFileOperationPending ||
+									!hasActiveWorkspace
+								}
+								onPress={() => {
+									activeExportTriggerRef.current =
+										desktopExportTriggerRef.current;
+									void handleExport();
+								}}
+							>
+								导出资源包
+							</Button>
+						</>
+					)}
 					<NavbarItem className="ml-2">
 						<Dropdown>
 							<DropdownTrigger>
@@ -474,7 +567,7 @@ export const AppNavbar = memo(function AppNavbar() {
 					id={MOBILE_MENU_ID}
 					className="mobile-navbar-menu-scroll max-h-[calc(var(--safe-h-dvh)_-_var(--navbar-height))] gap-3.5 overflow-y-auto overflow-x-hidden px-6 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] pt-4 sm:px-8"
 				>
-					{MOBILE_NAV_GROUPS.map((group, groupIndex) => (
+					{visibleMobileNavGroups.map((group, groupIndex) => (
 						<NavbarMenuItem key={group.label} className="w-full">
 							<section className="space-y-2">
 								<h2 className={MOBILE_SECTION_TITLE_CLASS_NAME}>
@@ -526,73 +619,120 @@ export const AppNavbar = memo(function AppNavbar() {
 							</section>
 						</NavbarMenuItem>
 					))}
-					<NavbarMenuItem className="w-full">
-						<section className="space-y-2">
-							<h2 className={MOBILE_SECTION_TITLE_CLASS_NAME}>
-								资源包操作
-							</h2>
-							<div className="grid grid-cols-2 gap-2">
-								<Button
-									fullWidth
-									variant="light"
-									className={cn(
-										MOBILE_CARD_CONTENT_CLASS_NAME,
-										MOBILE_CARD_BASE_CLASS_NAME,
-										MOBILE_CARD_INACTIVE_CLASS_NAME
+					{pathname !== '/' && (
+						<NavbarMenuItem className="w-full">
+							<section className="space-y-2">
+								<h2 className={MOBILE_SECTION_TITLE_CLASS_NAME}>
+									资源包操作
+								</h2>
+								{hasActiveWorkspace && (
+									<p className="px-1 text-xs leading-5 text-foreground-500">
+										<span className="block truncate font-medium text-foreground-700">
+											{
+												activeWorkspace.workspace
+													.displayName
+											}
+										</span>
+										{localSaveLabel}·
+										{hasUnexportedChanges
+											? '有未导出的更改'
+											: '当前版本已导出'}
+										{localSaveError && (
+											<span className="block text-warning-700 dark:text-warning">
+												{localSaveError}
+											</span>
+										)}
+									</p>
+								)}
+								<div className="grid grid-cols-2 gap-2">
+									<Button
+										{...(!hasActiveWorkspace
+											? { ref: mobileMenuFirstItemRef }
+											: {})}
+										fullWidth
+										variant="light"
+										className={cn(
+											MOBILE_CARD_CONTENT_CLASS_NAME,
+											MOBILE_CARD_BASE_CLASS_NAME,
+											MOBILE_CARD_INACTIVE_CLASS_NAME
+										)}
+										isDisabled={isFileOperationPending}
+										onPress={() => {
+											setIsMenuOpen(false);
+											void handleCreateBlank();
+										}}
+									>
+										<span className="min-w-0 truncate text-small font-medium">
+											新建资源包
+										</span>
+									</Button>
+									{(isTemporaryStorage ||
+										storageError !== null) && (
+										<Button
+											fullWidth
+											color="warning"
+											variant="flat"
+											className={cn(
+												MOBILE_CARD_CONTENT_CLASS_NAME,
+												MOBILE_CARD_BASE_CLASS_NAME
+											)}
+											isDisabled={isFileOperationPending}
+											onPress={() =>
+												void handleRetryStorage()
+											}
+										>
+											<span className="min-w-0 truncate text-small font-medium">
+												重试本地存储
+											</span>
+										</Button>
 									)}
-									isDisabled={isFileOperationPending}
-									onPress={() => {
-										setIsMenuOpen(false);
-										handleCreateBlank();
-									}}
-								>
-									<span className="min-w-0 truncate text-small font-medium">
-										全新创建
-									</span>
-								</Button>
-								<Button
-									fullWidth
-									variant="light"
-									className={cn(
-										MOBILE_CARD_CONTENT_CLASS_NAME,
-										MOBILE_CARD_BASE_CLASS_NAME,
-										MOBILE_CARD_INACTIVE_CLASS_NAME
-									)}
-									isDisabled={isFileOperationPending}
-									onPress={() => {
-										setIsMenuOpen(false);
-										fileInputRef.current?.click();
-									}}
-								>
-									<span className="min-w-0 truncate text-small font-medium">
-										上传资源包（ZIP）
-									</span>
-								</Button>
-								<Button
-									fullWidth
-									variant="light"
-									className={cn(
-										MOBILE_CARD_CONTENT_CLASS_NAME,
-										MOBILE_CARD_BASE_CLASS_NAME,
-										MOBILE_CARD_INACTIVE_CLASS_NAME
-									)}
-									isDisabled={isFileOperationPending}
-									onPress={() => {
-										activeExportTriggerRef.current =
-											document.getElementById(
-												MOBILE_MENU_TOGGLE_ID
-											) as HTMLButtonElement | null;
-										setIsMenuOpen(false);
-										void handleExport();
-									}}
-								>
-									<span className="min-w-0 truncate text-small font-medium">
-										导出资源包（ZIP）
-									</span>
-								</Button>
-							</div>
-						</section>
-					</NavbarMenuItem>
+									<Button
+										fullWidth
+										variant="light"
+										className={cn(
+											MOBILE_CARD_CONTENT_CLASS_NAME,
+											MOBILE_CARD_BASE_CLASS_NAME,
+											MOBILE_CARD_INACTIVE_CLASS_NAME
+										)}
+										isDisabled={isFileOperationPending}
+										onPress={() => {
+											setIsMenuOpen(false);
+											fileInputRef.current?.click();
+										}}
+									>
+										<span className="min-w-0 truncate text-small font-medium">
+											导入资源包
+										</span>
+									</Button>
+									<Button
+										fullWidth
+										variant="light"
+										className={cn(
+											MOBILE_CARD_CONTENT_CLASS_NAME,
+											MOBILE_CARD_BASE_CLASS_NAME,
+											MOBILE_CARD_INACTIVE_CLASS_NAME
+										)}
+										isDisabled={
+											isFileOperationPending ||
+											!hasActiveWorkspace
+										}
+										onPress={() => {
+											activeExportTriggerRef.current =
+												document.getElementById(
+													MOBILE_MENU_TOGGLE_ID
+												) as HTMLButtonElement | null;
+											setIsMenuOpen(false);
+											void handleExport();
+										}}
+									>
+										<span className="min-w-0 truncate text-small font-medium">
+											导出资源包
+										</span>
+									</Button>
+								</div>
+							</section>
+						</NavbarMenuItem>
+					)}
 					<NavbarMenuItem className="w-full">
 						<section className="space-y-2">
 							<h2 className={MOBILE_SECTION_TITLE_CLASS_NAME}>
@@ -600,6 +740,9 @@ export const AppNavbar = memo(function AppNavbar() {
 							</h2>
 							<div className="grid grid-cols-2 gap-2">
 								<Button
+									{...(!hasActiveWorkspace && pathname === '/'
+										? { ref: mobileMenuFirstItemRef }
+										: {})}
 									fullWidth
 									variant="light"
 									className={cn(
@@ -638,6 +781,29 @@ export const AppNavbar = memo(function AppNavbar() {
 					</NavbarMenuItem>
 				</NavbarMenu>
 			</HeroUINavbar>
+			{pathname !== '/' &&
+				hasActiveWorkspace &&
+				(isTemporaryStorage || storageError !== null) &&
+				storageWarning && (
+					<div
+						role="alert"
+						className="flex flex-col gap-2 border-b border-warning/30 bg-warning/10 px-4 py-2 text-sm text-warning-800 sm:flex-row sm:items-center sm:justify-between dark:text-warning"
+					>
+						<span>
+							{isTemporaryStorage
+								? `本地存储不可用：${storageWarning}。当前内容仅临时保留，刷新页面会丢失。`
+								: `本地存储操作失败：${storageWarning}。警告会保留到重试成功。`}
+						</span>
+						<Button
+							color="warning"
+							variant="flat"
+							isDisabled={isFileOperationPending}
+							onPress={() => void handleRetryStorage()}
+						>
+							重试本地存储
+						</Button>
+					</div>
+				)}
 
 			<input
 				ref={fileInputRef}
@@ -655,33 +821,18 @@ export const AppNavbar = memo(function AppNavbar() {
 				/>
 			)}
 			<ConfirmDialog
-				isOpen={destructiveIntent !== null}
-				title={
-					destructiveIntent?.type === 'create'
-						? '创建全新资源包？'
-						: '导入并覆盖当前资源包？'
-				}
-				description={
-					destructiveIntent?.type === 'create'
-						? '当前有未保存的更改。创建全新资源包会丢失这些更改，此操作不可撤销。'
-						: '当前有未保存的更改。导入新资源包会覆盖当前内容，此操作不可撤销。'
-				}
-				confirmLabel={
-					destructiveIntent?.type === 'create'
-						? '仍然创建'
-						: '仍然导入'
-				}
-				isPending={isImporting}
-				onCancel={() => setDestructiveIntent(null)}
-				onConfirm={handleDestructiveConfirm}
-			/>
-			<ConfirmDialog
 				isOpen={notice !== null}
 				title={notice?.title ?? ''}
 				description={notice?.description}
 				confirmLabel="知道了"
 				onConfirm={() => setNotice(null)}
 			/>
+			<WorkspaceDuplicateDialog
+				onResolved={(_workspaceId, resolution) => {
+					router.push(resolution === 'open' ? '/info' : '/');
+				}}
+			/>
+			<WorkspaceLeaseConflictDialog />
 		</>
 	);
 });

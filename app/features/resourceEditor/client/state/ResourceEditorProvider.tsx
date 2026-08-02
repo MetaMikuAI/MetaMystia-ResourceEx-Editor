@@ -14,15 +14,12 @@ import type { ResourceEx } from '@/domain/resourcePack/contracts/resourceEx';
 import { createBlankResourcePack } from '@/domain/resourcePack/createBlankResourcePack';
 
 import { downloadResourcePack } from '@/features/resourceEditor/client/archive/downloadResourcePack';
-import { readResourcePackArchive } from '@/features/resourceEditor/client/archive/readResourcePackArchive';
 import { writeResourcePackArchive } from '@/features/resourceEditor/client/archive/writeResourcePackArchive';
 import type { IAssetPathOperation } from '@/features/resourceEditor/client/assets/contracts';
 import { useAssetStore } from '@/features/resourceEditor/client/assets/useAssetStore';
+import { useResourceWorkspaces } from '@/features/resourceEditor/client/workspaces/useResourceWorkspaces';
 
-import type {
-	IResourceEditorExportResult,
-	IResourceEditorOperationResult,
-} from './contracts';
+import type { IResourceEditorExportResult } from './contracts';
 import { runResourcePackExport } from './runResourcePackExport';
 import { ResourceEditorContext } from './useResourceEditor';
 
@@ -33,23 +30,39 @@ function describeError(error: unknown) {
 }
 
 const RESOURCE_EDITOR_UNMOUNTED_ERROR = '资源编辑器已卸载';
+const RESOURCE_EDITOR_READ_ONLY_ERROR = '当前为只读查看，不能修改资源包';
 
 export function ResourceEditorProvider({ children }: PropsWithChildren) {
+	const {
+		activeWorkspace,
+		flushActiveSave,
+		isReadOnly,
+		promoteActiveCheckpoint,
+		retryActiveSave,
+		saveActiveSnapshot,
+		saveError,
+		saveStatus,
+		storageMode,
+	} = useResourceWorkspaces();
+	const [activeWorkspaceId, setActiveWorkspaceId] = useState<string | null>(
+		null
+	);
 	const [resourcePack, setResourcePack] = useState<ResourceEx>(() =>
 		createBlankResourcePack()
 	);
 	const [license, setLicense] = useState('');
-	const [isDirty, setIsDirty] = useState(false);
+	const [hasUnexportedChanges, setHasUnexportedChanges] = useState(false);
 	const [isExporting, setIsExporting] = useState(false);
-	const [isImporting, setIsImporting] = useState(false);
+	const [isLocalSavePending, setIsLocalSavePending] = useState(false);
 	const [revision, setRevision] = useState(0);
 	const hasLicenseFileRef = useRef(false);
 	const isExportingRef = useRef(false);
-	const isImportingRef = useRef(false);
 	const isMountedRef = useRef(false);
+	const isReadOnlyRef = useRef(isReadOnly);
 	const licenseRef = useRef(license);
 	const resourcePackRef = useRef(resourcePack);
 	const revisionRef = useRef(revision);
+	isReadOnlyRef.current = isReadOnly;
 	const bumpRevision = useCallback(() => {
 		const nextRevision = revisionRef.current + 1;
 		revisionRef.current = nextRevision;
@@ -57,25 +70,75 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 		return nextRevision;
 	}, []);
 	const markDirty = useCallback(() => {
+		if (isReadOnlyRef.current) return;
 		bumpRevision();
-		setIsDirty(true);
+		setHasUnexportedChanges(true);
+		setIsLocalSavePending(true);
 	}, [bumpRevision]);
 	const {
 		assetState,
-		clearAssets,
-		copyAssets,
-		createAssetFolder,
+		copyAssets: copyStoredAssets,
+		createAssetFolder: createStoredAssetFolder,
 		getAssetSnapshot,
 		getAssetUrl,
 		isAssetGenerationCurrent,
 		moveAssets: moveStoredAssets,
-		removeAsset,
-		removeAssets,
-		removeAssetFolders,
+		removeAsset: removeStoredAsset,
+		removeAssets: removeStoredAssets,
+		removeAssetFolders: removeStoredAssetFolders,
 		replaceAssets,
-		updateAsset,
-		updateAssets,
+		updateAsset: updateStoredAsset,
+		updateAssets: updateStoredAssets,
 	} = useAssetStore(markDirty);
+	const copyAssets = useCallback(
+		(operations: readonly IAssetPathOperation[]) => {
+			if (isReadOnlyRef.current) return;
+			copyStoredAssets(operations);
+		},
+		[copyStoredAssets]
+	);
+	const createAssetFolder = useCallback(
+		(path: string) =>
+			isReadOnlyRef.current
+				? { error: RESOURCE_EDITOR_READ_ONLY_ERROR, isSuccess: false }
+				: createStoredAssetFolder(path),
+		[createStoredAssetFolder]
+	);
+	const removeAsset = useCallback(
+		(path: string) => {
+			if (isReadOnlyRef.current) return;
+			removeStoredAsset(path);
+		},
+		[removeStoredAsset]
+	);
+	const removeAssets = useCallback(
+		(paths: readonly string[]) => {
+			if (isReadOnlyRef.current) return;
+			removeStoredAssets(paths);
+		},
+		[removeStoredAssets]
+	);
+	const removeAssetFolders = useCallback(
+		(paths: readonly string[]) => {
+			if (isReadOnlyRef.current) return;
+			removeStoredAssetFolders(paths);
+		},
+		[removeStoredAssetFolders]
+	);
+	const updateAsset = useCallback(
+		(path: string, blob: Blob) =>
+			isReadOnlyRef.current
+				? { error: RESOURCE_EDITOR_READ_ONLY_ERROR, isSuccess: false }
+				: updateStoredAsset(path, blob),
+		[updateStoredAsset]
+	);
+	const updateAssets = useCallback(
+		(updates: ReadonlyMap<string, Blob>) =>
+			isReadOnlyRef.current
+				? { error: RESOURCE_EDITOR_READ_ONLY_ERROR, isSuccess: false }
+				: updateStoredAssets(updates),
+		[updateStoredAssets]
+	);
 
 	useEffect(() => {
 		isMountedRef.current = true;
@@ -86,7 +149,14 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 
 	useEffect(() => {
 		const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-			if (!isDirty) return;
+			if (
+				!isLocalSavePending &&
+				saveStatus !== 'saving' &&
+				saveStatus !== 'error' &&
+				saveStatus !== 'memory-only'
+			) {
+				return;
+			}
 			event.preventDefault();
 			event.returnValue = '';
 		};
@@ -94,10 +164,11 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 		window.addEventListener('beforeunload', handleBeforeUnload);
 		return () =>
 			window.removeEventListener('beforeunload', handleBeforeUnload);
-	}, [isDirty]);
+	}, [isLocalSavePending, saveStatus]);
 
 	const updateResourcePack = useCallback(
 		(updater: (current: ResourceEx) => ResourceEx) => {
+			if (isReadOnlyRef.current) return;
 			const nextResourcePack = updater(resourcePackRef.current);
 			resourcePackRef.current = nextResourcePack;
 			setResourcePack(nextResourcePack);
@@ -108,6 +179,7 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 
 	const moveAssets = useCallback(
 		(operations: readonly IAssetPathOperation[]) => {
+			if (isReadOnlyRef.current) return;
 			if (!moveStoredAssets(operations)) return;
 			const pathMap = new Map(
 				operations
@@ -127,6 +199,7 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 
 	const replaceLicense = useCallback(
 		(nextLicense: string) => {
+			if (isReadOnlyRef.current) return;
 			hasLicenseFileRef.current = nextLicense.length > 0;
 			licenseRef.current = nextLicense;
 			setLicense(nextLicense);
@@ -135,67 +208,7 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 		[markDirty]
 	);
 
-	const importArchive = useCallback(
-		async (file: File): Promise<IResourceEditorOperationResult> => {
-			if (!isMountedRef.current) {
-				return {
-					isSuccess: false,
-					error: RESOURCE_EDITOR_UNMOUNTED_ERROR,
-				};
-			}
-			if (isImportingRef.current) {
-				return { isSuccess: false, error: '资源包正在导入' };
-			}
-			isImportingRef.current = true;
-			setIsImporting(true);
-			const startingRevision = revisionRef.current;
-			try {
-				const archive = await readResourcePackArchive(file);
-				if (!isMountedRef.current) {
-					return {
-						isSuccess: false,
-						error: RESOURCE_EDITOR_UNMOUNTED_ERROR,
-					};
-				}
-				if (revisionRef.current !== startingRevision) {
-					return {
-						isSuccess: false,
-						error: '导入期间资源包内容已变化，请重新导入',
-					};
-				}
-				replaceAssets(archive.files, archive.folders);
-				resourcePackRef.current = archive.resourcePack;
-				hasLicenseFileRef.current = archive.hasLicenseFile;
-				licenseRef.current = archive.license;
-				setResourcePack(archive.resourcePack);
-				setLicense(archive.license);
-				bumpRevision();
-				setIsDirty(false);
-				return { isSuccess: true };
-			} catch (error) {
-				if (isMountedRef.current) console.error(error);
-				return { isSuccess: false, error: describeError(error) };
-			} finally {
-				isImportingRef.current = false;
-				if (isMountedRef.current) setIsImporting(false);
-			}
-		},
-		[bumpRevision, replaceAssets]
-	);
-
-	const createBlank = useCallback(() => {
-		const nextResourcePack = createBlankResourcePack();
-		clearAssets();
-		resourcePackRef.current = nextResourcePack;
-		hasLicenseFileRef.current = false;
-		licenseRef.current = '';
-		setResourcePack(nextResourcePack);
-		setLicense('');
-		bumpRevision();
-		setIsDirty(false);
-	}, [bumpRevision, clearAssets]);
-
-	const readExportSnapshot = useCallback(
+	const readCurrentSnapshot = useCallback(
 		(expectedRevision: number) => {
 			if (!isMountedRef.current) return null;
 			if (revisionRef.current !== expectedRevision) return null;
@@ -212,10 +225,74 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 		[getAssetSnapshot]
 	);
 
+	useEffect(() => {
+		if (!activeWorkspace) {
+			setActiveWorkspaceId(null);
+			setIsLocalSavePending(false);
+			return;
+		}
+		const { snapshot, workspace } = activeWorkspace;
+		replaceAssets(snapshot.files, snapshot.folders);
+		resourcePackRef.current = snapshot.resourcePack;
+		hasLicenseFileRef.current = snapshot.hasLicenseFile;
+		licenseRef.current = snapshot.license;
+		revisionRef.current = snapshot.revision;
+		setResourcePack(snapshot.resourcePack);
+		setLicense(snapshot.license);
+		setRevision(snapshot.revision);
+		setHasUnexportedChanges(!workspace.isCurrentExported);
+		setIsLocalSavePending(false);
+		setActiveWorkspaceId(workspace.id);
+	}, [activeWorkspace, replaceAssets]);
+
+	useEffect(() => {
+		if (
+			!activeWorkspaceId ||
+			activeWorkspace?.workspace.id !== activeWorkspaceId ||
+			revisionRef.current !== revision
+		) {
+			return;
+		}
+		const snapshot = readCurrentSnapshot(revision);
+		if (!snapshot) return;
+		saveActiveSnapshot(snapshot);
+	}, [
+		activeWorkspace?.workspace.id,
+		activeWorkspaceId,
+		readCurrentSnapshot,
+		revision,
+		saveActiveSnapshot,
+	]);
+
+	useEffect(() => {
+		if (saveStatus === 'saved') setIsLocalSavePending(false);
+	}, [saveStatus]);
+
+	const flushLocalSave = useCallback(async () => {
+		if (activeWorkspaceId) {
+			const snapshot = readCurrentSnapshot(revisionRef.current);
+			if (snapshot) saveActiveSnapshot(snapshot);
+		}
+		const result = await flushActiveSave();
+		if (result.isSuccess) setIsLocalSavePending(false);
+		return result;
+	}, [
+		activeWorkspaceId,
+		flushActiveSave,
+		readCurrentSnapshot,
+		saveActiveSnapshot,
+	]);
+
+	const retryLocalSave = useCallback(() => {
+		const snapshot = readCurrentSnapshot(revisionRef.current);
+		if (snapshot) saveActiveSnapshot(snapshot);
+		retryActiveSave();
+	}, [readCurrentSnapshot, retryActiveSave, saveActiveSnapshot]);
+
 	const clearDirtyIfRevision = useCallback((expectedRevision: number) => {
 		if (!isMountedRef.current) return false;
 		if (revisionRef.current !== expectedRevision) return false;
-		setIsDirty(false);
+		setHasUnexportedChanges(false);
 		return true;
 	}, []);
 
@@ -236,15 +313,24 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 			isExportingRef.current = true;
 			setIsExporting(true);
 			try {
-				return await runResourcePackExport({
+				const result = await runResourcePackExport({
 					clearDirtyIfRevision,
 					downloadArchive: downloadResourcePack,
 					expectedRevision,
 					...(filename === undefined ? {} : { filename }),
 					readCurrentRevision: () => revisionRef.current,
-					readSnapshot: readExportSnapshot,
+					readSnapshot: readCurrentSnapshot,
 					writeArchive: writeResourcePackArchive,
 				});
+				if (!result.isSuccess) return result;
+				const checkpointResult =
+					await promoteActiveCheckpoint(expectedRevision);
+				return checkpointResult.isSuccess
+					? result
+					: {
+							...result,
+							warning: `资源包已导出，但本地恢复版本更新失败：${checkpointResult.error ?? '未知错误'}`,
+						};
 			} catch (error) {
 				if (isMountedRef.current) console.error(error);
 				return { isSuccess: false, error: describeError(error) };
@@ -253,46 +339,50 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 				if (isMountedRef.current) setIsExporting(false);
 			}
 		},
-		[clearDirtyIfRevision, readExportSnapshot]
+		[clearDirtyIfRevision, promoteActiveCheckpoint, readCurrentSnapshot]
 	);
 
 	const value = useMemo(
 		() => ({
+			activeWorkspaceId,
 			assets: assetState,
 			copyAssets,
 			createAssetFolder,
-			createBlankResourcePack: createBlank,
 			exportArchive,
+			flushLocalSave,
 			getAssetUrl,
-			importArchive,
+			hasUnexportedChanges,
 			isAssetGenerationCurrent,
-			isDirty,
 			isExporting,
-			isImporting,
+			isLocalSavePending,
 			license,
+			localSaveError: saveError,
+			localSaveStatus: saveStatus,
 			moveAssets,
 			removeAsset,
 			removeAssets,
 			removeAssetFolders,
 			replaceLicense,
 			resourcePack,
+			retryLocalSave,
 			revision,
+			storageMode,
 			updateAsset,
 			updateAssets,
 			updateResourcePack,
 		}),
 		[
+			activeWorkspaceId,
 			assetState,
 			copyAssets,
 			createAssetFolder,
-			createBlank,
 			exportArchive,
+			flushLocalSave,
 			getAssetUrl,
-			importArchive,
+			hasUnexportedChanges,
 			isAssetGenerationCurrent,
-			isDirty,
 			isExporting,
-			isImporting,
+			isLocalSavePending,
 			license,
 			moveAssets,
 			removeAsset,
@@ -300,7 +390,11 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 			removeAssetFolders,
 			replaceLicense,
 			resourcePack,
+			retryLocalSave,
 			revision,
+			saveError,
+			saveStatus,
+			storageMode,
 			updateAsset,
 			updateAssets,
 			updateResourcePack,
