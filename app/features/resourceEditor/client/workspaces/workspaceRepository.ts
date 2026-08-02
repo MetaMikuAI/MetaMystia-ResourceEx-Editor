@@ -51,6 +51,10 @@ function createSummary(record: IStoredWorkspaceRecord): IWorkspaceSummary {
 	const label = record.currentDocument.resourcePack.packInfo.label;
 	const resourcePackName = record.currentDocument.resourcePack.packInfo.name;
 	const version = record.currentDocument.resourcePack.packInfo.version;
+	const activeLease =
+		record.lease !== null && record.lease.expiresAt > Date.now()
+			? record.lease
+			: null;
 	return {
 		checkpointRevision: record.checkpointDocument.revision,
 		createdAt: record.createdAt,
@@ -62,7 +66,10 @@ function createSummary(record: IStoredWorkspaceRecord): IWorkspaceSummary {
 			record.isCheckpointExported === true &&
 			record.currentDocument.revision ===
 				record.checkpointDocument.revision,
-		isEditing: record.lease !== null && record.lease.expiresAt > Date.now(),
+		isEditing: activeLease !== null,
+		...(activeLease === null
+			? {}
+			: { editingExpiresAt: activeLease.expiresAt }),
 		...(label === undefined ? {} : { label }),
 		...(resourcePackName === undefined ? {} : { resourcePackName }),
 		updatedAt: record.updatedAt,

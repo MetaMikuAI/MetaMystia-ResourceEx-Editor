@@ -20,6 +20,7 @@ import Dropdown, {
 	DropdownMenu,
 	DropdownTrigger,
 } from '@/design/ui/components/dropdown';
+import PressElement from '@/design/ui/components/pressElement';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 import { openAnnouncementModal } from '@/features/announcements/client/AnnouncementModal';
@@ -32,6 +33,7 @@ import {
 } from '@/features/resourceEditor/client/validation/validateResourcePackForExport';
 import { WorkspaceDuplicateDialog } from '@/features/resourceEditor/client/workspaces/components/WorkspaceDuplicateDialog';
 import { WorkspaceLeaseConflictDialog } from '@/features/resourceEditor/client/workspaces/components/WorkspaceLeaseConflictDialog';
+import { WorkspaceLeaseLossDialog } from '@/features/resourceEditor/client/workspaces/components/WorkspaceLeaseLossDialog';
 import { useResourceWorkspaces } from '@/features/resourceEditor/client/workspaces/useResourceWorkspaces';
 
 interface INavItem {
@@ -151,6 +153,7 @@ export const AppNavbar = memo(function AppNavbar() {
 	const activeExportTriggerRef = useRef<HTMLButtonElement | null>(null);
 	const desktopExportTriggerRef = useRef<HTMLButtonElement>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
+	const managerExportWorkspaceIdRef = useRef<string | null>(null);
 	const mobileMenuFirstItemRef = useRef<HTMLButtonElement>(null);
 	const {
 		activeWorkspaceId,
@@ -167,9 +170,10 @@ export const AppNavbar = memo(function AppNavbar() {
 	const {
 		activeWorkspace,
 		clearPendingWorkspaceExport,
+		closeWorkspace,
 		createWorkspace,
 		importWorkspace,
-		isReadOnly,
+		isRetryingStorage,
 		lifecycleStatus,
 		pendingExportWorkspaceId,
 		retryPersistentStorage,
@@ -186,8 +190,8 @@ export const AppNavbar = memo(function AppNavbar() {
 		activeWorkspace.workspace.id === activeWorkspaceId;
 	const isFileOperationPending =
 		isExporting ||
-		lifecycleStatus === 'importing' ||
-		lifecycleStatus === 'opening';
+		isRetryingStorage ||
+		(lifecycleStatus !== 'editing' && lifecycleStatus !== 'manager');
 
 	useEffect(() => {
 		if (!isMenuOpen) return;
@@ -238,7 +242,15 @@ export const AppNavbar = memo(function AppNavbar() {
 	const showOperationError = useCallback((action: string, error?: string) => {
 		setNotice({ title: `${action}失败`, description: error ?? '未知错误' });
 	}, []);
-
+	const finishManagerWorkspaceExport = useCallback(async () => {
+		if (managerExportWorkspaceIdRef.current === null) return;
+		const result = await closeWorkspace();
+		clearPendingWorkspaceExport();
+		managerExportWorkspaceIdRef.current = null;
+		if (!result.isSuccess) {
+			showOperationError('结束资源包导出', result.error);
+		}
+	}, [clearPendingWorkspaceExport, closeWorkspace, showOperationError]);
 	const handleNavigate = useCallback(
 		(href: string) => {
 			setIsMenuOpen(false);
@@ -292,24 +304,41 @@ export const AppNavbar = memo(function AppNavbar() {
 
 	const handleExport = useCallback(async () => {
 		if (isFileOperationPending) return;
-		const expectedRevision = revision;
-		const issues = await validateResourcePackForExport(
-			resourcePack,
-			Object.keys(assetUrls)
-		);
-		if (issues.length > 0) {
-			setValidationResult({ issues, revision: expectedRevision });
-			return;
-		}
-		const result = await exportArchive(expectedRevision);
-		if (!result.isSuccess) {
-			showOperationError('导出资源包', result.error);
-		} else if (result.warning) {
-			setNotice({ title: '资源包已导出', description: result.warning });
+		let isWaitingForValidation = false;
+		try {
+			const expectedRevision = revision;
+			const issues = await validateResourcePackForExport(
+				resourcePack,
+				Object.keys(assetUrls)
+			);
+			if (issues.length > 0) {
+				isWaitingForValidation = true;
+				setValidationResult({ issues, revision: expectedRevision });
+				return;
+			}
+			const result = await exportArchive(expectedRevision);
+			if (!result.isSuccess) {
+				showOperationError('导出资源包', result.error);
+			} else if (result.warning) {
+				setNotice({
+					description: result.warning,
+					title: '资源包已导出',
+				});
+			}
+		} catch (error) {
+			showOperationError(
+				'导出资源包',
+				error instanceof Error ? error.message : String(error)
+			);
+		} finally {
+			if (!isWaitingForValidation) {
+				await finishManagerWorkspaceExport();
+			}
 		}
 	}, [
 		assetUrls,
 		exportArchive,
+		finishManagerWorkspaceExport,
 		isFileOperationPending,
 		resourcePack,
 		revision,
@@ -318,34 +347,52 @@ export const AppNavbar = memo(function AppNavbar() {
 
 	const handleExportCancel = useCallback(() => {
 		setValidationResult(null);
+		void finishManagerWorkspaceExport();
 		requestAnimationFrame(() => activeExportTriggerRef.current?.focus());
-	}, []);
+	}, [finishManagerWorkspaceExport]);
 
 	const handleExportConfirm = useCallback(async () => {
 		if (!validationResult) return;
 		setValidationResult(null);
-		const result = await exportArchive(validationResult.revision);
-		if (!result.isSuccess) {
-			showOperationError('导出资源包', result.error);
-		} else if (result.warning) {
-			setNotice({ title: '资源包已导出', description: result.warning });
+		try {
+			const result = await exportArchive(validationResult.revision);
+			if (!result.isSuccess) {
+				showOperationError('导出资源包', result.error);
+			} else if (result.warning) {
+				setNotice({
+					description: result.warning,
+					title: '资源包已导出',
+				});
+			}
+		} catch (error) {
+			showOperationError(
+				'导出资源包',
+				error instanceof Error ? error.message : String(error)
+			);
+		} finally {
+			await finishManagerWorkspaceExport();
 		}
-	}, [exportArchive, showOperationError, validationResult]);
+	}, [
+		exportArchive,
+		finishManagerWorkspaceExport,
+		showOperationError,
+		validationResult,
+	]);
 
 	useEffect(() => {
 		if (
 			!pendingExportWorkspaceId ||
 			pendingExportWorkspaceId !== activeWorkspaceId ||
 			!hasActiveWorkspace ||
-			isFileOperationPending
+			isFileOperationPending ||
+			managerExportWorkspaceIdRef.current === pendingExportWorkspaceId
 		) {
 			return;
 		}
-		clearPendingWorkspaceExport();
+		managerExportWorkspaceIdRef.current = pendingExportWorkspaceId;
 		void handleExport();
 	}, [
 		activeWorkspaceId,
-		clearPendingWorkspaceExport,
 		handleExport,
 		hasActiveWorkspace,
 		isFileOperationPending,
@@ -359,9 +406,8 @@ export const AppNavbar = memo(function AppNavbar() {
 	const hasActiveMobileRoute = MOBILE_NAV_ITEMS.some(
 		(item) => item.href === pathname
 	);
-	const localSaveLabel = isReadOnly
-		? '只读查看'
-		: storageMode === 'memory' || localSaveStatus === 'memory-only'
+	const localSaveLabel =
+		storageMode === 'memory' || localSaveStatus === 'memory-only'
 			? '仅临时保存'
 			: localSaveStatus === 'saving'
 				? '正在保存到本机'
@@ -393,20 +439,35 @@ export const AppNavbar = memo(function AppNavbar() {
 					className="min-w-0 flex-1 gap-5 xl:basis-1/5"
 				>
 					<NavbarBrand className="max-w-none shrink-0 grow-0 basis-auto">
-						<Link
-							href="/"
-							aria-label="ResourceEx Editor首页"
-							className="flex shrink-0 items-center gap-2 rounded-small"
-							onClick={() => setIsMenuOpen(false)}
+						<PressElement
+							className="inline-flex shrink-0 transform-gpu select-none rounded-small transition hover:brightness-95 data-[pressed=true]:scale-[0.98] data-[pressed=true]:brightness-90 motion-reduce:transition-none motion-reduce:data-[pressed=true]:scale-100"
+							onPress={() => setIsMenuOpen(false)}
 						>
-							<span
-								aria-hidden
-								className="image-rendering-pixelated h-9 w-9 shrink-0 rounded-full bg-logo bg-cover bg-no-repeat sm:h-10 sm:w-10"
-							/>
-							<span className="shrink-0 whitespace-nowrap text-[13px] font-bold sm:text-base xl:text-lg">
-								ResourceEx Editor
-							</span>
-						</Link>
+							<Link
+								href="/"
+								aria-label={
+									pathname === '/'
+										? 'ResourceEx Editor首页'
+										: '返回资源包管理页'
+								}
+								className="flex items-center gap-1"
+							>
+								<span
+									aria-hidden
+									className="image-rendering-pixelated h-9 w-9 shrink-0 rounded-full bg-logo bg-cover bg-no-repeat sm:h-10 sm:w-10"
+								/>
+								<span className="flex shrink-0 flex-col justify-center space-y-0.5 self-stretch whitespace-nowrap">
+									<span className="text-[13px] font-bold leading-none sm:text-base sm:leading-none xl:text-lg xl:leading-none">
+										ResourceEx Editor
+									</span>
+									{pathname !== '/' && (
+										<span className="font-mono text-[9px] font-normal leading-none text-foreground-500 sm:text-[10px]">
+											点此前往资源包管理
+										</span>
+									)}
+								</span>
+							</Link>
+						</PressElement>
 					</NavbarBrand>
 					{hasActiveWorkspace && (
 						<nav className="hidden shrink-0 items-center gap-1 xl:flex">
@@ -834,6 +895,7 @@ export const AppNavbar = memo(function AppNavbar() {
 				}}
 			/>
 			<WorkspaceLeaseConflictDialog />
+			<WorkspaceLeaseLossDialog />
 		</>
 	);
 });

@@ -14,13 +14,13 @@ export function WorkspaceLeaseConflictDialog() {
 	const {
 		dismissLeaseConflict,
 		leaseConflict,
-		openWorkspaceReadOnly,
+		openWorkspaceForExport,
 		pendingExportWorkspaceId,
 		takeOverWorkspace,
 	} = useResourceWorkspaces();
 	const [error, setError] = useState<string | null>(null);
 	const [pendingAction, setPendingAction] = useState<
-		'read-only' | 'takeover' | null
+		'export' | 'takeover' | null
 	>(null);
 	useEffect(() => {
 		setError(null);
@@ -31,19 +31,26 @@ export function WorkspaceLeaseConflictDialog() {
 	const isExportRequest =
 		pendingExportWorkspaceId === leaseConflict.workspace.id;
 
-	const runAction = async (action: 'read-only' | 'takeover') => {
+	const runAction = async (action: 'export' | 'takeover') => {
 		setPendingAction(action);
 		setError(null);
 		const result =
-			action === 'read-only'
-				? await openWorkspaceReadOnly(leaseConflict.workspace.id)
+			action === 'export'
+				? await openWorkspaceForExport(leaseConflict.workspace.id)
 				: await takeOverWorkspace();
 		setPendingAction(null);
 		if (!result.isSuccess) {
-			setError(result.error ?? '无法打开资源包');
+			setError(
+				result.error ??
+					(action === 'export'
+						? '无法读取待导出的资源包'
+						: '无法接管资源包')
+			);
 			return;
 		}
-		if (!pendingExportWorkspaceId && pathname === '/') router.push('/info');
+		if (action === 'takeover' && !isExportRequest && pathname === '/') {
+			router.push('/info');
+		}
 	};
 
 	return (
@@ -63,7 +70,7 @@ export function WorkspaceLeaseConflictDialog() {
 					<p className="text-sm leading-6 text-foreground-600">
 						{isExportRequest
 							? `可以直接导出“${leaseConflict.workspace.displayName}”当前保存的内容，也可以接管后导出。接管后，其他页面将不能继续保存。`
-							: `可以只读查看“${leaseConflict.workspace.displayName}”，也可以接管编辑。接管后，其他页面将不能继续保存。`}
+							: `“${leaseConflict.workspace.displayName}”正在其他页面中编辑。如需在当前页面修改，请先接管编辑权。接管后，其他页面将不能继续保存。`}
 					</p>
 					{error && <p className="text-sm text-danger">{error}</p>}
 				</div>
@@ -78,18 +85,20 @@ export function WorkspaceLeaseConflictDialog() {
 					>
 						返回资源包列表
 					</Button>
-					<Button
-						variant="flat"
-						isLoading={pendingAction === 'read-only'}
-						isDisabled={pendingAction === 'takeover'}
-						onPress={() => void runAction('read-only')}
-					>
-						{isExportRequest ? '只读导出' : '只读查看'}
-					</Button>
+					{isExportRequest && (
+						<Button
+							variant="flat"
+							isLoading={pendingAction === 'export'}
+							isDisabled={pendingAction === 'takeover'}
+							onPress={() => void runAction('export')}
+						>
+							直接导出
+						</Button>
+					)}
 					<Button
 						color="warning"
 						isLoading={pendingAction === 'takeover'}
-						isDisabled={pendingAction === 'read-only'}
+						isDisabled={pendingAction === 'export'}
 						onPress={() => void runAction('takeover')}
 					>
 						{isExportRequest ? '接管并导出' : '接管编辑'}

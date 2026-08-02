@@ -142,6 +142,7 @@ export function createWorkspaceLeaseController(
 	let intervalId: number | undefined;
 	let isDisposed = false;
 	let leaseId: string | undefined;
+	let operationGeneration = 0;
 	let workspaceId: string | undefined;
 
 	const stopRenewal = () => {
@@ -193,6 +194,7 @@ export function createWorkspaceLeaseController(
 	};
 
 	const release = async () => {
+		operationGeneration += 1;
 		const activeLeaseId = leaseId;
 		const activeWorkspaceId = workspaceId;
 		clearLease();
@@ -209,6 +211,8 @@ export function createWorkspaceLeaseController(
 		isTakeover: boolean
 	): Promise<IWorkspaceLeaseResult> => {
 		if (isDisposed) throw new Error('资源包编辑状态已失效');
+		const acquireGeneration = operationGeneration + 1;
+		operationGeneration = acquireGeneration;
 		const nextLeaseId = input.createLeaseId();
 		const result = await input.repository.acquireLease(
 			nextWorkspaceId,
@@ -217,6 +221,20 @@ export function createWorkspaceLeaseController(
 			input.now() + WORKSPACE_LEASE_DURATION_MS,
 			isTakeover
 		);
+		if (isDisposed || acquireGeneration !== operationGeneration) {
+			if (result.isAcquired) {
+				try {
+					await input.repository.releaseLease(
+						nextWorkspaceId,
+						nextLeaseId
+					);
+				} catch {
+					// The stale exact lease expires naturally if cleanup fails.
+				}
+			}
+			if (isDisposed) throw new Error('资源包编辑状态已失效');
+			return { isAcquired: false };
+		}
 		if (!result.isAcquired) return result;
 		const previousLeaseId = leaseId;
 		const previousWorkspaceId = workspaceId;
@@ -232,6 +250,21 @@ export function createWorkspaceLeaseController(
 			} catch {
 				// The new lease is authoritative; the old lease expires naturally.
 			}
+		}
+		if (isDisposed || acquireGeneration !== operationGeneration) {
+			if (leaseId === nextLeaseId && workspaceId === nextWorkspaceId) {
+				clearLease();
+			}
+			try {
+				await input.repository.releaseLease(
+					nextWorkspaceId,
+					nextLeaseId
+				);
+			} catch {
+				// The stale exact lease expires naturally if cleanup fails.
+			}
+			if (isDisposed) throw new Error('资源包编辑状态已失效');
+			return { isAcquired: false };
 		}
 		return result;
 	};

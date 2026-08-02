@@ -30,19 +30,20 @@ function describeError(error: unknown) {
 }
 
 const RESOURCE_EDITOR_UNMOUNTED_ERROR = '资源编辑器已卸载';
-const RESOURCE_EDITOR_READ_ONLY_ERROR = '当前为只读查看，不能修改资源包';
+const RESOURCE_EDITOR_EXPORT_SNAPSHOT_ERROR = '正在导出，不能修改资源包';
 
 export function ResourceEditorProvider({ children }: PropsWithChildren) {
 	const {
 		activeWorkspace,
 		flushActiveSave,
-		isReadOnly,
+		isExportSnapshot,
 		promoteActiveCheckpoint,
 		retryActiveSave,
 		saveActiveSnapshot,
 		saveError,
 		saveStatus,
 		storageMode,
+		workspaces,
 	} = useResourceWorkspaces();
 	const [activeWorkspaceId, setActiveWorkspaceId] = useState<string | null>(
 		null
@@ -57,12 +58,12 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 	const [revision, setRevision] = useState(0);
 	const hasLicenseFileRef = useRef(false);
 	const isExportingRef = useRef(false);
+	const isExportSnapshotRef = useRef(isExportSnapshot);
 	const isMountedRef = useRef(false);
-	const isReadOnlyRef = useRef(isReadOnly);
 	const licenseRef = useRef(license);
 	const resourcePackRef = useRef(resourcePack);
 	const revisionRef = useRef(revision);
-	isReadOnlyRef.current = isReadOnly;
+	isExportSnapshotRef.current = isExportSnapshot;
 	const bumpRevision = useCallback(() => {
 		const nextRevision = revisionRef.current + 1;
 		revisionRef.current = nextRevision;
@@ -70,7 +71,7 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 		return nextRevision;
 	}, []);
 	const markDirty = useCallback(() => {
-		if (isReadOnlyRef.current) return;
+		if (isExportSnapshotRef.current) return;
 		bumpRevision();
 		setHasUnexportedChanges(true);
 		setIsLocalSavePending(true);
@@ -92,50 +93,59 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 	} = useAssetStore(markDirty);
 	const copyAssets = useCallback(
 		(operations: readonly IAssetPathOperation[]) => {
-			if (isReadOnlyRef.current) return;
+			if (isExportSnapshotRef.current) return;
 			copyStoredAssets(operations);
 		},
 		[copyStoredAssets]
 	);
 	const createAssetFolder = useCallback(
 		(path: string) =>
-			isReadOnlyRef.current
-				? { error: RESOURCE_EDITOR_READ_ONLY_ERROR, isSuccess: false }
+			isExportSnapshotRef.current
+				? {
+						error: RESOURCE_EDITOR_EXPORT_SNAPSHOT_ERROR,
+						isSuccess: false,
+					}
 				: createStoredAssetFolder(path),
 		[createStoredAssetFolder]
 	);
 	const removeAsset = useCallback(
 		(path: string) => {
-			if (isReadOnlyRef.current) return;
+			if (isExportSnapshotRef.current) return;
 			removeStoredAsset(path);
 		},
 		[removeStoredAsset]
 	);
 	const removeAssets = useCallback(
 		(paths: readonly string[]) => {
-			if (isReadOnlyRef.current) return;
+			if (isExportSnapshotRef.current) return;
 			removeStoredAssets(paths);
 		},
 		[removeStoredAssets]
 	);
 	const removeAssetFolders = useCallback(
 		(paths: readonly string[]) => {
-			if (isReadOnlyRef.current) return;
+			if (isExportSnapshotRef.current) return;
 			removeStoredAssetFolders(paths);
 		},
 		[removeStoredAssetFolders]
 	);
 	const updateAsset = useCallback(
 		(path: string, blob: Blob) =>
-			isReadOnlyRef.current
-				? { error: RESOURCE_EDITOR_READ_ONLY_ERROR, isSuccess: false }
+			isExportSnapshotRef.current
+				? {
+						error: RESOURCE_EDITOR_EXPORT_SNAPSHOT_ERROR,
+						isSuccess: false,
+					}
 				: updateStoredAsset(path, blob),
 		[updateStoredAsset]
 	);
 	const updateAssets = useCallback(
 		(updates: ReadonlyMap<string, Blob>) =>
-			isReadOnlyRef.current
-				? { error: RESOURCE_EDITOR_READ_ONLY_ERROR, isSuccess: false }
+			isExportSnapshotRef.current
+				? {
+						error: RESOURCE_EDITOR_EXPORT_SNAPSHOT_ERROR,
+						isSuccess: false,
+					}
 				: updateStoredAssets(updates),
 		[updateStoredAssets]
 	);
@@ -149,11 +159,14 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 
 	useEffect(() => {
 		const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+			const hasTemporaryWorkspaces =
+				storageMode === 'memory' && workspaces.length > 0;
 			if (
 				!isLocalSavePending &&
 				saveStatus !== 'saving' &&
 				saveStatus !== 'error' &&
-				saveStatus !== 'memory-only'
+				saveStatus !== 'memory-only' &&
+				!hasTemporaryWorkspaces
 			) {
 				return;
 			}
@@ -164,11 +177,11 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 		window.addEventListener('beforeunload', handleBeforeUnload);
 		return () =>
 			window.removeEventListener('beforeunload', handleBeforeUnload);
-	}, [isLocalSavePending, saveStatus]);
+	}, [isLocalSavePending, saveStatus, storageMode, workspaces.length]);
 
 	const updateResourcePack = useCallback(
 		(updater: (current: ResourceEx) => ResourceEx) => {
-			if (isReadOnlyRef.current) return;
+			if (isExportSnapshotRef.current) return;
 			const nextResourcePack = updater(resourcePackRef.current);
 			resourcePackRef.current = nextResourcePack;
 			setResourcePack(nextResourcePack);
@@ -179,7 +192,7 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 
 	const moveAssets = useCallback(
 		(operations: readonly IAssetPathOperation[]) => {
-			if (isReadOnlyRef.current) return;
+			if (isExportSnapshotRef.current) return;
 			if (!moveStoredAssets(operations)) return;
 			const pathMap = new Map(
 				operations
@@ -199,7 +212,7 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 
 	const replaceLicense = useCallback(
 		(nextLicense: string) => {
-			if (isReadOnlyRef.current) return;
+			if (isExportSnapshotRef.current) return;
 			hasLicenseFileRef.current = nextLicense.length > 0;
 			licenseRef.current = nextLicense;
 			setLicense(nextLicense);
@@ -323,6 +336,7 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 					writeArchive: writeResourcePackArchive,
 				});
 				if (!result.isSuccess) return result;
+				if (isExportSnapshotRef.current) return result;
 				const checkpointResult =
 					await promoteActiveCheckpoint(expectedRevision);
 				return checkpointResult.isSuccess

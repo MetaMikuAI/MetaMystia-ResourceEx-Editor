@@ -20,11 +20,12 @@ export function ResourceEditorRouteGuard({ children }: PropsWithChildren) {
 	const {
 		activeWorkspace,
 		closeWorkspace,
-		isReadOnly,
 		leaseConflict,
+		leaseLoss,
 		lifecycleStatus,
 		openLastWorkspace,
 		openWorkspace,
+		pendingExportWorkspaceId,
 		recoveryWorkspace,
 		workspaces,
 	} = useResourceWorkspaces();
@@ -37,13 +38,17 @@ export function ResourceEditorRouteGuard({ children }: PropsWithChildren) {
 
 	useEffect(() => {
 		if (
-			lifecycleStatus !== 'manager' ||
 			activeWorkspace ||
 			leaseConflict ||
+			leaseLoss ||
 			recoveryWorkspace
-		)
+		) {
+			attemptedRestoreRef.current = true;
 			return;
-		if (attemptedRestoreRef.current) return;
+		}
+		if (lifecycleStatus !== 'manager' || attemptedRestoreRef.current) {
+			return;
+		}
 		attemptedRestoreRef.current = true;
 		void openLastWorkspace().then((result) => {
 			if (!result.isSuccess && !result.isLeaseConflict) {
@@ -53,6 +58,7 @@ export function ResourceEditorRouteGuard({ children }: PropsWithChildren) {
 	}, [
 		activeWorkspace,
 		leaseConflict,
+		leaseLoss,
 		lifecycleStatus,
 		openLastWorkspace,
 		recoveryWorkspace,
@@ -69,15 +75,17 @@ export function ResourceEditorRouteGuard({ children }: PropsWithChildren) {
 	};
 
 	const returnToManager = async () => {
-		await closeWorkspace();
-		router.replace('/');
+		attemptedRestoreRef.current = true;
+		const result = await closeWorkspace();
+		if (result.isSuccess) router.replace('/');
+		return result;
 	};
 
 	if (recoveryWorkspace) {
 		return (
 			<WorkspaceRecoveryDialog
 				onContinue={() => undefined}
-				onReturn={() => void returnToManager()}
+				onReturn={returnToManager}
 			/>
 		);
 	}
@@ -158,6 +166,7 @@ export function ResourceEditorRouteGuard({ children }: PropsWithChildren) {
 	if (
 		lifecycleStatus !== 'editing' ||
 		!activeWorkspace ||
+		pendingExportWorkspaceId !== null ||
 		activeWorkspaceId !== activeWorkspace.workspace.id
 	) {
 		return (
@@ -167,14 +176,5 @@ export function ResourceEditorRouteGuard({ children }: PropsWithChildren) {
 		);
 	}
 
-	return (
-		<>
-			{isReadOnly && (
-				<div className="border-b border-warning/30 bg-warning/10 px-4 py-2 text-center text-sm text-warning-700 dark:text-warning">
-					当前为只读查看；如需修改，请返回资源包列表并接管编辑。
-				</div>
-			)}
-			<div inert={isReadOnly ? true : undefined}>{children}</div>
-		</>
-	);
+	return children;
 }

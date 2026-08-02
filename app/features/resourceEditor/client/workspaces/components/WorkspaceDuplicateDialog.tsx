@@ -163,7 +163,7 @@ export function WorkspaceDuplicateDialog({ onResolved }: IProps) {
 					isReplaceConfirmationOpen && selectedCandidate !== undefined
 				}
 				title={`覆盖“${selectedCandidate?.workspace.displayName ?? ''}”？`}
-				description="已有资源包的当前内容和本地恢复版本都会被本次导入的资源包替换，此操作不可撤销。"
+				description="已有资源包的当前内容和本地恢复版本都会被本次导入的资源包替换。此操作不可撤销。"
 				confirmLabel="确认覆盖"
 				isPending={isPending}
 				onCancel={() => setIsReplaceConfirmationOpen(false)}

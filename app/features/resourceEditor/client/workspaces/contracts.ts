@@ -52,6 +52,7 @@ export interface IWorkspaceSummary {
 	isCheckpointExported: boolean;
 	isCurrentExported: boolean;
 	isEditing: boolean;
+	editingExpiresAt?: number;
 	label?: string;
 	resourcePackName?: string;
 	updatedAt: number;
@@ -104,13 +105,23 @@ export interface IWorkspaceLeaseConflict {
 	workspace: IWorkspaceSummary;
 }
 
+export interface IWorkspaceLeaseLoss {
+	copyDisplayName: string;
+	hasChanges: boolean;
+	hasUnsavedChanges: boolean;
+	isResolved: boolean;
+	workspace: IWorkspaceSummary;
+}
+
 export type TWorkspaceImportResolution = 'cancel' | 'copy' | 'open' | 'replace';
 
 export interface IResourceWorkspaceContext {
 	activeWorkspace: IWorkspaceLoadedSnapshot | null;
 	duplicateIntent: IWorkspaceDuplicateIntent | null;
-	isReadOnly: boolean;
+	isExportSnapshot: boolean;
+	isRetryingStorage: boolean;
 	leaseConflict: IWorkspaceLeaseConflict | null;
+	leaseLoss: IWorkspaceLeaseLoss | null;
 	lifecycleStatus: TWorkspaceLifecycleStatus;
 	pendingExportWorkspaceId: string | null;
 	recoveryWorkspace: IWorkspaceSummary | null;
@@ -123,13 +134,15 @@ export interface IResourceWorkspaceContext {
 	clearPendingWorkspaceExport(): void;
 	continueRecovery(): void;
 	createWorkspace(): Promise<IWorkspaceOperationResult>;
-	dismissLeaseConflict(): void;
+	discardLeaseLossChanges(): Promise<IWorkspaceOperationResult>;
 	discardRecovery(): Promise<IWorkspaceOperationResult>;
+	dismissLeaseConflict(): void;
+	dismissResolvedLeaseLoss(): void;
 	duplicateWorkspace(id: string): Promise<IWorkspaceOperationResult>;
 	flushActiveSave(): Promise<IWorkspaceOperationResult>;
 	importWorkspace(file: File): Promise<IWorkspaceOperationResult>;
 	openLastWorkspace(): Promise<IWorkspaceOperationResult>;
-	openWorkspaceReadOnly(id: string): Promise<IWorkspaceOperationResult>;
+	openWorkspaceForExport(id: string): Promise<IWorkspaceOperationResult>;
 	openWorkspace(id: string): Promise<IWorkspaceOperationResult>;
 	promoteActiveCheckpoint(
 		revision: number
@@ -150,6 +163,7 @@ export interface IResourceWorkspaceContext {
 	retryActiveSave(): void;
 	retryPersistentStorage(): Promise<IWorkspaceOperationResult>;
 	saveActiveSnapshot(snapshot: IWorkspaceSnapshot): void;
+	saveLeaseLossAsCopy(): Promise<IWorkspaceOperationResult>;
 	takeOverWorkspace(): Promise<IWorkspaceOperationResult>;
 }
 

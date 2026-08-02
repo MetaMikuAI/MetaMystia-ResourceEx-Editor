@@ -11,6 +11,7 @@ export type TOverlayId =
 	| 'workspace.duplicate'
 	| 'workspace.duplicate.replace'
 	| 'workspace.lease-conflict'
+	| 'workspace.lease-loss'
 	| 'workspace.notice'
 	| 'workspace.recovery'
 	| 'workspace.recovery.discard'

@@ -6,11 +6,12 @@ import Button from '@/design/ui/components/button';
 
 import { CoordinatedModal, pushOverlayChild } from '@/features/overlays/client';
 import { ConfirmDialog } from '@/features/resourceEditor/client/components/confirm/ConfirmDialog';
+import type { IWorkspaceOperationResult } from '@/features/resourceEditor/client/workspaces/contracts';
 import { useResourceWorkspaces } from '@/features/resourceEditor/client/workspaces/useResourceWorkspaces';
 
 interface IProps {
 	onContinue(): void;
-	onReturn(): void;
+	onReturn(): Promise<IWorkspaceOperationResult>;
 }
 
 export function WorkspaceRecoveryDialog({ onContinue, onReturn }: IProps) {
@@ -18,6 +19,7 @@ export function WorkspaceRecoveryDialog({ onContinue, onReturn }: IProps) {
 		useResourceWorkspaces();
 	const [error, setError] = useState<string | null>(null);
 	const [isDiscarding, setIsDiscarding] = useState(false);
+	const [isReturning, setIsReturning] = useState(false);
 	const [isDiscardConfirmationOpen, setIsDiscardConfirmationOpen] =
 		useState(false);
 
@@ -39,6 +41,25 @@ export function WorkspaceRecoveryDialog({ onContinue, onReturn }: IProps) {
 			return;
 		}
 		onContinue();
+	};
+
+	const handleReturn = async () => {
+		setIsReturning(true);
+		setError(null);
+		try {
+			const result = await onReturn();
+			if (!result.isSuccess) {
+				setError(result.error ?? '无法结束当前编辑');
+			}
+		} catch (returnError) {
+			setError(
+				returnError instanceof Error
+					? returnError.message
+					: String(returnError)
+			);
+		} finally {
+			setIsReturning(false);
+		}
 	};
 
 	return (
@@ -66,14 +87,16 @@ export function WorkspaceRecoveryDialog({ onContinue, onReturn }: IProps) {
 					<div className="flex flex-col-reverse gap-2 border-t border-divider pt-4 sm:flex-row sm:justify-end">
 						<Button
 							variant="light"
-							isDisabled={isDiscarding}
-							onPress={onReturn}
+							isDisabled={isDiscarding || isReturning}
+							isLoading={isReturning}
+							onPress={() => void handleReturn()}
 						>
 							返回资源包列表
 						</Button>
 						<Button
 							color="danger"
 							variant="flat"
+							isDisabled={isReturning}
 							isLoading={isDiscarding}
 							onPress={() =>
 								pushOverlayChild({
@@ -88,7 +111,7 @@ export function WorkspaceRecoveryDialog({ onContinue, onReturn }: IProps) {
 						</Button>
 						<Button
 							color="primary"
-							isDisabled={isDiscarding}
+							isDisabled={isDiscarding || isReturning}
 							onPress={handleContinue}
 						>
 							继续编辑
@@ -102,7 +125,7 @@ export function WorkspaceRecoveryDialog({ onContinue, onReturn }: IProps) {
 				title="放弃本地修改？"
 				description="资源包将恢复到上次导出或导入的版本，之后无法找回这些本地修改。"
 				confirmLabel="确认放弃"
-				isPending={isDiscarding}
+				isPending={isDiscarding || isReturning}
 				onCancel={() => setIsDiscardConfirmationOpen(false)}
 				onConfirm={() => void handleDiscard()}
 			/>

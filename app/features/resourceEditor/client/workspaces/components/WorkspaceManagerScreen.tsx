@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import Button from '@/design/ui/components/button';
 import Card from '@/design/ui/components/card';
@@ -9,7 +9,6 @@ import Input from '@/design/ui/components/input';
 
 import { CoordinatedModal } from '@/features/overlays/client';
 import { ConfirmDialog } from '@/features/resourceEditor/client/components/confirm/ConfirmDialog';
-import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
 import { SuccessBadge } from '@/features/resourceEditor/client/components/status/SuccessBadge';
 import { WarningBadge } from '@/features/resourceEditor/client/components/status/WarningBadge';
 import type { IWorkspaceSummary } from '@/features/resourceEditor/client/workspaces/contracts';
@@ -33,12 +32,15 @@ export function WorkspaceManagerScreen() {
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const {
 		activeWorkspace,
+		closeWorkspace,
 		createWorkspace,
 		duplicateWorkspace,
 		importWorkspace,
-		isReadOnly,
+		isRetryingStorage,
 		lifecycleStatus,
 		openWorkspace,
+		pendingExportWorkspaceId,
+		recoveryWorkspace,
 		removeWorkspace,
 		renameWorkspace,
 		requestWorkspaceExport,
@@ -48,16 +50,60 @@ export function WorkspaceManagerScreen() {
 		storageMode,
 		workspaces,
 	} = useResourceWorkspaces();
+	const currentWorkspaceId =
+		activeWorkspace?.workspace.id ?? recoveryWorkspace?.id ?? null;
+	const initialClosingWorkspaceId =
+		activeWorkspace && pendingExportWorkspaceId === null
+			? activeWorkspace.workspace.id
+			: null;
+	const workspaceIdToCloseOnEntryRef = useRef(initialClosingWorkspaceId);
 	const [deleteTarget, setDeleteTarget] = useState<IWorkspaceSummary | null>(
 		null
 	);
-	const [isPending, setIsPending] = useState(false);
+	const [isPending, setIsPending] = useState(
+		initialClosingWorkspaceId !== null
+	);
 	const [isForceDelete, setIsForceDelete] = useState(false);
 	const [notice, setNotice] = useState<INotice | null>(null);
 	const [renameTarget, setRenameTarget] = useState<IWorkspaceSummary | null>(
 		null
 	);
 	const [renameValue, setRenameValue] = useState('');
+	const isHydrating = lifecycleStatus === 'hydrating';
+	const isWorkspaceOperationPending =
+		isPending ||
+		isRetryingStorage ||
+		pendingExportWorkspaceId !== null ||
+		(lifecycleStatus !== 'editing' && lifecycleStatus !== 'manager');
+
+	useEffect(() => {
+		const activeWorkspaceId = workspaceIdToCloseOnEntryRef.current;
+		if (activeWorkspaceId === null) return;
+		workspaceIdToCloseOnEntryRef.current = null;
+		if (pendingExportWorkspaceId !== null) {
+			setIsPending(false);
+			return;
+		}
+
+		void closeWorkspace()
+			.then((result) => {
+				if (result.isSuccess) return;
+				setNotice({
+					description: result.error ?? '未知错误',
+					title: '结束编辑失败',
+				});
+			})
+			.catch((error) => {
+				setNotice({
+					description:
+						error instanceof Error ? error.message : String(error),
+					title: '结束编辑失败',
+				});
+			})
+			.finally(() => {
+				setIsPending(false);
+			});
+	}, [closeWorkspace, pendingExportWorkspaceId]);
 
 	const openEditor = () => {
 		router.push('/info');
@@ -73,6 +119,7 @@ export function WorkspaceManagerScreen() {
 		action: string,
 		isEditorOpenExpected = false
 	) => {
+		if (isWorkspaceOperationPending) return;
 		setIsPending(true);
 		try {
 			const result = await operation();
@@ -97,6 +144,7 @@ export function WorkspaceManagerScreen() {
 	};
 
 	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		if (isWorkspaceOperationPending) return;
 		const file = event.target.files?.[0];
 		event.target.value = '';
 		if (!file) return;
@@ -104,7 +152,7 @@ export function WorkspaceManagerScreen() {
 	};
 
 	const handleRename = async () => {
-		if (!renameTarget) return;
+		if (!renameTarget || isWorkspaceOperationPending) return;
 		setIsPending(true);
 		const result = await renameWorkspace(renameTarget.id, renameValue);
 		setIsPending(false);
@@ -119,7 +167,7 @@ export function WorkspaceManagerScreen() {
 	};
 
 	const handleDelete = async () => {
-		if (!deleteTarget) return;
+		if (!deleteTarget || isWorkspaceOperationPending) return;
 		setIsPending(true);
 		const result = await removeWorkspace(deleteTarget.id, isForceDelete);
 		setIsPending(false);
@@ -141,7 +189,6 @@ export function WorkspaceManagerScreen() {
 	};
 	const isTemporaryStorage =
 		storageMode === 'memory' || saveStatus === 'memory-only';
-	const isHydrating = lifecycleStatus === 'hydrating';
 
 	return (
 		<>
@@ -158,7 +205,7 @@ export function WorkspaceManagerScreen() {
 					<div className="grid grid-cols-2 gap-2 sm:flex">
 						<Button
 							variant="flat"
-							isDisabled={isPending || isHydrating}
+							isDisabled={isWorkspaceOperationPending}
 							onPress={() => fileInputRef.current?.click()}
 						>
 							导入资源包
@@ -168,7 +215,7 @@ export function WorkspaceManagerScreen() {
 							isLoading={
 								isPending && lifecycleStatus === 'opening'
 							}
-							isDisabled={isPending || isHydrating}
+							isDisabled={isWorkspaceOperationPending}
 							onPress={() =>
 								void runWorkspaceOperation(
 									createWorkspace,
@@ -202,7 +249,7 @@ export function WorkspaceManagerScreen() {
 							<Button
 								color="warning"
 								variant="flat"
-								isDisabled={isPending}
+								isDisabled={isWorkspaceOperationPending}
 								onPress={() =>
 									void runWorkspaceOperation(
 										retryPersistentStorage,
@@ -242,15 +289,19 @@ export function WorkspaceManagerScreen() {
 							const hasUnexportedChanges =
 								!workspace.isCurrentExported;
 							const isActive =
-								activeWorkspace?.workspace.id === workspace.id;
-							const localStatus =
-								storageMode === 'memory'
-									? '仅临时保存'
-									: isActive && saveStatus === 'saving'
-										? '正在保存到本机'
-										: isActive && saveStatus === 'error'
-											? '本地保存失败'
-											: '已保存到本机';
+								currentWorkspaceId === workspace.id;
+							const isPendingExport =
+								isActive &&
+								pendingExportWorkspaceId === workspace.id;
+							const activity = isPendingExport
+								? 'exporting'
+								: isActive && workspace.isEditing
+									? 'current-editing'
+									: !isActive && workspace.isEditing
+										? 'external-editing'
+										: null;
+							const isTemporaryWorkspace =
+								storageMode === 'memory';
 							return (
 								<Card
 									key={workspace.id}
@@ -267,34 +318,29 @@ export function WorkspaceManagerScreen() {
 											</p>
 										</div>
 										<div className="flex shrink-0 flex-wrap gap-1.5 sm:flex-nowrap sm:justify-end">
-											{isActive && !isReadOnly && (
-												<SuccessBadge className="whitespace-nowrap px-2 py-1 text-xs">
-													当前编辑
-												</SuccessBadge>
-											)}
-											{isActive && isReadOnly && (
+											{activity === 'exporting' && (
 												<WarningBadge className="whitespace-nowrap px-2 py-1 text-xs">
-													只读查看
+													正在导出
 												</WarningBadge>
 											)}
-											{!isActive &&
-												workspace.isEditing && (
-													<WarningBadge className="whitespace-nowrap px-2 py-1 text-xs">
-														其他页面编辑
-													</WarningBadge>
-												)}
-											{isActive &&
-											saveStatus === 'error' ? (
-												<ErrorBadge className="whitespace-nowrap px-2 py-1 text-xs">
-													{localStatus}
-												</ErrorBadge>
-											) : storageMode === 'memory' ? (
+											{activity === 'current-editing' && (
 												<WarningBadge className="whitespace-nowrap px-2 py-1 text-xs">
-													{localStatus}
+													正在编辑
+												</WarningBadge>
+											)}
+											{activity ===
+												'external-editing' && (
+												<WarningBadge className="whitespace-nowrap px-2 py-1 text-xs">
+													其他页面编辑中
+												</WarningBadge>
+											)}
+											{isTemporaryWorkspace ? (
+												<WarningBadge className="whitespace-nowrap px-2 py-1 text-xs">
+													仅临时保存
 												</WarningBadge>
 											) : (
 												<SuccessBadge className="whitespace-nowrap px-2 py-1 text-xs">
-													{localStatus}
+													已保存到本机
 												</SuccessBadge>
 											)}
 											{hasUnexportedChanges ? (
@@ -347,7 +393,9 @@ export function WorkspaceManagerScreen() {
 										<Button
 											fullWidth
 											color="primary"
-											isDisabled={isPending}
+											isDisabled={
+												isWorkspaceOperationPending
+											}
 											onPress={() =>
 												void runWorkspaceOperation(
 													() =>
@@ -365,7 +413,9 @@ export function WorkspaceManagerScreen() {
 											<Button
 												fullWidth
 												variant="flat"
-												isDisabled={isPending}
+												isDisabled={
+													isWorkspaceOperationPending
+												}
 												onPress={() =>
 													void runWorkspaceOperation(
 														() =>
@@ -381,7 +431,9 @@ export function WorkspaceManagerScreen() {
 											<Button
 												fullWidth
 												variant="flat"
-												isDisabled={isPending}
+												isDisabled={
+													isWorkspaceOperationPending
+												}
 												onPress={() =>
 													void runWorkspaceOperation(
 														() =>
@@ -397,7 +449,9 @@ export function WorkspaceManagerScreen() {
 											<Button
 												fullWidth
 												variant="flat"
-												isDisabled={isPending}
+												isDisabled={
+													isWorkspaceOperationPending
+												}
 												onPress={() => {
 													setRenameTarget(workspace);
 													setRenameValue(
@@ -411,7 +465,9 @@ export function WorkspaceManagerScreen() {
 												fullWidth
 												color="danger"
 												variant="flat"
-												isDisabled={isPending}
+												isDisabled={
+													isWorkspaceOperationPending
+												}
 												onPress={() => {
 													setIsForceDelete(false);
 													setDeleteTarget(workspace);
@@ -432,7 +488,7 @@ export function WorkspaceManagerScreen() {
 				ref={fileInputRef}
 				type="file"
 				accept=".zip"
-				disabled={isHydrating}
+				disabled={isWorkspaceOperationPending}
 				className="hidden"
 				onChange={handleFileChange}
 			/>
@@ -457,7 +513,7 @@ export function WorkspaceManagerScreen() {
 					<div className="flex justify-end gap-2 border-t border-divider pt-4">
 						<Button
 							variant="light"
-							isDisabled={isPending}
+							isDisabled={isWorkspaceOperationPending}
 							onPress={() => setRenameTarget(null)}
 						>
 							取消
@@ -485,7 +541,7 @@ export function WorkspaceManagerScreen() {
 				description={
 					isForceDelete
 						? '仍检测到其他页面的编辑状态。强制删除会立即移除本机内容，并使其他页面无法继续保存；此操作不可撤销。'
-						: '该资源包保存在本机的内容和文件都会被删除。已导出的资源包不受影响，此操作不可撤销。'
+						: '该资源包保存在本机的内容和文件都会被删除，已导出的资源包不受影响。此操作不可撤销。'
 				}
 				confirmLabel={isForceDelete ? '仍然删除' : '删除资源包'}
 				isPending={isPending}

@@ -55,6 +55,11 @@ export const OVERLAY_DEFINITION_MAP = {
 		exitDelayMs: MODAL_DEFAULT_EXIT_DELAY_MS,
 		priority: 'blocking',
 	},
+	'workspace.lease-loss': {
+		blockingRank: 110,
+		exitDelayMs: MODAL_DEFAULT_EXIT_DELAY_MS,
+		priority: 'blocking',
+	},
 	'workspace.notice': {
 		exitDelayMs: MODAL_DEFAULT_EXIT_DELAY_MS,
 		priority: 'passive',

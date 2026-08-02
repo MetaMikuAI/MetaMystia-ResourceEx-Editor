@@ -20,6 +20,7 @@ import type {
 	IWorkspaceDuplicateIntent,
 	IWorkspaceImportCandidate,
 	IWorkspaceLeaseConflict,
+	IWorkspaceLeaseLoss,
 	IWorkspaceLoadedSnapshot,
 	IWorkspaceOperationResult,
 	IWorkspaceRepository,
@@ -44,6 +45,7 @@ import {
 	createWorkspaceLeaseController,
 	type IWorkspaceLeaseController,
 } from './workspaceLease';
+import { createWorkspaceLeaseLossCopyName } from './workspaceLeaseLoss';
 import { migrateTemporaryWorkspaces } from './workspaceMigration';
 import { createWorkspaceRepository } from './workspaceRepository';
 import {
@@ -134,7 +136,11 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 		useState<IWorkspaceDuplicateIntent | null>(null);
 	const [leaseConflict, setLeaseConflict] =
 		useState<IWorkspaceLeaseConflict | null>(null);
-	const [isReadOnly, setIsReadOnly] = useState(false);
+	const [leaseLoss, setLeaseLoss] = useState<IWorkspaceLeaseLoss | null>(
+		null
+	);
+	const [isExportSnapshot, setIsExportSnapshot] = useState(false);
+	const [isRetryingStorage, setIsRetryingStorage] = useState(false);
 	const [lifecycleStatus, setLifecycleStatus] =
 		useState<TWorkspaceLifecycleStatus>('hydrating');
 	const [pendingExportWorkspaceId, setPendingExportWorkspaceId] = useState<
@@ -160,11 +166,20 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 	const fallbackToMemoryRef = useRef<
 		((error: unknown) => Promise<void>) | null
 	>(null);
+	const handleLeaseLossRef = useRef<
+		((ownerId?: string) => Promise<void>) | null
+	>(null);
 	const initializationGenerationRef = useRef(0);
+	const isLeaseLostRef = useRef(false);
 	const lastActiveWorkspaceIdRef = useRef<string | null>(null);
 	const leaseControllerRef = useRef<IWorkspaceLeaseController | null>(null);
+	const isResolvingLeaseLossRef = useRef(false);
+	const leaseLossPromiseRef = useRef<Promise<void> | null>(null);
+	const leaseLossRef = useRef<IWorkspaceLeaseLoss | null>(null);
 	const latestSnapshotRef = useRef<IWorkspaceSnapshot | null>(null);
-	const isReadOnlyRef = useRef(false);
+	const persistedRevisionRef = useRef<number | null>(null);
+	const isExportSnapshotRef = useRef(false);
+	const isRetryingStorageRef = useRef(false);
 	const pendingImportRef = useRef<IPendingImport | null>(null);
 	const pendingExportWorkspaceIdRef = useRef<string | null>(null);
 	const pendingRecoveryRef = useRef<IWorkspaceLoadedSnapshot | null>(null);
@@ -180,8 +195,10 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 	const repositoryRef = useRef<IWorkspaceRepository>(memoryRepository);
 	const saveQueueRef = useRef<IWorkspaceSaveQueue | null>(null);
 	const storageModeRef = useRef<TWorkspaceStorageMode>('memory');
+	const summaryRefreshGenerationRef = useRef(0);
 	const workspaceCatalogSyncRef = useRef<IWorkspaceCatalogSync | null>(null);
 	const workspaceOwnerIdRef = useRef<string | null>(null);
+	const workspacesRef = useRef<readonly IWorkspaceSummary[]>([]);
 
 	const clearAutosaveTimeout = useCallback(() => {
 		if (autosaveTimeoutRef.current === null) return;
@@ -191,6 +208,7 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 
 	const enqueueLatestSnapshot = useCallback(() => {
 		clearAutosaveTimeout();
+		if (isLeaseLostRef.current) return;
 		const snapshot = latestSnapshotRef.current;
 		if (snapshot) saveQueueRef.current?.enqueue(snapshot);
 	}, [clearAutosaveTimeout]);
@@ -254,6 +272,35 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 		}
 	}, []);
 
+	const clearActiveWorkspaceState = useCallback(() => {
+		clearAutosaveTimeout();
+		saveQueueRef.current?.dispose();
+		saveQueueRef.current = null;
+		leaseControllerRef.current?.dispose();
+		activeLeaseIdRef.current = null;
+		activeCheckpointIsExportedRef.current = false;
+		activeCheckpointRevisionRef.current = null;
+		activeCheckpointSnapshotRef.current = null;
+		activeWorkspaceRef.current = null;
+		latestSnapshotRef.current = null;
+		persistedRevisionRef.current = null;
+		isExportSnapshotRef.current = false;
+		setActiveWorkspace(null);
+		setIsExportSnapshot(false);
+		setLeaseConflict(null);
+		clearPendingWorkspaceExport();
+		pendingRecoveryRef.current = null;
+		setRecoveryWorkspace(null);
+		setSaveError(null);
+		setSaveStatus('idle');
+		setLifecycleStatus('manager');
+		forgetLastActiveWorkspaceId();
+	}, [
+		clearAutosaveTimeout,
+		clearPendingWorkspaceExport,
+		forgetLastActiveWorkspaceId,
+	]);
+
 	const syncActiveWorkspaceSummary = useCallback(
 		(summary: IWorkspaceSummary) => {
 			const loaded = activeWorkspaceRef.current;
@@ -275,7 +322,35 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 
 	const refreshSummaries = useCallback(
 		async (isCatalogMutation = false) => {
-			const summaries = await repositoryRef.current.list();
+			const repository = repositoryRef.current;
+			const refreshGeneration = summaryRefreshGenerationRef.current + 1;
+			summaryRefreshGenerationRef.current = refreshGeneration;
+			let summaries: readonly IWorkspaceSummary[];
+			try {
+				summaries = await repository.list();
+			} catch (error) {
+				if (
+					repositoryRef.current !== repository ||
+					summaryRefreshGenerationRef.current !== refreshGeneration
+				) {
+					return [];
+				}
+				throw error;
+			}
+			if (
+				isCatalogMutation &&
+				repositoryRef.current === repository &&
+				storageModeRef.current === 'persistent'
+			) {
+				workspaceCatalogSyncRef.current?.notify();
+			}
+			if (
+				repositoryRef.current !== repository ||
+				summaryRefreshGenerationRef.current !== refreshGeneration
+			) {
+				return summaries;
+			}
+			workspacesRef.current = summaries;
 			setWorkspaces(summaries);
 			const activeWorkspaceId = activeWorkspaceRef.current?.workspace.id;
 			const activeSummary = summaries.find(
@@ -290,9 +365,6 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 				await fallbackToMemoryRef.current?.(
 					new Error('当前工作区已在其他页面中删除')
 				);
-			}
-			if (isCatalogMutation && storageModeRef.current === 'persistent') {
-				workspaceCatalogSyncRef.current?.notify();
 			}
 			return summaries;
 		},
@@ -314,21 +386,13 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 				createLeaseId: () => crypto.randomUUID(),
 				now: () => Date.now(),
 				onLeaseLost: (ownerIdValue) => {
+					if (ownerIdValue) {
+						void handleLeaseLossRef.current?.(ownerIdValue);
+						return;
+					}
 					activeLeaseIdRef.current = null;
-					setSaveError(
-						ownerIdValue
-							? '该资源包已被其他页面接管，当前修改仅临时保留'
-							: '无法续期资源包编辑权，当前修改仅临时保留'
-					);
-					setSaveStatus('memory-only');
 					void fallbackToMemoryRef
-						.current?.(
-							new Error(
-								ownerIdValue
-									? '该资源包已被其他页面接管'
-									: '无法续期资源包编辑权'
-							)
-						)
+						.current?.(new Error('无法续期资源包编辑权'))
 						?.catch((error) =>
 							setStorageError(describeError(error))
 						);
@@ -361,6 +425,7 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 			controller?: IWorkspaceLeaseController
 		) => {
 			const previousRepository = repositoryRef.current;
+			summaryRefreshGenerationRef.current += 1;
 			repositoryRef.current = repository;
 			storageModeRef.current = mode;
 			setStorageMode(mode);
@@ -520,6 +585,80 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 		[fallbackToMemory]
 	);
 
+	const handleLeaseLoss = useCallback(
+		async (ownerId?: string) => {
+			if (leaseLossRef.current) return;
+			if (leaseLossPromiseRef.current) {
+				await leaseLossPromiseRef.current;
+				return;
+			}
+			const loadedWorkspace = activeWorkspaceRef.current;
+			if (!loadedWorkspace || isExportSnapshotRef.current) return;
+			const workspaceId = loadedWorkspace.workspace.id;
+			isLeaseLostRef.current = true;
+			activeLeaseIdRef.current = null;
+			clearAutosaveTimeout();
+			const saveQueue = saveQueueRef.current;
+			const lossPromise = (async () => {
+				try {
+					await saveQueue?.flush();
+				} catch {
+					// A queued save rejected by the new lease remains in the live snapshot.
+				}
+				saveQueue?.dispose();
+				if (saveQueueRef.current === saveQueue)
+					saveQueueRef.current = null;
+				leaseControllerRef.current?.dispose();
+				const currentWorkspace = activeWorkspaceRef.current;
+				const latestSnapshot = latestSnapshotRef.current;
+				if (
+					currentWorkspace?.workspace.id !== workspaceId ||
+					!latestSnapshot
+				) {
+					isLeaseLostRef.current = false;
+					return;
+				}
+				const persistedRevision =
+					persistedRevisionRef.current ??
+					currentWorkspace.snapshot.revision;
+				const checkpointRevision =
+					activeCheckpointRevisionRef.current ??
+					currentWorkspace.workspace.checkpointRevision;
+				const nextLeaseLoss: IWorkspaceLeaseLoss = {
+					copyDisplayName: createWorkspaceLeaseLossCopyName(
+						currentWorkspace.workspace.displayName,
+						workspacesRef.current.map(
+							(workspace) => workspace.displayName
+						)
+					),
+					hasChanges: latestSnapshot.revision > checkpointRevision,
+					hasUnsavedChanges:
+						latestSnapshot.revision > persistedRevision,
+					isResolved: false,
+					workspace: currentWorkspace.workspace,
+				};
+				leaseLossRef.current = nextLeaseLoss;
+				setLeaseLoss(nextLeaseLoss);
+				setSaveError(
+					ownerId
+						? '该资源包已被其他页面接管'
+						: '当前页面已失去资源包编辑权'
+				);
+				setSaveStatus('error');
+			})();
+			leaseLossPromiseRef.current = lossPromise;
+			try {
+				await lossPromise;
+			} finally {
+				if (leaseLossPromiseRef.current === lossPromise) {
+					leaseLossPromiseRef.current = null;
+				}
+			}
+		},
+		[clearAutosaveTimeout]
+	);
+	handleLeaseLossRef.current = handleLeaseLoss;
+
 	useEffect(() => {
 		const generation = initializationGenerationRef.current + 1;
 		initializationGenerationRef.current = generation;
@@ -540,16 +679,50 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 		const catalogSync = createWorkspaceCatalogSync({
 			channel: catalogChannel,
 			onCatalogChange: refreshExternalCatalog,
+			onLeaseReleaseRequest: (workspaceId, leaseId) => {
+				if (storageModeRef.current !== 'persistent') return;
+				void repositoryRef.current
+					.releaseLease(workspaceId, leaseId)
+					.then(() => refreshSummaries(true))
+					.catch((error) => setStorageError(describeError(error)));
+			},
+			onWorkspaceTakeover: (workspaceId, ownerId) => {
+				if (
+					storageModeRef.current !== 'persistent' ||
+					activeWorkspaceRef.current?.workspace.id !== workspaceId ||
+					workspaceOwnerIdRef.current === ownerId
+				) {
+					return;
+				}
+				void handleLeaseLossRef.current?.(ownerId);
+			},
 		});
 		const handleVisibilityChange = () => {
 			if (document.visibilityState === 'visible')
 				refreshExternalCatalog();
+		};
+		const requestActiveLeaseRelease = () => {
+			const activeWorkspaceId = activeWorkspaceRef.current?.workspace.id;
+			const activeLeaseId = activeLeaseIdRef.current;
+			if (
+				storageModeRef.current !== 'persistent' ||
+				!activeWorkspaceId ||
+				!activeLeaseId
+			) {
+				return;
+			}
+			catalogSync.requestLeaseRelease(activeWorkspaceId, activeLeaseId);
+		};
+		const handlePageHide = (event: PageTransitionEvent) => {
+			if (event.persisted) return;
+			requestActiveLeaseRelease();
 		};
 		workspaceCatalogSyncRef.current?.dispose();
 		workspaceCatalogSyncRef.current = catalogSync;
 		safeStorage.removeItem(LEGACY_LAST_ACTIVE_WORKSPACE_STORAGE_KEY);
 		document.addEventListener('visibilitychange', handleVisibilityChange);
 		window.addEventListener('focus', refreshExternalCatalog);
+		window.addEventListener('pagehide', handlePageHide);
 		void (async () => {
 			try {
 				let ownerChannel: BroadcastChannel | null = null;
@@ -596,7 +769,7 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 					return;
 				}
 				installRepository(repository, 'persistent', null);
-				setWorkspaces(await repository.list());
+				await refreshSummaries();
 				try {
 					void navigator.storage?.persist?.().catch(() => undefined);
 				} catch {
@@ -607,7 +780,7 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 				workspaceOwnerIdRef.current ??= crypto.randomUUID();
 				const repository = memoryRepository;
 				installRepository(repository, 'memory', describeError(error));
-				setWorkspaces(await repository.list());
+				await refreshSummaries();
 			} finally {
 				if (initializationGenerationRef.current === generation) {
 					setLifecycleStatus('manager');
@@ -616,12 +789,15 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 		})();
 		return () => {
 			initializationGenerationRef.current += 1;
+			summaryRefreshGenerationRef.current += 1;
+			requestActiveLeaseRelease();
 			clearAutosaveTimeout();
 			document.removeEventListener(
 				'visibilitychange',
 				handleVisibilityChange
 			);
 			window.removeEventListener('focus', refreshExternalCatalog);
+			window.removeEventListener('pagehide', handlePageHide);
 			if (workspaceCatalogSyncRef.current === catalogSync) {
 				workspaceCatalogSyncRef.current = null;
 			}
@@ -640,6 +816,24 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 		refreshSummaries,
 	]);
 
+	useEffect(() => {
+		const editingExpiryTimes = workspaces.flatMap((workspace) =>
+			workspace.editingExpiresAt === undefined
+				? []
+				: [workspace.editingExpiresAt]
+		);
+		if (editingExpiryTimes.length === 0) return;
+		const nextExpiryTime = Math.min(...editingExpiryTimes);
+		const timeoutId = window.setTimeout(
+			() =>
+				void refreshSummaries().catch((error) =>
+					setStorageError(describeError(error))
+				),
+			Math.max(0, nextExpiryTime - Date.now() + 50)
+		);
+		return () => window.clearTimeout(timeoutId);
+	}, [refreshSummaries, workspaces]);
+
 	const installSaveQueue = useCallback(
 		(workspaceId: string, leaseId: string, initialRevision: number) => {
 			saveQueueRef.current?.dispose();
@@ -647,8 +841,16 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 				initialRevision,
 				onStatusChange: (status, error) => {
 					if (status === 'error') {
+						if (isLeaseConflictError(error)) {
+							void handleLeaseLoss();
+							return;
+						}
 						const message = describeError(error);
 						setSaveError(message);
+						if (!shouldUseMemoryFallback(error)) {
+							setSaveStatus('error');
+							return;
+						}
 						setStorageError(message);
 						setSaveStatus('memory-only');
 						void fallbackToMemory(error).catch((fallbackError) =>
@@ -669,11 +871,19 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 						leaseId,
 						snapshot
 					);
+					if (
+						activeWorkspaceRef.current?.workspace.id === workspaceId
+					) {
+						persistedRevisionRef.current = Math.max(
+							persistedRevisionRef.current ?? initialRevision,
+							snapshot.revision
+						);
+					}
 					await refreshSummaries(true);
 				},
 			});
 		},
-		[fallbackToMemory, refreshSummaries]
+		[fallbackToMemory, handleLeaseLoss, refreshSummaries]
 	);
 
 	const publishLoadedWorkspace = useCallback(
@@ -690,13 +900,18 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 				loaded.workspace.checkpointRevision;
 			activeCheckpointSnapshotRef.current = checkpointSnapshot;
 			latestSnapshotRef.current = loaded.snapshot;
+			persistedRevisionRef.current = loaded.snapshot.revision;
+			isLeaseLostRef.current = false;
+			isResolvingLeaseLossRef.current = false;
+			leaseLossRef.current = null;
+			setLeaseLoss(null);
 			pendingRecoveryRef.current = null;
 			setRecoveryWorkspace(null);
 			setLeaseConflict(null);
 			activeWorkspaceRef.current = loaded;
 			setActiveWorkspace(loaded);
-			isReadOnlyRef.current = false;
-			setIsReadOnly(false);
+			isExportSnapshotRef.current = false;
+			setIsExportSnapshot(false);
 			setLifecycleStatus('editing');
 			if (storageModeRef.current === 'persistent') setSaveError(null);
 			setSaveStatus(
@@ -713,7 +928,7 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 	);
 	publishLoadedWorkspaceRef.current = publishLoadedWorkspace;
 
-	const publishReadOnlyWorkspace = useCallback(
+	const publishExportWorkspace = useCallback(
 		(
 			loaded: IWorkspaceLoadedSnapshot,
 			checkpointSnapshot: IWorkspaceSnapshot
@@ -728,21 +943,25 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 				loaded.workspace.checkpointRevision;
 			activeCheckpointSnapshotRef.current = checkpointSnapshot;
 			latestSnapshotRef.current = loaded.snapshot;
+			persistedRevisionRef.current = loaded.snapshot.revision;
+			isLeaseLostRef.current = false;
+			isResolvingLeaseLossRef.current = false;
+			leaseLossRef.current = null;
+			setLeaseLoss(null);
 			pendingRecoveryRef.current = null;
 			setRecoveryWorkspace(null);
 			setLeaseConflict(null);
 			activeWorkspaceRef.current = loaded;
 			setActiveWorkspace(loaded);
-			isReadOnlyRef.current = true;
-			setIsReadOnly(true);
+			isExportSnapshotRef.current = true;
+			setIsExportSnapshot(true);
 			setLifecycleStatus('editing');
 			setSaveError(null);
 			setSaveStatus(
 				storageModeRef.current === 'memory' ? 'memory-only' : 'saved'
 			);
-			rememberLastActiveWorkspaceId(loaded.workspace.id);
 		},
-		[clearAutosaveTimeout, rememberLastActiveWorkspaceId]
+		[clearAutosaveTimeout]
 	);
 
 	const finishWorkspaceOpen = useCallback(
@@ -751,6 +970,7 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 			leaseId: string,
 			checkpointSnapshot: IWorkspaceSnapshot
 		) => {
+			setLeaseConflict(null);
 			activeCheckpointSnapshotRef.current = checkpointSnapshot;
 			activeCheckpointIsExportedRef.current =
 				loaded.workspace.isCheckpointExported;
@@ -786,7 +1006,7 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 				await flushCurrentWorkspace();
 				if (
 					activeWorkspaceRef.current?.workspace.id === id &&
-					!isReadOnlyRef.current &&
+					!isExportSnapshotRef.current &&
 					!pendingRecoveryRef.current
 				) {
 					setLeaseConflict(null);
@@ -821,6 +1041,7 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 				}
 				const { checkpointSnapshot, current } =
 					await loadCurrentAndCheckpoint(repositoryRef.current, id);
+				await leaseControllerRef.current?.release();
 				installLeaseController(
 					repositoryRef.current,
 					preparedController
@@ -861,14 +1082,14 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 		]
 	);
 
-	const openWorkspaceReadOnly = useCallback(
+	const openWorkspaceForExport = useCallback(
 		async (id: string): Promise<IWorkspaceOperationResult> => {
 			setLifecycleStatus('opening');
 			try {
 				await flushCurrentWorkspace();
 				if (
 					activeWorkspaceRef.current?.workspace.id === id &&
-					isReadOnlyRef.current
+					isExportSnapshotRef.current
 				) {
 					setLeaseConflict(null);
 					setLifecycleStatus('editing');
@@ -877,7 +1098,7 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 				const { checkpointSnapshot, current } =
 					await loadCurrentAndCheckpoint(repositoryRef.current, id);
 				await leaseControllerRef.current?.release();
-				publishReadOnlyWorkspace(current, checkpointSnapshot);
+				publishExportWorkspace(current, checkpointSnapshot);
 				await refreshSummaries(true);
 				return { isSuccess: true, workspaceId: id };
 			} catch (error) {
@@ -891,7 +1112,7 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 		},
 		[
 			flushCurrentWorkspace,
-			publishReadOnlyWorkspace,
+			publishExportWorkspace,
 			refreshSummaries,
 			restoreCurrentLifecycle,
 			safelyFallbackToMemory,
@@ -1042,7 +1263,20 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 			const fallbackResult = shouldUseMemoryFallback(error)
 				? await safelyFallbackToMemory(error)
 				: null;
-			return fallbackResult ?? operationError(error);
+			if (fallbackResult) return fallbackResult;
+			if (!shouldUseMemoryFallback(error)) return operationError(error);
+			try {
+				enqueueLatestSnapshot();
+				await saveQueueRef.current?.flush();
+				await leaseControllerRef.current?.release();
+			} catch (fallbackError) {
+				return operationError(fallbackError);
+			}
+		}
+		try {
+			await refreshSummaries(true);
+		} catch (error) {
+			setStorageError(describeError(error));
 		}
 		saveQueueRef.current?.dispose();
 		saveQueueRef.current = null;
@@ -1053,19 +1287,16 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 		activeCheckpointSnapshotRef.current = null;
 		activeWorkspaceRef.current = null;
 		latestSnapshotRef.current = null;
-		isReadOnlyRef.current = false;
+		persistedRevisionRef.current = null;
+		pendingRecoveryRef.current = null;
+		isExportSnapshotRef.current = false;
 		setActiveWorkspace(null);
-		setIsReadOnly(false);
+		setIsExportSnapshot(false);
 		setLeaseConflict(null);
 		clearPendingWorkspaceExport();
 		setRecoveryWorkspace(null);
 		setLifecycleStatus('manager');
 		forgetLastActiveWorkspaceId();
-		try {
-			await refreshSummaries(true);
-		} catch (error) {
-			setStorageError(describeError(error));
-		}
 		return { isSuccess: true };
 	}, [
 		clearAutosaveTimeout,
@@ -1267,7 +1498,7 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 						activeWorkspaceRef.current?.workspace.id ===
 						targetWorkspaceId;
 					const activeLeaseId =
-						isActiveTarget && !isReadOnlyRef.current
+						isActiveTarget && !isExportSnapshotRef.current
 							? activeLeaseIdRef.current
 							: null;
 					let preparedController: IWorkspaceLeaseController | null =
@@ -1321,8 +1552,6 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 							activeLeaseId,
 							loaded.snapshot
 						);
-					} else if (isActiveTarget && isReadOnlyRef.current) {
-						publishReadOnlyWorkspace(loaded, loaded.snapshot);
 					} else {
 						restoreCurrentLifecycle();
 					}
@@ -1382,7 +1611,6 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 			flushCurrentWorkspace,
 			openWorkspace,
 			publishLoadedWorkspace,
-			publishReadOnlyWorkspace,
 			refreshSummaries,
 			restoreCurrentLifecycle,
 			safelyFallbackToMemory,
@@ -1409,6 +1637,7 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 					repositoryRef.current,
 					conflict.workspace.id
 				);
+			await leaseControllerRef.current?.release();
 			installLeaseController(repositoryRef.current, preparedController);
 			preparedController = null;
 			finishWorkspaceOpen(
@@ -1416,6 +1645,13 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 				result.lease.leaseId,
 				checkpointSnapshot
 			);
+			const ownerId = workspaceOwnerIdRef.current;
+			if (ownerId) {
+				workspaceCatalogSyncRef.current?.notifyWorkspaceTakeover(
+					conflict.workspace.id,
+					ownerId
+				);
+			}
 			await refreshSummaries(true);
 			return { isSuccess: true, workspaceId: conflict.workspace.id };
 		} catch (error) {
@@ -1443,10 +1679,101 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 		safelyFallbackToMemory,
 	]);
 
+	const resolveLeaseLoss = useCallback(() => {
+		const currentLeaseLoss = leaseLossRef.current;
+		if (!currentLeaseLoss) return;
+		clearActiveWorkspaceState();
+		const resolvedLeaseLoss = { ...currentLeaseLoss, isResolved: true };
+		leaseLossRef.current = resolvedLeaseLoss;
+		setLeaseLoss(resolvedLeaseLoss);
+	}, [clearActiveWorkspaceState]);
+
+	const discardLeaseLossChanges = useCallback(async () => {
+		if (!leaseLossRef.current || leaseLossRef.current.isResolved) {
+			return { error: '没有需要处理的接管冲突', isSuccess: false };
+		}
+		if (isResolvingLeaseLossRef.current) {
+			return { error: '正在处理当前修改', isSuccess: false };
+		}
+		isResolvingLeaseLossRef.current = true;
+		try {
+			await refreshSummaries();
+		} catch (error) {
+			setStorageError(describeError(error));
+		}
+		resolveLeaseLoss();
+		return { isSuccess: true };
+	}, [refreshSummaries, resolveLeaseLoss]);
+
+	const saveLeaseLossAsCopy = useCallback(async () => {
+		const currentLeaseLoss = leaseLossRef.current;
+		const snapshot = latestSnapshotRef.current;
+		if (!currentLeaseLoss || currentLeaseLoss.isResolved || !snapshot) {
+			return { error: '没有可保存的接管前修改', isSuccess: false };
+		}
+		if (!currentLeaseLoss.hasChanges) {
+			return {
+				error: '当前页面没有需要保存的额外修改',
+				isSuccess: false,
+			};
+		}
+		if (isResolvingLeaseLossRef.current) {
+			return { error: '正在处理当前修改', isSuccess: false };
+		}
+		isResolvingLeaseLossRef.current = true;
+		const input = snapshotToArchiveInput(
+			snapshot,
+			currentLeaseLoss.copyDisplayName,
+			false,
+			undefined
+		);
+		let loaded: IWorkspaceLoadedSnapshot;
+		try {
+			loaded = await repositoryRef.current.createFromArchive(input);
+		} catch (error) {
+			if (!shouldUseMemoryFallback(error)) {
+				isResolvingLeaseLossRef.current = false;
+				return operationError(error);
+			}
+			try {
+				loaded = await memoryRepository.createFromArchive(input);
+				installRepository(
+					memoryRepository,
+					'memory',
+					describeError(error)
+				);
+			} catch (fallbackError) {
+				isResolvingLeaseLossRef.current = false;
+				return operationError(fallbackError);
+			}
+		}
+		try {
+			await refreshSummaries(true);
+		} catch (error) {
+			setStorageError(describeError(error));
+		}
+		resolveLeaseLoss();
+		return { isSuccess: true, workspaceId: loaded.workspace.id };
+	}, [
+		installRepository,
+		memoryRepository,
+		refreshSummaries,
+		resolveLeaseLoss,
+	]);
+
+	const dismissResolvedLeaseLoss = useCallback(() => {
+		if (!leaseLossRef.current?.isResolved) return;
+		leaseLossRef.current = null;
+		isLeaseLostRef.current = false;
+		isResolvingLeaseLossRef.current = false;
+		setLeaseLoss(null);
+	}, []);
+
 	const saveActiveSnapshot = useCallback(
 		(snapshot: IWorkspaceSnapshot) => {
-			if (isReadOnlyRef.current) return;
+			if (isExportSnapshotRef.current) return;
 			latestSnapshotRef.current = snapshot;
+			if (isLeaseLostRef.current) return;
 			clearAutosaveTimeout();
 			autosaveTimeoutRef.current = window.setTimeout(
 				enqueueLatestSnapshot,
@@ -1457,6 +1784,9 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 	);
 
 	const flushActiveSave = useCallback(async () => {
+		if (leaseLossRef.current) {
+			return { error: '当前页面已失去资源包编辑权', isSuccess: false };
+		}
 		try {
 			enqueueLatestSnapshot();
 			await saveQueueRef.current?.flush();
@@ -1467,6 +1797,7 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 	}, [enqueueLatestSnapshot]);
 
 	const retryActiveSave = useCallback(() => {
+		if (leaseLossRef.current) return;
 		saveQueueRef.current?.retry();
 		enqueueLatestSnapshot();
 	}, [enqueueLatestSnapshot]);
@@ -1475,9 +1806,9 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 		async (revision: number) => {
 			const workspaceId = activeWorkspace?.workspace.id;
 			const leaseId = activeLeaseIdRef.current;
-			if (isReadOnlyRef.current) {
+			if (isExportSnapshotRef.current) {
 				return {
-					error: '只读查看不会修改本地恢复版本',
+					error: '直接导出不会修改其他页面的本地恢复版本',
 					isSuccess: false,
 				};
 			}
@@ -1567,6 +1898,11 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 	}, [openWorkspace, readLastActiveWorkspaceId, workspaces]);
 
 	const retryPersistentStorage = useCallback(async () => {
+		if (isRetryingStorageRef.current) {
+			return { error: '正在重试本地存储', isSuccess: false };
+		}
+		isRetryingStorageRef.current = true;
+		setIsRetryingStorage(true);
 		let candidateRepository: IWorkspaceRepository | null = null;
 		try {
 			if (fallbackPromiseRef.current) {
@@ -1639,9 +1975,9 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 				activeCheckpointSnapshotRef.current = null;
 				activeWorkspaceRef.current = null;
 				latestSnapshotRef.current = null;
-				isReadOnlyRef.current = false;
+				isExportSnapshotRef.current = false;
 				setActiveWorkspace(null);
-				setIsReadOnly(false);
+				setIsExportSnapshot(false);
 				installRepository(
 					repository,
 					'persistent',
@@ -1688,6 +2024,9 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 			candidateRepository?.dispose();
 			setStorageError(describeError(error));
 			return operationError(error);
+		} finally {
+			isRetryingStorageRef.current = false;
+			setIsRetryingStorage(false);
 		}
 	}, [
 		clearAutosaveTimeout,
@@ -1707,18 +2046,22 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 			closeWorkspace,
 			continueRecovery,
 			createWorkspace,
+			discardLeaseLossChanges,
 			discardRecovery,
 			dismissLeaseConflict,
+			dismissResolvedLeaseLoss,
 			duplicateIntent,
 			duplicateWorkspace,
 			flushActiveSave,
 			importWorkspace,
-			isReadOnly,
+			isExportSnapshot,
+			isRetryingStorage,
 			leaseConflict,
+			leaseLoss,
 			lifecycleStatus,
 			openLastWorkspace,
 			openWorkspace,
-			openWorkspaceReadOnly,
+			openWorkspaceForExport,
 			pendingExportWorkspaceId,
 			promoteActiveCheckpoint,
 			recoveryWorkspace,
@@ -1729,6 +2072,7 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 			retryActiveSave,
 			retryPersistentStorage,
 			saveActiveSnapshot,
+			saveLeaseLossAsCopy,
 			saveError,
 			saveStatus,
 			storageError,
@@ -1742,18 +2086,22 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 			closeWorkspace,
 			continueRecovery,
 			createWorkspace,
+			discardLeaseLossChanges,
 			discardRecovery,
 			dismissLeaseConflict,
+			dismissResolvedLeaseLoss,
 			duplicateIntent,
 			duplicateWorkspace,
 			flushActiveSave,
 			importWorkspace,
-			isReadOnly,
+			isExportSnapshot,
+			isRetryingStorage,
 			leaseConflict,
+			leaseLoss,
 			lifecycleStatus,
 			openLastWorkspace,
 			openWorkspace,
-			openWorkspaceReadOnly,
+			openWorkspaceForExport,
 			pendingExportWorkspaceId,
 			promoteActiveCheckpoint,
 			recoveryWorkspace,
@@ -1764,6 +2112,7 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 			retryActiveSave,
 			retryPersistentStorage,
 			saveActiveSnapshot,
+			saveLeaseLossAsCopy,
 			saveError,
 			saveStatus,
 			storageError,
