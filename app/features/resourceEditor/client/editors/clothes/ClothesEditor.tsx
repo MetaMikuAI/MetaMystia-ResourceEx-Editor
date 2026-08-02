@@ -291,7 +291,7 @@ export const ClothesEditor = memo<ClothesEditorProps>(function ClothesEditor({
 							startContent={
 								<ChevronRight
 									className={cn(
-										'h-4 w-4 transition-transform duration-200 motion-reduce:transition-none',
+										'h-4 w-4 shrink-0 transition-transform duration-200 motion-reduce:transition-none',
 										isSpriteExpanded && 'rotate-90'
 									)}
 								/>
