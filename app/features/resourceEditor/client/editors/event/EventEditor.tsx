@@ -4,6 +4,7 @@ import { memo, useMemo } from 'react';
 
 import Input from '@/design/ui/components/input';
 
+import { BEVERAGE_NAMES } from '@/domain/data/beverages';
 import { FOOD_NAMES } from '@/domain/data/foods';
 import { INGREDIENT_NAMES } from '@/domain/data/ingredients';
 import { RECIPE_NAMES } from '@/domain/data/recipes';
@@ -12,6 +13,7 @@ import type { Character } from '@/domain/resourcePack/contracts/character';
 import type { DialogPackage } from '@/domain/resourcePack/contracts/dialogue';
 import type { EventNode } from '@/domain/resourcePack/contracts/event';
 import type {
+	Beverage,
 	Food,
 	Ingredient,
 	Recipe,
@@ -24,6 +26,7 @@ import { EditorDetailEmptyState } from '@/features/resourceEditor/client/compone
 import { EditorDetailHeader } from '@/features/resourceEditor/client/components/layout/EditorDetailHeader';
 import { EditorDetailPanel } from '@/features/resourceEditor/client/components/layout/EditorDetailPanel';
 import { EditorSection } from '@/features/resourceEditor/client/components/layout/EditorSection';
+import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
 import { WarningBadge } from '@/features/resourceEditor/client/components/status/WarningBadge';
 import { MissionRewardList } from '@/features/resourceEditor/client/editors/mission/MissionRewardList';
 import { PostMissionList } from '@/features/resourceEditor/client/editors/mission/PostMissionList';
@@ -38,6 +41,7 @@ interface EventEditorProps {
 	allEvents: EventNode[];
 	allCharacters: Character[];
 	allDialogPackages: DialogPackage[];
+	beverages: Beverage[];
 	foods: Food[];
 	ingredients: Ingredient[];
 	recipes: Recipe[];
@@ -51,6 +55,7 @@ export default memo<EventEditorProps>(function EventEditor({
 	allEvents,
 	allCharacters,
 	allDialogPackages,
+	beverages,
 	foods,
 	ingredients,
 	recipes,
@@ -76,6 +81,16 @@ export default memo<EventEditorProps>(function EventEditor({
 		});
 		return result.sort((a, b) => a.id - b.id);
 	}, [ingredients]);
+
+	const allBeverages = useMemo(() => {
+		const result = [...BEVERAGE_NAMES];
+		beverages.forEach((beverage) => {
+			if (!result.find(({ id }) => id === beverage.id)) {
+				result.push({ id: beverage.id, name: beverage.name });
+			}
+		});
+		return result.sort((a, b) => a.id - b.id);
+	}, [beverages]);
 
 	const allRecipes = useMemo(() => {
 		const result = [...RECIPE_NAMES];
@@ -115,6 +130,12 @@ export default memo<EventEditorProps>(function EventEditor({
 	} = useLabelPrefixValidation(eventNode?.label || '');
 	const showPrefixWarning =
 		hasPackLabel && eventNode && eventNode.label && !isLabelPrefixValid;
+	const isLabelDuplicate =
+		Boolean(eventNode?.label) &&
+		allEvents.some(
+			(candidate) =>
+				candidate !== eventNode && candidate.label === eventNode?.label
+		);
 
 	if (!eventNode) {
 		return <EditorDetailEmptyState itemLabel="事件节点" />;
@@ -149,10 +170,17 @@ export default memo<EventEditorProps>(function EventEditor({
 				<EditorField
 					label="标签（Label）"
 					actions={
-						showPrefixWarning ? (
-							<WarningBadge>
-								建议以{expectedPrefix}开头
-							</WarningBadge>
+						isLabelDuplicate || showPrefixWarning ? (
+							<div className="flex gap-2">
+								{isLabelDuplicate && (
+									<ErrorBadge>标签重复</ErrorBadge>
+								)}
+								{showPrefixWarning && (
+									<WarningBadge>
+										建议以{expectedPrefix}开头
+									</WarningBadge>
+								)}
+							</div>
 						) : undefined
 					}
 				>
@@ -161,6 +189,7 @@ export default memo<EventEditorProps>(function EventEditor({
 						value={eventNode.label || ''}
 						onChange={(e) => onUpdate({ label: e.target.value })}
 						placeholder="游戏内唯一标识符"
+						isInvalid={isLabelDuplicate}
 					/>
 				</EditorField>
 			</EditorSection>
@@ -179,6 +208,7 @@ export default memo<EventEditorProps>(function EventEditor({
 				title="奖励（Rewards）"
 				rewards={eventNode.rewards || []}
 				characterOptions={characterOptions}
+				allBeverages={allBeverages}
 				allFoods={allFoods}
 				allIngredients={allIngredients}
 				allRecipes={allRecipes}
@@ -189,6 +219,7 @@ export default memo<EventEditorProps>(function EventEditor({
 				title="后置奖励（Post Rewards）"
 				rewards={eventNode.postRewards || []}
 				characterOptions={characterOptions}
+				allBeverages={allBeverages}
 				allFoods={allFoods}
 				allIngredients={allIngredients}
 				allRecipes={allRecipes}

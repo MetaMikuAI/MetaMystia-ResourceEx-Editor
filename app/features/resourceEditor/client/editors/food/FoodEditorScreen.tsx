@@ -3,11 +3,13 @@
 import { useCallback, useMemo, useState } from 'react';
 
 import type { Food } from '@/domain/resourcePack/contracts/items';
+import { remapResourcePackItemReferences } from '@/domain/resourcePack/entityReferences';
 
 import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
 import {
 	findNextAvailableInteger,
 	findNextAvailableSuffixedValue,
+	getEntityIdAllocationStart,
 } from '@/features/resourceEditor/client/editorValueAllocation';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
@@ -22,7 +24,7 @@ export function FoodEditorScreen() {
 		const foods = data.foods ?? [];
 		const newId = findNextAvailableInteger(
 			foods.map((food) => food.id),
-			11000
+			getEntityIdAllocationStart(data.packInfo.idRangeStart, 11000)
 		);
 		const newFood: Food = {
 			id: newId,
@@ -61,8 +63,22 @@ export function FoodEditorScreen() {
 				return;
 			}
 			const newFoods = [...(data.foods || [])];
+			const previousFood = newFoods[index];
 			newFoods[index] = { ...newFoods[index], ...updates } as Food;
-			updateResourcePack(() => ({ ...data, foods: newFoods }));
+			let nextData = { ...data, foods: newFoods };
+			if (
+				previousFood &&
+				updates.id !== undefined &&
+				updates.id !== previousFood.id
+			) {
+				nextData = remapResourcePackItemReferences(
+					nextData,
+					'Food',
+					previousFood.id,
+					updates.id
+				);
+			}
+			updateResourcePack(() => nextData);
 		},
 		[data, updateResourcePack]
 	);

@@ -1,5 +1,5 @@
 import { cn } from '@heroui/theme';
-import { memo, useCallback, useEffect, useId, useMemo, useState } from 'react';
+import { memo, useCallback, useId, useMemo, useState } from 'react';
 
 import Button from '@/design/ui/components/button';
 import Input from '@/design/ui/components/input';
@@ -20,6 +20,7 @@ import { EditorSection } from '@/features/resourceEditor/client/components/layou
 import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
 import { PortraitUploader } from '@/features/resourceEditor/client/components/uploads/PortraitUploader';
 import { SpriteUploader } from '@/features/resourceEditor/client/components/uploads/SpriteUploader';
+import { parseIntegerInput } from '@/features/resourceEditor/client/editorValueAllocation';
 import { IdRangeBadge } from '@/features/resourceEditor/client/editors/info/IdRangeBadge';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
@@ -86,13 +87,6 @@ export const ClothesEditor = memo<ClothesEditorProps>(function ClothesEditor({
 		const clothesName = clothes.name || 'Unnamed';
 		return `_${packLabel}_Clothes_${clothes.id}_${clothesName}`;
 	}, [clothes, resourcePack.packInfo.label]);
-
-	useEffect(() => {
-		if (!clothes || clothes.pixelFullConfig.name === autoName) return;
-		onUpdate({
-			pixelFullConfig: { ...clothes.pixelFullConfig, name: autoName },
-		});
-	}, [autoName, clothes, onUpdate]);
 
 	const handleIconSpriteUpdate = useCallback(
 		(blob: Blob) => {
@@ -201,16 +195,8 @@ export const ClothesEditor = memo<ClothesEditorProps>(function ClothesEditor({
 							type="number"
 							value={isNaN(clothes.id) ? '' : String(clothes.id)}
 							onChange={(e) => {
-								const val = parseInt(e.target.value);
-								if (isNaN(val)) {
-									onUpdate({ id: val });
-								} else {
-									onUpdate({
-										id: val,
-										spritePath: `assets/Clothes/${val}/icon.png`,
-										portraitPath: `assets/Clothes/${val}/portrait.png`,
-									});
-								}
+								const value = parseIntegerInput(e.target.value);
+								if (value !== null) onUpdate({ id: value });
 							}}
 							isInvalid={Boolean(isIdTooSmall)}
 						/>

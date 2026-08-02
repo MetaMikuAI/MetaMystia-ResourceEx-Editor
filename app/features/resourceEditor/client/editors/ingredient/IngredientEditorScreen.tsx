@@ -3,11 +3,13 @@
 import { useCallback, useMemo, useState } from 'react';
 
 import type { Ingredient } from '@/domain/resourcePack/contracts/items';
+import { remapResourcePackItemReferences } from '@/domain/resourcePack/entityReferences';
 
 import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
 import {
 	findNextAvailableInteger,
 	findNextAvailableSuffixedValue,
+	getEntityIdAllocationStart,
 } from '@/features/resourceEditor/client/editorValueAllocation';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
@@ -21,7 +23,7 @@ export function IngredientEditorScreen() {
 	const addIngredient = useCallback(() => {
 		const newId = findNextAvailableInteger(
 			data.ingredients.map((ingredient) => ingredient.id),
-			11000
+			getEntityIdAllocationStart(data.packInfo.idRangeStart, 11000)
 		);
 		const newIngredient: Ingredient = {
 			id: newId,
@@ -68,14 +70,25 @@ export function IngredientEditorScreen() {
 				return;
 			}
 			const newIngredients = [...data.ingredients];
+			const previousIngredient = newIngredients[index];
 			newIngredients[index] = {
 				...newIngredients[index],
 				...updates,
 			} as Ingredient;
-			updateResourcePack(() => ({
-				...data,
-				ingredients: newIngredients,
-			}));
+			let nextData = { ...data, ingredients: newIngredients };
+			if (
+				previousIngredient &&
+				updates.id !== undefined &&
+				updates.id !== previousIngredient.id
+			) {
+				nextData = remapResourcePackItemReferences(
+					nextData,
+					'Ingredient',
+					previousIngredient.id,
+					updates.id
+				);
+			}
+			updateResourcePack(() => nextData);
 		},
 		[data, updateResourcePack]
 	);

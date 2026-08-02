@@ -11,6 +11,25 @@ function isRecord(value: unknown): value is TUnknownRecord {
 	return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+function assertFiniteNumbers(value: unknown, path: string): void {
+	if (typeof value === 'number') {
+		if (!Number.isFinite(value)) {
+			throw new TypeError(`${path}必须是有限数字`);
+		}
+		return;
+	}
+	if (Array.isArray(value)) {
+		value.forEach((item, index) =>
+			assertFiniteNumbers(item, `${path}[${index}]`)
+		);
+		return;
+	}
+	if (!isRecord(value)) return;
+	Object.entries(value).forEach(([key, child]) =>
+		assertFiniteNumbers(child, `${path}.${key}`)
+	);
+}
+
 function normalizeStrings(value: unknown): unknown {
 	if (typeof value === 'string') return value.trim().replace(/\r\n/g, '\n');
 	if (Array.isArray(value)) return value.map(normalizeStrings);
@@ -83,6 +102,7 @@ function cleanDialogAction(action: DialogAction): DialogAction {
 			options: (action.options ?? []).map((option) => ({
 				text: option.text,
 				jump: option.jump ?? 1,
+				...(option.price === undefined ? {} : { price: option.price }),
 			})),
 		};
 	}
@@ -157,6 +177,7 @@ export interface IResourcePackExportView {
 export function createResourcePackExportView(
 	resourcePack: ResourceEx
 ): IResourcePackExportView {
+	assertFiniteNumbers(resourcePack, 'ResourceEx');
 	const serialized = cloneJsonObject(resourcePack);
 	serialized.dialogPackages = serialized.dialogPackages.map(
 		(dialogPackage) => ({

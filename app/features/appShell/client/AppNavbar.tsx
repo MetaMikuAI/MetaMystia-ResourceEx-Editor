@@ -170,6 +170,7 @@ export const AppNavbar = memo(function AppNavbar() {
 		issues: IResourcePackValidationIssue[];
 		revision: number;
 	} | null>(null);
+	const isFileOperationPending = isImporting || isExporting;
 
 	useEffect(() => {
 		if (!isMenuOpen) return;
@@ -242,15 +243,17 @@ export const AppNavbar = memo(function AppNavbar() {
 	);
 
 	const handleCreateBlank = useCallback(() => {
+		if (isFileOperationPending) return;
 		if (isDirty) {
 			setDestructiveIntent({ type: 'create' });
 			return;
 		}
 		createBlankResourcePack();
-	}, [createBlankResourcePack, isDirty]);
+	}, [createBlankResourcePack, isDirty, isFileOperationPending]);
 
 	const handleFileChange = useCallback(
 		(event: React.ChangeEvent<HTMLInputElement>) => {
+			if (isFileOperationPending) return;
 			const file = event.target.files?.[0];
 			event.target.value = '';
 			if (!file) return;
@@ -260,18 +263,24 @@ export const AppNavbar = memo(function AppNavbar() {
 			}
 			void runImport(file);
 		},
-		[isDirty, runImport]
+		[isDirty, isFileOperationPending, runImport]
 	);
 
 	const handleDestructiveConfirm = useCallback(() => {
+		if (isFileOperationPending) return;
 		const intent = destructiveIntent;
 		setDestructiveIntent(null);
 		if (intent?.type === 'create') createBlankResourcePack();
 		if (intent?.type === 'import') void runImport(intent.file);
-	}, [createBlankResourcePack, destructiveIntent, runImport]);
+	}, [
+		createBlankResourcePack,
+		destructiveIntent,
+		isFileOperationPending,
+		runImport,
+	]);
 
 	const handleExport = useCallback(async () => {
-		if (isExporting) return;
+		if (isFileOperationPending) return;
 		const expectedRevision = revision;
 		const issues = await validateResourcePackForExport(
 			resourcePack,
@@ -286,7 +295,7 @@ export const AppNavbar = memo(function AppNavbar() {
 	}, [
 		assetUrls,
 		exportArchive,
-		isExporting,
+		isFileOperationPending,
 		resourcePack,
 		revision,
 		showOperationError,
@@ -385,12 +394,16 @@ export const AppNavbar = memo(function AppNavbar() {
 				</NavbarContent>
 
 				<NavbarContent justify="end" className="hidden gap-1 xl:flex">
-					<Button variant="light" onPress={handleCreateBlank}>
+					<Button
+						variant="light"
+						isDisabled={isFileOperationPending}
+						onPress={handleCreateBlank}
+					>
 						全新创建
 					</Button>
 					<Button
 						variant="light"
-						isDisabled={isImporting}
+						isDisabled={isFileOperationPending}
 						onPress={() => fileInputRef.current?.click()}
 					>
 						上传资源包（ZIP）
@@ -398,7 +411,7 @@ export const AppNavbar = memo(function AppNavbar() {
 					<Button
 						ref={desktopExportTriggerRef}
 						variant="light"
-						isDisabled={isExporting}
+						isDisabled={isFileOperationPending}
 						onPress={() => {
 							activeExportTriggerRef.current =
 								desktopExportTriggerRef.current;
@@ -527,6 +540,7 @@ export const AppNavbar = memo(function AppNavbar() {
 										MOBILE_CARD_BASE_CLASS_NAME,
 										MOBILE_CARD_INACTIVE_CLASS_NAME
 									)}
+									isDisabled={isFileOperationPending}
 									onPress={() => {
 										setIsMenuOpen(false);
 										handleCreateBlank();
@@ -544,7 +558,7 @@ export const AppNavbar = memo(function AppNavbar() {
 										MOBILE_CARD_BASE_CLASS_NAME,
 										MOBILE_CARD_INACTIVE_CLASS_NAME
 									)}
-									isDisabled={isImporting}
+									isDisabled={isFileOperationPending}
 									onPress={() => {
 										setIsMenuOpen(false);
 										fileInputRef.current?.click();
@@ -562,7 +576,7 @@ export const AppNavbar = memo(function AppNavbar() {
 										MOBILE_CARD_BASE_CLASS_NAME,
 										MOBILE_CARD_INACTIVE_CLASS_NAME
 									)}
-									isDisabled={isExporting}
+									isDisabled={isFileOperationPending}
 									onPress={() => {
 										activeExportTriggerRef.current =
 											document.getElementById(

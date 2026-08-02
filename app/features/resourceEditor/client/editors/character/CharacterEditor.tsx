@@ -14,10 +14,12 @@ import type { DialogPackage } from '@/domain/resourcePack/contracts/dialogue';
 import type { EventNode } from '@/domain/resourcePack/contracts/event';
 
 import { CHARACTER_TYPE_LABELS } from '@/features/resourceEditor/client/characterTypeLabels';
+import { SectionAddButton } from '@/features/resourceEditor/client/components/actions/SectionAddButton';
 import { SectionDeleteButton } from '@/features/resourceEditor/client/components/actions/SectionDeleteButton';
 import { EditorDetailEmptyState } from '@/features/resourceEditor/client/components/layout/EditorDetailEmptyState';
 import { EditorDetailHeader } from '@/features/resourceEditor/client/components/layout/EditorDetailHeader';
 import { EditorDetailPanel } from '@/features/resourceEditor/client/components/layout/EditorDetailPanel';
+import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
 import { EditorSection } from '@/features/resourceEditor/client/components/layout/EditorSection';
 
 import { BasicInfo } from './editor/BasicInfo';
@@ -33,6 +35,7 @@ interface CharacterEditorProps {
 	allEvents: EventNode[];
 	allDialogPackages: DialogPackage[];
 	isIdDuplicate: boolean;
+	isLabelDuplicate: boolean;
 	onRemove: () => void;
 	onUpdate: (updates: Partial<Character>) => void;
 }
@@ -43,6 +46,7 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 		allEvents,
 		allDialogPackages,
 		isIdDuplicate,
+		isLabelDuplicate,
 		onRemove,
 		onUpdate,
 	}) {
@@ -129,13 +133,21 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 					return;
 				}
 				const portraits = [...(character.portraits ?? [])];
+				const previousPortrait = portraits[index];
+				if (!previousPortrait) return;
 				portraits[index] = {
-					...portraits[index],
+					...previousPortrait,
 					...updates,
 				} as CharacterPortrait;
-				onUpdate({ portraits });
+				onUpdate({
+					portraits,
+					...(updates.pid !== undefined &&
+					character.faceInNoteBook === previousPortrait.pid
+						? { faceInNoteBook: updates.pid }
+						: {}),
+				});
 			},
-			[character?.portraits, onUpdate]
+			[character, onUpdate]
 		);
 
 		const updateDefaultPortrait = useCallback(
@@ -202,8 +214,6 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 					lv3ChatData: [],
 					lv4ChatData: [],
 					lv5ChatData: [],
-					lv1InviteSucceed: [],
-					lv1InviteFailed: [],
 					lv2InviteSucceed: [],
 					lv2InviteFailed: [],
 					lv3InviteSucceed: [],
@@ -211,7 +221,6 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 					lv4InviteSucceed: [],
 					lv4InviteFailed: [],
 					lv5InviteSucceed: [],
-					lv5InviteFailed: [],
 					lv3RequestIngerdient: [],
 					lv4RequestIngerdient: [],
 					lv5RequestIngerdient: [],
@@ -255,12 +264,12 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 			if (!character) {
 				return;
 			}
-			const label = character.label || 'Unknown';
+			const { id, label } = character;
 			const mainSprite = [];
 			for (let row = 0; row < 4; row++) {
 				for (let col = 0; col < 3; col++) {
 					mainSprite.push(
-						`assets/Character/${label}/Sprite/Main_${row}, ${col}.png`
+						`assets/Character/${id}/Sprite/Main_${row}, ${col}.png`
 					);
 				}
 			}
@@ -268,7 +277,7 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 			for (let row = 0; row < 6; row++) {
 				for (let col = 0; col < 4; col++) {
 					eyeSprite.push(
-						`assets/Character/${label}/Sprite/Eyes_${row}, ${col}.png`
+						`assets/Character/${id}/Sprite/Eyes_${row}, ${col}.png`
 					);
 				}
 			}
@@ -283,12 +292,12 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 			if (!character) {
 				return;
 			}
-			const label = character.label || 'Unknown';
+			const { id, label } = character;
 			const mainSprite = [];
 			for (let row = 0; row < 4; row++) {
 				for (let col = 0; col < 3; col++) {
 					mainSprite.push(
-						`assets/Character/${label}/Sprite/Main_${row}, ${col}.png`
+						`assets/Character/${id}/Sprite/Main_${row}, ${col}.png`
 					);
 				}
 			}
@@ -296,7 +305,7 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 			for (let row = 0; row < 6; row++) {
 				for (let col = 0; col < 4; col++) {
 					eyeSprite.push(
-						`assets/Character/${label}/Sprite/Eyes_${row}, ${col}.png`
+						`assets/Character/${id}/Sprite/Eyes_${row}, ${col}.png`
 					);
 				}
 			}
@@ -336,6 +345,7 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 				<BasicInfo
 					character={character}
 					isIdDuplicate={isIdDuplicate}
+					isLabelDuplicate={isLabelDuplicate}
 					onUpdate={onUpdate}
 				/>
 
@@ -344,17 +354,35 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 					onUpdate={updateDescription}
 				/>
 
-				<SpawnMarkerEditor
-					spawnMarker={
-						character.spawnMarker ?? {
-							mapLabel: 'BeastForest',
-							x: 0,
-							y: 0,
-							rotation: 'Down',
+				{character.spawnMarker ? (
+					<SpawnMarkerEditor
+						spawnMarker={character.spawnMarker}
+						onUpdate={updateSpawnMarker}
+					/>
+				) : (
+					<EditorSection
+						title="出没地点（Spawn Marker）"
+						actions={
+							<SectionAddButton
+								onPress={() =>
+									updateSpawnMarker({
+										mapLabel: 'BeastForest',
+										x: 0,
+										y: 0,
+										rotation: 'Down',
+									})
+								}
+							>
+								启用出没地点
+							</SectionAddButton>
 						}
-					}
-					onUpdate={updateSpawnMarker}
-				/>
+					>
+						<EmptyState
+							variant="text"
+							title="暂未配置白天出没地点"
+						/>
+					</EditorSection>
+				)}
 
 				<EditorSection title="显示与分类">
 					<div className="grid grid-cols-1 gap-3 sm:grid-cols-3">

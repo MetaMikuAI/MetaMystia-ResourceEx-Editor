@@ -224,7 +224,11 @@ function readCharacterPortrait(
 	};
 }
 
-function readRequest(value: unknown, path: string): Request {
+function readRequest(
+	value: unknown,
+	path: string,
+	isEnabledByDefault: boolean
+): Request {
 	const record = readEntity(value, path);
 	readRequired(record, 'tagId', path, readNumber);
 	readRequired(record, 'request', path, readString);
@@ -235,7 +239,7 @@ function readRequest(value: unknown, path: string): Request {
 		request: readRequired(record, 'request', path, readString),
 		enable:
 			record['enable'] === undefined
-				? true
+				? isEnabledByDefault
 				: readBoolean(record['enable'], `${path}.enable`),
 	};
 }
@@ -283,10 +287,14 @@ function readGuestInfo(value: unknown, path: string): GuestInfo {
 	validateOptional(record, 'evaluation', path, readStringArray);
 	readRequired(record, 'conversation', path, readStringArray);
 	validateOptional(record, 'foodRequests', path, (requests, childPath) =>
-		readArray(requests, childPath, readRequest)
+		readArray(requests, childPath, (request, requestPath) =>
+			readRequest(request, requestPath, true)
+		)
 	);
 	validateOptional(record, 'bevRequests', path, (requests, childPath) =>
-		readArray(requests, childPath, readRequest)
+		readArray(requests, childPath, (request, requestPath) =>
+			readRequest(request, requestPath, false)
+		)
 	);
 	validateOptional(record, 'hateFoodTag', path, readNumberArray);
 	validateOptional(record, 'likeFoodTag', path, (tags, childPath) =>
@@ -331,7 +339,9 @@ function readGuestInfo(value: unknown, path: string): GuestInfo {
 				'foodRequests',
 				path,
 				(requests, childPath) =>
-					readArray(requests, childPath, readRequest)
+					readArray(requests, childPath, (request, requestPath) =>
+						readRequest(request, requestPath, true)
+					)
 			) ?? [],
 		bevRequests:
 			readOptionalValue(
@@ -339,7 +349,9 @@ function readGuestInfo(value: unknown, path: string): GuestInfo {
 				'bevRequests',
 				path,
 				(requests, childPath) =>
-					readArray(requests, childPath, readRequest)
+					readArray(requests, childPath, (request, requestPath) =>
+						readRequest(request, requestPath, false)
+					)
 			) ?? [],
 		hateFoodTag:
 			readOptionalValue(record, 'hateFoodTag', path, readNumberArray) ??
@@ -638,7 +650,7 @@ function readPixelFullConfig(value: unknown, path: string): PixelFullConfig {
 	};
 }
 
-function readClothes(value: unknown, path: string): Clothes {
+function readClothes(value: unknown, path: string, packLabel: string): Clothes {
 	const record = readEntity(value, path);
 	readRequired(record, 'id', path, readNumber);
 	readRequired(record, 'name', path, readString);
@@ -665,7 +677,7 @@ function readClothes(value: unknown, path: string): Clothes {
 		portraitPath: readRequired(record, 'portraitPath', path, readString),
 		pixelFullConfig:
 			record['pixelFullConfig'] === undefined
-				? createPixelFullConfig(record['id'])
+				? createPixelFullConfig(record['id'], packLabel)
 				: readPixelFullConfig(
 						record['pixelFullConfig'],
 						`${path}.pixelFullConfig`
@@ -1286,10 +1298,21 @@ function readCollection(
 
 export function parseResourcePackWire(input: unknown): IResourcePackWire {
 	const record = readRecord(input, 'ResourceEx');
+	const legacyLabel = readOptionalValue(
+		record,
+		'label',
+		'ResourceEx',
+		readString
+	);
+	const packInfo =
+		record['packInfo'] === undefined
+			? undefined
+			: readPackInfo(record['packInfo'], 'packInfo');
+	const packLabel = packInfo?.label ?? legacyLabel ?? 'ResourceExample';
 	return {
 		...record,
 		...readOptionalProperty(record, 'name', 'ResourceEx', readString),
-		...readOptionalProperty(record, 'label', 'ResourceEx', readString),
+		...(legacyLabel === undefined ? {} : { label: legacyLabel }),
 		...readOptionalProperty(
 			record,
 			'authors',
@@ -1303,9 +1326,7 @@ export function parseResourcePackWire(input: unknown): IResourcePackWire {
 			readString
 		),
 		...readOptionalProperty(record, 'version', 'ResourceEx', readString),
-		...(record['packInfo'] === undefined
-			? {}
-			: { packInfo: readPackInfo(record['packInfo'], 'packInfo') }),
+		...(packInfo === undefined ? {} : { packInfo }),
 		characters: readCollection(record, 'characters').map((value, index) =>
 			readCharacter(value, `characters[${index}]`)
 		),
@@ -1335,14 +1356,14 @@ export function parseResourcePackWire(input: unknown): IResourcePackWire {
 			readMerchantConfig(value, `merchants[${index}]`)
 		),
 		clothes: readCollection(record, 'clothes').map((value, index) =>
-			readClothes(value, `clothes[${index}]`)
+			readClothes(value, `clothes[${index}]`, packLabel)
 		),
 	};
 }
 
-function createPixelFullConfig(id: unknown) {
+function createPixelFullConfig(id: unknown, packLabel: string) {
 	return {
-		name: `_ResourceExample_Clothes_${String(id)}`,
+		name: `_${packLabel}_Clothes_${String(id)}`,
 		mainSprite: Array(12)
 			.fill('')
 			.map(
@@ -1419,7 +1440,7 @@ function normalizeCharacter(character: Character): Character {
 						bevRequests: guest.bevRequests
 							.map((request) => ({
 								...request,
-								enable: request.enable ?? true,
+								enable: request.enable ?? false,
 							}))
 							.sort((a, b) => a.tagId - b.tagId),
 						likeFoodTag: [...guest.likeFoodTag].sort(

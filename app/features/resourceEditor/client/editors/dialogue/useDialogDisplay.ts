@@ -14,6 +14,18 @@ export function useDialogDisplay(
 	const { getAssetUrl } = useResourceEditor();
 
 	const portraitPath = useMemo(() => {
+		const customChar = customCharacters.find(
+			({ id, type }) =>
+				id === dialog.characterId && type === dialog.characterType
+		);
+		const customPortrait = customChar?.portraits?.find(
+			({ pid }) => pid === dialog.pid
+		);
+		if (customPortrait) {
+			return (
+				getAssetUrl(customPortrait.path) ?? `/${customPortrait.path}`
+			);
+		}
 		if (dialog.characterType === 'Special') {
 			const specialPortrait = SPECIAL_PORTRAITS.find(
 				({ characterId, pid }) =>
@@ -21,18 +33,6 @@ export function useDialogDisplay(
 			);
 			if (specialPortrait?.filename) {
 				return `/assets/SpecialPortrait/${specialPortrait.filename}`;
-			}
-			const customChar = customCharacters.find(
-				({ id, type }) =>
-					id === dialog.characterId && type === dialog.characterType
-			);
-			if (customChar) {
-				const portrait = customChar.portraits?.find(
-					({ pid }) => pid === dialog.pid
-				);
-				if (portrait) {
-					return getAssetUrl(portrait.path) ?? `/${portrait.path}`;
-				}
 			}
 		}
 
@@ -48,8 +48,20 @@ export function useDialogDisplay(
 	const { charName, portraitName } = useMemo(() => {
 		let charName = '未知角色';
 		let portraitName = '未知立绘';
+		const customChar = customCharacters.find(
+			({ id, type }) =>
+				id === dialog.characterId && type === dialog.characterType
+		);
 
-		if (dialog.characterType === 'Special') {
+		if (customChar) {
+			charName = customChar.name;
+			const portrait = customChar.portraits?.find(
+				({ pid }) => pid === dialog.pid
+			);
+			if (portrait) {
+				portraitName = portrait.label || `立绘${portrait.pid}`;
+			}
+		} else if (dialog.characterType === 'Special') {
 			const guest = SPECIAL_GUESTS.find(
 				({ id }) => id === dialog.characterId
 			);
@@ -63,20 +75,6 @@ export function useDialogDisplay(
 			);
 			if (portrait) {
 				portraitName = portrait.name;
-			}
-		} else {
-			const customChar = customCharacters.find(
-				({ id, type }) =>
-					id === dialog.characterId && type === dialog.characterType
-			);
-			if (customChar) {
-				charName = customChar.name;
-				const portrait = customChar.portraits?.find(
-					({ pid }) => pid === dialog.pid
-				);
-				if (portrait) {
-					portraitName = portrait.label || `立绘${portrait.pid}`;
-				}
 			}
 		}
 

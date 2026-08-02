@@ -6,6 +6,11 @@ import type {
 	Dialog,
 	DialogPackage,
 } from '@/domain/resourcePack/contracts/dialogue';
+import {
+	adjustDialogJumpsForDeletion,
+	adjustDialogJumpsForInsertion,
+} from '@/domain/resourcePack/dialogueReferences';
+import { remapResourcePackLabelReferences } from '@/domain/resourcePack/entityReferences';
 
 import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
 import { findNextAvailableSuffixedValue } from '@/features/resourceEditor/client/editorValueAllocation';
@@ -70,10 +75,19 @@ export function DialogueEditorScreen() {
 				return;
 			}
 			newPackages[index] = { ...currentPackage, ...updates };
-			updateResourcePack(() => ({
-				...data,
-				dialogPackages: newPackages,
-			}));
+			let nextData = { ...data, dialogPackages: newPackages };
+			if (
+				updates.name !== undefined &&
+				updates.name !== currentPackage.name
+			) {
+				nextData = remapResourcePackLabelReferences(
+					nextData,
+					'DialogPackage',
+					currentPackage.name,
+					updates.name
+				);
+			}
+			updateResourcePack(() => nextData);
 		},
 		[data, updateResourcePack]
 	);
@@ -142,12 +156,12 @@ export function DialogueEditorScreen() {
 								: DEFAULT_DIALOG.position,
 					};
 
-			const dialogList = [...pkg.dialogList];
-			if (insertIndex !== undefined) {
-				dialogList.splice(insertIndex, 0, newDialog);
-			} else {
-				dialogList.push(newDialog);
-			}
+			const resolvedInsertIndex = insertIndex ?? pkg.dialogList.length;
+			const dialogList = adjustDialogJumpsForInsertion(
+				pkg.dialogList,
+				resolvedInsertIndex
+			);
+			dialogList.splice(resolvedInsertIndex, 0, newDialog);
 			newPackages[selectedIndex] = { ...pkg, dialogList };
 			updateResourcePack(() => ({
 				...data,
@@ -170,7 +184,10 @@ export function DialogueEditorScreen() {
 
 			newPackages[selectedIndex] = {
 				...pkg,
-				dialogList: pkg.dialogList.filter((_, i) => i !== dialogIndex),
+				dialogList: adjustDialogJumpsForDeletion(
+					pkg.dialogList.filter((_, i) => i !== dialogIndex),
+					dialogIndex
+				),
 			};
 			updateResourcePack(() => ({
 				...data,

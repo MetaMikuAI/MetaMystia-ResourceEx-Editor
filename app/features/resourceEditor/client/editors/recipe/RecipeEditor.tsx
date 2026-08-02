@@ -21,6 +21,7 @@ import {
 } from '@/features/resourceEditor/client/components/select/Select';
 import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
 import { WarningNotice } from '@/features/resourceEditor/client/components/status/WarningNotice';
+import { parseIntegerInput } from '@/features/resourceEditor/client/editorValueAllocation';
 import { IdRangeBadge } from '@/features/resourceEditor/client/editors/info/IdRangeBadge';
 
 interface RecipeEditorProps {
@@ -146,9 +147,10 @@ export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
 							id={idId}
 							type="number"
 							value={isNaN(recipe.id) ? '' : String(recipe.id)}
-							onChange={(e) =>
-								onUpdate({ id: parseInt(e.target.value) })
-							}
+							onChange={(e) => {
+								const value = parseIntegerInput(e.target.value);
+								if (value !== null) onUpdate({ id: value });
+							}}
 							isInvalid={Boolean(isIdTooSmall)}
 						/>
 					</div>
@@ -171,14 +173,17 @@ export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
 						<Input
 							id={idCookTime}
 							type="number"
+							min={1}
 							value={
 								isNaN(recipe.cookTime)
 									? ''
 									: String(recipe.cookTime)
 							}
-							onChange={(e) =>
-								onUpdate({ cookTime: parseInt(e.target.value) })
-							}
+							onChange={(e) => {
+								const value = parseIntegerInput(e.target.value);
+								if (value !== null)
+									onUpdate({ cookTime: value });
+							}}
 						/>
 					</div>
 

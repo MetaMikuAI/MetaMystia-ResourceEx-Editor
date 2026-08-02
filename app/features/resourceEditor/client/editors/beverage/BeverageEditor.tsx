@@ -14,6 +14,7 @@ import { EditorSection } from '@/features/resourceEditor/client/components/layou
 import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
 import { TagsField } from '@/features/resourceEditor/client/components/tags/TagsField';
 import { SpriteUploader } from '@/features/resourceEditor/client/components/uploads/SpriteUploader';
+import { parseIntegerInput } from '@/features/resourceEditor/client/editorValueAllocation';
 import { IdRangeBadge } from '@/features/resourceEditor/client/editors/info/IdRangeBadge';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
@@ -76,15 +77,10 @@ export const BeverageEditor = memo<BeverageEditorProps>(
 										: String(beverage.id)
 								}
 								onChange={(e) => {
-									const val = parseInt(e.target.value);
-									if (isNaN(val)) {
-										onUpdate({ id: val });
-									} else {
-										onUpdate({
-											id: val,
-											spritePath: `assets/Beverage/${val}.png`,
-										});
-									}
+									const value = parseIntegerInput(
+										e.target.value
+									);
+									if (value !== null) onUpdate({ id: value });
 								}}
 								isInvalid={Boolean(isIdTooSmall)}
 							/>
@@ -132,11 +128,13 @@ export const BeverageEditor = memo<BeverageEditorProps>(
 								}
 								min={1}
 								max={5}
-								onChange={(e) =>
-									onUpdate({
-										level: parseInt(e.target.value),
-									})
-								}
+								onChange={(e) => {
+									const value = parseIntegerInput(
+										e.target.value
+									);
+									if (value !== null)
+										onUpdate({ level: value });
+								}}
 							/>
 						</div>
 
@@ -147,16 +145,20 @@ export const BeverageEditor = memo<BeverageEditorProps>(
 							<Input
 								id={idBaseValue}
 								type="number"
+								min={0}
 								value={
 									isNaN(beverage.baseValue)
 										? ''
 										: String(beverage.baseValue)
 								}
-								onChange={(e) =>
-									onUpdate({
-										baseValue: parseInt(e.target.value),
-									})
-								}
+								onChange={(e) => {
+									const value = parseIntegerInput(
+										e.target.value
+									);
+									if (value !== null) {
+										onUpdate({ baseValue: value });
+									}
+								}}
 							/>
 						</div>
 					</div>

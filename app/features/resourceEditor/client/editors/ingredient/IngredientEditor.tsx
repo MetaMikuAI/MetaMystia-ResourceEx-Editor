@@ -20,6 +20,7 @@ import { Select } from '@/features/resourceEditor/client/components/select/Selec
 import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
 import { TagsField } from '@/features/resourceEditor/client/components/tags/TagsField';
 import { SpriteUploader } from '@/features/resourceEditor/client/components/uploads/SpriteUploader';
+import { parseIntegerInput } from '@/features/resourceEditor/client/editorValueAllocation';
 import { IdRangeBadge } from '@/features/resourceEditor/client/editors/info/IdRangeBadge';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
@@ -100,15 +101,10 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 										: String(ingredient.id)
 								}
 								onChange={(e) => {
-									const val = parseInt(e.target.value);
-									if (isNaN(val)) {
-										onUpdate({ id: val });
-									} else {
-										onUpdate({
-											id: val,
-											spritePath: `assets/Ingredient/${val}.png`,
-										});
-									}
+									const value = parseIntegerInput(
+										e.target.value
+									);
+									if (value !== null) onUpdate({ id: value });
 								}}
 								isInvalid={Boolean(isIdTooSmall)}
 							/>
@@ -151,16 +147,20 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 							<Input
 								id={idLevel}
 								type="number"
+								min={1}
+								max={5}
 								value={
 									isNaN(ingredient.level)
 										? ''
 										: String(ingredient.level)
 								}
-								onChange={(e) =>
-									onUpdate({
-										level: parseInt(e.target.value),
-									})
-								}
+								onChange={(e) => {
+									const value = parseIntegerInput(
+										e.target.value
+									);
+									if (value !== null)
+										onUpdate({ level: value });
+								}}
 							/>
 						</div>
 
@@ -214,16 +214,20 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 							<Input
 								id={idBaseValue}
 								type="number"
+								min={0}
 								value={
 									isNaN(ingredient.baseValue)
 										? ''
 										: String(ingredient.baseValue)
 								}
-								onChange={(e) =>
-									onUpdate({
-										baseValue: parseInt(e.target.value),
-									})
-								}
+								onChange={(e) => {
+									const value = parseIntegerInput(
+										e.target.value
+									);
+									if (value !== null) {
+										onUpdate({ baseValue: value });
+									}
+								}}
 							/>
 						</div>
 					</div>

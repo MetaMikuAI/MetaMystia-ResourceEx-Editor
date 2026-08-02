@@ -7,6 +7,7 @@ import type {
 	MissionNode,
 	MissionReward,
 } from '@/domain/resourcePack/contracts/mission';
+import { remapResourcePackLabelReferences } from '@/domain/resourcePack/entityReferences';
 
 import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
 import { findNextAvailableSuffixedValue } from '@/features/resourceEditor/client/editorValueAllocation';
@@ -51,11 +52,25 @@ export function MissionEditorScreen() {
 		(index: number | null, updates: Partial<MissionNode>) => {
 			if (index === null) return;
 			const newMissions = [...data.missionNodes];
+			const previousMission = newMissions[index];
+			if (!previousMission) return;
 			newMissions[index] = {
-				...newMissions[index],
+				...previousMission,
 				...(updates as Partial<MissionNode>),
 			} as MissionNode;
-			updateResourcePack(() => ({ ...data, missionNodes: newMissions }));
+			let nextData = { ...data, missionNodes: newMissions };
+			if (
+				updates.label !== undefined &&
+				updates.label !== previousMission.label
+			) {
+				nextData = remapResourcePackLabelReferences(
+					nextData,
+					'Mission',
+					previousMission.label,
+					updates.label
+				);
+			}
+			updateResourcePack(() => nextData);
 		},
 		[data, updateResourcePack]
 	);

@@ -3,9 +3,13 @@
 import { useCallback, useMemo, useState } from 'react';
 
 import type { Recipe } from '@/domain/resourcePack/contracts/items';
+import { remapResourcePackItemReferences } from '@/domain/resourcePack/entityReferences';
 
 import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
-import { findNextAvailableInteger } from '@/features/resourceEditor/client/editorValueAllocation';
+import {
+	findNextAvailableInteger,
+	getEntityIdAllocationStart,
+} from '@/features/resourceEditor/client/editorValueAllocation';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import { RecipeEditor } from './RecipeEditor';
@@ -33,7 +37,7 @@ export function RecipeEditorScreen() {
 		const newRecipe: Recipe = {
 			id: findNextAvailableInteger(
 				(data.recipes ?? []).map((recipe) => recipe.id),
-				11000
+				getEntityIdAllocationStart(data.packInfo.idRangeStart, 11000)
 			),
 			foodId: -1,
 			ingredients: [],
@@ -66,8 +70,22 @@ export function RecipeEditorScreen() {
 				return;
 			}
 			const newRecipes = [...(data.recipes || [])];
+			const previousRecipe = newRecipes[index];
 			newRecipes[index] = { ...newRecipes[index], ...updates } as Recipe;
-			updateResourcePack(() => ({ ...data, recipes: newRecipes }));
+			let nextData = { ...data, recipes: newRecipes };
+			if (
+				previousRecipe &&
+				updates.id !== undefined &&
+				updates.id !== previousRecipe.id
+			) {
+				nextData = remapResourcePackItemReferences(
+					nextData,
+					'Recipe',
+					previousRecipe.id,
+					updates.id
+				);
+			}
+			updateResourcePack(() => nextData);
 		},
 		[data, updateResourcePack]
 	);

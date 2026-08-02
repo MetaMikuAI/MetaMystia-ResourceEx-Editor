@@ -3,11 +3,13 @@
 import { useCallback, useMemo, useState } from 'react';
 
 import type { Beverage } from '@/domain/resourcePack/contracts/items';
+import { remapResourcePackItemReferences } from '@/domain/resourcePack/entityReferences';
 
 import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
 import {
 	findNextAvailableInteger,
 	findNextAvailableSuffixedValue,
+	getEntityIdAllocationStart,
 } from '@/features/resourceEditor/client/editorValueAllocation';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
@@ -22,7 +24,7 @@ export function BeverageEditorScreen() {
 		const beverages = data.beverages ?? [];
 		const newId = findNextAvailableInteger(
 			beverages.map((beverage) => beverage.id),
-			11000
+			getEntityIdAllocationStart(data.packInfo.idRangeStart, 11000)
 		);
 		const newBeverage: Beverage = {
 			id: newId,
@@ -62,11 +64,25 @@ export function BeverageEditorScreen() {
 				return;
 			}
 			const newBeverages = [...(data.beverages || [])];
+			const previousBeverage = newBeverages[index];
 			newBeverages[index] = {
 				...newBeverages[index],
 				...updates,
 			} as Beverage;
-			updateResourcePack(() => ({ ...data, beverages: newBeverages }));
+			let nextData = { ...data, beverages: newBeverages };
+			if (
+				previousBeverage &&
+				updates.id !== undefined &&
+				updates.id !== previousBeverage.id
+			) {
+				nextData = remapResourcePackItemReferences(
+					nextData,
+					'Beverage',
+					previousBeverage.id,
+					updates.id
+				);
+			}
+			updateResourcePack(() => nextData);
 		},
 		[data, updateResourcePack]
 	);

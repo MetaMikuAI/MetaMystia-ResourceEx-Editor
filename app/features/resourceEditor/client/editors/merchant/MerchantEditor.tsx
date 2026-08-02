@@ -127,6 +127,14 @@ export const MerchantEditor = memo<MerchantEditorProps>(
 		if (!merchant) {
 			return <EditorDetailEmptyState itemLabel="商人" />;
 		}
+		const isPriceRangeInvalid =
+			!Number.isFinite(merchant.priceMultiplierMin) ||
+			merchant.priceMultiplierMin < 0 ||
+			!Number.isFinite(merchant.priceMultiplierMax) ||
+			merchant.priceMultiplierMax < merchant.priceMultiplierMin;
+		const isLeastSellNumInvalid =
+			!Number.isInteger(merchant.leastSellNum) ||
+			merchant.leastSellNum < 1;
 
 		return (
 			<EditorDetailPanel>
@@ -155,6 +163,7 @@ export const MerchantEditor = memo<MerchantEditorProps>(
 								min={0}
 								step={0.01}
 								value={String(merchant.priceMultiplierMin)}
+								isInvalid={isPriceRangeInvalid}
 								onChange={(e) => {
 									const value = parseFloat(e.target.value);
 									onUpdate({
@@ -173,6 +182,7 @@ export const MerchantEditor = memo<MerchantEditorProps>(
 								min={0}
 								step={0.01}
 								value={String(merchant.priceMultiplierMax)}
+								isInvalid={isPriceRangeInvalid}
 								onChange={(e) => {
 									const value = parseFloat(e.target.value);
 									onUpdate({
@@ -192,6 +202,7 @@ export const MerchantEditor = memo<MerchantEditorProps>(
 								type="number"
 								min={1}
 								value={String(merchant.leastSellNum)}
+								isInvalid={isLeastSellNumInvalid}
 								onChange={(e) =>
 									onUpdate({
 										leastSellNum:

@@ -3,6 +3,7 @@
 import { useCallback, useState } from 'react';
 
 import type { EventNode } from '@/domain/resourcePack/contracts/event';
+import { remapResourcePackLabelReferences } from '@/domain/resourcePack/entityReferences';
 
 import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
 import { findNextAvailableSuffixedValue } from '@/features/resourceEditor/client/editorValueAllocation';
@@ -41,8 +42,22 @@ export function EventEditorScreen() {
 		(index: number | null, updates: Partial<EventNode>) => {
 			if (index === null) return;
 			const newEvents = [...(data.eventNodes || [])];
-			newEvents[index] = { ...newEvents[index], ...updates } as EventNode;
-			updateResourcePack(() => ({ ...data, eventNodes: newEvents }));
+			const previousEvent = newEvents[index];
+			if (!previousEvent) return;
+			newEvents[index] = { ...previousEvent, ...updates } as EventNode;
+			let nextData = { ...data, eventNodes: newEvents };
+			if (
+				updates.label !== undefined &&
+				updates.label !== previousEvent.label
+			) {
+				nextData = remapResourcePackLabelReferences(
+					nextData,
+					'Event',
+					previousEvent.label,
+					updates.label
+				);
+			}
+			updateResourcePack(() => nextData);
 		},
 		[data, updateResourcePack]
 	);
@@ -81,6 +96,7 @@ export function EventEditorScreen() {
 					allMissions={data.missionNodes || []}
 					allEvents={data.eventNodes || []}
 					allCharacters={data.characters || []}
+					beverages={data.beverages || []}
 					foods={data.foods || []}
 					ingredients={data.ingredients || []}
 					recipes={data.recipes || []}

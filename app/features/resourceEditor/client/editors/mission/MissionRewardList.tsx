@@ -3,7 +3,6 @@ import { memo, useCallback, useMemo, useState } from 'react';
 import Button from '@/design/ui/components/button';
 import Input from '@/design/ui/components/input';
 
-import { BEVERAGE_NAMES } from '@/domain/data/beverages';
 import type {
 	MissionReward,
 	ObjectType,
@@ -23,8 +22,14 @@ import {
 } from '@/features/resourceEditor/client/components/select/Select';
 import { WarningNotice } from '@/features/resourceEditor/client/components/status/WarningNotice';
 
+import {
+	createMissionReward,
+	parseRewardItemCount,
+} from './missionEditorValues';
+
 interface AddRewardItemRowProps {
 	objectType: ObjectType | undefined;
+	allBeverages: { id: number; name: string }[];
 	allFoods: { id: number; name: string }[];
 	allIngredients: { id: number; name: string }[];
 	allRecipes: { id: number; name: string }[];
@@ -33,6 +38,7 @@ interface AddRewardItemRowProps {
 
 function AddRewardItemRow({
 	objectType,
+	allBeverages,
 	allFoods,
 	allIngredients,
 	allRecipes,
@@ -55,7 +61,7 @@ function AddRewardItemRow({
 			}));
 		}
 		if (objectType === 'Beverage') {
-			return BEVERAGE_NAMES.map((bev) => ({
+			return allBeverages.map((bev) => ({
 				value: bev.id,
 				label: `[${bev.id}] ${bev.name}`,
 			}));
@@ -67,7 +73,7 @@ function AddRewardItemRow({
 			}));
 		}
 		return [];
-	}, [objectType, allFoods, allIngredients, allRecipes]);
+	}, [objectType, allBeverages, allFoods, allIngredients, allRecipes]);
 
 	return (
 		<div className="mt-2 flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
@@ -82,7 +88,7 @@ function AddRewardItemRow({
 			<Input
 				type="number"
 				value={String(count)}
-				onChange={(e) => setCount(parseInt(e.target.value) || 1)}
+				onChange={(e) => setCount(parseRewardItemCount(e.target.value))}
 				className="w-full sm:w-24"
 				aria-label="物品数量"
 				placeholder="数量"
@@ -93,7 +99,7 @@ function AddRewardItemRow({
 				color="primary"
 				size="sm"
 				onPress={() => {
-					if (selectedId === undefined) return;
+					if (selectedId === undefined || count < 1) return;
 					onAdd(selectedId, count);
 					setCount(1);
 				}}
@@ -232,6 +238,7 @@ interface MissionRewardListProps {
 	title?: string;
 	rewards: MissionReward[];
 	characterOptions: { value: string; label: string }[];
+	allBeverages: { id: number; name: string }[];
 	allFoods: { id: number; name: string }[];
 	allIngredients: { id: number; name: string }[];
 	allRecipes: { id: number; name: string }[];
@@ -243,6 +250,7 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 		title = '奖励（Rewards）',
 		rewards,
 		characterOptions,
+		allBeverages,
 		allFoods,
 		allIngredients,
 		allRecipes,
@@ -251,7 +259,7 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 		const addReward = useCallback(() => {
 			const newRewards: MissionReward[] = [
 				...(rewards || []),
-				{ rewardType: 'UpgradeKizunaLevel' },
+				createMissionReward('UpgradeKizunaLevel'),
 			];
 			onUpdate(newRewards);
 		}, [rewards, onUpdate]);
@@ -279,6 +287,15 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 			[rewards, onUpdate]
 		);
 
+		const replaceReward = useCallback(
+			(index: number, rewardType: RewardType) => {
+				const newRewards = [...rewards];
+				newRewards[index] = createMissionReward(rewardType);
+				onUpdate(newRewards);
+			},
+			[onUpdate, rewards]
+		);
+
 		return (
 			<EditorSection
 				title={`${title}（${rewards?.length || 0}）`}
@@ -299,9 +316,7 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 									ariaLabel="奖励类型"
 									baseClassName="min-w-0 flex-1"
 									value={reward.rewardType}
-									onChange={(v) =>
-										updateReward(index, { rewardType: v })
-									}
+									onChange={(v) => replaceReward(index, v)}
 									items={REWARD_TYPES.map((t) => ({
 										value: t.type,
 										label: `${t.label}（${t.type}）`,
@@ -395,7 +410,7 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 														type === 'Beverage'
 													) {
 														name =
-															BEVERAGE_NAMES.find(
+															allBeverages.find(
 																(bev) =>
 																	bev.id ===
 																	itemId
@@ -456,7 +471,9 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 											)}
 										</div>
 										<AddRewardItemRow
+											key={reward.objectType ?? 'Food'}
 											objectType={reward.objectType}
+											allBeverages={allBeverages}
 											allFoods={allFoods}
 											allIngredients={allIngredients}
 											allRecipes={allRecipes}

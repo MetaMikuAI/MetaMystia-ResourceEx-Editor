@@ -15,12 +15,14 @@ import { useLabelPrefixValidation } from '@/features/resourceEditor/client/hooks
 interface BasicInfoProps {
 	character: Character;
 	isIdDuplicate: boolean;
+	isLabelDuplicate: boolean;
 	onUpdate: (updates: Partial<Character>) => void;
 }
 
 export const BasicInfo = memo<BasicInfoProps>(function BasicInfo({
 	character,
 	isIdDuplicate,
+	isLabelDuplicate,
 	onUpdate,
 }) {
 	const idId = useId();
@@ -70,14 +72,14 @@ export const BasicInfo = memo<BasicInfoProps>(function BasicInfo({
 					/>
 				</div>
 				<div className="flex flex-col gap-1">
-					<Label htmlFor={idType} tip="角色类型，固定为Special">
+					<Label htmlFor={idType} tip="当前资源包中的角色类型">
 						角色类型（固定）
 					</Label>
 					<Input
 						isDisabled
 						id={idType}
 						type="text"
-						value={`Special（${CHARACTER_TYPE_LABELS.Special}）`}
+						value={`${character.type}（${CHARACTER_TYPE_LABELS[character.type]}）`}
 					/>
 				</div>
 				<div className="flex flex-col gap-1">
@@ -104,6 +106,9 @@ export const BasicInfo = memo<BasicInfoProps>(function BasicInfo({
 							标签（Label）
 						</Label>
 						<div className="flex gap-2">
+							{isLabelDuplicate && (
+								<ErrorBadge>标签重复</ErrorBadge>
+							)}
 							{isLabelInvalid && (
 								<ErrorBadge>必须以_开头</ErrorBadge>
 							)}
@@ -121,7 +126,7 @@ export const BasicInfo = memo<BasicInfoProps>(function BasicInfo({
 						onChange={(e) => {
 							onUpdate({ label: e.target.value });
 						}}
-						isInvalid={isLabelInvalid}
+						isInvalid={isLabelInvalid || isLabelDuplicate}
 					/>
 				</div>
 			</div>

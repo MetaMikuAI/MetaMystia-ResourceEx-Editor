@@ -12,6 +12,19 @@ export function findNextAvailableInteger(
 	return candidate;
 }
 
+export function getEntityIdAllocationStart(
+	idRangeStart: number | undefined,
+	fallback: number
+): number {
+	return idRangeStart ?? fallback;
+}
+
+export function parseIntegerInput(value: string): number | null {
+	if (!value.trim()) return null;
+	const parsed = Number(value);
+	return Number.isInteger(parsed) ? parsed : null;
+}
+
 export function findNextAvailableSuffixedValue(
 	usedValues: Iterable<string>,
 	prefix: string

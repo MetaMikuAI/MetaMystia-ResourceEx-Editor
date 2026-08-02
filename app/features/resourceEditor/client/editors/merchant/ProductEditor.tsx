@@ -93,11 +93,11 @@ export const ProductEditor = memo<ProductEditorProps>(function ProductEditor({
 				return [...gameItems, ...extItems];
 			}
 			case 'Recipe': {
-				const gameItems = RECIPE_NAMES.map((r) => {
-					const foodName =
-						FOOD_NAMES.find((f) => f.id === r.id)?.name || r.name;
-					return { id: r.id, name: `${foodName}`, source: '原版' };
-				});
+				const gameItems = RECIPE_NAMES.map((r) => ({
+					id: r.id,
+					name: r.name,
+					source: '原版',
+				}));
 				const extItems = extRecipes.map((r) => {
 					const foodName =
 						extFoods.find((f) => f.id === r.foodId)?.name ||

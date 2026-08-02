@@ -523,7 +523,7 @@ const BranchActionFields = memo<BranchActionFieldsProps>(
 						{options.map((option, optionIndex) => (
 							<div
 								key={optionIndex}
-								className="grid min-w-0 gap-3 rounded-large border border-divider bg-content2/30 p-3 sm:grid-cols-[minmax(0,1fr)_112px_auto]"
+								className="grid min-w-0 gap-3 rounded-large border border-divider bg-content2/30 p-3 sm:grid-cols-[minmax(0,1fr)_112px_112px_auto]"
 							>
 								<div className="flex flex-col gap-1">
 									<Label size="sm">选项文本</Label>
@@ -552,6 +552,26 @@ const BranchActionFields = memo<BranchActionFieldsProps>(
 										onChange={(e) =>
 											updateOption(optionIndex, {
 												jump: numberOrOne(
+													e.target.value
+												),
+											})
+										}
+										size="sm"
+									/>
+								</div>
+								<div className="flex flex-col gap-1">
+									<Label size="sm">价格</Label>
+									<Input
+										type="number"
+										min={0}
+										value={
+											option.price === undefined
+												? ''
+												: String(option.price)
+										}
+										onChange={(e) =>
+											updateOption(optionIndex, {
+												price: numberOrUndefined(
 													e.target.value
 												),
 											})
@@ -685,6 +705,12 @@ function numberOrZero(value: string): number {
 	const parsed = Number.parseInt(value, 10);
 	if (!Number.isFinite(parsed)) return 0;
 	return parsed;
+}
+
+function numberOrUndefined(value: string): number | undefined {
+	if (!value.trim()) return undefined;
+	const parsed = Number(value);
+	return Number.isInteger(parsed) ? parsed : undefined;
 }
 
 // Helper to keep Dialog typing consistent for callers that pass `Partial<Dialog>`

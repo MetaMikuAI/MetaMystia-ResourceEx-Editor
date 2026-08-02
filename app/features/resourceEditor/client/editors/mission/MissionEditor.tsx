@@ -142,15 +142,23 @@ export default memo<MissionEditorProps>(function MissionEditor({
 				characters={characters}
 				allFoods={allFoods}
 				characterOptions={characterOptions}
+				isLabelDuplicate={
+					Boolean(mission.label) &&
+					allMissions.some(
+						(candidate) =>
+							candidate !== mission &&
+							candidate.label === mission.label
+					)
+				}
 				onUpdate={onUpdate}
 			/>
 
 			<MissionConditionList
 				mission={mission}
 				characterOptions={characterOptions}
+				allBeverages={allBeverages}
 				allFoods={allFoods}
 				allIngredients={allIngredients}
-				allBeverages={allBeverages}
 				onUpdate={onUpdate}
 			/>
 
@@ -158,6 +166,7 @@ export default memo<MissionEditorProps>(function MissionEditor({
 				title="奖励（Rewards）"
 				rewards={mission.rewards || []}
 				characterOptions={characterOptions}
+				allBeverages={allBeverages}
 				allFoods={allFoods}
 				allIngredients={allIngredients}
 				allRecipes={allRecipes}
@@ -168,6 +177,7 @@ export default memo<MissionEditorProps>(function MissionEditor({
 				title="后置奖励（Post Rewards）"
 				rewards={mission.postRewards || []}
 				characterOptions={characterOptions}
+				allBeverages={allBeverages}
 				allFoods={allFoods}
 				allIngredients={allIngredients}
 				allRecipes={allRecipes}

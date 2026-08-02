@@ -4,10 +4,14 @@ import {
 	GAME_ID_MAX,
 	isValidPackLabel,
 	KNOWN_DEPENDENCIES,
+	MANAGED_ID_MAX,
+	MANAGED_ID_MIN,
 	PACK_LABEL_ALLOWED_DESCRIPTION,
 	UNMANAGED_ID_MAX,
 	UNMANAGED_ID_MIN,
 } from './constants';
+import type { EventData, EventNodeTrigger } from './contracts/event';
+import type { MissionReward } from './contracts/mission';
 import type { ResourceEx } from './contracts/resourceEx';
 
 export type IssueSeverity = 'error' | 'warning';
@@ -79,6 +83,30 @@ export function validateResourcePackRules(
 	// ── ID Signature ──────────────────────────────────────
 	const { idRangeStart, idRangeEnd, idSignature } = data.packInfo;
 	const hasIdRange = idRangeStart != null && idRangeEnd != null;
+	const hasIdRangeStart = idRangeStart != null;
+	const hasIdRangeEnd = idRangeEnd != null;
+
+	if (hasIdRangeStart !== hasIdRangeEnd) {
+		issues.push({
+			severity: 'error',
+			category: '基础信息',
+			message: 'ID段请同时填写起始和结束',
+		});
+	} else if (hasIdRange) {
+		if (
+			!Number.isInteger(idRangeStart) ||
+			!Number.isInteger(idRangeEnd) ||
+			idRangeStart < MANAGED_ID_MIN ||
+			idRangeEnd > MANAGED_ID_MAX ||
+			idRangeStart > idRangeEnd
+		) {
+			issues.push({
+				severity: 'error',
+				category: '基础信息',
+				message: `ID段必须是${MANAGED_ID_MIN}～${MANAGED_ID_MAX}内起始不大于结束的整数范围`,
+			});
+		}
+	}
 
 	if (hasIdRange) {
 		if (!idSignature) {
@@ -101,7 +129,13 @@ export function validateResourcePackRules(
 	// ── Helper: ID validation ─────────────────────────────
 
 	function checkId(id: number, entityType: string, entityName: string): void {
-		if (id < 0 || id > UNMANAGED_ID_MAX) {
+		if (!Number.isFinite(id) || !Number.isInteger(id)) {
+			issues.push({
+				severity: 'error',
+				category: entityType,
+				message: `${entityName}的ID必须是有限整数`,
+			});
+		} else if (id < 0 || id > UNMANAGED_ID_MAX) {
 			issues.push({
 				severity: 'error',
 				category: entityType,
@@ -135,7 +169,8 @@ export function validateResourcePackRules(
 	function checkIdDuplicate(
 		ids: number[],
 		entityType: string,
-		getLabel: (index: number) => string
+		getLabel: (index: number) => string,
+		valueName = 'ID'
 	): void {
 		const seen = new Map<number, number>();
 		ids.forEach((id, i) => {
@@ -143,12 +178,62 @@ export function validateResourcePackRules(
 				issues.push({
 					severity: 'error',
 					category: entityType,
-					message: `${getLabel(i)}与${getLabel(seen.get(id)!)}的ID（${id}）重复`,
+					message: `${getLabel(i)}与${getLabel(seen.get(id)!)}的${valueName}（${id}）重复`,
 				});
 			} else {
 				seen.set(id, i);
 			}
 		});
+	}
+
+	function checkStringDuplicate(
+		values: readonly string[],
+		entityType: string,
+		valueName: string,
+		getLabel: (index: number) => string
+	): void {
+		const seen = new Map<string, number>();
+		values.forEach((value, index) => {
+			if (!value) return;
+			const previousIndex = seen.get(value);
+			if (previousIndex !== undefined) {
+				issues.push({
+					severity: 'error',
+					category: entityType,
+					message: `${getLabel(index)}与${getLabel(previousIndex)}的${valueName}“${value}”重复`,
+				});
+				return;
+			}
+			seen.set(value, index);
+		});
+	}
+
+	function checkNonNegativeInteger(
+		value: number,
+		entityType: string,
+		valueName: string
+	): void {
+		if (!Number.isFinite(value) || !Number.isInteger(value) || value < 0) {
+			issues.push({
+				severity: 'error',
+				category: entityType,
+				message: `${valueName}必须是非负整数`,
+			});
+		}
+	}
+
+	function checkPositiveInteger(
+		value: number,
+		entityType: string,
+		valueName: string
+	): void {
+		if (!Number.isFinite(value) || !Number.isInteger(value) || value < 1) {
+			issues.push({
+				severity: 'error',
+				category: entityType,
+				message: `${valueName}必须是正整数`,
+			});
+		}
 	}
 
 	// ── Helper: string label/name prefix validation ───────
@@ -224,6 +309,12 @@ export function validateResourcePackRules(
 		'角色',
 		charNames
 	);
+	checkStringDuplicate(
+		data.characters.map((character) => character.label),
+		'角色',
+		'标签',
+		charNames
+	);
 
 	data.characters.forEach((char, i) => {
 		const name = char.name || `角色#${i + 1}`;
@@ -240,6 +331,30 @@ export function validateResourcePackRules(
 		}
 
 		checkLabelPrefix(char.label, '角色', name);
+		const portraitPids = (char.portraits ?? []).map(({ pid }) => pid);
+		checkIdDuplicate(
+			portraitPids,
+			'角色立绘',
+			(portraitIndex) => `${name}的立绘#${portraitIndex + 1}`,
+			'PID'
+		);
+		portraitPids.forEach((pid, portraitIndex) =>
+			checkNonNegativeInteger(
+				pid,
+				'角色立绘',
+				`${name}的立绘#${portraitIndex + 1}的PID`
+			)
+		);
+		if (
+			char.faceInNoteBook !== undefined &&
+			!portraitPids.includes(char.faceInNoteBook)
+		) {
+			issues.push({
+				severity: 'error',
+				category: '角色立绘',
+				message: `${name}的图鉴立绘PID（${char.faceInNoteBook}）不存在`,
+			});
+		}
 		char.portraits?.forEach((portrait, portraitIndex) =>
 			checkAssetPath(
 				portrait.path,
@@ -260,12 +375,40 @@ export function validateResourcePackRules(
 			checkAssetPaths(mainSprite, 12, '角色小人', name, '主身体贴图');
 			checkAssetPaths(eyeSprite, 24, '角色小人', name, '眼睛贴图');
 		}
+
+		if (char.guest) {
+			const { fundRangeLower, fundRangeUpper } = char.guest;
+			checkNonNegativeInteger(
+				fundRangeLower,
+				'角色顾客配置',
+				`${name}的携带金钱下限`
+			);
+			checkNonNegativeInteger(
+				fundRangeUpper,
+				'角色顾客配置',
+				`${name}的携带金钱上限`
+			);
+			if (fundRangeLower > fundRangeUpper) {
+				issues.push({
+					severity: 'error',
+					category: '角色顾客配置',
+					message: `${name}的携带金钱下限不能大于上限`,
+				});
+			}
+		}
 	});
 
 	// ── Dialog Packages ───────────────────────────────────
 	const dialogNamesSeen = new Map<string, number>();
 	data.dialogPackages.forEach((pkg, i) => {
 		const displayName = pkg.name || `对话包#${i + 1}`;
+		if (!pkg.name) {
+			issues.push({
+				severity: 'error',
+				category: '对话包',
+				message: `${displayName}的名称不能为空`,
+			});
+		}
 
 		// Duplicate check
 		if (pkg.name && dialogNamesSeen.has(pkg.name)) {
@@ -452,16 +595,45 @@ export function validateResourcePackRules(
 	});
 
 	// ── Mission Nodes ─────────────────────────────────────
+	checkStringDuplicate(
+		data.missionNodes.map((mission) => mission.label),
+		'任务节点',
+		'标签',
+		(index) =>
+			data.missionNodes[index]?.title ||
+			data.missionNodes[index]?.debugLabel ||
+			`任务#${index + 1}`
+	);
 	data.missionNodes.forEach((mission, i) => {
 		const displayName =
 			mission.title || mission.debugLabel || `任务#${i + 1}`;
+		if (!mission.label) {
+			issues.push({
+				severity: 'error',
+				category: '任务节点',
+				message: `${displayName}的标签不能为空`,
+			});
+		}
 
 		checkLabelPrefix(mission.label, '任务节点', displayName);
 	});
 
 	// ── Event Nodes ───────────────────────────────────────
+	checkStringDuplicate(
+		data.eventNodes.map((event) => event.label),
+		'事件节点',
+		'标签',
+		(index) => data.eventNodes[index]?.debugLabel || `事件#${index + 1}`
+	);
 	(data.eventNodes || []).forEach((event, i) => {
 		const displayName = event.debugLabel || `事件#${i + 1}`;
+		if (!event.label) {
+			issues.push({
+				severity: 'error',
+				category: '事件节点',
+				message: `${displayName}的标签不能为空`,
+			});
+		}
 
 		checkLabelPrefix(event.label, '事件节点', displayName);
 	});
@@ -477,6 +649,14 @@ export function validateResourcePackRules(
 	data.ingredients.forEach((it, i) => {
 		const name = it.name || `食材#${i + 1}`;
 		checkId(it.id, '食材', name);
+		if (!Number.isInteger(it.level) || it.level < 1 || it.level > 5) {
+			issues.push({
+				severity: 'error',
+				category: '食材',
+				message: `${name}的等级必须是1～5的整数`,
+			});
+		}
+		checkNonNegativeInteger(it.baseValue, '食材', `${name}的价格`);
 		checkAssetPath(it.spritePath, '食材', name, '贴图路径（spritePath）');
 	});
 
@@ -490,6 +670,14 @@ export function validateResourcePackRules(
 	data.foods.forEach((f, i) => {
 		const name = f.name || `料理#${i + 1}`;
 		checkId(f.id, '料理', name);
+		if (!Number.isInteger(f.level) || f.level < 1 || f.level > 5) {
+			issues.push({
+				severity: 'error',
+				category: '料理',
+				message: `${name}的等级必须是1～5的整数`,
+			});
+		}
+		checkNonNegativeInteger(f.baseValue, '料理', `${name}的价格`);
 		checkAssetPath(f.spritePath, '料理', name, '贴图路径（spritePath）');
 	});
 
@@ -504,6 +692,14 @@ export function validateResourcePackRules(
 	(data.beverages || []).forEach((b, i) => {
 		const name = b.name || `酒水#${i + 1}`;
 		checkId(b.id, '酒水', name);
+		if (!Number.isInteger(b.level) || b.level < 1 || b.level > 5) {
+			issues.push({
+				severity: 'error',
+				category: '酒水',
+				message: `${name}的等级必须是1～5的整数`,
+			});
+		}
+		checkNonNegativeInteger(b.baseValue, '酒水', `${name}的价格`);
 		checkAssetPath(b.spritePath, '酒水', name, '贴图路径（spritePath）');
 	});
 
@@ -517,6 +713,90 @@ export function validateResourcePackRules(
 	);
 	data.recipes.forEach((r, i) => {
 		checkId(r.id, '食谱', `食谱#${i + 1}`);
+		if (r.ingredients.length > 5) {
+			issues.push({
+				severity: 'error',
+				category: '食谱',
+				message: `食谱#${i + 1}最多只能包含5个食材`,
+			});
+		}
+		checkPositiveInteger(r.cookTime, '食谱', `食谱#${i + 1}的烹饪时间`);
+	});
+
+	// ── Merchants ─────────────────────────────────────────
+	checkStringDuplicate(
+		data.merchants.map((merchant) => merchant.key),
+		'商人',
+		'Key',
+		(index) => `商人#${index + 1}`
+	);
+	data.merchants.forEach((merchant, merchantIndex) => {
+		const name = merchant.key || `商人#${merchantIndex + 1}`;
+		if (!merchant.key) {
+			issues.push({
+				severity: 'error',
+				category: '商人',
+				message: `${name}未选择角色`,
+			});
+		}
+		if (
+			!Number.isFinite(merchant.priceMultiplierMin) ||
+			merchant.priceMultiplierMin < 0 ||
+			!Number.isFinite(merchant.priceMultiplierMax) ||
+			merchant.priceMultiplierMax < merchant.priceMultiplierMin
+		) {
+			issues.push({
+				severity: 'error',
+				category: '商人',
+				message: `${name}的价格倍率范围无效`,
+			});
+		}
+		checkPositiveInteger(
+			merchant.leastSellNum,
+			'商人',
+			`${name}的最低出售数量`
+		);
+		merchant.merchandise.forEach((merchandise, merchandiseIndex) => {
+			const merchandiseName = `${name}的商品#${merchandiseIndex + 1}`;
+			checkNonNegativeInteger(
+				merchandise.itemAmountMin,
+				'商人',
+				`${merchandiseName}的数量下界`
+			);
+			checkNonNegativeInteger(
+				merchandise.itemAmountMax,
+				'商人',
+				`${merchandiseName}的数量上界`
+			);
+			if (merchandise.itemAmountMin > merchandise.itemAmountMax) {
+				issues.push({
+					severity: 'error',
+					category: '商人',
+					message: `${merchandiseName}的数量下界不能大于上界`,
+				});
+			}
+			if (
+				!Number.isFinite(merchandise.sellProbability) ||
+				merchandise.sellProbability < 0 ||
+				merchandise.sellProbability > 1
+			) {
+				issues.push({
+					severity: 'error',
+					category: '商人',
+					message: `${merchandiseName}的出售概率必须在0～1之间`,
+				});
+			}
+			checkNonNegativeInteger(
+				merchandise.item.productId,
+				'商人',
+				`${merchandiseName}的商品ID`
+			);
+			checkPositiveInteger(
+				merchandise.item.productAmount,
+				'商人',
+				`${merchandiseName}的商品数量`
+			);
+		});
 	});
 
 	// ── Clothes ───────────────────────────────────────────
@@ -564,6 +844,539 @@ export function validateResourcePackRules(
 			'衣服小人',
 			name,
 			'背部贴图'
+		);
+	});
+
+	// ── Entity references ─────────────────────────────────
+	const itemIdSets = {
+		Beverage: new Set(data.beverages.map(({ id }) => id)),
+		Food: new Set(data.foods.map(({ id }) => id)),
+		Ingredient: new Set(data.ingredients.map(({ id }) => id)),
+		Recipe: new Set(data.recipes.map(({ id }) => id)),
+	};
+	const characterIdsByType = new Set(
+		data.characters.map(({ id, type }) => `${type}:${id}`)
+	);
+	const localCharactersByTypeAndId = new Map(
+		data.characters.map((character) => [
+			`${character.type}:${character.id}`,
+			character,
+		])
+	);
+	const characterLabels = new Set(
+		data.characters.map(({ label }) => label.trim())
+	);
+	const dialogPackageNames = new Set(
+		data.dialogPackages.map(({ name }) => name.trim())
+	);
+	const eventLabels = new Set(
+		data.eventNodes.map(({ label }) => label.trim())
+	);
+	const missionLabels = new Set(
+		data.missionNodes.map(({ label }) => label.trim())
+	);
+	const checkedEntityReferences = new Set<string>();
+
+	function reportDanglingReference(message: string): void {
+		if (checkedEntityReferences.has(message)) return;
+		checkedEntityReferences.add(message);
+		issues.push({ severity: 'error', category: '实体引用', message });
+	}
+
+	function checkItemReference(
+		kind: keyof typeof itemIdSets,
+		id: number,
+		owner: string
+	): void {
+		if (!Number.isFinite(id) || !Number.isInteger(id) || id < 0) {
+			reportDanglingReference(`${owner}引用了无效的${kind} ID（${id}）`);
+			return;
+		}
+		if (id <= GAME_ID_MAX || itemIdSets[kind].has(id)) return;
+		if (!hasIdRange || id < idRangeStart! || id > idRangeEnd!) {
+			return;
+		}
+		reportDanglingReference(`${owner}引用了不存在的${kind} ID（${id}）`);
+	}
+
+	function checkLocalLabelReference(
+		label: string | undefined,
+		availableLabels: ReadonlySet<string>,
+		entityType: string,
+		owner: string
+	): void {
+		const normalizedLabel = label?.trim();
+		if (
+			!normalizedLabel ||
+			!prefix ||
+			!normalizedLabel.startsWith(prefix)
+		) {
+			return;
+		}
+		if (availableLabels.has(normalizedLabel)) return;
+		reportDanglingReference(
+			`${owner}引用了不存在的${entityType}“${normalizedLabel}”`
+		);
+	}
+
+	function checkRewardReferences(
+		rewards: readonly MissionReward[] | undefined,
+		owner: string
+	): void {
+		rewards?.forEach((reward) => {
+			if (reward.rewardType === 'UpgradeKizunaLevel') {
+				if (!reward.rewardId?.trim()) {
+					reportDanglingReference(`${owner}的羁绊奖励未选择目标角色`);
+					return;
+				}
+				checkLocalLabelReference(
+					reward.rewardId,
+					characterLabels,
+					'角色',
+					owner
+				);
+			}
+			if (reward.rewardType === 'GiveItem') {
+				const objectType = reward.objectType;
+				if (!objectType) {
+					reportDanglingReference(`${owner}的物品奖励未选择物品类型`);
+				} else if (
+					objectType === 'Beverage' ||
+					objectType === 'Food' ||
+					objectType === 'Ingredient' ||
+					objectType === 'Recipe'
+				) {
+					reward.rewardIntArray?.forEach((id) =>
+						checkItemReference(objectType, id, owner)
+					);
+				}
+				if (!reward.rewardIntArray?.length) {
+					reportDanglingReference(`${owner}的物品奖励未添加物品`);
+				}
+			}
+		});
+	}
+
+	function checkCharacterTriggerReference(
+		trigger: EventNodeTrigger | undefined,
+		owner: string
+	): void {
+		if (
+			trigger?.triggerType !== 'KizunaCheckPoint' &&
+			trigger?.triggerType !== 'OnTalkWithCharacter'
+		) {
+			return;
+		}
+		if (!trigger.triggerId?.trim()) {
+			reportDanglingReference(`${owner}未选择目标角色`);
+			return;
+		}
+		checkLocalLabelReference(
+			trigger.triggerId,
+			characterLabels,
+			'角色',
+			owner
+		);
+	}
+
+	function checkEventData(
+		eventData: EventData | undefined,
+		owner: string
+	): void {
+		if (eventData?.eventType !== 'Dialog') return;
+		if (!eventData.dialogPackageName?.trim()) {
+			reportDanglingReference(`${owner}的对话事件未选择对话包`);
+			return;
+		}
+		checkLocalLabelReference(
+			eventData.dialogPackageName,
+			dialogPackageNames,
+			'对话包',
+			owner
+		);
+	}
+
+	function checkRequiredNonNegativeInteger(
+		value: number | undefined,
+		valueName: string,
+		owner: string
+	): void {
+		if (
+			value === undefined ||
+			!Number.isFinite(value) ||
+			!Number.isInteger(value) ||
+			value < 0
+		) {
+			reportDanglingReference(`${owner}的${valueName}必须是非负整数`);
+		}
+	}
+
+	function checkRequiredPositiveInteger(
+		value: number | undefined,
+		valueName: string,
+		owner: string
+	): void {
+		if (
+			value === undefined ||
+			!Number.isFinite(value) ||
+			!Number.isInteger(value) ||
+			value < 1
+		) {
+			reportDanglingReference(`${owner}的${valueName}必须是正整数`);
+		}
+	}
+
+	function checkRequiredInteger(
+		value: number | undefined,
+		valueName: string,
+		owner: string
+	): void {
+		if (
+			value === undefined ||
+			!Number.isFinite(value) ||
+			!Number.isInteger(value)
+		) {
+			reportDanglingReference(`${owner}的${valueName}必须是整数`);
+		}
+	}
+
+	function checkMissionCondition(
+		condition: ResourceEx['missionNodes'][number]['finishConditions'][number],
+		owner: string
+	): void {
+		switch (condition.conditionType) {
+			case 'SubmitItem':
+				if (!condition.productType?.trim()) {
+					reportDanglingReference(`${owner}未选择物品类型`);
+				}
+				if (condition.productId === undefined) {
+					reportDanglingReference(`${owner}未选择物品`);
+				}
+				checkRequiredPositiveInteger(
+					condition.productAmount,
+					'数量',
+					owner
+				);
+				break;
+			case 'ServeInWork':
+				if (!condition.sellableType?.trim()) {
+					reportDanglingReference(`${owner}未选择可交付类型`);
+				}
+				if (!condition.label?.trim()) {
+					reportDanglingReference(`${owner}未选择目标角色`);
+				}
+				if (condition.amount === undefined) {
+					reportDanglingReference(`${owner}未选择指定料理`);
+				}
+				break;
+			case 'SubmitByTag':
+				if (!condition.sellableType?.trim()) {
+					reportDanglingReference(`${owner}未选择可交付类型`);
+				}
+				checkRequiredInteger(condition.tag, '标签', owner);
+				checkRequiredNonNegativeInteger(
+					condition.amount,
+					'数量',
+					owner
+				);
+				break;
+			case 'SubmitByTags':
+			case 'SubmitByAnyOneTag':
+				if (!condition.sellableType?.trim()) {
+					reportDanglingReference(`${owner}未选择可交付类型`);
+				}
+				if (!condition.tags?.length) {
+					reportDanglingReference(`${owner}未选择标签`);
+				}
+				checkRequiredNonNegativeInteger(
+					condition.amount,
+					'数量',
+					owner
+				);
+				break;
+			case 'SubmitByIngredients':
+				if (!condition.tags?.length) {
+					reportDanglingReference(`${owner}未选择食材`);
+				}
+				checkRequiredNonNegativeInteger(
+					condition.amount,
+					'数量',
+					owner
+				);
+				break;
+			case 'ReachTargetCharacterKisunaLevel':
+				if (!condition.label?.trim()) {
+					reportDanglingReference(`${owner}未选择目标角色`);
+				}
+				if (
+					condition.amount === undefined ||
+					!Number.isInteger(condition.amount) ||
+					condition.amount < 0 ||
+					condition.amount > 5
+				) {
+					reportDanglingReference(
+						`${owner}的羁绊等级必须是0～5的整数`
+					);
+				}
+				break;
+			case 'BillRepayment':
+				checkRequiredPositiveInteger(
+					condition.amount,
+					'偿还金额',
+					owner
+				);
+				break;
+			case 'TalkWithCharacter':
+				if (!condition.label?.trim()) {
+					reportDanglingReference(`${owner}未选择目标角色`);
+				}
+				break;
+		}
+	}
+
+	data.recipes.forEach((recipe) => {
+		const owner = `食谱ID（${recipe.id}）`;
+		checkItemReference('Food', recipe.foodId, owner);
+		recipe.ingredients.forEach((id) =>
+			checkItemReference('Ingredient', id, owner)
+		);
+	});
+
+	data.dialogPackages.forEach((dialogPackage) =>
+		dialogPackage.dialogList.forEach((dialog) => {
+			const characterKey = `${dialog.characterType}:${dialog.characterId}`;
+			if (
+				hasIdRange &&
+				dialog.characterId >= idRangeStart! &&
+				dialog.characterId <= idRangeEnd! &&
+				!characterIdsByType.has(
+					`${dialog.characterType}:${dialog.characterId}`
+				)
+			) {
+				reportDanglingReference(
+					`对话包“${dialogPackage.name}”引用了不存在的角色（${dialog.characterType}:${dialog.characterId}）`
+				);
+			}
+			const localCharacter = localCharactersByTypeAndId.get(characterKey);
+			if (
+				localCharacter &&
+				!(localCharacter.portraits ?? []).some(
+					(portrait) => portrait.pid === dialog.pid
+				)
+			) {
+				reportDanglingReference(
+					`对话包“${dialogPackage.name}”引用了${localCharacter.name}不存在的立绘PID（${dialog.pid}）`
+				);
+			}
+		})
+	);
+
+	data.merchants.forEach((merchant) => {
+		checkLocalLabelReference(
+			merchant.key,
+			characterLabels,
+			'角色',
+			`商人“${merchant.key}”`
+		);
+		[
+			...merchant.welcomeDialogPackageNames,
+			...merchant.nullDialogPackageNames,
+		].forEach((name) =>
+			checkLocalLabelReference(
+				name,
+				dialogPackageNames,
+				'对话包',
+				`商人“${merchant.key}”`
+			)
+		);
+		merchant.merchandise.forEach(({ item }) => {
+			if (
+				item.productType === 'Beverage' ||
+				item.productType === 'Food' ||
+				item.productType === 'Ingredient' ||
+				item.productType === 'Recipe'
+			) {
+				checkItemReference(
+					item.productType,
+					item.productId,
+					`商人“${merchant.key}”`
+				);
+			}
+		});
+	});
+
+	data.characters.forEach((character) => {
+		Object.entries(character.kizuna ?? {}).forEach(([field, value]) => {
+			if (Array.isArray(value)) {
+				value.forEach((name) => {
+					if (typeof name !== 'string') return;
+					checkLocalLabelReference(
+						name,
+						dialogPackageNames,
+						'对话包',
+						`角色“${character.name}”的${field}`
+					);
+				});
+			} else if (
+				typeof value === 'string' &&
+				field.endsWith('PrerequisiteEvent')
+			) {
+				checkLocalLabelReference(
+					value,
+					eventLabels,
+					'事件',
+					`角色“${character.name}”的${field}`
+				);
+			}
+		});
+	});
+
+	data.missionNodes.forEach((mission) => {
+		const owner = `任务“${mission.label}”`;
+		[mission.sender, mission.reciever].forEach((label) =>
+			checkLocalLabelReference(label, characterLabels, '角色', owner)
+		);
+		mission.finishConditions.forEach((condition, conditionIndex) => {
+			const conditionOwner = `${owner}的完成条件#${conditionIndex + 1}`;
+			checkMissionCondition(condition, conditionOwner);
+			if (
+				condition.conditionType === 'SubmitItem' &&
+				condition.productId !== undefined &&
+				(condition.productType === 'Beverage' ||
+					condition.productType === 'Food' ||
+					condition.productType === 'Ingredient' ||
+					condition.productType === 'Recipe')
+			) {
+				checkItemReference(
+					condition.productType,
+					condition.productId,
+					owner
+				);
+			}
+			if (
+				condition.conditionType === 'ServeInWork' &&
+				condition.amount !== undefined
+			) {
+				checkItemReference('Food', condition.amount, owner);
+			}
+			if (condition.conditionType === 'SubmitByIngredients') {
+				condition.tags?.forEach((id) =>
+					checkItemReference('Ingredient', id, owner)
+				);
+			}
+			if (
+				condition.conditionType === 'TalkWithCharacter' ||
+				condition.conditionType === 'ReachTargetCharacterKisunaLevel' ||
+				condition.conditionType === 'ServeInWork'
+			) {
+				checkLocalLabelReference(
+					condition.label,
+					characterLabels,
+					'角色',
+					owner
+				);
+			}
+		});
+		const hasBillRepayment = mission.finishConditions.some(
+			(condition) => condition.conditionType === 'BillRepayment'
+		);
+		if (hasBillRepayment) {
+			if (!mission.isTimedMission) {
+				reportDanglingReference(`${owner}的还债任务必须启用限时任务`);
+			}
+			if (mission.reciever !== '') {
+				reportDanglingReference(`${owner}的还债任务接收者必须留空`);
+			}
+			if (!mission.missionTimeLimit?.time) {
+				reportDanglingReference(`${owner}缺少任务时限`);
+			} else {
+				const { time } = mission.missionTimeLimit;
+				if (mission.missionTimeLimit.triggerType !== 'OnWorkEnd') {
+					reportDanglingReference(
+						`${owner}的任务时限触发类型必须是OnWorkEnd`
+					);
+				}
+				if (time.dayCalcType === 'Constant') {
+					checkRequiredNonNegativeInteger(
+						time.day,
+						'任务时限天数',
+						owner
+					);
+				} else {
+					checkRequiredNonNegativeInteger(
+						time.dayRangeMin,
+						'任务时限最小天数',
+						owner
+					);
+					checkRequiredNonNegativeInteger(
+						time.dayRangeMax,
+						'任务时限最大天数',
+						owner
+					);
+					if (
+						time.dayRangeMin !== undefined &&
+						time.dayRangeMax !== undefined &&
+						time.dayRangeMin > time.dayRangeMax
+					) {
+						reportDanglingReference(
+							`${owner}的任务时限最小天数不能大于最大天数`
+						);
+					}
+				}
+			}
+		}
+		checkRewardReferences(mission.rewards, owner);
+		checkRewardReferences(mission.postRewards, owner);
+		mission.postMissionsAfterPerformance?.forEach((label, index) => {
+			if (!label) {
+				reportDanglingReference(
+					`${owner}的后继任务#${index + 1}未选择任务`
+				);
+				return;
+			}
+			checkLocalLabelReference(label, missionLabels, '任务', owner);
+		});
+		mission.postEvents?.forEach((label, index) => {
+			if (!label) {
+				reportDanglingReference(
+					`${owner}的后继事件#${index + 1}未选择事件`
+				);
+				return;
+			}
+			checkLocalLabelReference(label, eventLabels, '事件', owner);
+		});
+		[mission.missionFinishEvent, mission.missionFailedEvent].forEach(
+			(eventData) => checkEventData(eventData, owner)
+		);
+		checkCharacterTriggerReference(mission.missionTimeLimit, owner);
+	});
+
+	data.eventNodes.forEach((eventNode) => {
+		const owner = `事件“${eventNode.label}”`;
+		checkRewardReferences(eventNode.rewards, owner);
+		checkRewardReferences(eventNode.postRewards, owner);
+		eventNode.postMissionsAfterPerformance?.forEach((label, index) => {
+			if (!label) {
+				reportDanglingReference(
+					`${owner}的后继任务#${index + 1}未选择任务`
+				);
+				return;
+			}
+			checkLocalLabelReference(label, missionLabels, '任务', owner);
+		});
+		eventNode.postEvents?.forEach((label, index) => {
+			if (!label) {
+				reportDanglingReference(
+					`${owner}的后继事件#${index + 1}未选择事件`
+				);
+				return;
+			}
+			checkLocalLabelReference(label, eventLabels, '事件', owner);
+		});
+		checkEventData(eventNode.scheduledEvent?.eventData, owner);
+		checkCharacterTriggerReference(
+			eventNode.scheduledEvent?.trigger,
+			owner
 		);
 	});
 

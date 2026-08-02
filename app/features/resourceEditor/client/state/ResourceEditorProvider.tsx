@@ -148,12 +148,19 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 			}
 			isImportingRef.current = true;
 			setIsImporting(true);
+			const startingRevision = revisionRef.current;
 			try {
 				const archive = await readResourcePackArchive(file);
 				if (!isMountedRef.current) {
 					return {
 						isSuccess: false,
 						error: RESOURCE_EDITOR_UNMOUNTED_ERROR,
+					};
+				}
+				if (revisionRef.current !== startingRevision) {
+					return {
+						isSuccess: false,
+						error: '导入期间资源包内容已变化，请重新导入',
 					};
 				}
 				replaceAssets(archive.files, archive.folders);

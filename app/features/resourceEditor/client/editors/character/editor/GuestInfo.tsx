@@ -47,6 +47,13 @@ export function GuestInfoEditor({
 	const [isExpanded, setIsExpanded] = useState(false);
 	const [isDisableConfirmationOpen, setIsDisableConfirmationOpen] =
 		useState(false);
+	const isFundRangeInvalid = Boolean(
+		guest &&
+		(!Number.isInteger(guest.fundRangeLower) ||
+			guest.fundRangeLower < 0 ||
+			!Number.isInteger(guest.fundRangeUpper) ||
+			guest.fundRangeUpper < guest.fundRangeLower)
+	);
 
 	const toggleLikeTag = (
 		field: 'likeFoodTag' | 'likeBevTag',
@@ -320,7 +327,9 @@ export function GuestInfoEditor({
 							<Label>携带金钱下限（Lower）</Label>
 							<Input
 								type="number"
+								min={0}
 								value={String(guest.fundRangeLower)}
+								isInvalid={isFundRangeInvalid}
 								onChange={(e) =>
 									onUpdate({
 										fundRangeLower:
@@ -333,7 +342,9 @@ export function GuestInfoEditor({
 							<Label>携带金钱上限（Upper）</Label>
 							<Input
 								type="number"
+								min={0}
 								value={String(guest.fundRangeUpper)}
+								isInvalid={isFundRangeInvalid}
 								onChange={(e) =>
 									onUpdate({
 										fundRangeUpper:

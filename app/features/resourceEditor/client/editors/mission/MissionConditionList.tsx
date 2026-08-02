@@ -19,6 +19,11 @@ import { Select } from '@/features/resourceEditor/client/components/select/Selec
 import { WarningNotice } from '@/features/resourceEditor/client/components/status/WarningNotice';
 import { TagsField } from '@/features/resourceEditor/client/components/tags/TagsField';
 
+import {
+	createMissionCondition,
+	createMissionTimeLimit,
+} from './missionEditorValues';
+
 // -----------------------------------------------------------------------------
 // 常量
 // -----------------------------------------------------------------------------
@@ -172,49 +177,6 @@ function toIdOptions(items: { id: number; name: string }[]): SelectOption[] {
 // 在 exactOptionalPropertyTypes 模式下，把 undefined 字段安全地塞入 Partial。
 function patch(updates: Record<string, unknown>): Partial<MissionCondition> {
 	return updates as Partial<MissionCondition>;
-}
-
-/** 切换 conditionType 时，返回该类型「干净」的初始值，清除所有不相关字段。 */
-function getCleanCondition(type: ConditionType): Partial<MissionCondition> {
-	const base: Record<string, unknown> = {
-		conditionType: type,
-		amount: undefined,
-		sellableType: undefined,
-		label: undefined,
-		tag: undefined,
-		tags: undefined,
-		productType: undefined,
-		productId: undefined,
-		productAmount: undefined,
-	};
-	switch (type) {
-		case 'SubmitItem':
-			break;
-		case 'ServeInWork':
-			base['sellableType'] = 'Food';
-			break;
-		case 'SubmitByTag':
-			base['sellableType'] = 'Food';
-			base['tag'] = 0;
-			break;
-		case 'SubmitByTags':
-		case 'SubmitByAnyOneTag':
-			base['sellableType'] = 'Food';
-			base['tags'] = [];
-			break;
-		case 'SubmitByIngredients':
-			base['tags'] = [];
-			break;
-		case 'ReachTargetCharacterKisunaLevel':
-			break;
-		case 'BillRepayment':
-			break;
-		case 'TalkWithCharacter':
-			break;
-		default:
-			break;
-	}
-	return patch(base);
 }
 
 // -----------------------------------------------------------------------------
@@ -455,7 +417,7 @@ function BillRepaymentEditor({ condition, onUpdate }: ConditionEditorProps) {
 				label="需偿还金额"
 				value={condition.amount}
 				min={1}
-				defaultValue={0}
+				defaultValue={1}
 				onChange={(v) => onUpdate({ amount: v })}
 			/>
 		</div>
@@ -522,7 +484,7 @@ function ConditionItem({
 					baseClassName="min-w-0 flex-1"
 					value={condition.conditionType}
 					onChange={(v) =>
-						onUpdate(getCleanCondition(v as ConditionType))
+						onUpdate(createMissionCondition(v as ConditionType))
 					}
 					items={CONDITION_TYPES.map((t) => ({
 						value: t.type,
@@ -581,16 +543,25 @@ export const MissionConditionList = memo<MissionConditionListProps>(
 				onUpdate({
 					finishConditions: nextConditions,
 					isTimedMission: hasBillRepayment,
-					...(hasBillRepayment ? { reciever: '' } : {}),
+					...(hasBillRepayment
+						? {
+								reciever: '',
+								missionFailedAction:
+									mission.missionFailedAction ?? 'None',
+								missionTimeLimit: createMissionTimeLimit(
+									mission.missionTimeLimit
+								),
+							}
+						: {}),
 				});
 			},
-			[onUpdate]
+			[mission.missionFailedAction, mission.missionTimeLimit, onUpdate]
 		);
 
 		const addCondition = useCallback(() => {
 			updateConditions([
 				...conditions,
-				{ conditionType: 'ServeInWork', sellableType: 'Food' },
+				createMissionCondition('ServeInWork'),
 			]);
 		}, [conditions, updateConditions]);
 
@@ -604,10 +575,16 @@ export const MissionConditionList = memo<MissionConditionListProps>(
 		const updateCondition = useCallback(
 			(index: number, updates: Partial<MissionCondition>) => {
 				const next = [...conditions];
-				next[index] = {
-					...next[index],
-					...updates,
-				} as MissionCondition;
+				const currentCondition = next[index];
+				if (!currentCondition) return;
+				next[index] =
+					updates.conditionType !== undefined &&
+					updates.conditionType !== currentCondition.conditionType
+						? createMissionCondition(updates.conditionType)
+						: ({
+								...currentCondition,
+								...updates,
+							} as MissionCondition);
 				updateConditions(next);
 			},
 			[conditions, updateConditions]

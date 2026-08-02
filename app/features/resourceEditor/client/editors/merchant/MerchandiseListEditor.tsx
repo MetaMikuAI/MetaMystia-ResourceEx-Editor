@@ -147,6 +147,14 @@ export const MerchandiseListEditor = memo<MerchandiseListEditorProps>(
 											type="number"
 											min={0}
 											value={String(merch.itemAmountMin)}
+											isInvalid={
+												!Number.isInteger(
+													merch.itemAmountMin
+												) ||
+												merch.itemAmountMin < 0 ||
+												merch.itemAmountMin >
+													merch.itemAmountMax
+											}
 											onChange={(e) =>
 												handleUpdateItem(index, {
 													itemAmountMin:
@@ -165,6 +173,13 @@ export const MerchandiseListEditor = memo<MerchandiseListEditorProps>(
 											type="number"
 											min={0}
 											value={String(merch.itemAmountMax)}
+											isInvalid={
+												!Number.isInteger(
+													merch.itemAmountMax
+												) ||
+												merch.itemAmountMax <
+													merch.itemAmountMin
+											}
 											onChange={(e) =>
 												handleUpdateItem(index, {
 													itemAmountMax:
@@ -187,6 +202,13 @@ export const MerchandiseListEditor = memo<MerchandiseListEditorProps>(
 											value={String(
 												merch.sellProbability
 											)}
+											isInvalid={
+												!Number.isFinite(
+													merch.sellProbability
+												) ||
+												merch.sellProbability < 0 ||
+												merch.sellProbability > 1
+											}
 											onChange={(e) =>
 												handleUpdateItem(index, {
 													sellProbability:

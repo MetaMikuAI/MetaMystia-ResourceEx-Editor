@@ -14,6 +14,7 @@ import { EditorField } from '@/features/resourceEditor/client/components/fields/
 import { Label } from '@/features/resourceEditor/client/components/fields/Label';
 import { EditorSection } from '@/features/resourceEditor/client/components/layout/EditorSection';
 import { Select } from '@/features/resourceEditor/client/components/select/Select';
+import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
 import { WarningBadge } from '@/features/resourceEditor/client/components/status/WarningBadge';
 import { useLabelPrefixValidation } from '@/features/resourceEditor/client/hooks/useLabelPrefixValidation';
 
@@ -22,6 +23,7 @@ interface MissionBasicInfoProps {
 	characters: Character[];
 	allFoods: { id: number; name: string }[];
 	characterOptions: { value: string; label: string }[];
+	isLabelDuplicate: boolean;
 	onUpdate: (updates: Partial<MissionNode>) => void;
 }
 
@@ -31,6 +33,7 @@ export const MissionBasicInfo = memo<MissionBasicInfoProps>(
 		characters,
 		allFoods,
 		characterOptions,
+		isLabelDuplicate,
 		onUpdate,
 	}) {
 		const {
@@ -112,10 +115,17 @@ export const MissionBasicInfo = memo<MissionBasicInfoProps>(
 					<EditorField
 						label="标签（Label）"
 						actions={
-							showPrefixWarning ? (
-								<WarningBadge>
-									建议以{expectedPrefix}开头
-								</WarningBadge>
+							isLabelDuplicate || showPrefixWarning ? (
+								<div className="flex gap-2">
+									{isLabelDuplicate && (
+										<ErrorBadge>标签重复</ErrorBadge>
+									)}
+									{showPrefixWarning && (
+										<WarningBadge>
+											建议以{expectedPrefix}开头
+										</WarningBadge>
+									)}
+								</div>
 							) : undefined
 						}
 					>
@@ -126,6 +136,7 @@ export const MissionBasicInfo = memo<MissionBasicInfoProps>(
 								onUpdate({ label: e.target.value })
 							}
 							placeholder="例如：Kizuna_Rumia_LV3_Upgrade_001_Mission"
+							isInvalid={isLabelDuplicate}
 						/>
 					</EditorField>
 

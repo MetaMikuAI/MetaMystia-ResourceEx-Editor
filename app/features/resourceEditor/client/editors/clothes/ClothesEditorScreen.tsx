@@ -8,6 +8,7 @@ import { EditorWorkspace } from '@/features/resourceEditor/client/components/lay
 import {
 	findNextAvailableInteger,
 	findNextAvailableSuffixedValue,
+	getEntityIdAllocationStart,
 } from '@/features/resourceEditor/client/editorValueAllocation';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
@@ -22,7 +23,7 @@ export function ClothesEditorScreen() {
 		const clothes = data.clothes ?? [];
 		const newId = findNextAvailableInteger(
 			clothes.map((item) => item.id),
-			9000
+			getEntityIdAllocationStart(data.packInfo.idRangeStart, 9000)
 		);
 		const newName = findNextAvailableSuffixedValue(
 			clothes.map((item) => item.name),

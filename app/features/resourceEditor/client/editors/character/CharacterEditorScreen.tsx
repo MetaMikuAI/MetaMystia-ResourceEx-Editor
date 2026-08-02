@@ -6,11 +6,16 @@ import type {
 	Character,
 	CharacterType,
 } from '@/domain/resourcePack/contracts/character';
+import {
+	remapResourcePackCharacterPortraitReferences,
+	remapResourcePackCharacterReferences,
+} from '@/domain/resourcePack/entityReferences';
 
 import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
 import {
 	findNextAvailableInteger,
 	findNextAvailableSuffixedValue,
+	getEntityIdAllocationStart,
 } from '@/features/resourceEditor/client/editorValueAllocation';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
@@ -48,7 +53,7 @@ export function CharacterEditorScreen() {
 	const addCharacter = useCallback(() => {
 		const newId = findNextAvailableInteger(
 			data.characters.map((character) => character.id),
-			9000
+			getEntityIdAllocationStart(data.packInfo.idRangeStart, 9000)
 		);
 		const packLabel = data.packInfo.label;
 		const labelPrefix = packLabel ? `_${packLabel}_` : '_';
@@ -86,22 +91,60 @@ export function CharacterEditorScreen() {
 			}
 
 			const newCharacters = [...data.characters];
+			const previousCharacter = newCharacters[index];
+			if (!previousCharacter) return;
 			const updatedChar = {
-				...newCharacters[index],
+				...previousCharacter,
 				...updates,
 			} as Character;
 			newCharacters[index] = updatedChar;
+			const sorted =
+				'id' in updates || 'type' in updates
+					? sortCharacters(newCharacters)
+					: newCharacters;
+			let nextData = { ...data, characters: sorted };
+			if (
+				previousCharacter.id !== updatedChar.id ||
+				previousCharacter.label !== updatedChar.label ||
+				previousCharacter.type !== updatedChar.type
+			) {
+				nextData = remapResourcePackCharacterReferences(nextData, {
+					fromId: previousCharacter.id,
+					fromLabel: previousCharacter.label,
+					fromType: previousCharacter.type,
+					toId: updatedChar.id,
+					toLabel: updatedChar.label,
+					toType: updatedChar.type,
+				});
+			}
+			if (
+				updates.portraits &&
+				updates.portraits.length ===
+					(previousCharacter.portraits ?? []).length
+			) {
+				const pidMap = new Map<number, number>();
+				updates.portraits.forEach((portrait, portraitIndex) => {
+					const previousPid =
+						previousCharacter.portraits?.[portraitIndex]?.pid;
+					if (
+						previousPid !== undefined &&
+						previousPid !== portrait.pid
+					) {
+						pidMap.set(previousPid, portrait.pid);
+					}
+				});
+				nextData = remapResourcePackCharacterPortraitReferences(
+					nextData,
+					updatedChar.id,
+					updatedChar.type,
+					pidMap
+				);
+			}
+			updateResourcePack(() => nextData);
 
 			if ('id' in updates || 'type' in updates) {
-				const sorted = sortCharacters(newCharacters);
-				updateResourcePack(() => ({ ...data, characters: sorted }));
 				const newIndex = sorted.indexOf(updatedChar);
 				setSelectedIndex(newIndex);
-			} else {
-				updateResourcePack(() => ({
-					...data,
-					characters: newCharacters,
-				}));
 			}
 		},
 		[data, sortCharacters, updateResourcePack]
@@ -122,6 +165,16 @@ export function CharacterEditorScreen() {
 		[data.characters]
 	);
 
+	const isLabelDuplicate = useCallback(
+		(label: string, index: number | null) =>
+			Boolean(label) &&
+			data.characters.some(
+				(character, characterIndex) =>
+					characterIndex !== index && character.label === label
+			),
+		[data.characters]
+	);
+
 	return (
 		<EditorWorkspace>
 			<CharacterList
@@ -138,6 +191,11 @@ export function CharacterEditorScreen() {
 				isIdDuplicate={
 					selectedChar
 						? isIdDuplicate(selectedChar.id, selectedIndex)
+						: false
+				}
+				isLabelDuplicate={
+					selectedChar
+						? isLabelDuplicate(selectedChar.label, selectedIndex)
 						: false
 				}
 				onRemove={() => {
