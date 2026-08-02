@@ -94,7 +94,7 @@ export const EditorCollectionPanel = memo<IProps>(
 			<EditorPanel
 				as="aside"
 				className={cn(
-					'flex h-min min-w-0 flex-col gap-4 lg:sticky lg:top-24 lg:h-[calc(100dvh-7rem)] lg:overflow-hidden',
+					'flex h-min min-w-0 flex-col gap-0 lg:sticky lg:top-24 lg:h-[calc(100dvh-7rem)] lg:gap-4 lg:overflow-hidden',
 					className
 				)}
 			>
@@ -146,26 +146,28 @@ export const EditorCollectionPanel = memo<IProps>(
 					<div
 						id={contentId}
 						className={cn(
-							'grid transition-[grid-template-rows] motion-reduce:transition-none',
+							'grid overflow-hidden transition-[grid-template-rows] motion-reduce:transition-none lg:overflow-x-auto',
 							isCollapsed
-								? 'grid-rows-[0fr] overflow-hidden lg:grid-rows-[1fr] lg:overflow-x-auto'
-								: 'grid-rows-[1fr] overflow-x-auto'
+								? 'grid-rows-[0fr] lg:grid-rows-[1fr]'
+								: 'grid-rows-[1fr]'
 						)}
 					>
 						<div className="min-h-0 min-w-0">
-							{hasItems ? (
-								<div className="flex flex-col gap-2">
-									{children}
-								</div>
-							) : (
-								<EmptyState
-									title={emptyTitle}
-									description={
-										emptyDescription ??
-										`使用“${addLabel}”添加第一项`
-									}
-								/>
-							)}
+							<div className="pt-4 lg:pt-0">
+								{hasItems ? (
+									<div className="flex flex-col gap-2">
+										{children}
+									</div>
+								) : (
+									<EmptyState
+										title={emptyTitle}
+										description={
+											emptyDescription ??
+											`使用“${addLabel}”添加第一项`
+										}
+									/>
+								)}
+							</div>
 						</div>
 					</div>
 				</ScrollShadow>
