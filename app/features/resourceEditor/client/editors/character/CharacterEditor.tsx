@@ -13,6 +13,7 @@ import type {
 import type { DialogPackage } from '@/domain/resourcePack/contracts/dialogue';
 import type { EventNode } from '@/domain/resourcePack/contracts/event';
 
+import { CHARACTER_TYPE_LABELS } from '@/features/resourceEditor/client/characterTypeLabels';
 import { SectionDeleteButton } from '@/features/resourceEditor/client/components/actions/SectionDeleteButton';
 import { EditorDetailEmptyState } from '@/features/resourceEditor/client/components/layout/EditorDetailEmptyState';
 import { EditorDetailHeader } from '@/features/resourceEditor/client/components/layout/EditorDetailHeader';
@@ -319,7 +320,7 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 					}
 					meta={
 						<span className="rounded-full bg-primary/20 px-3 py-1 text-sm font-medium text-primary">
-							{character.type || '未知类型'}
+							{CHARACTER_TYPE_LABELS[character.type]}
 						</span>
 					}
 					actions={

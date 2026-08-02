@@ -4,6 +4,7 @@ import Input from '@/design/ui/components/input';
 
 import type { Character } from '@/domain/resourcePack/contracts/character';
 
+import { CHARACTER_TYPE_LABELS } from '@/features/resourceEditor/client/characterTypeLabels';
 import { Label } from '@/features/resourceEditor/client/components/fields/Label';
 import { EditorSection } from '@/features/resourceEditor/client/components/layout/EditorSection';
 import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
@@ -76,7 +77,7 @@ export const BasicInfo = memo<BasicInfoProps>(function BasicInfo({
 						isDisabled
 						id={idType}
 						type="text"
-						value="Special（稀客）"
+						value={`Special（${CHARACTER_TYPE_LABELS.Special}）`}
 					/>
 				</div>
 				<div className="flex flex-col gap-1">

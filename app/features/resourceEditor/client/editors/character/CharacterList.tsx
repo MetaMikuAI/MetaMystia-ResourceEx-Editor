@@ -2,6 +2,7 @@ import { memo, useCallback } from 'react';
 
 import type { Character } from '@/domain/resourcePack/contracts/character';
 
+import { CHARACTER_TYPE_LABELS } from '@/features/resourceEditor/client/characterTypeLabels';
 import {
 	EditorCollectionItem,
 	EditorCollectionItemMeta,
@@ -66,7 +67,7 @@ export const CharacterList = memo<CharacterListProps>(function CharacterList({
 							)}
 						</EditorCollectionItemTitle>
 						<EditorCollectionItemMeta>
-							ID：{char.id} · {char.type}
+							ID：{char.id} · {CHARACTER_TYPE_LABELS[char.type]}
 						</EditorCollectionItemMeta>
 					</EditorCollectionItem>
 				);
