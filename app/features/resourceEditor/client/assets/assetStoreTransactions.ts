@@ -18,6 +18,154 @@ export interface IAssetMapsTransaction {
 	urlsToRevoke: readonly string[];
 }
 
+export interface IAssetFoldersTransaction {
+	folders: readonly string[];
+	hasChanged: boolean;
+}
+
+export function getAssetFolderCreationError(
+	files: ReadonlyMap<string, Blob>,
+	path: string
+): string | null {
+	const folder = path.endsWith('/') ? path : `${path}/`;
+	if (!path) return '资产目录路径不能为空。';
+	if (path.includes('\0')) return `资产目录路径${folder}包含无效字符。`;
+	if (
+		path.split('/').some((segment) => segment === '.' || segment === '..')
+	) {
+		return `资产目录路径${folder}不能包含.或..路径段。`;
+	}
+
+	const folderFilePath = folder.slice(0, -1);
+	if (files.has(folderFilePath)) return `路径${folder}已被文件占用。`;
+
+	let separatorIndex = folderFilePath.lastIndexOf('/');
+	while (separatorIndex > 0) {
+		const parentPath = folderFilePath.slice(0, separatorIndex);
+		if (files.has(parentPath)) {
+			return `路径${folder}的父路径${parentPath}已被文件占用。`;
+		}
+		separatorIndex = parentPath.lastIndexOf('/');
+	}
+
+	return null;
+}
+
+export function getAssetUpdateError(
+	files: ReadonlyMap<string, Blob>,
+	folders: readonly string[],
+	updates: ReadonlyMap<string, Blob>
+): string | null {
+	const updatePaths = new Set(updates.keys());
+	const allFilePaths = new Set([...files.keys(), ...updatePaths]);
+	const allFolderPaths = new Set(normalizeAssetFolders(folders));
+	for (const filePath of allFilePaths) {
+		let separatorIndex = filePath.lastIndexOf('/');
+		while (separatorIndex > 0) {
+			const parentPath = filePath.slice(0, separatorIndex);
+			allFolderPaths.add(`${parentPath}/`);
+			separatorIndex = parentPath.lastIndexOf('/');
+		}
+	}
+
+	for (const path of updatePaths) {
+		if (!path) return '资产路径不能为空。';
+		if (path.endsWith('/')) return `资产路径${path}不能指向目录。`;
+		if (path.includes('\0')) return `资产路径${path}包含无效字符。`;
+		if (
+			path
+				.split('/')
+				.some((segment) => segment === '.' || segment === '..')
+		) {
+			return `资产路径${path}不能包含.或..路径段。`;
+		}
+
+		if (allFolderPaths.has(`${path}/`)) {
+			return `路径${path}已被目录占用。`;
+		}
+
+		let separatorIndex = path.lastIndexOf('/');
+		while (separatorIndex > 0) {
+			const parentPath = path.slice(0, separatorIndex);
+			if (allFilePaths.has(parentPath)) {
+				return `路径${path}的父路径${parentPath}已被文件占用。`;
+			}
+			separatorIndex = parentPath.lastIndexOf('/');
+		}
+	}
+
+	return null;
+}
+
+function areFoldersEqual(left: readonly string[], right: readonly string[]) {
+	return (
+		left.length === right.length &&
+		left.every((folder, index) => folder === right[index])
+	);
+}
+
+export function normalizeAssetFolders(folders: readonly string[]) {
+	const normalized = new Set<string>(['assets/']);
+	folders.forEach((folder) => {
+		const normalizedFolder = folder.endsWith('/') ? folder : `${folder}/`;
+		const segments = normalizedFolder.split('/').filter(Boolean);
+		for (let index = 1; index <= segments.length; index++) {
+			const ancestor = `${segments.slice(0, index).join('/')}/`;
+			if (ancestor) normalized.add(ancestor);
+		}
+	});
+	return Array.from(normalized).sort((a, b) => a.localeCompare(b, 'zh-CN'));
+}
+
+export function addAssetFileParentFolders(
+	folders: readonly string[],
+	filePaths: Iterable<string>
+) {
+	const nextFolders = [...folders];
+	for (const path of filePaths) {
+		const separatorIndex = path.lastIndexOf('/');
+		if (separatorIndex > 0) {
+			nextFolders.push(path.slice(0, separatorIndex + 1));
+		}
+	}
+	return normalizeAssetFolders(nextFolders);
+}
+
+export function copyAssetFolders(
+	folders: readonly string[],
+	operations: readonly IAssetPathOperation[]
+): IAssetFoldersTransaction {
+	const currentFolders = normalizeAssetFolders(folders);
+	const nextFolders = new Set(currentFolders);
+	operations.forEach(({ to }) => {
+		if (to.endsWith('/')) nextFolders.add(to);
+	});
+	const normalizedFolders = normalizeAssetFolders(Array.from(nextFolders));
+	return {
+		folders: normalizedFolders,
+		hasChanged: !areFoldersEqual(currentFolders, normalizedFolders),
+	};
+}
+
+export function moveAssetFolders(
+	folders: readonly string[],
+	operations: readonly IAssetPathOperation[]
+): IAssetFoldersTransaction {
+	const currentFolders = normalizeAssetFolders(folders);
+	const nextFolders = new Set(currentFolders);
+	operations.forEach(({ from }) => {
+		if (from.endsWith('/')) nextFolders.delete(from);
+	});
+	operations.forEach(({ to }) => {
+		if (to.endsWith('/')) nextFolders.add(to);
+	});
+	const normalizedFolders = normalizeAssetFolders(Array.from(nextFolders));
+	return {
+		folders: normalizedFolders,
+		hasChanged: !areFoldersEqual(currentFolders, normalizedFolders),
+	};
+}
+
 export function createObjectUrlRegistry(
 	environment: IObjectUrlEnvironment
 ): IObjectUrlRegistry {
@@ -89,6 +237,37 @@ export function updateAssetMaps(
 	};
 }
 
+export function updateAssetMapsBatch(
+	files: ReadonlyMap<string, Blob>,
+	urls: ReadonlyMap<string, string>,
+	updates: ReadonlyMap<string, Blob>,
+	urlRegistry: IObjectUrlRegistry
+): IAssetMapsTransaction {
+	const nextFiles = new Map(files);
+	const nextUrls = new Map(urls);
+	const createdUrls: string[] = [];
+	const urlsToRevoke: string[] = [];
+	try {
+		for (const [path, blob] of updates) {
+			const nextUrl = urlRegistry.create(blob);
+			createdUrls.push(nextUrl);
+			const previousUrl = nextUrls.get(path);
+			if (previousUrl) urlsToRevoke.push(previousUrl);
+			nextFiles.set(path, blob);
+			nextUrls.set(path, nextUrl);
+		}
+	} catch (error) {
+		createdUrls.forEach(urlRegistry.revoke);
+		throw error;
+	}
+	return {
+		files: nextFiles,
+		hasChanged: updates.size > 0,
+		urls: nextUrls,
+		urlsToRevoke,
+	};
+}
+
 export function removeAssetMaps(
 	files: ReadonlyMap<string, Blob>,
 	urls: ReadonlyMap<string, string>,
@@ -105,6 +284,24 @@ export function removeAssetMaps(
 		urls: nextUrls,
 		urlsToRevoke: previousUrl ? [previousUrl] : [],
 	};
+}
+
+export function removeAssetMapsBatch(
+	files: ReadonlyMap<string, Blob>,
+	urls: ReadonlyMap<string, string>,
+	paths: readonly string[]
+): IAssetMapsTransaction {
+	const nextFiles = new Map(files);
+	const nextUrls = new Map(urls);
+	const urlsToRevoke: string[] = [];
+	let hasChanged = false;
+	for (const path of paths) {
+		const previousUrl = nextUrls.get(path);
+		if (nextFiles.delete(path)) hasChanged = true;
+		if (nextUrls.delete(path)) hasChanged = true;
+		if (previousUrl) urlsToRevoke.push(previousUrl);
+	}
+	return { files: nextFiles, hasChanged, urls: nextUrls, urlsToRevoke };
 }
 
 export function copyAssetMaps(

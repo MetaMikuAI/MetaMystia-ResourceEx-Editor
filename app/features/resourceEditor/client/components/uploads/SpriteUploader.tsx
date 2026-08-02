@@ -5,8 +5,10 @@ import { memo, useCallback, useEffect, useRef, useState } from 'react';
 
 import Button from '@/design/ui/components/button';
 
+import type { IAssetMutationResult } from '@/features/resourceEditor/client/assets/contracts';
 import { ConfirmDialog } from '@/features/resourceEditor/client/components/confirm/ConfirmDialog';
 import { WarningNotice } from '@/features/resourceEditor/client/components/status/WarningNotice';
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import { readImageDimensions } from '@/infrastructure/browser/images/readImageDimensions';
 
@@ -14,15 +16,16 @@ interface IProps {
 	spriteUrl: string | null;
 	spritePath: string;
 	recommendedSize?: { width: number; height: number };
-	onUpload: (blob: Blob) => void;
+	onUpload: (blob: Blob) => IAssetMutationResult;
 	className?: string;
 }
 
 interface IPendingUpload {
 	actualSize: { width: number; height: number };
+	assetGeneration: number;
 	file: File;
 	operationId: number;
-	onUpload: (blob: Blob) => void;
+	onUpload: (blob: Blob) => IAssetMutationResult;
 	recommendedSize: { width: number; height: number };
 	spritePath: string;
 }
@@ -34,6 +37,10 @@ export const SpriteUploader = memo<IProps>(function SpriteUploader({
 	spritePath,
 	spriteUrl,
 }) {
+	const {
+		assets: { generation: assetGeneration },
+		isAssetGenerationCurrent,
+	} = useResourceEditor();
 	const [error, setError] = useState('');
 	const [isDragging, setIsDragging] = useState(false);
 	const [pendingUpload, setPendingUpload] = useState<IPendingUpload | null>(
@@ -46,13 +53,17 @@ export const SpriteUploader = memo<IProps>(function SpriteUploader({
 	const spritePathRef = useRef(spritePath);
 	spritePathRef.current = spritePath;
 
-	const isOperationActive = useCallback((operation: IPendingUpload) => {
-		return (
-			isMountedRef.current &&
-			operationIdRef.current === operation.operationId &&
-			spritePathRef.current === operation.spritePath
-		);
-	}, []);
+	const isOperationActive = useCallback(
+		(operation: IPendingUpload) => {
+			return (
+				isMountedRef.current &&
+				operationIdRef.current === operation.operationId &&
+				isAssetGenerationCurrent(operation.assetGeneration) &&
+				spritePathRef.current === operation.spritePath
+			);
+		},
+		[isAssetGenerationCurrent]
+	);
 
 	const invalidateOperation = useCallback(() => {
 		operationIdRef.current += 1;
@@ -69,7 +80,10 @@ export const SpriteUploader = memo<IProps>(function SpriteUploader({
 					type: operation.file.type,
 				});
 				if (!isOperationActive(operation)) return;
-				operation.onUpload(blob);
+				const result = operation.onUpload(blob);
+				if (!result.isSuccess) {
+					setError(result.error ?? '无法更新贴图资产。');
+				}
 			} catch {
 				if (isOperationActive(operation)) {
 					setError('无法读取图片文件，请选择有效的图片。');
@@ -82,10 +96,16 @@ export const SpriteUploader = memo<IProps>(function SpriteUploader({
 	const processFile = useCallback(
 		async (file: File) => {
 			invalidateOperation();
+			if (file.type !== 'image/png') {
+				setError('请选择PNG格式的贴图文件。');
+				setPendingUpload(null);
+				return;
+			}
 			const operationId = operationIdRef.current;
 			const readController = new AbortController();
 			const operation: IPendingUpload = {
 				actualSize: { height: 0, width: 0 },
+				assetGeneration,
 				file,
 				onUpload,
 				operationId,
@@ -120,6 +140,7 @@ export const SpriteUploader = memo<IProps>(function SpriteUploader({
 			}
 		},
 		[
+			assetGeneration,
 			invalidateOperation,
 			isOperationActive,
 			onUpload,
@@ -141,10 +162,13 @@ export const SpriteUploader = memo<IProps>(function SpriteUploader({
 		invalidateOperation();
 		setError('');
 		setPendingUpload(null);
-	}, [invalidateOperation, spritePath]);
+	}, [assetGeneration, invalidateOperation, spritePath]);
 
 	const visiblePendingUpload =
-		pendingUpload?.spritePath === spritePath ? pendingUpload : null;
+		pendingUpload?.assetGeneration === assetGeneration &&
+		pendingUpload.spritePath === spritePath
+			? pendingUpload
+			: null;
 
 	return (
 		<>
@@ -156,8 +180,7 @@ export const SpriteUploader = memo<IProps>(function SpriteUploader({
 							event.stopPropagation();
 							setIsDragging(false);
 							const file = event.dataTransfer.files?.[0];
-							if (file?.type.startsWith('image/'))
-								void processFile(file);
+							if (file) void processFile(file);
 						}}
 						onDragOver={(event) => {
 							event.preventDefault();
@@ -201,7 +224,7 @@ export const SpriteUploader = memo<IProps>(function SpriteUploader({
 						<input
 							ref={fileInputRef}
 							type="file"
-							accept="image/*"
+							accept="image/png"
 							className="hidden"
 							onChange={(event) => {
 								const file = event.target.files?.[0];

@@ -1,3 +1,5 @@
+import { isImageAssetPath } from '@/domain/resourcePack/assetTypes';
+
 import type { IAssetPathOperation } from './contracts';
 
 export type AssetEntryKind = 'folder' | 'image' | 'audio' | 'file';
@@ -14,6 +16,12 @@ export interface FolderStats {
 	folders: number;
 }
 
+export interface IAssetReferenceStatus {
+	isMissing: boolean;
+	isOutsideRecommendedFolder: boolean;
+	isUnsupportedType: boolean;
+}
+
 const INVALID_PATH_CHARS = /[:*?"<>|\x00-\x1f]/;
 
 export function normalizeAssetFolderPath(
@@ -26,7 +34,6 @@ export function normalizeAssetFolderPath(
 	const folder = collapsed ? `${collapsed}/` : normalizedRoot;
 
 	if (!folder.startsWith(normalizedRoot)) return null;
-	if (folder.includes('..')) return null;
 
 	const segments = folder.split('/').filter(Boolean);
 	if (segments.length === 0) return null;
@@ -64,15 +71,7 @@ export function getAssetParentFolder(path: string, root = 'assets/'): string {
 export function getAssetKind(path: string, url?: string): AssetEntryKind {
 	if (path.endsWith('/')) return 'folder';
 	const lower = path.toLowerCase();
-	if (
-		lower.endsWith('.png') ||
-		lower.endsWith('.jpg') ||
-		lower.endsWith('.jpeg') ||
-		lower.endsWith('.gif') ||
-		lower.endsWith('.webp') ||
-		lower.endsWith('.bmp') ||
-		lower.endsWith('.svg')
-	) {
+	if (isImageAssetPath(path)) {
 		return 'image';
 	}
 	if (
@@ -164,13 +163,71 @@ export function collectAssetFolders(
 export function getFolderStats(
 	assetUrls: Record<string, string>,
 	folder: string,
-	root = 'assets/'
+	root = 'assets/',
+	virtualFolders: Set<string> = new Set(),
+	isFileAccepted?: (path: string) => boolean
 ): FolderStats {
-	const entries = listAssetFolder(assetUrls, folder, root);
+	const entries = listAssetFolder(
+		assetUrls,
+		folder,
+		root,
+		virtualFolders
+	).filter(
+		(entry) =>
+			entry.kind === 'folder' ||
+			!isFileAccepted ||
+			isFileAccepted(entry.path)
+	);
 	return {
 		files: entries.filter((entry) => entry.kind !== 'folder').length,
 		folders: entries.filter((entry) => entry.kind === 'folder').length,
 	};
+}
+
+export function getAssetReferenceStatus(
+	path: string | undefined,
+	assetUrls: Readonly<Record<string, string>>,
+	recommendedFolder: string,
+	isSupportedType: (path: string) => boolean
+): IAssetReferenceStatus {
+	if (!path) {
+		return {
+			isMissing: false,
+			isOutsideRecommendedFolder: false,
+			isUnsupportedType: false,
+		};
+	}
+	return {
+		isMissing: !Object.hasOwn(assetUrls, path),
+		isOutsideRecommendedFolder: !path.startsWith(recommendedFolder),
+		isUnsupportedType: !isSupportedType(path),
+	};
+}
+
+export function hasAssetPathKindConflict(
+	operations: readonly IAssetPathOperation[],
+	assetPaths: readonly string[],
+	folderPaths: readonly string[]
+) {
+	const assetPathSet = new Set(assetPaths);
+	const folderPathSet = new Set(folderPaths);
+	return operations.some(({ to }) => {
+		const targetPath = getAssetPathKey(to);
+		if (
+			(to.endsWith('/') && assetPathSet.has(targetPath)) ||
+			(!to.endsWith('/') && folderPathSet.has(`${targetPath}/`))
+		) {
+			return true;
+		}
+
+		let parentSeparatorIndex = targetPath.lastIndexOf('/');
+		while (parentSeparatorIndex > 0) {
+			const parentPath = targetPath.slice(0, parentSeparatorIndex);
+			if (assetPathSet.has(parentPath)) return true;
+			parentSeparatorIndex = parentPath.lastIndexOf('/');
+		}
+		return false;
+	});
 }
 
 export function expandAssetSelection(
@@ -192,6 +249,20 @@ export function expandAssetSelection(
 	return Array.from(expanded).sort((a, b) => a.localeCompare(b, 'zh-CN'));
 }
 
+export function expandAssetFolderSelection(
+	selectedPaths: Set<string>,
+	folderPaths: readonly string[]
+) {
+	const selectedFolders = Array.from(selectedPaths).filter((path) =>
+		path.endsWith('/')
+	);
+	return folderPaths.filter((folder) =>
+		selectedFolders.some(
+			(selected) => folder === selected || folder.startsWith(selected)
+		)
+	);
+}
+
 export function compactAssetSelection(selectedPaths: Set<string>): string[] {
 	const ordered = Array.from(selectedPaths).sort((a, b) => {
 		if (a.length !== b.length) return a.length - b.length;
@@ -210,42 +281,110 @@ export function compactAssetSelection(selectedPaths: Set<string>): string[] {
 	return compact;
 }
 
+function getAssetPathKey(path: string) {
+	return path.endsWith('/') ? path.slice(0, -1) : path;
+}
+
+function getCopyName(name: string, copyIndex: number, isFolder: boolean) {
+	if (isFolder) {
+		return copyIndex === 1
+			? `${name} - 副本`
+			: `${name} - 副本 (${copyIndex})`;
+	}
+
+	const extensionIndex = name.lastIndexOf('.');
+	const hasExtension = extensionIndex > 0;
+	const basename = hasExtension ? name.slice(0, extensionIndex) : name;
+	const extension = hasExtension ? name.slice(extensionIndex) : '';
+	return copyIndex === 1
+		? `${basename} - 副本${extension}`
+		: `${basename} - 副本 (${copyIndex})${extension}`;
+}
+
+function buildUniqueCopyDestination(
+	root: string,
+	target: string,
+	occupiedPaths: ReadonlySet<string>
+) {
+	const isFolder = root.endsWith('/');
+	const name = getAssetName(root);
+	let copyIndex = 1;
+	while (true) {
+		const candidate = `${target}${getCopyName(name, copyIndex, isFolder)}${isFolder ? '/' : ''}`;
+		if (!occupiedPaths.has(getAssetPathKey(candidate))) return candidate;
+		copyIndex += 1;
+	}
+}
+
 export function buildAssetPathOperations(
 	selectedPaths: Set<string>,
 	assetPaths: string[],
 	targetFolder: string,
-	mode: 'copy' | 'move'
+	folderPaths: readonly string[] = [],
+	mode: 'copy' | 'move' = 'move',
+	rootFolder = 'assets/'
 ): IAssetPathOperation[] | null {
 	const roots = compactAssetSelection(selectedPaths);
 	const target = targetFolder.endsWith('/')
 		? targetFolder
 		: `${targetFolder}/`;
 	const operations: IAssetPathOperation[] = [];
+	const assetPathSet = new Set(assetPaths);
+	const folderPathSet = new Set(folderPaths);
+	const occupiedPaths = new Set([
+		...assetPaths.map(getAssetPathKey),
+		...folderPaths.map(getAssetPathKey),
+	]);
 
 	for (const root of roots) {
 		if (root.endsWith('/')) {
-			if (mode === 'move' && target.startsWith(root)) return null;
+			if (!folderPathSet.has(root)) return null;
+			if (target.startsWith(root)) return null;
 			const folderName = getAssetName(root);
+			const destinationRoot =
+				mode === 'copy' &&
+				getAssetParentFolder(root, rootFolder) === target
+					? buildUniqueCopyDestination(root, target, occupiedPaths)
+					: `${target}${folderName}/`;
+			occupiedPaths.add(getAssetPathKey(destinationRoot));
+			operations.push({ from: root, to: destinationRoot });
+			for (const folder of folderPaths) {
+				if (folder === root || !folder.startsWith(root)) continue;
+				operations.push({
+					from: folder,
+					to: `${destinationRoot}${folder.slice(root.length)}`,
+				});
+			}
 			for (const path of assetPaths) {
 				if (!path.startsWith(root)) continue;
 				operations.push({
 					from: path,
-					to: `${target}${folderName}/${path.slice(root.length)}`,
+					to: `${destinationRoot}${path.slice(root.length)}`,
 				});
 			}
 		} else {
-			operations.push({
-				from: root,
-				to: `${target}${getAssetName(root)}`,
-			});
+			if (!assetPathSet.has(root)) return null;
+			const destination =
+				mode === 'copy' &&
+				getAssetParentFolder(root, rootFolder) === target
+					? buildUniqueCopyDestination(root, target, occupiedPaths)
+					: `${target}${getAssetName(root)}`;
+			occupiedPaths.add(getAssetPathKey(destination));
+			operations.push({ from: root, to: destination });
 		}
 	}
 
-	const targets = new Set<string>();
-	for (const operation of operations) {
-		if (targets.has(operation.to)) return null;
-		targets.add(operation.to);
+	const effectiveOperations = operations.filter(
+		(operation) => operation.from !== operation.to
+	);
+	const targetPaths = new Set<string>();
+	for (const operation of effectiveOperations) {
+		const targetPath = operation.to.endsWith('/')
+			? operation.to.slice(0, -1)
+			: operation.to;
+		if (targetPaths.has(targetPath)) return null;
+		targetPaths.add(targetPath);
 	}
 
-	return operations.filter((operation) => operation.from !== operation.to);
+	return effectiveOperations;
 }

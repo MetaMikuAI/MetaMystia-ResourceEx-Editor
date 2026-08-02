@@ -9,6 +9,29 @@ import type {
 	TResourcePackArchiveInput,
 } from './contracts';
 
+const DISCARDABLE_ARCHIVE_FILE_NAMES = new Set([
+	'.ds_store',
+	'desktop.ini',
+	'ehthumbs.db',
+	'ehthumbs_vista.db',
+	'thumb.db',
+	'thumbs.db',
+]);
+
+function shouldDiscardArchiveEntry(path: string, isDirectory: boolean) {
+	const normalizedPath = path.replace(/\/+$/, '');
+	const filename = normalizedPath.slice(normalizedPath.lastIndexOf('/') + 1);
+
+	if (DISCARDABLE_ARCHIVE_FILE_NAMES.has(filename.toLowerCase())) {
+		return true;
+	}
+
+	const isMacOsMetadataPath =
+		normalizedPath === '__MACOSX' || normalizedPath.startsWith('__MACOSX/');
+
+	return isMacOsMetadataPath && (isDirectory || filename.startsWith('._'));
+}
+
 export class ResourcePackArchiveError extends Error {
 	constructor(message: string, options?: ErrorOptions) {
 		super(message, options);
@@ -16,7 +39,7 @@ export class ResourcePackArchiveError extends Error {
 	}
 }
 
-function addAssetParentFolders(path: string, folders: Set<string>) {
+function addParentFolders(path: string, folders: Set<string>) {
 	const parts = path.split('/');
 	for (let index = 1; index < parts.length; index++) {
 		folders.add(`${parts.slice(0, index).join('/')}/`);
@@ -60,29 +83,44 @@ export async function readResourcePackArchive(
 		if (
 			entry.name === 'ResourceEx.json' ||
 			entry.name === 'LICENSE.md' ||
-			entry.name.startsWith('__MACOSX/')
+			shouldDiscardArchiveEntry(entry.name, entry.dir)
 		) {
 			continue;
 		}
 
 		if (entry.dir) {
-			if (entry.name.startsWith('assets/')) folders.add(entry.name);
+			addParentFolders(entry.name, folders);
+			folders.add(entry.name);
 			continue;
 		}
 
 		const blob = await entry.async('blob');
 		files.set(entry.name, blob);
-		if (entry.name.startsWith('assets/')) {
-			addAssetParentFolders(entry.name, folders);
+		addParentFolders(entry.name, folders);
+	}
+
+	for (const path of files.keys()) {
+		if (folders.has(`${path}/`)) {
+			throw new ResourcePackArchiveError(
+				`压缩包中的路径同时被用作文件和目录：${path}`
+			);
+		}
+	}
+	for (const reservedPath of ['ResourceEx.json', 'LICENSE.md']) {
+		if (folders.has(`${reservedPath}/`)) {
+			throw new ResourcePackArchiveError(
+				`压缩包中的保留文件路径被用作目录：${reservedPath}`
+			);
 		}
 	}
 
 	return {
-		resourcePack,
-		license,
 		files,
 		folders: Array.from(folders).sort((a, b) =>
 			a.localeCompare(b, 'zh-CN')
 		),
+		hasLicenseFile: licenseEntry !== null,
+		license,
+		resourcePack,
 	};
 }

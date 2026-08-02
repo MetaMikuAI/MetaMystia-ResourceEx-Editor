@@ -9,12 +9,14 @@ import {
 	useState,
 } from 'react';
 
+import { remapResourcePackAssetReferences } from '@/domain/resourcePack/assetReferences';
 import type { ResourceEx } from '@/domain/resourcePack/contracts/resourceEx';
 import { createBlankResourcePack } from '@/domain/resourcePack/createBlankResourcePack';
 
 import { downloadResourcePack } from '@/features/resourceEditor/client/archive/downloadResourcePack';
 import { readResourcePackArchive } from '@/features/resourceEditor/client/archive/readResourcePackArchive';
 import { writeResourcePackArchive } from '@/features/resourceEditor/client/archive/writeResourcePackArchive';
+import type { IAssetPathOperation } from '@/features/resourceEditor/client/assets/contracts';
 import { useAssetStore } from '@/features/resourceEditor/client/assets/useAssetStore';
 
 import type {
@@ -41,6 +43,7 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 	const [isExporting, setIsExporting] = useState(false);
 	const [isImporting, setIsImporting] = useState(false);
 	const [revision, setRevision] = useState(0);
+	const hasLicenseFileRef = useRef(false);
 	const isExportingRef = useRef(false);
 	const isImportingRef = useRef(false);
 	const isMountedRef = useRef(false);
@@ -64,11 +67,14 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 		createAssetFolder,
 		getAssetSnapshot,
 		getAssetUrl,
-		moveAssets,
+		isAssetGenerationCurrent,
+		moveAssets: moveStoredAssets,
 		removeAsset,
+		removeAssets,
 		removeAssetFolders,
 		replaceAssets,
 		updateAsset,
+		updateAssets,
 	} = useAssetStore(markDirty);
 
 	useEffect(() => {
@@ -100,8 +106,28 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 		[markDirty]
 	);
 
+	const moveAssets = useCallback(
+		(operations: readonly IAssetPathOperation[]) => {
+			if (!moveStoredAssets(operations)) return;
+			const pathMap = new Map(
+				operations
+					.filter(({ from }) => !from.endsWith('/'))
+					.map(({ from, to }) => [from, to] as const)
+			);
+			const nextResourcePack = remapResourcePackAssetReferences(
+				resourcePackRef.current,
+				pathMap
+			);
+			if (nextResourcePack === resourcePackRef.current) return;
+			resourcePackRef.current = nextResourcePack;
+			setResourcePack(nextResourcePack);
+		},
+		[moveStoredAssets]
+	);
+
 	const replaceLicense = useCallback(
 		(nextLicense: string) => {
+			hasLicenseFileRef.current = nextLicense.length > 0;
 			licenseRef.current = nextLicense;
 			setLicense(nextLicense);
 			markDirty();
@@ -132,6 +158,7 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 				}
 				replaceAssets(archive.files, archive.folders);
 				resourcePackRef.current = archive.resourcePack;
+				hasLicenseFileRef.current = archive.hasLicenseFile;
 				licenseRef.current = archive.license;
 				setResourcePack(archive.resourcePack);
 				setLicense(archive.license);
@@ -153,6 +180,7 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 		const nextResourcePack = createBlankResourcePack();
 		clearAssets();
 		resourcePackRef.current = nextResourcePack;
+		hasLicenseFileRef.current = false;
 		licenseRef.current = '';
 		setResourcePack(nextResourcePack);
 		setLicense('');
@@ -168,6 +196,7 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 			if (revisionRef.current !== expectedRevision) return null;
 			return {
 				...assets,
+				hasLicenseFile: hasLicenseFileRef.current,
 				license: licenseRef.current,
 				resourcePack: resourcePackRef.current,
 				revision: expectedRevision,
@@ -229,17 +258,20 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 			exportArchive,
 			getAssetUrl,
 			importArchive,
+			isAssetGenerationCurrent,
 			isDirty,
 			isExporting,
 			isImporting,
 			license,
 			moveAssets,
 			removeAsset,
+			removeAssets,
 			removeAssetFolders,
 			replaceLicense,
 			resourcePack,
 			revision,
 			updateAsset,
+			updateAssets,
 			updateResourcePack,
 		}),
 		[
@@ -250,17 +282,20 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 			exportArchive,
 			getAssetUrl,
 			importArchive,
+			isAssetGenerationCurrent,
 			isDirty,
 			isExporting,
 			isImporting,
 			license,
 			moveAssets,
 			removeAsset,
+			removeAssets,
 			removeAssetFolders,
 			replaceLicense,
 			resourcePack,
 			revision,
 			updateAsset,
+			updateAssets,
 			updateResourcePack,
 		]
 	);

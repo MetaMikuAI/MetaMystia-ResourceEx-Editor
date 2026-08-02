@@ -43,10 +43,12 @@ export function Portraits({
 
 	const handleUpload = (index: number, file: File, pid: number) => {
 		const path = `assets/Character/${characterId}/Portrait/${pid}.png`;
-		updateAsset(path, file);
+		const result = updateAsset(path, file);
+		if (!result.isSuccess) return result;
 		// Auto-fill label with filename (without extension)
 		const label = file.name.replace(/\.[^/.]+$/, '');
 		onUpdate(index, { path, label });
+		return result;
 	};
 
 	return (

@@ -5,13 +5,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import Button from '@/design/ui/components/button';
 
+import type { IAssetMutationResult } from '@/features/resourceEditor/client/assets/contracts';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import { readImageDimensions } from '@/infrastructure/browser/images/readImageDimensions';
 
 interface IProps {
 	spritePath: string;
-	onUpload: (file: File) => void;
+	onUpload: (file: File) => IAssetMutationResult;
 	width?: number;
 	height?: number;
 	className?: string;
@@ -24,30 +25,116 @@ export function PortraitUploader({
 	spritePath,
 	width = 256,
 }: IProps) {
-	const { getAssetUrl } = useResourceEditor();
+	const {
+		assets: { generation: assetGeneration },
+		getAssetUrl,
+		isAssetGenerationCurrent,
+	} = useResourceEditor();
 	const [warning, setWarning] = useState('');
+	const activeReadControllerRef = useRef<AbortController | null>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
+	const isMountedRef = useRef(false);
+	const onUploadRef = useRef(onUpload);
+	const operationIdRef = useRef(0);
+	const spritePathRef = useRef(spritePath);
+	onUploadRef.current = onUpload;
+	spritePathRef.current = spritePath;
 	const assetUrl = getAssetUrl(spritePath);
 
-	const handleFile = useCallback(
-		(file: File | undefined) => {
-			if (!file) return;
-			void readImageDimensions(file)
-				.then((dimensions) => {
-					setWarning(
-						dimensions.width === width &&
-							dimensions.height === height
-							? ''
-							: `当前尺寸${dimensions.width}×${dimensions.height}，期望${width}×${height}。`
-					);
-				})
-				.catch(() => setWarning('无法读取图片尺寸。'));
-			onUpload(file);
-		},
-		[height, onUpload, width]
+	const invalidateOperation = useCallback(() => {
+		operationIdRef.current += 1;
+		activeReadControllerRef.current?.abort();
+		activeReadControllerRef.current = null;
+	}, []);
+
+	const isOperationActive = useCallback(
+		(
+			operationId: number,
+			operationSpritePath: string,
+			operationAssetGeneration: number
+		) =>
+			isMountedRef.current &&
+			operationIdRef.current === operationId &&
+			isAssetGenerationCurrent(operationAssetGeneration) &&
+			spritePathRef.current === operationSpritePath,
+		[isAssetGenerationCurrent]
 	);
 
-	useEffect(() => setWarning(''), [spritePath]);
+	const handleFile = useCallback(
+		async (file: File | undefined) => {
+			if (!file) return;
+			invalidateOperation();
+			if (file.type !== 'image/png') {
+				setWarning('请选择PNG格式的立绘文件。');
+				return;
+			}
+			const operationId = operationIdRef.current;
+			const operationAssetGeneration = assetGeneration;
+			const operationSpritePath = spritePath;
+			const readController = new AbortController();
+			activeReadControllerRef.current = readController;
+			setWarning('');
+			try {
+				const dimensions = await readImageDimensions(
+					file,
+					readController.signal
+				);
+				if (
+					!isOperationActive(
+						operationId,
+						operationSpritePath,
+						operationAssetGeneration
+					)
+				)
+					return;
+				const result = onUploadRef.current(file);
+				if (!result.isSuccess) {
+					setWarning(result.error ?? '无法更新立绘资产。');
+					return;
+				}
+				setWarning(
+					dimensions.width === width && dimensions.height === height
+						? ''
+						: `当前尺寸${dimensions.width}×${dimensions.height}，期望${width}×${height}。`
+				);
+			} catch {
+				if (
+					isOperationActive(
+						operationId,
+						operationSpritePath,
+						operationAssetGeneration
+					)
+				) {
+					setWarning('无法读取图片尺寸。');
+				}
+			} finally {
+				if (activeReadControllerRef.current === readController) {
+					activeReadControllerRef.current = null;
+				}
+			}
+		},
+		[
+			assetGeneration,
+			height,
+			invalidateOperation,
+			isOperationActive,
+			spritePath,
+			width,
+		]
+	);
+
+	useEffect(() => {
+		isMountedRef.current = true;
+		return () => {
+			isMountedRef.current = false;
+			invalidateOperation();
+		};
+	}, [invalidateOperation]);
+
+	useEffect(() => {
+		invalidateOperation();
+		setWarning('');
+	}, [assetGeneration, invalidateOperation, spritePath]);
 
 	return (
 		<div
@@ -74,7 +161,7 @@ export function PortraitUploader({
 				className="hidden"
 				id={`upload-portrait-${spritePath}`}
 				onChange={(event) => {
-					handleFile(event.target.files?.[0]);
+					void handleFile(event.target.files?.[0]);
 					event.target.value = '';
 				}}
 			/>
@@ -88,7 +175,7 @@ export function PortraitUploader({
 				onDrop={(event) => {
 					event.preventDefault();
 					const file = event.dataTransfer.files?.[0];
-					if (file?.type === 'image/png') handleFile(file);
+					if (file) void handleFile(file);
 				}}
 			>
 				{assetUrl ? (

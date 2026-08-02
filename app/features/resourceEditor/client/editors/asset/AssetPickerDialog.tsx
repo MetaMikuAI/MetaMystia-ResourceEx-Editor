@@ -14,6 +14,8 @@ interface AssetPickerDialogProps {
 	onClose: () => void;
 	onSelect: (path: string) => void;
 	initialFolder: string;
+	acceptedFileTypes?: string;
+	isFileAccepted?: (path: string) => boolean;
 }
 
 /**
@@ -25,11 +27,23 @@ interface AssetPickerDialogProps {
  * - 隐藏删除/移动/复制等破坏性操作
  */
 export const AssetPickerDialog = memo<AssetPickerDialogProps>(
-	function AssetPickerDialog({ open, onClose, onSelect, initialFolder }) {
+	function AssetPickerDialog({
+		acceptedFileTypes,
+		initialFolder,
+		isFileAccepted,
+		onClose,
+		onSelect,
+		open,
+	}) {
 		const {
 			resourcePack,
-			assets: { folders: assetFolders, urls: assetUrls },
+			assets: {
+				folders: assetFolders,
+				generation: assetGeneration,
+				urls: assetUrls,
+			},
 			updateAsset,
+			updateAssets,
 			createAssetFolder,
 		} = useResourceEditor();
 		const packLabel = resourcePack.packInfo.label;
@@ -58,6 +72,7 @@ export const AssetPickerDialog = memo<AssetPickerDialogProps>(
 			>
 				<div className="flex flex-col gap-0">
 					<AssetFileManager
+						key={assetGeneration}
 						selectionMode="select"
 						assetUrls={assetUrls}
 						assetFolders={assetFolders}
@@ -65,11 +80,18 @@ export const AssetPickerDialog = memo<AssetPickerDialogProps>(
 						root="assets/"
 						initialFolder={initialFolder}
 						onUpload={updateAsset}
+						onUploadMany={updateAssets}
 						onRemove={noopRemove}
 						onCreateFolder={createAssetFolder}
 						onMove={noopAssetOps}
 						onCopy={noopAssetOps}
 						onSelectFile={handleSelect}
+						{...(acceptedFileTypes === undefined
+							? {}
+							: { acceptedFileTypes })}
+						{...(isFileAccepted === undefined
+							? {}
+							: { isFileAccepted })}
 					/>
 				</div>
 			</Modal>

@@ -1,6 +1,7 @@
 import type { ResourceEx } from '@/domain/resourcePack/contracts/resourceEx';
 
 import type {
+	IAssetMutationResult,
 	IAssetPathOperation,
 	IAssetState,
 } from '@/features/resourceEditor/client/assets/contracts';
@@ -30,11 +31,14 @@ export interface IResourceEditorContext {
 		expectedRevision: number,
 		filename?: string
 	): Promise<IResourceEditorExportResult>;
-	updateAsset(path: string, blob: Blob): void;
+	updateAsset(path: string, blob: Blob): IAssetMutationResult;
+	updateAssets(updates: ReadonlyMap<string, Blob>): IAssetMutationResult;
 	removeAsset(path: string): void;
-	createAssetFolder(path: string): void;
+	removeAssets(paths: readonly string[]): void;
+	createAssetFolder(path: string): IAssetMutationResult;
 	removeAssetFolders(paths: readonly string[]): void;
 	moveAssets(operations: readonly IAssetPathOperation[]): void;
 	copyAssets(operations: readonly IAssetPathOperation[]): void;
 	getAssetUrl(path: string | undefined): string | undefined;
+	isAssetGenerationCurrent(generation: number): boolean;
 }

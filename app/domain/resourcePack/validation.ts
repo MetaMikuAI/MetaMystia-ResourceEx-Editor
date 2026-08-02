@@ -1,3 +1,5 @@
+import { collectResourcePackAssetReferences } from './assetReferences';
+import { isImageAssetPath } from './assetTypes';
 import {
 	GAME_ID_MAX,
 	isValidPackLabel,
@@ -34,6 +36,7 @@ export function validateResourcePackRules(
 ): IResourcePackValidationIssue[] {
 	const issues: IResourcePackValidationIssue[] = [];
 	const assetSet = options.availableAssetPaths ?? null;
+	const checkedAssetReferences = new Set<string>();
 	const packLabel = data.packInfo.label;
 	const prefix = packLabel ? `_${packLabel}_` : '';
 
@@ -165,6 +168,53 @@ export function validateResourcePackRules(
 		}
 	}
 
+	function checkAssetPath(
+		path: string,
+		entityType: string,
+		entityName: string,
+		assetPathName: string
+	): void {
+		if (!path.trim()) {
+			issues.push({
+				severity: 'error',
+				category: entityType,
+				message: `${entityName}的${assetPathName}不能为空`,
+			});
+			return;
+		}
+		if (!isImageAssetPath(path)) {
+			issues.push({
+				severity: 'warning',
+				category: entityType,
+				message: `${entityName}的${assetPathName}“${path}”不是受支持的图片文件`,
+			});
+		}
+	}
+
+	function checkAssetPaths(
+		paths: readonly string[],
+		expectedCount: number,
+		entityType: string,
+		entityName: string,
+		assetName: string
+	): void {
+		if (paths.length !== expectedCount) {
+			issues.push({
+				severity: 'error',
+				category: entityType,
+				message: `${entityName}的${assetName}应为${expectedCount}张，当前为${paths.length}张`,
+			});
+		}
+		paths.forEach((path, index) =>
+			checkAssetPath(
+				path,
+				entityType,
+				entityName,
+				`${assetName}#${index + 1}路径`
+			)
+		);
+	}
+
 	// ── Characters ────────────────────────────────────────
 	const charNames = (i: number) =>
 		data.characters[i]?.name || `角色#${i + 1}`;
@@ -190,11 +240,25 @@ export function validateResourcePackRules(
 		}
 
 		checkLabelPrefix(char.label, '角色', name);
+		char.portraits?.forEach((portrait, portraitIndex) =>
+			checkAssetPath(
+				portrait.path,
+				'角色',
+				name,
+				`立绘#${portraitIndex + 1}路径`
+			)
+		);
 
 		// Sprite set name
 		if (char.characterSpriteSetCompact) {
-			const spriteName = char.characterSpriteSetCompact.name;
+			const {
+				eyeSprite,
+				mainSprite,
+				name: spriteName,
+			} = char.characterSpriteSetCompact;
 			checkLabelPrefix(spriteName, '角色小人', `${name}的小人名称`);
+			checkAssetPaths(mainSprite, 12, '角色小人', name, '主身体贴图');
+			checkAssetPaths(eyeSprite, 24, '角色小人', name, '眼睛贴图');
 		}
 	});
 
@@ -323,6 +387,7 @@ export function validateResourcePackRules(
 							message: `${where}的音频路径（sound）“${act.sound}”不是.wav文件，MOD目前仅支持.wav`,
 						});
 					}
+					checkedAssetReferences.add(act.sound);
 					if (assetSet && !assetSet.has(act.sound)) {
 						issues.push({
 							severity: 'error',
@@ -367,8 +432,15 @@ export function validateResourcePackRules(
 						message: `${where}的贴图路径（sprite）“${act.sprite}”未位于推荐目录${expectedFolder}`,
 					});
 				}
-
+				if (!isImageAssetPath(act.sprite)) {
+					issues.push({
+						severity: 'warning',
+						category: '对话动作',
+						message: `${where}的贴图路径（sprite）“${act.sprite}”不是受支持的图片文件`,
+					});
+				}
 				if (assetSet && !assetSet.has(act.sprite)) {
+					checkedAssetReferences.add(act.sprite);
 					issues.push({
 						severity: 'error',
 						category: '对话动作',
@@ -403,7 +475,9 @@ export function validateResourcePackRules(
 		ingNames
 	);
 	data.ingredients.forEach((it, i) => {
-		checkId(it.id, '食材', it.name || `食材#${i + 1}`);
+		const name = it.name || `食材#${i + 1}`;
+		checkId(it.id, '食材', name);
+		checkAssetPath(it.spritePath, '食材', name, '贴图路径（spritePath）');
 	});
 
 	// ── Foods ─────────────────────────────────────────────
@@ -414,7 +488,9 @@ export function validateResourcePackRules(
 		foodNames
 	);
 	data.foods.forEach((f, i) => {
-		checkId(f.id, '料理', f.name || `料理#${i + 1}`);
+		const name = f.name || `料理#${i + 1}`;
+		checkId(f.id, '料理', name);
+		checkAssetPath(f.spritePath, '料理', name, '贴图路径（spritePath）');
 	});
 
 	// ── Beverages ─────────────────────────────────────────
@@ -426,7 +502,9 @@ export function validateResourcePackRules(
 		bevNames
 	);
 	(data.beverages || []).forEach((b, i) => {
-		checkId(b.id, '酒水', b.name || `酒水#${i + 1}`);
+		const name = b.name || `酒水#${i + 1}`;
+		checkId(b.id, '酒水', name);
+		checkAssetPath(b.spritePath, '酒水', name, '贴图路径（spritePath）');
 	});
 
 	// ── Recipes ───────────────────────────────────────────
@@ -450,8 +528,56 @@ export function validateResourcePackRules(
 		clothesNames
 	);
 	(data.clothes || []).forEach((c, i) => {
-		checkId(c.id, '衣服', c.name || `衣服#${i + 1}`);
+		const name = c.name || `衣服#${i + 1}`;
+		checkId(c.id, '衣服', name);
+		checkAssetPath(c.spritePath, '衣服', name, '图标路径（spritePath）');
+		checkAssetPath(
+			c.portraitPath,
+			'衣服',
+			name,
+			'立绘路径（portraitPath）'
+		);
+		checkAssetPaths(
+			c.pixelFullConfig.mainSprite,
+			12,
+			'衣服小人',
+			name,
+			'主身体贴图'
+		);
+		checkAssetPaths(
+			c.pixelFullConfig.eyeSprite,
+			24,
+			'衣服小人',
+			name,
+			'眼睛贴图'
+		);
+		checkAssetPaths(
+			c.pixelFullConfig.hairSprite,
+			12,
+			'衣服小人',
+			name,
+			'头发贴图'
+		);
+		checkAssetPaths(
+			c.pixelFullConfig.backSprite,
+			12,
+			'衣服小人',
+			name,
+			'背部贴图'
+		);
 	});
+
+	if (assetSet) {
+		for (const path of collectResourcePackAssetReferences(data)) {
+			if (checkedAssetReferences.has(path) || assetSet.has(path))
+				continue;
+			issues.push({
+				severity: 'error',
+				category: '资产引用',
+				message: `引用的资产“${path}”在当前项目中不存在`,
+			});
+		}
+	}
 
 	return issues;
 }

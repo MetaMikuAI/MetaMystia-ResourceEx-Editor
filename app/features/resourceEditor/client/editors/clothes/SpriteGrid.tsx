@@ -1,5 +1,6 @@
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 
+import type { IAssetMutationResult } from '@/features/resourceEditor/client/assets/contracts';
 import { Label } from '@/features/resourceEditor/client/components/fields/Label';
 import { WarningNotice } from '@/features/resourceEditor/client/components/status/WarningNotice';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
@@ -13,7 +14,7 @@ interface SpriteGridProps {
 	prefix: string;
 	paths: string[];
 	basePath: string;
-	onUpload: (index: number, path: string, file: File) => void;
+	onUpload: (index: number, path: string, file: File) => IAssetMutationResult;
 }
 
 export const SpriteGrid = memo<SpriteGridProps>(function SpriteGrid({
@@ -25,22 +26,87 @@ export const SpriteGrid = memo<SpriteGridProps>(function SpriteGrid({
 	basePath,
 	onUpload,
 }) {
-	const { getAssetUrl } = useResourceEditor();
+	const {
+		assets: { generation: assetGeneration },
+		getAssetUrl,
+		isAssetGenerationCurrent,
+	} = useResourceEditor();
 	const [uploadError, setUploadError] = useState<string | null>(null);
+	const activeReadControllersRef = useRef(new Map<number, AbortController>());
+	const basePathRef = useRef(basePath);
+	const isMountedRef = useRef(false);
+	const onUploadRef = useRef(onUpload);
+	basePathRef.current = basePath;
+	onUploadRef.current = onUpload;
+
+	const invalidateUploads = useCallback(() => {
+		activeReadControllersRef.current.forEach((controller) =>
+			controller.abort()
+		);
+		activeReadControllersRef.current.clear();
+	}, []);
+
+	const isUploadActive = useCallback(
+		(
+			index: number,
+			controller: AbortController,
+			operationAssetGeneration: number,
+			operationBasePath: string
+		) =>
+			isMountedRef.current &&
+			activeReadControllersRef.current.get(index) === controller &&
+			isAssetGenerationCurrent(operationAssetGeneration) &&
+			basePathRef.current === operationBasePath,
+		[isAssetGenerationCurrent]
+	);
 
 	const handleUpload = useCallback(
 		async (index: number, file: File) => {
-			let dimensions;
-			try {
-				dimensions = await readImageDimensions(file);
-			} catch {
-				setUploadError('无法读取衣服小人贴图尺寸。');
+			activeReadControllersRef.current.get(index)?.abort();
+			if (file.type !== 'image/png') {
+				activeReadControllersRef.current.delete(index);
+				setUploadError('请选择PNG格式的衣服小人贴图。');
 				return;
 			}
+			const operationAssetGeneration = assetGeneration;
+			const operationBasePath = basePath;
+			const readController = new AbortController();
+			activeReadControllersRef.current.set(index, readController);
+			setUploadError(null);
+			let dimensions;
+			try {
+				dimensions = await readImageDimensions(
+					file,
+					readController.signal
+				);
+			} catch {
+				if (
+					isUploadActive(
+						index,
+						readController,
+						operationAssetGeneration,
+						operationBasePath
+					)
+				) {
+					setUploadError('无法读取衣服小人贴图尺寸。');
+					activeReadControllersRef.current.delete(index);
+				}
+				return;
+			}
+			if (
+				!isUploadActive(
+					index,
+					readController,
+					operationAssetGeneration,
+					operationBasePath
+				)
+			)
+				return;
 			if (dimensions.width !== 64 || dimensions.height !== 64) {
 				setUploadError(
 					`错误：衣服小人贴图尺寸必须为64×64，当前为${dimensions.width}×${dimensions.height}。`
 				);
+				activeReadControllersRef.current.delete(index);
 				return;
 			}
 			setUploadError(null);
@@ -48,11 +114,32 @@ export const SpriteGrid = memo<SpriteGridProps>(function SpriteGrid({
 			const row = Math.floor(index / cols);
 			const col = index % cols;
 			const filename = `${prefix}_${row}, ${col}.png`;
-			const path = `${basePath}/${filename}`;
-			onUpload(index, path, file);
+			const path = `${operationBasePath}/${filename}`;
+			const result = onUploadRef.current(index, path, file);
+			if (!result.isSuccess) {
+				setUploadError(result.error ?? '无法更新衣服小人贴图。');
+			}
+			if (
+				activeReadControllersRef.current.get(index) === readController
+			) {
+				activeReadControllersRef.current.delete(index);
+			}
 		},
-		[cols, prefix, basePath, onUpload]
+		[assetGeneration, basePath, cols, isUploadActive, prefix]
 	);
+
+	useEffect(() => {
+		isMountedRef.current = true;
+		return () => {
+			isMountedRef.current = false;
+			invalidateUploads();
+		};
+	}, [invalidateUploads]);
+
+	useEffect(() => {
+		invalidateUploads();
+		setUploadError(null);
+	}, [assetGeneration, basePath, invalidateUploads]);
 
 	return (
 		<div className="flex flex-col gap-4">
@@ -79,9 +166,7 @@ export const SpriteGrid = memo<SpriteGridProps>(function SpriteGrid({
 							onDrop={(e) => {
 								e.preventDefault();
 								const file = e.dataTransfer.files?.[0];
-								if (file && file.type === 'image/png') {
-									handleUpload(i, file);
-								}
+								if (file) void handleUpload(i, file);
 							}}
 						>
 							<span className="absolute left-1 top-1 z-10 rounded-small bg-content1/80 px-1 text-[10px] text-foreground-700">
@@ -109,7 +194,8 @@ export const SpriteGrid = memo<SpriteGridProps>(function SpriteGrid({
 								className="hidden"
 								onChange={(e) => {
 									const file = e.target.files?.[0];
-									if (file) handleUpload(i, file);
+									if (file) void handleUpload(i, file);
+									e.target.value = '';
 								}}
 							/>
 						</label>

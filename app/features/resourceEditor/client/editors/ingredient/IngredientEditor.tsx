@@ -44,8 +44,10 @@ export const IngredientEditor = memo<IngredientEditorProps>(
 
 		const handleSpriteUpdate = useCallback(
 			(blob: Blob) => {
-				if (!ingredient) return;
-				updateAsset(ingredient.spritePath, blob);
+				if (!ingredient) {
+					return { isSuccess: false, error: '未选择食材。' };
+				}
+				return updateAsset(ingredient.spritePath, blob);
 			},
 			[ingredient, updateAsset]
 		);

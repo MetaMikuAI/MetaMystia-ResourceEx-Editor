@@ -96,16 +96,16 @@ export const ClothesEditor = memo<ClothesEditorProps>(function ClothesEditor({
 
 	const handleIconSpriteUpdate = useCallback(
 		(blob: Blob) => {
-			if (!clothes) return;
-			updateAsset(clothes.spritePath, blob);
+			if (!clothes) return { isSuccess: false, error: '未选择衣服。' };
+			return updateAsset(clothes.spritePath, blob);
 		},
 		[clothes, updateAsset]
 	);
 
 	const handlePortraitUpload = useCallback(
 		(file: File) => {
-			if (!clothes) return;
-			updateAsset(clothes.portraitPath, file);
+			if (!clothes) return { isSuccess: false, error: '未选择衣服。' };
+			return updateAsset(clothes.portraitPath, file);
 		},
 		[clothes, updateAsset]
 	);
@@ -127,11 +127,13 @@ export const ClothesEditor = memo<ClothesEditorProps>(function ClothesEditor({
 			path: string,
 			file: File
 		) => {
-			if (!clothes) return;
-			updateAsset(path, file);
+			if (!clothes) return { isSuccess: false, error: '未选择衣服。' };
+			const result = updateAsset(path, file);
+			if (!result.isSuccess) return result;
 			const newArray = [...clothes.pixelFullConfig[field]];
 			newArray[index] = path;
 			updatePixelFullConfig({ [field]: newArray });
+			return result;
 		},
 		[clothes, updateAsset, updatePixelFullConfig]
 	);

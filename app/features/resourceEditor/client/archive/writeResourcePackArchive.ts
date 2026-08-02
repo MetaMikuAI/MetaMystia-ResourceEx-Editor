@@ -6,29 +6,25 @@ import type { IWriteResourcePackArchiveInput } from './contracts';
 
 export async function writeResourcePackArchive({
 	resourcePackJson,
+	hasLicenseFile,
 	license,
 	files,
 	folders,
-	referencedPaths,
 }: IWriteResourcePackArchiveInput): Promise<Blob> {
 	const zip = new JSZip();
 	zip.file('ResourceEx.json', resourcePackJson);
-	if (license) zip.file('LICENSE.md', license);
+	if (hasLicenseFile) zip.file('LICENSE.md', license);
 
-	const assetFolders = new Set<string>(['assets/']);
+	const archiveFolders = new Set<string>(['assets/']);
 	folders.forEach((folder) => {
-		if (folder.startsWith('assets/')) {
-			assetFolders.add(folder.endsWith('/') ? folder : `${folder}/`);
-		}
+		archiveFolders.add(folder.endsWith('/') ? folder : `${folder}/`);
 	});
-	Array.from(assetFolders)
+	Array.from(archiveFolders)
 		.sort((a, b) => a.localeCompare(b, 'zh-CN'))
 		.forEach((folder) => zip.folder(folder));
 
 	for (const [path, blob] of files) {
-		if (path.startsWith('assets/') || referencedPaths.has(path)) {
-			zip.file(path, await blob.arrayBuffer());
-		}
+		zip.file(path, await blob.arrayBuffer());
 	}
 
 	return zip.generateAsync({ type: 'blob' });

@@ -1,9 +1,11 @@
 'use client';
 
 import { cn } from '@heroui/theme';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import Button from '@/design/ui/components/button';
+
+import { collectResourcePackAssetReferences } from '@/domain/resourcePack/assetReferences';
 
 import type { IAssetPathOperation } from '@/features/resourceEditor/client/assets/contracts';
 import { EditorCollapsiblePanel } from '@/features/resourceEditor/client/components/layout/EditorCollapsiblePanel';
@@ -35,22 +37,37 @@ const QUICK_FOLDERS = [
 export function AssetEditorScreen() {
 	const {
 		resourcePack: data,
-		assets: { folders: assetFolders, urls: assetUrls },
+		assets: {
+			folders: assetFolders,
+			generation: assetGeneration,
+			urls: assetUrls,
+		},
 		updateAsset,
-		removeAsset,
+		updateAssets,
+		removeAssets,
 		createAssetFolder,
 		removeAssetFolders,
 		moveAssets,
 		copyAssets,
 	} = useResourceEditor();
-	const [activeFolder, setActiveFolder] = useState<string>('assets/');
+	const [navigation, setNavigation] = useState(() => ({
+		folder: 'assets/',
+		generation: assetGeneration,
+	}));
 	const [isCollapsed, setIsCollapsed] = useState(false);
+	const activeFolder =
+		navigation.generation === assetGeneration
+			? navigation.folder
+			: 'assets/';
+	const handleFolderChange = useCallback(
+		(folder: string) =>
+			setNavigation({ folder, generation: assetGeneration }),
+		[assetGeneration]
+	);
 
-	const removeAssets = useCallback(
-		(paths: string[]) => {
-			for (const path of paths) removeAsset(path);
-		},
-		[removeAsset]
+	const referencedPaths = useMemo(
+		() => collectResourcePackAssetReferences(data),
+		[data]
 	);
 
 	const handleMove = useCallback(
@@ -79,7 +96,7 @@ export function AssetEditorScreen() {
 						<Button
 							key={folder.path}
 							onPress={() => {
-								setActiveFolder(folder.path);
+								handleFolderChange(folder.path);
 								setIsCollapsed(true);
 							}}
 							className={cn(
@@ -103,14 +120,14 @@ export function AssetEditorScreen() {
 
 					<div className="mt-4 shrink-0 rounded-large border border-dashed border-divider bg-content2/20 p-3 text-xs leading-relaxed text-foreground-600">
 						<p>
-							此页现在按资源包内真实路径管理文件。目录由文件路径自动推导，复制、移动、删除会直接修改导出的ZIP内容。
+							此页按资源包内真实路径管理文件。复制、移动、删除会直接修改导出的ZIP内容，移动时会同步更新ResourceEx.json中的资产引用。
 						</p>
 						<p className="mt-2">
-							导出会保留
+							导出会保留导入压缩包中的任意文件，包括
 							<code className="rounded bg-default/40 px-1 font-mono">
 								assets/
 							</code>
-							下的已上传文件；对话CG/BG/音频等模块仍会在导出前校验引用是否存在。
+							外的额外内容。
 						</p>
 					</div>
 				</div>
@@ -118,18 +135,21 @@ export function AssetEditorScreen() {
 
 			<section className="lg:col-span-3">
 				<AssetFileManager
-					key={activeFolder}
+					key={assetGeneration}
 					assetUrls={assetUrls}
 					assetFolders={assetFolders}
 					packLabel={data.packInfo?.label}
 					root="assets/"
 					initialFolder={activeFolder}
 					onUpload={updateAsset}
+					onUploadMany={updateAssets}
 					onRemove={removeAssets}
 					onCreateFolder={createAssetFolder}
 					onRemoveFolders={removeAssetFolders}
 					onMove={handleMove}
 					onCopy={handleCopy}
+					onFolderChange={handleFolderChange}
+					referencedPaths={referencedPaths}
 				/>
 			</section>
 		</EditorWorkspace>

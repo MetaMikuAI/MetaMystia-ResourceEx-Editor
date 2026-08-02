@@ -12,6 +12,7 @@ import type { IAssetSnapshot } from '@/features/resourceEditor/client/assets/con
 import type { IResourceEditorExportResult } from './contracts';
 
 export interface IResourcePackExportSnapshot extends IAssetSnapshot {
+	hasLicenseFile: boolean;
 	license: string;
 	resourcePack: ResourceEx;
 	revision: number;
@@ -79,8 +80,8 @@ export async function runResourcePackExport({
 		const archive = await writeArchive({
 			files: snapshot.files,
 			folders: snapshot.folders,
+			hasLicenseFile: snapshot.hasLicenseFile,
 			license: snapshot.license,
-			referencedPaths: exportView.referencedPaths,
 			resourcePackJson: exportView.resourcePackJson,
 		});
 		const resolvedFilename = downloadArchive(

@@ -37,8 +37,10 @@ export const BeverageEditor = memo<BeverageEditorProps>(
 
 		const handleSpriteUpdate = useCallback(
 			(blob: Blob) => {
-				if (!beverage) return;
-				updateAsset(beverage.spritePath, blob);
+				if (!beverage) {
+					return { isSuccess: false, error: '未选择酒水。' };
+				}
+				return updateAsset(beverage.spritePath, blob);
 			},
 			[beverage, updateAsset]
 		);

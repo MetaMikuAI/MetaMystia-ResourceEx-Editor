@@ -1,5 +1,5 @@
 import { cn } from '@heroui/theme';
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import Button from '@/design/ui/components/button';
 import Input from '@/design/ui/components/input';
@@ -42,7 +42,20 @@ export function SpriteSetEditor({
 	const [isDisableConfirmationOpen, setIsDisableConfirmationOpen] =
 		useState(false);
 	const [uploadError, setUploadError] = useState<string | null>(null);
-	const { getAssetUrl, updateAsset } = useResourceEditor();
+	const activeReadControllersRef = useRef(new Map<string, AbortController>());
+	const characterIdRef = useRef(characterId);
+	const isMountedRef = useRef(false);
+	const onUpdateRef = useRef(onUpdate);
+	const spriteSetRef = useRef(spriteSet);
+	characterIdRef.current = characterId;
+	onUpdateRef.current = onUpdate;
+	spriteSetRef.current = spriteSet;
+	const {
+		assets: { generation: assetGeneration },
+		getAssetUrl,
+		isAssetGenerationCurrent,
+		updateAsset,
+	} = useResourceEditor();
 	const {
 		isValid: isSpriteNamePrefixValid,
 		prefix: expectedPrefix,
@@ -50,34 +63,67 @@ export function SpriteSetEditor({
 	} = useLabelPrefixValidation(spriteSet?.name || '');
 	const showPrefixWarning =
 		hasPackLabel && spriteSet && !isSpriteNamePrefixValid;
+	const isSpriteSetEnabled = spriteSet !== undefined;
 
 	const updateSpriteArray = (
 		field: 'mainSprite' | 'eyeSprite',
 		index: number,
 		value: string
 	) => {
-		if (!spriteSet) return;
-		const newArray = [...spriteSet[field]];
+		const currentSpriteSet = spriteSetRef.current;
+		if (!currentSpriteSet) return;
+		const newArray = [...currentSpriteSet[field]];
 		newArray[index] = value;
-		onUpdate({ [field]: newArray });
+		onUpdateRef.current({ [field]: newArray });
 	};
+
+	const invalidateUploads = useCallback(() => {
+		activeReadControllersRef.current.forEach((controller) =>
+			controller.abort()
+		);
+		activeReadControllersRef.current.clear();
+	}, []);
 
 	const handleUpload = async (
 		field: 'mainSprite' | 'eyeSprite',
 		index: number,
 		file: File
 	) => {
-		let dimensions;
-		try {
-			dimensions = await readImageDimensions(file);
-		} catch {
-			setUploadError('无法读取角色小人贴图尺寸。');
+		const uploadKey = `${field}:${index}`;
+		activeReadControllersRef.current.get(uploadKey)?.abort();
+		if (file.type !== 'image/png') {
+			activeReadControllersRef.current.delete(uploadKey);
+			setUploadError('请选择PNG格式的角色小人贴图。');
 			return;
 		}
+		const operationAssetGeneration = assetGeneration;
+		const operationCharacterId = characterId;
+		const readController = new AbortController();
+		activeReadControllersRef.current.set(uploadKey, readController);
+		const isUploadActive = () =>
+			isMountedRef.current &&
+			activeReadControllersRef.current.get(uploadKey) ===
+				readController &&
+			isAssetGenerationCurrent(operationAssetGeneration) &&
+			characterIdRef.current === operationCharacterId &&
+			spriteSetRef.current !== undefined;
+		setUploadError(null);
+		let dimensions;
+		try {
+			dimensions = await readImageDimensions(file, readController.signal);
+		} catch {
+			if (isUploadActive()) {
+				setUploadError('无法读取角色小人贴图尺寸。');
+				activeReadControllersRef.current.delete(uploadKey);
+			}
+			return;
+		}
+		if (!isUploadActive()) return;
 		if (dimensions.width !== 64 || dimensions.height !== 64) {
 			setUploadError(
 				`错误：角色小人贴图尺寸必须为64×64，当前为${dimensions.width}×${dimensions.height}。`
 			);
+			activeReadControllersRef.current.delete(uploadKey);
 			return;
 		}
 		setUploadError(null);
@@ -93,10 +139,29 @@ export function SpriteSetEditor({
 			filename = `Eyes_${row}, ${col}.png`;
 		}
 
-		const path = `assets/Character/${characterId}/Sprite/${filename}`;
-		updateAsset(path, file);
+		const path = `assets/Character/${operationCharacterId}/Sprite/${filename}`;
+		const result = updateAsset(path, file);
+		if (!result.isSuccess) {
+			setUploadError(result.error ?? '无法更新角色小人贴图。');
+			activeReadControllersRef.current.delete(uploadKey);
+			return;
+		}
 		updateSpriteArray(field, index, path);
+		activeReadControllersRef.current.delete(uploadKey);
 	};
+
+	useEffect(() => {
+		isMountedRef.current = true;
+		return () => {
+			isMountedRef.current = false;
+			invalidateUploads();
+		};
+	}, [invalidateUploads]);
+
+	useEffect(() => {
+		invalidateUploads();
+		setUploadError(null);
+	}, [assetGeneration, characterId, invalidateUploads, isSpriteSetEnabled]);
 
 	return (
 		<EditorSection
@@ -215,11 +280,8 @@ export function SpriteSetEditor({
 											e.preventDefault();
 											const file =
 												e.dataTransfer.files?.[0];
-											if (
-												file &&
-												file.type === 'image/png'
-											) {
-												handleUpload(
+											if (file) {
+												void handleUpload(
 													'mainSprite',
 													i,
 													file
@@ -256,11 +318,12 @@ export function SpriteSetEditor({
 												const file =
 													e.target.files?.[0];
 												if (file)
-													handleUpload(
+													void handleUpload(
 														'mainSprite',
 														i,
 														file
 													);
+												e.target.value = '';
 											}}
 										/>
 									</label>
@@ -287,11 +350,8 @@ export function SpriteSetEditor({
 											e.preventDefault();
 											const file =
 												e.dataTransfer.files?.[0];
-											if (
-												file &&
-												file.type === 'image/png'
-											) {
-												handleUpload(
+											if (file) {
+												void handleUpload(
 													'eyeSprite',
 													i,
 													file
@@ -328,11 +388,12 @@ export function SpriteSetEditor({
 												const file =
 													e.target.files?.[0];
 												if (file)
-													handleUpload(
+													void handleUpload(
 														'eyeSprite',
 														i,
 														file
 													);
+												e.target.value = '';
 											}}
 										/>
 									</label>

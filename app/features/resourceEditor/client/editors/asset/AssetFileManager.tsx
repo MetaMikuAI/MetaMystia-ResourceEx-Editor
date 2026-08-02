@@ -7,22 +7,30 @@ import Button from '@/design/ui/components/button';
 import Input from '@/design/ui/components/input';
 import PressElement from '@/design/ui/components/pressElement';
 
+import { isValidPackLabel } from '@/domain/resourcePack/constants';
+
 import {
 	type AssetEntry,
 	buildAssetPathOperations,
 	collectAssetFolders,
+	expandAssetFolderSelection,
 	expandAssetSelection,
 	getAssetParentFolder,
 	getFolderStats,
+	hasAssetPathKindConflict,
 	joinAssetPath,
 	listAssetFolder,
 	normalizeAssetFilename,
 	normalizeAssetFolderPath,
 } from '@/features/resourceEditor/client/assets/assetPaths';
-import type { IAssetPathOperation } from '@/features/resourceEditor/client/assets/contracts';
+import type {
+	IAssetMutationResult,
+	IAssetPathOperation,
+} from '@/features/resourceEditor/client/assets/contracts';
 import { PlusIcon } from '@/features/resourceEditor/client/components/actions/PlusIcon';
 import { TrashIcon } from '@/features/resourceEditor/client/components/actions/TrashIcon';
 import { ConfirmDialog } from '@/features/resourceEditor/client/components/confirm/ConfirmDialog';
+import { ConfirmPopover } from '@/features/resourceEditor/client/components/confirm/ConfirmPopover';
 import { Label } from '@/features/resourceEditor/client/components/fields/Label';
 import { ChevronRight } from '@/features/resourceEditor/client/components/icons/ChevronRight';
 import { EditorPanel } from '@/features/resourceEditor/client/components/layout/EditorPanel';
@@ -43,13 +51,17 @@ interface AssetFileManagerProps {
 	initialFolder?: string;
 	selectionMode?: 'manage' | 'select';
 	acceptedFileTypes?: string;
-	onUpload: (path: string, blob: Blob) => void;
+	isFileAccepted?: (path: string) => boolean;
+	onUpload: (path: string, blob: Blob) => IAssetMutationResult;
+	onUploadMany?: (updates: ReadonlyMap<string, Blob>) => IAssetMutationResult;
 	onRemove: (paths: string[]) => void;
-	onCreateFolder?: (path: string) => void;
+	onCreateFolder?: (path: string) => IAssetMutationResult;
 	onRemoveFolders?: (paths: string[]) => void;
 	onMove: (operations: IAssetPathOperation[]) => void;
 	onCopy: (operations: IAssetPathOperation[]) => void;
 	onSelectFile?: (path: string) => void;
+	onFolderChange?: (folder: string) => void;
+	referencedPaths?: ReadonlySet<string>;
 	className?: string;
 }
 
@@ -136,6 +148,26 @@ function AssetEntrySelectionButton({
 	onOpen,
 	onSelect,
 }: IAssetEntrySelectionButtonProps) {
+	const isTouchPointerRef = useRef(false);
+	const touchResetTimerRef = useRef<number | null>(null);
+
+	const clearTouchPointer = () => {
+		if (touchResetTimerRef.current !== null) {
+			window.clearTimeout(touchResetTimerRef.current);
+			touchResetTimerRef.current = null;
+		}
+		isTouchPointerRef.current = false;
+	};
+
+	useEffect(
+		() => () => {
+			if (touchResetTimerRef.current !== null) {
+				window.clearTimeout(touchResetTimerRef.current);
+			}
+		},
+		[]
+	);
+
 	return (
 		<PressElement
 			as="div"
@@ -143,7 +175,31 @@ function AssetEntrySelectionButton({
 			tabIndex={0}
 			aria-label={`选择${ASSET_KIND_LABELS[entry.kind]}${entry.name}`}
 			aria-pressed={isSelected}
-			onPress={(event) => onSelect(event.ctrlKey || event.metaKey)}
+			onBlur={clearTouchPointer}
+			onContextMenu={clearTouchPointer}
+			onLostPointerCapture={clearTouchPointer}
+			onPointerCancel={clearTouchPointer}
+			onPointerDown={(event) => {
+				clearTouchPointer();
+				isTouchPointerRef.current = event.pointerType === 'touch';
+			}}
+			onPointerLeave={clearTouchPointer}
+			onPointerUp={() => {
+				if (!isTouchPointerRef.current) {
+					return;
+				}
+
+				touchResetTimerRef.current = window.setTimeout(() => {
+					isTouchPointerRef.current = false;
+					touchResetTimerRef.current = null;
+				}, 0);
+			}}
+			onPress={(event) => {
+				const isAdditive =
+					event.ctrlKey || event.metaKey || isTouchPointerRef.current;
+				clearTouchPointer();
+				onSelect(isAdditive);
+			}}
 			{...(onOpen === undefined ? {} : { onDoubleClick: onOpen })}
 			className={cn(
 				'absolute inset-0 z-0 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus motion-reduce:transition-none',
@@ -166,8 +222,12 @@ function getStoredViewMode(): ViewMode {
 	return stored === 'list' || stored === 'grid' ? stored : 'grid';
 }
 
-function buildRexUri(packLabel: string | undefined, path: string): string {
-	const label = packLabel?.trim() || 'packlabel';
+function buildRexUri(
+	packLabel: string | undefined,
+	path: string
+): string | null {
+	const label = packLabel?.trim();
+	if (!label || !isValidPackLabel(label)) return null;
 	return `rex://${label}/${path}`;
 }
 
@@ -199,6 +259,33 @@ function buildUploadPath(
 	return joinAssetPath(uploadFolder ?? targetFolder, filename);
 }
 
+function buildMergeConfirmation(
+	operations: readonly IAssetPathOperation[],
+	assetUrls: Readonly<Record<string, string>>,
+	knownFolders: readonly string[],
+	actionLabel: '复制' | '移动'
+): IConfirmationRequest | null {
+	const overwrittenFiles = operations.filter(
+		({ to }) => !to.endsWith('/') && Boolean(assetUrls[to])
+	).length;
+	const mergedFolders = operations.filter(
+		({ to }) => to.endsWith('/') && knownFolders.includes(to)
+	).length;
+	if (overwrittenFiles === 0 && mergedFolders === 0) return null;
+	if (mergedFolders > 0) {
+		return {
+			title: '合并同名目录？',
+			description: `目标位置已有同名目录。将合并目录，保留仅存在于目标位置的内容，并用${actionLabel}的内容覆盖${overwrittenFiles}个同路径文件。`,
+			confirmLabel: `合并并${actionLabel}`,
+		};
+	}
+	return {
+		title: '覆盖同名文件？',
+		description: `将覆盖${overwrittenFiles}个同名文件。`,
+		confirmLabel: `继续${actionLabel}`,
+	};
+}
+
 export const AssetFileManager = memo<AssetFileManagerProps>(
 	function AssetFileManager({
 		assetUrls,
@@ -208,13 +295,17 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 		initialFolder = root,
 		selectionMode = 'manage',
 		acceptedFileTypes = '*/*',
+		isFileAccepted,
 		onUpload,
+		onUploadMany,
 		onRemove,
 		onCreateFolder,
 		onRemoveFolders,
 		onMove,
 		onCopy,
 		onSelectFile,
+		onFolderChange,
+		referencedPaths,
 		className,
 	}) {
 		const normalizedRoot = useMemo(
@@ -326,41 +417,107 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 		const knownFolders = useMemo(() => {
 			const folders = new Set([
 				...collectAssetFolders(assetPaths, normalizedRoot),
-				...(assetFolders ?? []),
+				...(assetFolders ?? []).filter((folder) =>
+					folder.startsWith(normalizedRoot)
+				),
 			]);
 			return Array.from(folders).sort((a, b) =>
 				a.localeCompare(b, 'zh-CN')
 			);
 		}, [assetFolders, assetPaths, normalizedRoot]);
+		const availablePaths = useMemo(
+			() => new Set([...assetPaths, ...knownFolders]),
+			[assetPaths, knownFolders]
+		);
 
 		const entries = useMemo(() => {
-			return listAssetFolder(
+			const listedEntries = listAssetFolder(
 				assetUrls,
 				currentFolder,
 				normalizedRoot,
 				new Set(assetFolders ?? [])
 			);
-		}, [assetFolders, assetUrls, currentFolder, normalizedRoot]);
+			if (selectionMode !== 'select' || !isFileAccepted) {
+				return listedEntries;
+			}
+			return listedEntries.filter(
+				(entry) => entry.kind === 'folder' || isFileAccepted(entry.path)
+			);
+		}, [
+			assetFolders,
+			assetUrls,
+			currentFolder,
+			isFileAccepted,
+			normalizedRoot,
+			selectionMode,
+		]);
 
 		const selectedAssetPaths = useMemo(
 			() => expandAssetSelection(selectedPaths, assetPaths),
 			[selectedPaths, assetPaths]
 		);
+		const selectedFolderPaths = useMemo(
+			() => expandAssetFolderSelection(selectedPaths, knownFolders),
+			[knownFolders, selectedPaths]
+		);
+		const selectedReferencedCount = useMemo(
+			() =>
+				selectedAssetPaths.filter((path) => referencedPaths?.has(path))
+					.length,
+			[referencedPaths, selectedAssetPaths]
+		);
 
 		const stats = useMemo(
-			() => getFolderStats(assetUrls, currentFolder, normalizedRoot),
-			[assetUrls, currentFolder, normalizedRoot]
+			() =>
+				getFolderStats(
+					assetUrls,
+					currentFolder,
+					normalizedRoot,
+					new Set(assetFolders ?? []),
+					selectionMode === 'select' ? isFileAccepted : undefined
+				),
+			[
+				assetFolders,
+				assetUrls,
+				currentFolder,
+				isFileAccepted,
+				normalizedRoot,
+				selectionMode,
+			]
 		);
+		const hasFilteredEntries =
+			selectionMode === 'select' &&
+			entries.length === 0 &&
+			getFolderStats(
+				assetUrls,
+				currentFolder,
+				normalizedRoot,
+				new Set(assetFolders ?? [])
+			).files > 0;
 
 		const moveTargetItems = useMemo<SelectItemSpec<string>[]>(
 			() =>
 				knownFolders
 					.filter((folder) => folder !== currentFolder)
-					.map((folder) => ({
-						value: folder,
-						label: formatFolderLabel(folder, normalizedRoot),
-					})),
-			[currentFolder, knownFolders, normalizedRoot]
+					.map((folder) => {
+						const isDescendant = Array.from(selectedPaths).some(
+							(selected) =>
+								selected.endsWith('/') &&
+								folder.startsWith(selected)
+						);
+						return {
+							value: folder,
+							label: formatFolderLabel(folder, normalizedRoot),
+							...(isDescendant
+								? {
+										description:
+											'不能使用自身或子目录作为目标',
+										isDisabled: true,
+									}
+								: {}),
+						};
+					}),
+			[currentFolder, knownFolders, normalizedRoot, selectedPaths]
 		);
 
 		const breadcrumbs = useMemo(() => {
@@ -389,9 +546,20 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 					normalizedRoot;
 				setCurrentFolder(normalized);
 				setSelectedPaths(new Set());
+				setOperationError(null);
+				onFolderChange?.(normalized);
 			},
-			[normalizedRoot]
+			[normalizedRoot, onFolderChange]
 		);
+
+		useEffect(() => {
+			const normalized =
+				normalizeAssetFolderPath(initialFolder, normalizedRoot) ??
+				normalizedRoot;
+			setCurrentFolder(normalized);
+			setSelectedPaths(new Set());
+			setOperationError(null);
+		}, [initialFolder, normalizedRoot]);
 
 		const uploadFiles = useCallback(
 			async (
@@ -400,45 +568,119 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 			) => {
 				if (!files || files.length === 0) return;
 				const operationId = beginOperation();
+				setOperationError(null);
 				const normalizedTarget =
 					normalizeAssetFolderPath(targetFolder, normalizedRoot) ??
 					currentFolder;
 
-				for (const file of Array.from(files)) {
-					if (!isOperationActive(operationId)) return;
-					if (!file.name) continue;
-					const path = buildUploadPath(
+				const candidates = Array.from(files)
+					.filter((file) => Boolean(file.name))
+					.map((file) => ({
 						file,
-						normalizedTarget,
-						normalizedRoot
+						path: buildUploadPath(
+							file,
+							normalizedTarget,
+							normalizedRoot
+						),
+					}));
+				const rejectedCandidate = candidates.find(
+					({ path }) => isFileAccepted && !isFileAccepted(path)
+				);
+				if (rejectedCandidate) {
+					setOperationError(
+						`文件${rejectedCandidate.path}的类型不符合当前选择要求，本次上传已取消。`
 					);
-					if (assetUrls[path]) {
-						if (!isOperationActive(operationId)) return;
-						const shouldOverwrite = await requestConfirmation(
-							{
-								title: '覆盖同名文件？',
-								description: `已存在同名文件 ${path}。`,
-								confirmLabel: '确认覆盖',
-							},
-							operationId
+					return;
+				}
+				const candidatePaths = new Set<string>();
+				for (const { path } of candidates) {
+					if (candidatePaths.has(path)) {
+						setOperationError(
+							`所选文件在规范化后产生重复路径${path}，本次上传已取消。`
 						);
-						if (!isOperationActive(operationId)) return;
-						if (!shouldOverwrite) continue;
+						return;
 					}
-					const arrayBuffer = await file.arrayBuffer();
-					if (!isOperationActive(operationId)) return;
-					const blob = new Blob([arrayBuffer], { type: file.type });
-					if (!isOperationActive(operationId)) return;
-					onUpload(path, blob);
+					candidatePaths.add(path);
+				}
+				let batchKindConflict: string | undefined;
+				for (const path of candidatePaths) {
+					const segments = path.split('/');
+					let parentPath = segments[0] ?? '';
+					for (let index = 1; index < segments.length; index++) {
+						if (candidatePaths.has(parentPath)) {
+							batchKindConflict = parentPath;
+							break;
+						}
+						parentPath += `/${segments[index]}`;
+					}
+					if (batchKindConflict) break;
+				}
+				if (batchKindConflict) {
+					setOperationError(
+						`所选文件中的路径${batchKindConflict}同时需要作为文件和目录，本次上传已取消。`
+					);
+					return;
+				}
+				const kindConflict = candidates.find(({ path }) =>
+					hasAssetPathKindConflict(
+						[{ from: path, to: path }],
+						assetPaths,
+						knownFolders
+					)
+				);
+				if (kindConflict) {
+					setOperationError(
+						`路径${kindConflict.path}与已有文件或目录冲突，本次上传已取消。`
+					);
+					return;
+				}
+				const existingCount = candidates.filter(({ path }) =>
+					Boolean(assetUrls[path])
+				).length;
+				if (existingCount > 0) {
+					const shouldOverwrite = await requestConfirmation(
+						{
+							title: '覆盖同名文件？',
+							description: `将覆盖${existingCount}个同名文件。`,
+							confirmLabel: '确认覆盖',
+						},
+						operationId
+					);
+					if (!isOperationActive(operationId) || !shouldOverwrite)
+						return;
+				}
+				if (!isOperationActive(operationId)) return;
+				const updates = new Map<string, Blob>(
+					candidates.map(({ file, path }) => [path, file])
+				);
+				if (onUploadMany) {
+					const result = onUploadMany(updates);
+					if (!result.isSuccess) {
+						setOperationError(result.error ?? '无法更新所选资产。');
+					}
+					return;
+				}
+				for (const [path, blob] of updates) {
+					const result = onUpload(path, blob);
+					if (!result.isSuccess) {
+						setOperationError(
+							result.error ?? `无法更新资产${path}。`
+						);
+						return;
+					}
 				}
 			},
 			[
+				assetPaths,
 				assetUrls,
 				beginOperation,
 				currentFolder,
+				isFileAccepted,
 				isOperationActive,
+				knownFolders,
 				normalizedRoot,
 				onUpload,
+				onUploadMany,
 				requestConfirmation,
 			]
 		);
@@ -455,13 +697,27 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 				setOperationError('请输入有效目录名。');
 				return;
 			}
+			if (knownFolders.includes(folder)) {
+				setOperationError('当前目录下已存在同名目录。');
+				return;
+			}
+			if (assetUrls[folder.slice(0, -1)]) {
+				setOperationError('当前目录下已存在同名文件，无法创建目录。');
+				return;
+			}
 			setOperationError(null);
-			onCreateFolder?.(folder);
+			const result = onCreateFolder?.(folder);
+			if (result && !result.isSuccess) {
+				setOperationError(result.error ?? '无法创建资产目录。');
+				return;
+			}
 			setNewFolderName('');
 			setIsCreateFolderOpen(false);
 			navigateTo(folder);
 		}, [
 			currentFolder,
+			assetUrls,
+			knownFolders,
 			navigateTo,
 			newFolderName,
 			normalizedRoot,
@@ -540,69 +796,81 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 			},
 			[writeClipboardText]
 		);
+		const handleCopyRexUri = useCallback(
+			(path: string) => {
+				const uri = buildRexUri(packLabel, path);
+				if (uri) void copyText(`uri:${path}`, uri);
+			},
+			[copyText, packLabel]
+		);
 
-		const handleDelete = useCallback(async () => {
+		const handleDelete = useCallback(() => {
 			if (selectedPaths.size === 0) return;
-			const operationId = beginOperation();
-			const expanded = expandAssetSelection(selectedPaths, assetPaths);
-			const folders = Array.from(selectedPaths).filter((path) =>
-				path.endsWith('/')
-			);
-			if (!isOperationActive(operationId)) return;
-			const shouldDelete = await requestConfirmation(
-				{
-					title: '确定删除选中的资产吗？',
-					description: `将删除${expanded.length}个文件和${folders.length}个目录。此操作不可撤销。`,
-					confirmLabel: '确认删除',
-				},
-				operationId
-			);
-			if (!isOperationActive(operationId)) return;
-			if (!shouldDelete) return;
-			if (!isOperationActive(operationId)) return;
-			if (expanded.length > 0) onRemove(expanded);
-			if (!isOperationActive(operationId)) return;
-			if (folders.length > 0) onRemoveFolders?.(folders);
-			if (!isOperationActive(operationId)) return;
+			if (selectedAssetPaths.length > 0) onRemove(selectedAssetPaths);
+			if (selectedFolderPaths.length > 0)
+				onRemoveFolders?.(selectedFolderPaths);
 			setSelectedPaths(new Set());
 		}, [
-			assetPaths,
-			beginOperation,
-			isOperationActive,
 			onRemove,
 			onRemoveFolders,
-			requestConfirmation,
+			selectedAssetPaths,
+			selectedFolderPaths,
 			selectedPaths,
 		]);
 
 		const handleClipboardPaste = useCallback(async () => {
 			if (!clipboard) return;
 			const operationId = beginOperation();
+			if (
+				Array.from(clipboard.paths).some(
+					(path) => !availablePaths.has(path)
+				)
+			) {
+				setOperationError(
+					'剪贴板中的部分资产已不存在，请重新选择后复制或移动。'
+				);
+				setClipboard(null);
+				return;
+			}
 			const operations = buildAssetPathOperations(
 				clipboard.paths,
 				assetPaths,
 				currentFolder,
-				clipboard.mode
+				knownFolders,
+				clipboard.mode,
+				normalizedRoot
 			);
 			if (!operations) {
-				setOperationError('目标路径无效或存在冲突，请选择其他目录。');
+				setOperationError(
+					'无法复制或移动到自身或子目录，请选择其他目录。'
+				);
 				return;
 			}
 			if (operations.length === 0) {
-				setClipboard(null);
+				setOperationError('所选资产已位于当前目录。');
+				if (clipboard.mode === 'move') {
+					setClipboard(null);
+				}
 				return;
 			}
-			const existingTargets = operations.filter((operation) =>
-				Boolean(assetUrls[operation.to])
+			if (
+				hasAssetPathKindConflict(operations, assetPaths, knownFolders)
+			) {
+				setOperationError(
+					'目标位置存在同名的文件或目录，无法完成粘贴。'
+				);
+				return;
+			}
+			const confirmationRequest = buildMergeConfirmation(
+				operations,
+				assetUrls,
+				knownFolders,
+				clipboard.mode === 'copy' ? '复制' : '移动'
 			);
-			if (existingTargets.length > 0) {
+			if (confirmationRequest) {
 				if (!isOperationActive(operationId)) return;
 				const shouldOverwrite = await requestConfirmation(
-					{
-						title: '覆盖同名文件？',
-						description: `将覆盖${existingTargets.length}个同名文件。`,
-						confirmLabel: '继续粘贴',
-					},
+					confirmationRequest,
 					operationId
 				);
 				if (!isOperationActive(operationId)) return;
@@ -614,15 +882,18 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 			if (clipboard.mode === 'copy') onCopy(operations);
 			else onMove(operations);
 			if (!isOperationActive(operationId)) return;
-			if (clipboard.mode === 'move') setClipboard(null);
+			setClipboard(null);
 			setSelectedPaths(new Set());
 		}, [
 			assetPaths,
 			assetUrls,
+			availablePaths,
 			beginOperation,
 			clipboard,
 			currentFolder,
 			isOperationActive,
+			knownFolders,
+			normalizedRoot,
 			onCopy,
 			onMove,
 			requestConfirmation,
@@ -635,23 +906,36 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 					selectedPaths,
 					assetPaths,
 					target,
-					'move'
+					knownFolders,
+					'move',
+					normalizedRoot
 				);
 				if (!operations) {
 					setOperationError('无法移动到自身或子目录。');
 					return;
 				}
-				const existingTargets = operations.filter((operation) =>
-					Boolean(assetUrls[operation.to])
+				if (
+					hasAssetPathKindConflict(
+						operations,
+						assetPaths,
+						knownFolders
+					)
+				) {
+					setOperationError(
+						'目标位置存在同名的文件或目录，无法完成移动。'
+					);
+					return;
+				}
+				const confirmationRequest = buildMergeConfirmation(
+					operations,
+					assetUrls,
+					knownFolders,
+					'移动'
 				);
-				if (existingTargets.length > 0) {
+				if (confirmationRequest) {
 					if (!isOperationActive(operationId)) return;
 					const shouldOverwrite = await requestConfirmation(
-						{
-							title: '覆盖同名文件？',
-							description: `将覆盖${existingTargets.length}个同名文件。`,
-							confirmLabel: '继续移动',
-						},
+						confirmationRequest,
 						operationId
 					);
 					if (!isOperationActive(operationId)) return;
@@ -669,7 +953,9 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 				assetUrls,
 				beginOperation,
 				isOperationActive,
+				knownFolders,
 				onMove,
+				normalizedRoot,
 				requestConfirmation,
 				selectedPaths,
 			]
@@ -682,7 +968,9 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 					selectedPaths,
 					assetPaths,
 					target,
-					'copy'
+					knownFolders,
+					'copy',
+					normalizedRoot
 				);
 				if (!operations) {
 					setOperationError(
@@ -690,17 +978,28 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 					);
 					return;
 				}
-				const existingTargets = operations.filter((operation) =>
-					Boolean(assetUrls[operation.to])
+				if (
+					hasAssetPathKindConflict(
+						operations,
+						assetPaths,
+						knownFolders
+					)
+				) {
+					setOperationError(
+						'目标位置存在同名的文件或目录，无法完成复制。'
+					);
+					return;
+				}
+				const confirmationRequest = buildMergeConfirmation(
+					operations,
+					assetUrls,
+					knownFolders,
+					'复制'
 				);
-				if (existingTargets.length > 0) {
+				if (confirmationRequest) {
 					if (!isOperationActive(operationId)) return;
 					const shouldOverwrite = await requestConfirmation(
-						{
-							title: '覆盖同名文件？',
-							description: `将覆盖${existingTargets.length}个同名文件。`,
-							confirmLabel: '继续复制',
-						},
+						confirmationRequest,
 						operationId
 					);
 					if (!isOperationActive(operationId)) return;
@@ -718,7 +1017,9 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 				assetUrls,
 				beginOperation,
 				isOperationActive,
+				knownFolders,
 				onCopy,
+				normalizedRoot,
 				requestConfirmation,
 				selectedPaths,
 			]
@@ -755,6 +1056,7 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 		);
 
 		const isSelectOnly = selectionMode === 'select';
+		const canCopyRexUri = buildRexUri(packLabel, '') !== null;
 
 		useEffect(() => {
 			if (!isCreateFolderOpen) return;
@@ -932,6 +1234,7 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 											folderInputRef.current?.click()
 										}
 										className="min-h-11 rounded-medium px-3 text-xs sm:min-h-8"
+										title="浏览器不会提供空目录；请使用“新建文件夹”单独创建"
 									>
 										上传目录
 									</Button>
@@ -949,6 +1252,7 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 									<input
 										ref={folderInputRef}
 										type="file"
+										accept={acceptedFileTypes}
 										multiple
 										className="hidden"
 										onChange={(e) => {
@@ -1026,6 +1330,15 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 							已选择{selectedPaths.size}项
 							{selectedAssetPaths.length > 0 &&
 								`，包含${selectedAssetPaths.length}个文件`}
+							{clipboard && (
+								<span className="ml-2 text-primary-600">
+									· 已
+									{clipboard.mode === 'copy'
+										? '复制'
+										: '移动'}
+									{clipboard.paths.size}项，等待粘贴
+								</span>
+							)}
 						</div>
 						<div className="flex w-full flex-wrap gap-1 sm:w-auto sm:justify-end">
 							{isSelectOnly &&
@@ -1113,19 +1426,47 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 										className="rounded-medium px-2 py-0 text-xs"
 										menuMaxHeight={320}
 									/>
-									<Button
-										color="danger"
-										variant="flat"
-										size="sm"
-										startContent={
-											<TrashIcon className="h-3.5 w-3.5" />
+									<ConfirmPopover
+										trigger={
+											<Button
+												color="danger"
+												variant="flat"
+												size="sm"
+												startContent={
+													<TrashIcon className="h-3.5 w-3.5" />
+												}
+												isDisabled={
+													selectedPaths.size === 0
+												}
+												className="h-10 rounded-medium px-3 text-xs sm:h-8"
+											>
+												删除
+											</Button>
 										}
-										onPress={handleDelete}
-										isDisabled={selectedPaths.size === 0}
-										className="h-10 rounded-medium px-3 text-xs sm:h-8"
-									>
-										删除
-									</Button>
+										title="确定删除选中的资产吗？"
+										description={
+											<>
+												将删除
+												{selectedAssetPaths.length}
+												个文件和
+												{selectedFolderPaths.length}
+												个目录。
+												{selectedReferencedCount >
+													0 && (
+													<>
+														<br />
+														其中
+														{
+															selectedReferencedCount
+														}
+														个文件正被ResourceEx.json引用，删除后校验将报错。
+													</>
+												)}
+												此操作不可撤销。
+											</>
+										}
+										onConfirm={handleDelete}
+									/>
 								</>
 							)}
 						</div>
@@ -1133,8 +1474,16 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 
 					{entries.length === 0 ? (
 						<EmptyState
-							title="此目录为空"
-							description="点击上传文件、上传目录，或将文件拖拽到本面板。"
+							title={
+								hasFilteredEntries
+									? '没有符合要求的资产'
+									: '此目录为空'
+							}
+							description={
+								hasFilteredEntries
+									? '当前目录中的文件类型不符合选择要求，请切换目录或上传受支持的文件。'
+									: '点击上传文件、上传目录，或将文件拖拽到本面板中以上传'
+							}
 							className="my-auto"
 						/>
 					) : viewMode === 'grid' ? (
@@ -1217,13 +1566,12 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 														variant="bordered"
 														size="sm"
 														onPress={() =>
-															copyText(
-																`uri:${entry.path}`,
-																buildRexUri(
-																	packLabel,
-																	entry.path
-																)
+															handleCopyRexUri(
+																entry.path
 															)
+														}
+														isDisabled={
+															!canCopyRexUri
 														}
 														className={cn(
 															'h-8 min-w-0 rounded-medium border-divider px-2 font-mono text-xs',
@@ -1231,7 +1579,11 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 																`uri:${entry.path}` &&
 																'border-success text-success'
 														)}
-														title="复制rex:// URI"
+														title={
+															canCopyRexUri
+																? '复制rex:// URI'
+																: '请先设置有效的资源包标识符'
+														}
 													>
 														{copiedKey ===
 														`uri:${entry.path}`
@@ -1338,21 +1690,22 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 													variant="bordered"
 													size="sm"
 													onPress={() =>
-														copyText(
-															`uri:${entry.path}`,
-															buildRexUri(
-																packLabel,
-																entry.path
-															)
+														handleCopyRexUri(
+															entry.path
 														)
 													}
+													isDisabled={!canCopyRexUri}
 													className={cn(
 														'h-8 min-w-0 rounded-medium border-divider px-2 font-mono text-xs',
 														copiedKey ===
 															`uri:${entry.path}` &&
 															'border-success text-success'
 													)}
-													title="复制rex:// URI"
+													title={
+														canCopyRexUri
+															? '复制rex://URI'
+															: '请先设置有效的资源包标识符'
+													}
 												>
 													{copiedKey ===
 													`uri:${entry.path}`
@@ -1361,9 +1714,16 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 												</Button>
 											</>
 										) : (
-											<span className="text-xs text-foreground-500">
-												目录
-											</span>
+											<Button
+												variant="flat"
+												size="sm"
+												onPress={() =>
+													handleEntryOpen(entry)
+												}
+												className="h-10 min-w-20 rounded-medium px-3 text-xs sm:h-8"
+											>
+												打开
+											</Button>
 										)}
 									</div>
 								</div>

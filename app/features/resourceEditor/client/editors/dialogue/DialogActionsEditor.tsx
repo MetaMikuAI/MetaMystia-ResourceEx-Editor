@@ -3,6 +3,11 @@ import { memo, useCallback, useId, useMemo, useState } from 'react';
 import Button from '@/design/ui/components/button';
 import Input from '@/design/ui/components/input';
 
+import {
+	IMAGE_ASSET_FILE_ACCEPT,
+	isImageAssetPath,
+	isWavAssetPath,
+} from '@/domain/resourcePack/assetTypes';
 import type {
 	Dialog,
 	DialogAction,
@@ -10,6 +15,7 @@ import type {
 	DialogBranchOption,
 } from '@/domain/resourcePack/contracts/dialogue';
 
+import { getAssetReferenceStatus } from '@/features/resourceEditor/client/assets/assetPaths';
 import { SectionAddButton } from '@/features/resourceEditor/client/components/actions/SectionAddButton';
 import { SectionDeleteButton } from '@/features/resourceEditor/client/components/actions/SectionDeleteButton';
 import { Label } from '@/features/resourceEditor/client/components/fields/Label';
@@ -298,7 +304,9 @@ const SpriteActionFields = memo<SpriteActionFieldsProps>(
 
 		const availableAssets = useMemo(() => {
 			return Object.keys(assetUrls)
-				.filter((path) => path.startsWith(folder))
+				.filter(
+					(path) => path.startsWith(folder) && isImageAssetPath(path)
+				)
 				.sort();
 		}, [assetUrls, folder]);
 
@@ -307,26 +315,39 @@ const SpriteActionFields = memo<SpriteActionFieldsProps>(
 				? getAssetUrl(action.sprite)
 				: undefined;
 
-		const isMissing =
-			mode === 'set' &&
-			!!action.sprite &&
-			!availableAssets.includes(action.sprite);
+		const spriteStatus = getAssetReferenceStatus(
+			mode === 'set' ? action.sprite : undefined,
+			assetUrls,
+			folder,
+			isImageAssetPath
+		);
+		const spriteIssueLabel = spriteStatus.isMissing
+			? '缺失'
+			: spriteStatus.isUnsupportedType
+				? '格式不支持'
+				: spriteStatus.isOutsideRecommendedFolder
+					? '不在推荐目录'
+					: null;
+		const isSpriteInvalid =
+			spriteStatus.isMissing || spriteStatus.isUnsupportedType;
 
 		const spriteItems = useMemo<SelectItemSpec<string>[]>(() => {
 			const items: SelectItemSpec<string>[] = [
 				{ value: '', label: '请选择资产…' },
 			];
-			if (isMissing && action.sprite) {
+			if (action.sprite && !availableAssets.includes(action.sprite)) {
 				items.push({
 					value: action.sprite,
-					label: `${action.sprite}（缺失）`,
+					label: spriteIssueLabel
+						? `${action.sprite}（${spriteIssueLabel}）`
+						: action.sprite,
 				});
 			}
 			for (const path of availableAssets) {
 				items.push({ value: path, label: path.slice(folder.length) });
 			}
 			return items;
-		}, [availableAssets, action.sprite, isMissing, folder]);
+		}, [availableAssets, action.sprite, folder, spriteIssueLabel]);
 
 		const [isPickerOpen, setIsPickerOpen] = useState(false);
 
@@ -384,8 +405,14 @@ const SpriteActionFields = memo<SpriteActionFieldsProps>(
 								<Label htmlFor={selectId} size="sm">
 									资产路径（来自{folder}）
 								</Label>
-								{isMissing && (
-									<WarningBadge>资产未注册</WarningBadge>
+								{spriteIssueLabel && (
+									<WarningBadge>
+										{spriteStatus.isMissing
+											? '资产未注册'
+											: spriteStatus.isUnsupportedType
+												? '图片格式不支持'
+												: '不在推荐目录'}
+									</WarningBadge>
 								)}
 							</div>
 							<div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
@@ -393,7 +420,7 @@ const SpriteActionFields = memo<SpriteActionFieldsProps>(
 									id={selectId}
 									ariaLabel="资产路径"
 									size="sm"
-									isInvalid={isMissing}
+									isInvalid={isSpriteInvalid}
 									placeholder="请选择资产…"
 									value={action.sprite ?? ''}
 									onChange={(v) =>
@@ -422,7 +449,9 @@ const SpriteActionFields = memo<SpriteActionFieldsProps>(
 				)}
 
 				<AssetPickerDialog
+					acceptedFileTypes={IMAGE_ASSET_FILE_ACCEPT}
 					open={isPickerOpen}
+					isFileAccepted={isImageAssetPath}
 					onClose={() => setIsPickerOpen(false)}
 					onSelect={(path) => onUpdate({ sprite: path })}
 					initialFolder={folder}
@@ -679,30 +708,47 @@ const SoundActionFields = memo<SoundActionFieldsProps>(
 
 		const availableAssets = useMemo(() => {
 			return Object.keys(assetUrls)
-				.filter((path) => path.startsWith(folder))
+				.filter(
+					(path) => path.startsWith(folder) && isWavAssetPath(path)
+				)
 				.sort();
 		}, [assetUrls, folder]);
 
 		const previewUrl = action.sound ? getAssetUrl(action.sound) : undefined;
 
-		const isMissing =
-			!!action.sound && !availableAssets.includes(action.sound);
+		const soundStatus = getAssetReferenceStatus(
+			action.sound,
+			assetUrls,
+			folder,
+			isWavAssetPath
+		);
+		const soundIssueLabel = soundStatus.isMissing
+			? '缺失'
+			: soundStatus.isUnsupportedType
+				? '格式不支持'
+				: soundStatus.isOutsideRecommendedFolder
+					? '不在推荐目录'
+					: null;
+		const isSoundInvalid =
+			soundStatus.isMissing || soundStatus.isUnsupportedType;
 
 		const soundItems = useMemo<SelectItemSpec<string>[]>(() => {
 			const items: SelectItemSpec<string>[] = [
 				{ value: '', label: '请选择音频…' },
 			];
-			if (isMissing && action.sound) {
+			if (action.sound && !availableAssets.includes(action.sound)) {
 				items.push({
 					value: action.sound,
-					label: `${action.sound}（缺失）`,
+					label: soundIssueLabel
+						? `${action.sound}（${soundIssueLabel}）`
+						: action.sound,
 				});
 			}
 			for (const path of availableAssets) {
 				items.push({ value: path, label: path.slice(folder.length) });
 			}
 			return items;
-		}, [availableAssets, action.sound, isMissing, folder]);
+		}, [availableAssets, action.sound, folder, soundIssueLabel]);
 
 		return (
 			<div className="flex flex-col gap-2">
@@ -711,14 +757,22 @@ const SoundActionFields = memo<SoundActionFieldsProps>(
 						<Label htmlFor={selectId} size="sm">
 							音频路径（来自{folder}，仅支持.wav）
 						</Label>
-						{isMissing && <WarningBadge>资产未注册</WarningBadge>}
+						{soundIssueLabel && (
+							<WarningBadge>
+								{soundStatus.isMissing
+									? '资产未注册'
+									: soundStatus.isUnsupportedType
+										? '仅支持.wav'
+										: '不在推荐目录'}
+							</WarningBadge>
+						)}
 					</div>
 					<div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
 						<Select<string>
 							id={selectId}
 							ariaLabel="音频路径"
 							size="sm"
-							isInvalid={isMissing}
+							isInvalid={isSoundInvalid}
 							placeholder="请选择音频…"
 							value={action.sound ?? ''}
 							onChange={(v) =>
@@ -753,7 +807,9 @@ const SoundActionFields = memo<SoundActionFieldsProps>(
 				)}
 
 				<AssetPickerDialog
+					acceptedFileTypes=".wav"
 					open={isPickerOpen}
+					isFileAccepted={isWavAssetPath}
 					onClose={() => setIsPickerOpen(false)}
 					onSelect={(path) => onUpdate({ sound: path })}
 					initialFolder={folder}

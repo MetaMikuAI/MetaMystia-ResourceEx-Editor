@@ -3,9 +3,15 @@ export interface IAssetPathOperation {
 	to: string;
 }
 
+export interface IAssetMutationResult {
+	isSuccess: boolean;
+	error?: string;
+}
+
 export interface IAssetState {
-	urls: Readonly<Record<string, string>>;
 	folders: readonly string[];
+	generation: number;
+	urls: Readonly<Record<string, string>>;
 }
 
 export interface IAssetSnapshot {

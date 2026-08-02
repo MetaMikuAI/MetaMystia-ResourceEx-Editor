@@ -39,8 +39,8 @@ export const FoodEditor = memo<FoodEditorProps>(function FoodEditor({
 
 	const handleSpriteUpdate = useCallback(
 		(blob: Blob) => {
-			if (!food) return;
-			updateAsset(food.spritePath, blob);
+			if (!food) return { isSuccess: false, error: '未选择料理。' };
+			return updateAsset(food.spritePath, blob);
 		},
 		[food, updateAsset]
 	);
