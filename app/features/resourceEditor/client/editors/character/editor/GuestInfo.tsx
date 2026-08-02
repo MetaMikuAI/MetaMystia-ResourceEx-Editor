@@ -65,7 +65,11 @@ export function GuestInfoEditor({
 			newTags = currentTags.filter((t) => t.tagId !== tagId);
 		} else {
 			newTags = [...currentTags, { tagId, weight: 1 }];
-			const newRequest = { tagId, request: '', enable: true };
+			const newRequest = {
+				tagId,
+				request: '',
+				enable: field === 'likeFoodTag',
+			};
 			if (field === 'likeFoodTag') {
 				newFoodRequests = newFoodRequests.some(
 					(request) => request.tagId === tagId
@@ -82,7 +86,7 @@ export function GuestInfoEditor({
 				)
 					? newBevRequests.map((request) =>
 							request.tagId === tagId
-								? { ...request, enable: true }
+								? { ...request, enable: false }
 								: request
 						)
 					: [...newBevRequests, newRequest];
@@ -546,9 +550,7 @@ export function GuestInfoEditor({
 						<div className="ml-1 flex min-w-0 flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between">
 							<Label
 								wrapperClassName="min-w-0"
-								tip={
-									'根据上方喜爱料理自动同步，在下方为每个标签编写具体的点单请求文本，也可以禁用某些标签的点单请求，游戏会使用默认文本如：“请给我辣的料理”'
-								}
+								tip="根据上方喜爱料理自动同步。选择标签后默认开启自定义请求文案；关闭开关后将使用游戏默认请求文案。"
 							>
 								料理点单请求（Food Requests）
 							</Label>
@@ -563,7 +565,7 @@ export function GuestInfoEditor({
 									const req = guest?.foodRequests?.find(
 										(r) => r.tagId === tag.tagId
 									);
-									const isEnabled = req?.enable ?? false;
+									const isEnabled = req?.enable ?? true;
 									return (
 										<div
 											key={tag.tagId}
@@ -577,7 +579,7 @@ export function GuestInfoEditor({
 											<div className="flex shrink-0 items-center gap-3 sm:w-40">
 												<Switch
 													size="sm"
-													aria-label={`启用${FOOD_TAG_MAP[tag.tagId] || tag.tagId}料理点单请求`}
+													aria-label={`使用${FOOD_TAG_MAP[tag.tagId] || tag.tagId}料理自定义请求文案`}
 													isSelected={isEnabled}
 													onValueChange={(
 														isSelected
@@ -589,10 +591,7 @@ export function GuestInfoEditor({
 														);
 													}}
 												/>
-												<TagBadge
-													tone="positive"
-													isMuted={!isEnabled}
-												>
+												<TagBadge tone="positive">
 													{FOOD_TAG_MAP[tag.tagId] ||
 														tag.tagId}
 												</TagBadge>
@@ -614,7 +613,7 @@ export function GuestInfoEditor({
 													}}
 													placeholder={
 														!isEnabled
-															? '已禁用'
+															? '使用游戏默认请求文案'
 															: `请输入对“${
 																	FOOD_TAG_MAP[
 																		tag
@@ -641,7 +640,7 @@ export function GuestInfoEditor({
 						<div className="ml-1 flex min-w-0 flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between">
 							<Label
 								wrapperClassName="min-w-0"
-								tip="根据上方喜爱酒水自动同步，选择标签后默认启用，形如“请给我清酒的饮料”，也可以关闭或自定义文本"
+								tip="根据上方喜爱酒水自动同步。选择标签后默认使用游戏请求文案；开启开关后可填写自定义请求文案。"
 							>
 								酒水点单请求（Beverage Requests）
 							</Label>
@@ -670,7 +669,7 @@ export function GuestInfoEditor({
 											<div className="flex shrink-0 items-center gap-3 sm:w-40">
 												<Switch
 													size="sm"
-													aria-label={`启用${BEVERAGE_TAG_MAP[tag.tagId] || tag.tagId}酒水点单请求`}
+													aria-label={`使用${BEVERAGE_TAG_MAP[tag.tagId] || tag.tagId}酒水自定义请求文案`}
 													isSelected={isEnabled}
 													onValueChange={(
 														isSelected
@@ -682,10 +681,7 @@ export function GuestInfoEditor({
 														);
 													}}
 												/>
-												<TagBadge
-													tone="beverage"
-													isMuted={!isEnabled}
-												>
+												<TagBadge tone="beverage">
 													{
 														BEVERAGE_TAG_MAP[
 															tag.tagId
@@ -710,7 +706,7 @@ export function GuestInfoEditor({
 													}}
 													placeholder={
 														!isEnabled
-															? '已禁用'
+															? '使用游戏默认请求文案'
 															: `请输入对“${
 																	BEVERAGE_TAG_MAP[
 																		tag
