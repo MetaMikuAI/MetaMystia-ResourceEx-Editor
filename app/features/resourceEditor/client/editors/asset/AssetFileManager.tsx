@@ -5,6 +5,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import Button from '@/design/ui/components/button';
 import Input from '@/design/ui/components/input';
+import PressElement from '@/design/ui/components/pressElement';
 
 import {
 	type AssetEntry,
@@ -108,8 +109,7 @@ function FilePreview({ entry }: { entry: AssetEntry }) {
 					controls
 					src={entry.url}
 					preload="none"
-					className="h-8 w-full"
-					onClick={(e) => e.stopPropagation()}
+					className="pointer-events-auto h-8 w-full"
 				/>
 			</div>
 		);
@@ -118,6 +118,41 @@ function FilePreview({ entry }: { entry: AssetEntry }) {
 		<div className="flex h-full w-full items-center justify-center bg-content2/30">
 			<FileKindBadge kind={entry.kind} />
 		</div>
+	);
+}
+
+interface IAssetEntrySelectionButtonProps {
+	className?: string;
+	entry: AssetEntry;
+	isSelected: boolean;
+	onOpen?: () => void;
+	onSelect: (isAdditive: boolean) => void;
+}
+
+function AssetEntrySelectionButton({
+	className,
+	entry,
+	isSelected,
+	onOpen,
+	onSelect,
+}: IAssetEntrySelectionButtonProps) {
+	return (
+		<PressElement
+			as="div"
+			role="button"
+			tabIndex={0}
+			aria-label={`选择${ASSET_KIND_LABELS[entry.kind]}${entry.name}`}
+			aria-pressed={isSelected}
+			onPress={(event) => onSelect(event.ctrlKey || event.metaKey)}
+			{...(onOpen === undefined ? {} : { onDoubleClick: onOpen })}
+			className={cn(
+				'absolute inset-0 z-0 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus motion-reduce:transition-none',
+				isSelected
+					? 'data-[pressed=true]:bg-primary/10'
+					: 'hover:bg-default/30 data-[pressed=true]:bg-default/40',
+				className
+			)}
+		/>
 	);
 }
 
@@ -1107,28 +1142,34 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 							{entries.map((entry) => (
 								<div
 									key={entry.path}
-									onClick={(e) =>
-										selectEntry(
-											entry,
-											e.ctrlKey || e.metaKey
-										)
-									}
-									onDoubleClick={
-										entry.kind === 'folder' || isSelectOnly
-											? () => handleEntryOpen(entry)
-											: undefined
-									}
 									className={cn(
-										'group flex min-h-0 cursor-pointer flex-col overflow-hidden rounded-large border text-left transition-colors',
+										'relative flex min-h-0 flex-col overflow-hidden rounded-large border text-left transition-colors',
 										selectedPaths.has(entry.path)
 											? 'border-primary bg-primary/15'
-											: 'border-divider bg-content2/30 hover:border-primary/40 hover:bg-default/30'
+											: 'border-divider bg-content2/30'
 									)}
 									title={entry.path}
 								>
+									<AssetEntrySelectionButton
+										className="rounded-large hover:ring-1 hover:ring-inset hover:ring-primary/40"
+										entry={entry}
+										isSelected={selectedPaths.has(
+											entry.path
+										)}
+										onSelect={(isAdditive) =>
+											selectEntry(entry, isAdditive)
+										}
+										{...(entry.kind === 'folder' ||
+										isSelectOnly
+											? {
+													onOpen: () =>
+														handleEntryOpen(entry),
+												}
+											: {})}
+									/>
 									<div
 										className={cn(
-											'flex h-28 items-center justify-center overflow-hidden',
+											'pointer-events-none relative z-10 flex h-28 items-center justify-center overflow-hidden',
 											entry.kind === 'image' ||
 												entry.kind === 'file'
 												? 'bg-checkerboard'
@@ -1137,7 +1178,7 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 									>
 										<FilePreview entry={entry} />
 									</div>
-									<div className="flex min-w-0 flex-col gap-1 p-2">
+									<div className="pointer-events-none relative z-10 flex min-w-0 flex-col gap-1 p-2">
 										<div className="flex min-w-0 items-center gap-1.5">
 											<FileKindBadge kind={entry.kind} />
 											<span className="truncate text-xs font-semibold">
@@ -1147,12 +1188,7 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 										<span className="truncate font-mono text-xs text-foreground-500">
 											{entry.path}
 										</span>
-										<div
-											onClick={(event) =>
-												event.stopPropagation()
-											}
-											className="mt-1 flex flex-wrap gap-1"
-										>
+										<div className="pointer-events-auto mt-1 flex flex-wrap gap-1">
 											{entry.kind !== 'folder' && (
 												<>
 													<Button
@@ -1229,26 +1265,31 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 							{entries.map((entry) => (
 								<div
 									key={entry.path}
-									onClick={(e) =>
-										selectEntry(
-											entry,
-											e.ctrlKey || e.metaKey
-										)
-									}
-									onDoubleClick={
-										entry.kind === 'folder' || isSelectOnly
-											? () => handleEntryOpen(entry)
-											: undefined
-									}
 									className={cn(
-										'grid w-full cursor-pointer grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border-b border-divider px-3 py-3 text-left text-sm last:border-b-0 sm:grid-cols-[auto_minmax(0,1fr)_auto]',
+										'relative grid w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border-b border-divider px-3 py-3 text-left text-sm last:border-b-0 sm:grid-cols-[auto_minmax(0,1fr)_auto]',
 										selectedPaths.has(entry.path)
 											? 'bg-primary/15'
-											: 'hover:bg-default/30'
+											: ''
 									)}
 									title={entry.path}
 								>
-									<div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-medium bg-default/30">
+									<AssetEntrySelectionButton
+										entry={entry}
+										isSelected={selectedPaths.has(
+											entry.path
+										)}
+										onSelect={(isAdditive) =>
+											selectEntry(entry, isAdditive)
+										}
+										{...(entry.kind === 'folder' ||
+										isSelectOnly
+											? {
+													onOpen: () =>
+														handleEntryOpen(entry),
+												}
+											: {})}
+									/>
+									<div className="pointer-events-none relative z-10 flex h-10 w-10 items-center justify-center overflow-hidden rounded-medium bg-default/30">
 										{entry.kind === 'image' && entry.url ? (
 											<img
 												src={entry.url}
@@ -1260,7 +1301,7 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 											<FileKindBadge kind={entry.kind} />
 										)}
 									</div>
-									<div className="min-w-0">
+									<div className="pointer-events-none relative z-10 min-w-0">
 										<div className="truncate font-medium">
 											{entry.name}
 										</div>
@@ -1268,12 +1309,7 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 											{entry.path}
 										</div>
 									</div>
-									<div
-										onClick={(event) =>
-											event.stopPropagation()
-										}
-										className="col-span-2 flex flex-wrap items-center justify-end gap-1 sm:col-span-1"
-									>
+									<div className="pointer-events-auto relative z-10 col-span-2 flex flex-wrap items-center justify-end gap-1 sm:col-span-1">
 										{entry.kind !== 'folder' ? (
 											<>
 												<Button

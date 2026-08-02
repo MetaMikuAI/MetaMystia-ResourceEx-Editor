@@ -27,6 +27,7 @@ const config: Config = {
 		`./node_modules/@heroui/theme/dist/components/(${herouiComponents.join('|')}).js`,
 	],
 	darkMode: 'selector',
+	future: { hoverOnlyWhenSupported: true },
 	theme: { extend: getExtendConfig(), fontFamily },
 	plugins: [
 		heroui({

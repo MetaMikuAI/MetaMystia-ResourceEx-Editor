@@ -29,10 +29,10 @@ export const EditorCollectionItem = memo<PropsWithChildren<IProps>>(
 					isInvalid
 						? isSelected
 							? 'border-danger bg-danger/15'
-							: 'border-danger/40 bg-danger/10 hover:bg-danger/15'
+							: 'border-danger/40 bg-danger/10'
 						: isSelected
 							? 'border-primary bg-primary/15'
-							: 'border-divider bg-content1/20 hover:bg-default/30',
+							: 'border-divider bg-content1/20',
 					className
 				)}
 				data-editor-collection-item=""
@@ -41,7 +41,14 @@ export const EditorCollectionItem = memo<PropsWithChildren<IProps>>(
 				<Button
 					variant="light"
 					onPress={onSelect}
-					className="h-auto min-h-20 min-w-0 flex-1 justify-start rounded-none px-4 py-3 text-left text-foreground data-[hover=true]:!bg-transparent data-[pressed=true]:!bg-transparent data-[hover=true]:!backdrop-blur-none data-[pressed=true]:!backdrop-blur-none"
+					className={cn(
+						'h-auto min-h-20 min-w-0 flex-1 justify-start rounded-none px-4 py-3 text-left text-foreground data-[hover=true]:!backdrop-blur-none data-[pressed=true]:!backdrop-blur-none',
+						isSelected
+							? 'data-[hover=true]:!bg-transparent data-[pressed=true]:!bg-transparent'
+							: isInvalid
+								? 'data-[hover=true]:!bg-danger/15 data-[pressed=true]:!bg-danger/20'
+								: 'data-[hover=true]:!bg-default/30 data-[pressed=true]:!bg-default/40'
+					)}
 				>
 					<div className="w-full min-w-0">{children}</div>
 				</Button>

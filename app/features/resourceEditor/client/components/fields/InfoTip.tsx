@@ -4,6 +4,7 @@ import { InfoIcon } from '@heroui/shared-icons';
 import { cn } from '@heroui/theme';
 import { memo, type ReactNode } from 'react';
 
+import Button from '@/design/ui/components/button';
 import Popover, {
 	PopoverContent,
 	PopoverTrigger,
@@ -21,16 +22,18 @@ export const InfoTip = memo<IProps>(function InfoTip({ children, className }) {
 			<Tooltip content={children} showArrow size="sm">
 				<span className="inline-flex">
 					<PopoverTrigger>
-						<button
-							type="button"
+						<Button
+							isIconOnly
+							size="sm"
+							variant="light"
 							aria-label="查看说明"
 							className={cn(
-								'inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-medium text-foreground-500 transition-colors hover:bg-default/40 hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none',
+								'h-6 min-h-6 w-6 min-w-6 shrink-0 rounded-medium text-foreground-500 data-[hover=true]:bg-default/40 data-[hover=true]:text-foreground',
 								className
 							)}
 						>
 							<InfoIcon className="h-4 w-4" />
-						</button>
+						</Button>
 					</PopoverTrigger>
 				</span>
 			</Tooltip>

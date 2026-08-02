@@ -86,7 +86,7 @@ export function AssetEditorScreen() {
 								'h-auto min-h-16 shrink-0 flex-col items-stretch whitespace-normal border px-3 py-2 text-left text-foreground',
 								activeFolder === folder.path
 									? 'border-primary bg-primary/15'
-									: 'border-divider bg-content2/30 hover:border-primary/40 hover:bg-default/40'
+									: 'border-divider bg-content2/30 data-[hover=true]:border-primary/40 data-[hover=true]:bg-default/40'
 							)}
 						>
 							<div className="text-sm font-bold">
