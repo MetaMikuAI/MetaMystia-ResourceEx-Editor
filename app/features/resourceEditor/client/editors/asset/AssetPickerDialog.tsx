@@ -2,8 +2,7 @@
 
 import { memo, useCallback } from 'react';
 
-import Modal from '@/design/ui/components/modal';
-
+import { CoordinatedModal } from '@/features/overlays/client';
 import type { IAssetPathOperation } from '@/features/resourceEditor/client/assets/contracts';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
@@ -64,7 +63,8 @@ export const AssetPickerDialog = memo<AssetPickerDialogProps>(
 		);
 
 		return (
-			<Modal
+			<CoordinatedModal
+				coordination={{ id: 'asset.picker' }}
 				isOpen={open}
 				onClose={onClose}
 				size="4xl"
@@ -94,7 +94,7 @@ export const AssetPickerDialog = memo<AssetPickerDialogProps>(
 							: { isFileAccepted })}
 					/>
 				</div>
-			</Modal>
+			</CoordinatedModal>
 		);
 	}
 );

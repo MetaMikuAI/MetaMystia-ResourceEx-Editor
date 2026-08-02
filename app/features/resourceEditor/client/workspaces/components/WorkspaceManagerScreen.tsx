@@ -6,8 +6,8 @@ import { useRef, useState } from 'react';
 import Button from '@/design/ui/components/button';
 import Card from '@/design/ui/components/card';
 import Input from '@/design/ui/components/input';
-import Modal from '@/design/ui/components/modal';
 
+import { CoordinatedModal } from '@/features/overlays/client';
 import { ConfirmDialog } from '@/features/resourceEditor/client/components/confirm/ConfirmDialog';
 import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
 import { SuccessBadge } from '@/features/resourceEditor/client/components/status/SuccessBadge';
@@ -437,7 +437,8 @@ export function WorkspaceManagerScreen() {
 				onChange={handleFileChange}
 			/>
 
-			<Modal
+			<CoordinatedModal
+				coordination={{ id: 'workspace.rename' }}
 				isOpen={renameTarget !== null}
 				onClose={() => setRenameTarget(null)}
 				size="md"
@@ -471,9 +472,10 @@ export function WorkspaceManagerScreen() {
 						</Button>
 					</div>
 				</div>
-			</Modal>
+			</CoordinatedModal>
 
 			<ConfirmDialog
+				coordinationId="workspace.delete"
 				isOpen={deleteTarget !== null}
 				title={
 					isForceDelete
@@ -494,6 +496,7 @@ export function WorkspaceManagerScreen() {
 				onConfirm={() => void handleDelete()}
 			/>
 			<ConfirmDialog
+				coordinationId="workspace.notice"
 				isOpen={notice !== null}
 				title={notice?.title ?? ''}
 				description={notice?.description}

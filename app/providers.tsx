@@ -7,6 +7,7 @@ import { type PropsWithChildren } from 'react';
 import { DesignPreferencesProvider } from './design/preferences/DesignPreferencesContext';
 import { useTheme } from './design/theme/runtime/useTheme';
 import { AnnouncementModal } from './features/announcements/client/AnnouncementModal';
+import { OverlayCoordinatorHost } from './features/overlays/client';
 import { ResourceEditorProvider } from './features/resourceEditor/client/state/ResourceEditorProvider';
 import { ResourceWorkspaceProvider } from './features/resourceEditor/client/workspaces/ResourceWorkspaceProvider';
 
@@ -20,6 +21,7 @@ export default function Providers({ children }: PropsWithChildren) {
 	return (
 		<DesignPreferencesProvider value={DESIGN_PREFERENCES}>
 			<HeroUIProvider locale="zh-CN" navigate={router.push}>
+				<OverlayCoordinatorHost />
 				<ResourceWorkspaceProvider>
 					<ResourceEditorProvider>
 						{children}

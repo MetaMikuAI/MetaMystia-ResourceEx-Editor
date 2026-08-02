@@ -9,6 +9,7 @@ import PressElement from '@/design/ui/components/pressElement';
 
 import { isValidPackLabel } from '@/domain/resourcePack/constants';
 
+import { pushOverlayChild } from '@/features/overlays/client';
 import {
 	type AssetEntry,
 	buildAssetPathOperations,
@@ -367,10 +368,22 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 						return;
 					}
 					confirmationResolverRef.current = { operationId, resolve };
+					if (selectionMode === 'select') {
+						const result = pushOverlayChild({
+							childId: 'asset.picker.operation-confirm',
+							onOpenChild: () => setConfirmation(request),
+							parentId: 'asset.picker',
+						});
+						if (result.status !== 'activated') {
+							confirmationResolverRef.current = null;
+							resolve(false);
+						}
+						return;
+					}
 					setConfirmation(request);
 				});
 			},
-			[isOperationActive]
+			[isOperationActive, selectionMode]
 		);
 
 		const finishConfirmation = useCallback(
@@ -1082,6 +1095,11 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 					className="relative flex min-h-[520px] flex-1 flex-col gap-4 p-4"
 				>
 					<ConfirmDialog
+						coordinationId={
+							selectionMode === 'select'
+								? 'asset.picker.operation-confirm'
+								: 'asset.operation-confirm'
+						}
 						isOpen={confirmation !== null}
 						title={confirmation?.title ?? ''}
 						description={confirmation?.description}

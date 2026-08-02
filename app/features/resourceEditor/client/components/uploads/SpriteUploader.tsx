@@ -245,6 +245,7 @@ export const SpriteUploader = memo<IProps>(function SpriteUploader({
 				</div>
 			</div>
 			<ConfirmDialog
+				coordinationId="sprite.size-confirm"
 				isOpen={visiblePendingUpload !== null}
 				title="图片尺寸与建议尺寸不一致"
 				description={

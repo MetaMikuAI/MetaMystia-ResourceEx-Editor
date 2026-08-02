@@ -3,9 +3,12 @@
 import { memo, type ReactNode } from 'react';
 
 import Button from '@/design/ui/components/button';
-import Modal from '@/design/ui/components/modal';
+
+import { CoordinatedModal } from '@/features/overlays/client';
+import type { TOverlayId } from '@/features/overlays/contracts';
 
 interface IProps {
+	coordinationId: TOverlayId;
 	isOpen: boolean;
 	title: ReactNode;
 	description?: ReactNode;
@@ -22,6 +25,7 @@ export const ConfirmDialog = memo<IProps>(function ConfirmDialog({
 	cancelLabel = '取消',
 	color = 'danger',
 	confirmLabel = '确认',
+	coordinationId,
 	description,
 	isConfirmDisabled = false,
 	isOpen,
@@ -33,7 +37,8 @@ export const ConfirmDialog = memo<IProps>(function ConfirmDialog({
 	const handleClose = onCancel ?? onConfirm;
 
 	return (
-		<Modal
+		<CoordinatedModal
+			coordination={{ id: coordinationId }}
 			isOpen={isOpen}
 			onClose={handleClose}
 			isDismissable={!isPending}
@@ -69,6 +74,6 @@ export const ConfirmDialog = memo<IProps>(function ConfirmDialog({
 					</Button>
 				</div>
 			</div>
-		</Modal>
+		</CoordinatedModal>
 	);
 });

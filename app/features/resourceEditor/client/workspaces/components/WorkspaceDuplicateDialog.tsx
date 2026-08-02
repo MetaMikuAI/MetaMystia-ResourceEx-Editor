@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import Button from '@/design/ui/components/button';
-import Modal from '@/design/ui/components/modal';
 
+import { CoordinatedModal, pushOverlayChild } from '@/features/overlays/client';
 import { ConfirmDialog } from '@/features/resourceEditor/client/components/confirm/ConfirmDialog';
 import { Select } from '@/features/resourceEditor/client/components/select/Select';
 import type { TWorkspaceImportResolution } from '@/features/resourceEditor/client/workspaces/contracts';
@@ -67,7 +67,8 @@ export function WorkspaceDuplicateDialog({ onResolved }: IProps) {
 
 	return (
 		<>
-			<Modal
+			<CoordinatedModal
+				coordination={{ id: 'workspace.duplicate' }}
 				hideCloseButton
 				isDismissable={false}
 				isKeyboardDismissDisabled={isPending}
@@ -124,7 +125,12 @@ export function WorkspaceDuplicateDialog({ onResolved }: IProps) {
 								variant="flat"
 								isDisabled={isPending}
 								onPress={() =>
-									setIsReplaceConfirmationOpen(true)
+									pushOverlayChild({
+										childId: 'workspace.duplicate.replace',
+										onOpenChild: () =>
+											setIsReplaceConfirmationOpen(true),
+										parentId: 'workspace.duplicate',
+									})
 								}
 							>
 								覆盖已有资源包
@@ -150,8 +156,9 @@ export function WorkspaceDuplicateDialog({ onResolved }: IProps) {
 						)}
 					</div>
 				</div>
-			</Modal>
+			</CoordinatedModal>
 			<ConfirmDialog
+				coordinationId="workspace.duplicate.replace"
 				isOpen={
 					isReplaceConfirmationOpen && selectedCandidate !== undefined
 				}

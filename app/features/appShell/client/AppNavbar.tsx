@@ -821,6 +821,7 @@ export const AppNavbar = memo(function AppNavbar() {
 				/>
 			)}
 			<ConfirmDialog
+				coordinationId="navbar.notice"
 				isOpen={notice !== null}
 				title={notice?.title ?? ''}
 				description={notice?.description}

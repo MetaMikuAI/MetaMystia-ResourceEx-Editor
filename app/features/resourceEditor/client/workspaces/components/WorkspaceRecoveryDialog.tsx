@@ -3,8 +3,8 @@
 import { useState } from 'react';
 
 import Button from '@/design/ui/components/button';
-import Modal from '@/design/ui/components/modal';
 
+import { CoordinatedModal, pushOverlayChild } from '@/features/overlays/client';
 import { ConfirmDialog } from '@/features/resourceEditor/client/components/confirm/ConfirmDialog';
 import { useResourceWorkspaces } from '@/features/resourceEditor/client/workspaces/useResourceWorkspaces';
 
@@ -43,7 +43,8 @@ export function WorkspaceRecoveryDialog({ onContinue, onReturn }: IProps) {
 
 	return (
 		<>
-			<Modal
+			<CoordinatedModal
+				coordination={{ id: 'workspace.recovery' }}
 				hideCloseButton
 				isDismissable={false}
 				isKeyboardDismissDisabled
@@ -74,7 +75,14 @@ export function WorkspaceRecoveryDialog({ onContinue, onReturn }: IProps) {
 							color="danger"
 							variant="flat"
 							isLoading={isDiscarding}
-							onPress={() => setIsDiscardConfirmationOpen(true)}
+							onPress={() =>
+								pushOverlayChild({
+									childId: 'workspace.recovery.discard',
+									onOpenChild: () =>
+										setIsDiscardConfirmationOpen(true),
+									parentId: 'workspace.recovery',
+								})
+							}
 						>
 							放弃本地修改
 						</Button>
@@ -87,8 +95,9 @@ export function WorkspaceRecoveryDialog({ onContinue, onReturn }: IProps) {
 						</Button>
 					</div>
 				</div>
-			</Modal>
+			</CoordinatedModal>
 			<ConfirmDialog
+				coordinationId="workspace.recovery.discard"
 				isOpen={isDiscardConfirmationOpen}
 				title="放弃本地修改？"
 				description="资源包将恢复到上次导出或导入的版本，之后无法找回这些本地修改。"

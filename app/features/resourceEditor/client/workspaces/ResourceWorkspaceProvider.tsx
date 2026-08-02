@@ -1557,11 +1557,14 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 	);
 
 	const openLastWorkspace = useCallback(async () => {
-		const id = readLastActiveWorkspaceId();
+		const rememberedWorkspaceId = readLastActiveWorkspaceId();
+		const id =
+			rememberedWorkspaceId ??
+			(workspaces.length === 1 ? workspaces[0]?.id : undefined);
 		return id
 			? openWorkspace(id)
 			: { error: '没有上次打开的资源包', isSuccess: false };
-	}, [openWorkspace, readLastActiveWorkspaceId]);
+	}, [openWorkspace, readLastActiveWorkspaceId, workspaces]);
 
 	const retryPersistentStorage = useCallback(async () => {
 		let candidateRepository: IWorkspaceRepository | null = null;

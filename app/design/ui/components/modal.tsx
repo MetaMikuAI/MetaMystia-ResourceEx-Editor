@@ -284,12 +284,7 @@ export const ModalPresentation = memo<IModalPresentationProps>(
 				{...portalContainerProps}
 				{...props}
 			>
-				<ModalContent
-					className={cn(
-						props.hideCloseButton ? 'py-0' : 'py-3',
-						contentClassName
-					)}
-				>
+				<ModalContent className={cn('py-3', contentClassName)}>
 					{(onModalClose) => (
 						<ModalScrollBody
 							bodyClassName={bodyClassName}

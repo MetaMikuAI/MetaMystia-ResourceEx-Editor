@@ -1,14 +1,15 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import Button from '@/design/ui/components/button';
-import Modal from '@/design/ui/components/modal';
 
+import { CoordinatedModal } from '@/features/overlays/client';
 import { useResourceWorkspaces } from '@/features/resourceEditor/client/workspaces/useResourceWorkspaces';
 
 export function WorkspaceLeaseConflictDialog() {
+	const pathname = usePathname();
 	const router = useRouter();
 	const {
 		dismissLeaseConflict,
@@ -42,11 +43,12 @@ export function WorkspaceLeaseConflictDialog() {
 			setError(result.error ?? '无法打开资源包');
 			return;
 		}
-		if (!pendingExportWorkspaceId) router.push('/info');
+		if (!pendingExportWorkspaceId && pathname === '/') router.push('/info');
 	};
 
 	return (
-		<Modal
+		<CoordinatedModal
+			coordination={{ id: 'workspace.lease-conflict' }}
 			hideCloseButton
 			isDismissable={false}
 			isKeyboardDismissDisabled
@@ -94,6 +96,6 @@ export function WorkspaceLeaseConflictDialog() {
 					</Button>
 				</div>
 			</div>
-		</Modal>
+		</CoordinatedModal>
 	);
 }

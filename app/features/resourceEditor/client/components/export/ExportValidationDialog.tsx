@@ -5,8 +5,8 @@ import { cn } from '@heroui/theme';
 import { memo, useMemo, useState } from 'react';
 
 import Button from '@/design/ui/components/button';
-import Modal from '@/design/ui/components/modal';
 
+import { CoordinatedModal } from '@/features/overlays/client';
 import { type IResourcePackValidationIssue } from '@/features/resourceEditor/client/validation/validateResourcePackForExport';
 
 interface IProps {
@@ -85,7 +85,12 @@ export const ExportValidationDialog = memo<IProps>(
 		);
 
 		return (
-			<Modal isOpen onClose={onCancel} size="2xl">
+			<CoordinatedModal
+				coordination={{ id: 'navbar.export-validation' }}
+				isOpen
+				onClose={onCancel}
+				size="2xl"
+			>
 				<div className="flex flex-col gap-4">
 					<div className="flex items-center gap-3">
 						{errors.length > 0 ? (
@@ -180,7 +185,7 @@ export const ExportValidationDialog = memo<IProps>(
 						</Button>
 					</div>
 				</div>
-			</Modal>
+			</CoordinatedModal>
 		);
 	}
 );

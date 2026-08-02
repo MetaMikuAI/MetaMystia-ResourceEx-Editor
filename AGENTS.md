@@ -10,6 +10,14 @@ System, developer, and direct user instructions remain higher priority. This fil
 
 When a lower-priority workflow conflicts with this file, follow this file and tell the user which step was skipped and why. A skill does not grant additional permission or override repository architecture.
 
+### Factual authority
+
+1. Current code, `package.json`, and configuration files define current behavior.
+2. Durable project documents record intended behavior and constraints but may describe an earlier implementation phase.
+3. `README.md` is product-facing, not an implementation specification.
+
+This factual order does not replace instruction precedence. When code differs from a higher-priority requirement, treat the difference as an implementation gap. Update an affected durable document when the completed change would otherwise leave one of its claims incorrect.
+
 ### Rule scope
 
 - Workflow, authorization and worktree safety apply to every task.
@@ -17,7 +25,7 @@ When a lower-priority workflow conflicts with this file, follow this file and te
 - Read and apply a subsystem section when the task inspects, changes, or verifies that subsystem, or changes a shared dependency or lifecycle owner that can affect it. Ignore other subsystem sections.
 - Apply code conventions only to edited code. Apply verification only to affected files, behavior, and runtime modes.
 
-The project is a Next.js 15 / React 19 application written in strict TypeScript. User-facing text is primarily Simplified Chinese. Preserve established game terminology and nearby wording instead of translating labels independently.
+The project is a Next.js 15 / React 19 application written in strict TypeScript. User-facing text is primarily Simplified Chinese. Preserve established game terminology and nearby wording instead of translating labels independently. The `@/` alias resolves to `app/`.
 
 ## Workflow and authorization
 
@@ -32,12 +40,44 @@ The project is a Next.js 15 / React 19 application written in strict TypeScript.
 Before changing code or behavior, all of the following must be true:
 
 1. The staged, unstaged, and untracked worktree state is known, and maintainer-owned changes are preserved.
-2. Read complete target files, and relevant neighboring code, configuration, plans, alternate runtime implementations, environment reads, stores, routes, and existing utilities.
-3. Trace every direct and indirect caller of a changed shared contract. Identify each applicable source of truth boundary and UI lifecycle owner.
+2. Read `package.json`, complete target files, and relevant neighboring code, configuration, durable documents, alternate runtime implementations, environment reads, stores, routes, and existing utilities.
+3. Trace every direct and indirect caller of a changed shared contract. Identify each applicable source of truth, persistence or transaction boundary, cross-tab path, memory fallback, and UI lifecycle owner.
 4. Establish applicable validation commands, relevant baseline warnings, and how the affected behavior can be exercised.
 5. Select the smallest design that satisfies the requirement and reuses existing capabilities.
 
 Do not substitute assumptions for facts that can be established through safe read-only investigation. Any remaining uncertainty that could materially affect behavior, data, deployment, or user experience must be stated to the user and resolved before implementation.
+
+## Subsystem constraints
+
+### Runtime and global clients
+
+`next.config.ts` fixes the application to static export through `output: 'export'`. Browser storage and in-memory fallback are production runtime boundaries; do not introduce a design that requires a Next.js server runtime unless the maintainer explicitly changes the deployment model.
+
+`app/providers.tsx` owns global client lifecycles. Add global providers, watchers, and synchronization clients there or in an existing feature-owned global entry point rather than a page component that remounts during navigation.
+
+### Existing UI and overlay coordination
+
+Use the wrappers in `app/design/ui/components`; business modals compose them through `app/features/overlays/client/CoordinatedModal.tsx`. The global overlay coordinator under `app/features/overlays/` owns scheduling, stacking, shortcuts, backdrop, and inert behavior; `app/features/overlays/client/OverlayCoordinatorHost.tsx` installs the global keyboard handling and blocking-state isolation.
+
+Prefer a project wrapper when one exists; otherwise follow neighboring HeroUI usage. Register every coordinated overlay in `OVERLAY_DEFINITION_MAP` and use the coordinator ownership APIs. Open nested confirmations with `pushOverlayChild` so the parent remains covered and inert and the child does not apply a second backdrop blur. Keep `#modal-portal-container` inside `<main>` in `app/layout.tsx`.
+
+Use `useReducedMotion` and `useMotionProps` from `app/design/ui/hooks` for motion accessibility.
+
+Workspace lease conflicts are blocking overlays. Recovery, duplicate-import resolution, validation, pickers, and confirmations are task overlays; announcements and informational notices are passive overlays. Preserve these scheduling relationships when adding or changing a modal. Opening, queueing, covering, or restoring an overlay must not change routes; navigation remains owned by the business action that explicitly requires it.
+
+Automatic background work must not open or flash a blocker, and must not make the page inert without presenting the corresponding panel. An overlay state driven by asynchronous workspace lifecycle data must remain valid across React Strict Mode effect replay, route restoration, and component cleanup.
+
+`canActivate` is a validity guard, not a delay mechanism. A component-owned request that cannot activate is stale and may invoke its business close callback. To defer an overlay without dismissing it, retain the pending business intent outside the coordinator and submit the open request only when its lifecycle prerequisites are stable.
+
+### Workspace persistence and cross-tab coordination
+
+`ResourceWorkspaceProvider` owns workspace hydration, opening, recovery, autosave, storage fallback, leases, and catalog synchronization. Reuse the workspace repository, save queue, lease controller, catalog sync, and migration utilities instead of adding parallel persistence or coordination state.
+
+Use `safeStorage` for small browser preferences that may safely degrade from local storage to session or memory. Workspace documents and files belong to the workspace repository. The last active workspace is intentionally session-scoped so separate tabs can edit different workspaces; do not replace it with one global last-workspace value.
+
+Before adding persistence, broadcast, locking, retry, or recovery behavior, inspect the existing workspace primitives and extend their owning contract when they satisfy the required semantics. Keep persistent and memory-only modes behaviorally usable, report the actual storage mode, and preserve current in-memory edits when durable operations fail.
+
+Cross-tab behavior must work while several tabs remain visible. BroadcastChannel is the primary catalog and ownership signal where available; focus and visibility refreshes are fallbacks, not the sole coordination mechanism. A catalog mutation, lease change, deletion, takeover, or storage migration must leave every visible tab in a coherent state.
 
 ## Code conventions
 
@@ -88,5 +128,9 @@ git diff --check
 ```
 
 `pnpm format` writes repository-wide changes and is not a check. Distinguish baseline warnings from newly introduced ones.
+
+For runtime-affecting UI changes, exercise the affected interaction in a real browser when the user has not excluded browser testing. Cover keyboard input, relevant breakpoints, reduced motion, and themes when the change can affect them.
+
+For workspace persistence or cross-tab changes, exercise the applicable local edit, autosave, failure fallback, retry, refresh, direct-route restoration, recovery choice, lease conflict, takeover, deletion, and simultaneously visible tab paths. If an applicable scenario is unavailable or the user excludes browser testing, report it as unverified rather than inferring runtime behavior from static checks.
 
 When the user requests a commit, use Conventional Commits. A handoff states what changed, checks actually run, and any material compatibility impact, warning, or unverified area.

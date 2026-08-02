@@ -5,11 +5,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import Button from '@/design/ui/components/button';
 import Input from '@/design/ui/components/input';
-import Modal from '@/design/ui/components/modal';
 import Textarea from '@/design/ui/components/textarea';
 
 import type { PackInfo } from '@/domain/resourcePack/contracts/resourceEx';
 
+import { CoordinatedModal } from '@/features/overlays/client';
 import { EditorField } from '@/features/resourceEditor/client/components/fields/EditorField';
 import { EditorSection } from '@/features/resourceEditor/client/components/layout/EditorSection';
 import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
@@ -241,7 +241,8 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 			</EditorField>
 
 			{/* Signing dialog */}
-			<Modal
+			<CoordinatedModal
+				coordination={{ id: 'resource.signature' }}
 				isOpen={showKeyDialog}
 				onOpenChange={handleDialogOpenChange}
 				size="lg"
@@ -349,7 +350,7 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 						</Button>
 					)}
 				</div>
-			</Modal>
+			</CoordinatedModal>
 		</EditorSection>
 	);
 }
