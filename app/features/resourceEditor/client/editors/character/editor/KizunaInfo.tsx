@@ -126,7 +126,9 @@ export const KizunaInfoEditor = memo<KizunaInfoEditorProps>(
 								size="sm"
 								isSelected={false}
 								onValueChange={(isSelected) => {
-									if (isSelected) onEnable();
+									if (!isSelected) return;
+									setIsExpanded(true);
+									onEnable();
 								}}
 							/>
 						)}

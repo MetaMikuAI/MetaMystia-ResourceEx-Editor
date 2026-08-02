@@ -156,7 +156,9 @@ export function SpriteSetEditor({
 							size="sm"
 							isSelected={false}
 							onValueChange={(isSelected) => {
-								if (isSelected) onEnable();
+								if (!isSelected) return;
+								setIsExpanded(true);
+								onEnable();
 							}}
 						/>
 					)}
