@@ -9,6 +9,7 @@ import {
 	NavbarMenuItem,
 	NavbarMenuToggle,
 } from '@heroui/navbar';
+import { cn } from '@heroui/theme';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
@@ -77,6 +78,16 @@ const MOBILE_NAV_GROUPS: readonly INavGroup[] = [
 const MOBILE_NAV_ITEMS = MOBILE_NAV_GROUPS.flatMap((group) => group.items);
 
 const GITHUB_URL = 'https://github.com/MetaMystia/MetaMystia-ResourceEx-Editor';
+const MOBILE_SECTION_TITLE_CLASS_NAME =
+	'px-1 text-small font-medium text-foreground-500 dark:text-foreground-400';
+const MOBILE_CARD_BASE_CLASS_NAME =
+	'rounded-small border bg-content1/45 shadow-[0_1px_0_rgba(0,0,0,0.025)] transition-[background-color,border-color,box-shadow] motion-reduce:transition-none dark:bg-default-50/10 dark:shadow-none';
+const MOBILE_CARD_ACTIVE_CLASS_NAME =
+	'border-primary/40 text-primary-700 dark:text-primary';
+const MOBILE_CARD_INACTIVE_CLASS_NAME =
+	'border-default-200/75 text-foreground-700 data-[hover=true]:border-default-300 data-[hover=true]:bg-content1/65 dark:border-default-200/60 dark:data-[hover=true]:bg-default-50/15';
+const MOBILE_CARD_CONTENT_CLASS_NAME =
+	'group relative flex h-auto min-h-12 w-full min-w-0 items-center justify-start gap-3 overflow-hidden px-3 py-2.5';
 const MOBILE_MENU_ID = 'app-navbar-mobile-menu';
 const MOBILE_MENU_TOGGLE_ID = 'app-navbar-mobile-menu-toggle';
 
@@ -425,24 +436,38 @@ export const AppNavbar = memo(function AppNavbar() {
 					justify="end"
 					className="basis-auto pl-2 xl:hidden"
 				>
-					<NavbarMenuToggle
-						id={MOBILE_MENU_TOGGLE_ID}
-						aria-label={isMenuOpen ? '收起菜单' : '打开菜单'}
-						className="h-10 w-10 rounded-small border border-default-200/70 bg-default-100/60 transition-background data-[hover=true]:bg-default-200/70 motion-reduce:transition-none"
-					/>
+					<div
+						className={cn(
+							'flex h-10 items-center gap-0.5 rounded-small border border-default-200/60 bg-default-100/45 p-0.5 text-foreground-600 transition-background motion-reduce:transition-none dark:bg-default-100/20',
+							'bg-default/35 backdrop-blur'
+						)}
+					>
+						<NavbarMenuToggle
+							id={MOBILE_MENU_TOGGLE_ID}
+							srOnlyText={isMenuOpen ? '收起菜单' : '打开菜单'}
+							aria-label={isMenuOpen ? '收起菜单' : '打开菜单'}
+							className={cn(
+								'h-9 w-9 rounded-small transition-background motion-reduce:transition-none',
+								isMenuOpen
+									? 'bg-default/50'
+									: 'data-[hover=true]:bg-default/40',
+								'data-[hover=true]:bg-default/45'
+							)}
+						/>
+					</div>
 				</NavbarContent>
 
 				<NavbarMenu
 					id={MOBILE_MENU_ID}
-					className="mobile-navbar-menu-scroll max-h-[calc(var(--safe-h-dvh)_-_var(--navbar-height))] gap-4 overflow-y-auto border-t border-divider bg-content1/95 px-4 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-4 backdrop-blur-xl sm:px-6"
+					className="mobile-navbar-menu-scroll max-h-[calc(var(--safe-h-dvh)_-_var(--navbar-height))] gap-3.5 overflow-y-auto overflow-x-hidden px-6 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] pt-4 sm:px-8"
 				>
 					{MOBILE_NAV_GROUPS.map((group, groupIndex) => (
 						<NavbarMenuItem key={group.label} className="w-full">
 							<section className="space-y-2">
-								<h2 className="px-1 text-xs font-semibold leading-5 text-foreground-500">
+								<h2 className={MOBILE_SECTION_TITLE_CLASS_NAME}>
 									{group.label}
 								</h2>
-								<div className="grid grid-cols-[repeat(auto-fit,minmax(9rem,1fr))] gap-2">
+								<div className="grid grid-cols-2 gap-2">
 									{group.items.map((item, itemIndex) => {
 										const isCurrent =
 											pathname === item.href;
@@ -466,20 +491,21 @@ export const AppNavbar = memo(function AppNavbar() {
 														? 'page'
 														: undefined
 												}
-												variant={
-													isCurrent ? 'flat' : 'light'
-												}
-												color={
+												variant="light"
+												className={cn(
+													MOBILE_CARD_CONTENT_CLASS_NAME,
+													MOBILE_CARD_BASE_CLASS_NAME,
 													isCurrent
-														? 'primary'
-														: 'default'
-												}
-												className="h-12 justify-start rounded-small border border-default-200/75 bg-content1/45 px-3 text-sm shadow-[0_1px_0_rgba(0,0,0,0.025)]"
+														? MOBILE_CARD_ACTIVE_CLASS_NAME
+														: MOBILE_CARD_INACTIVE_CLASS_NAME
+												)}
 												onPress={() =>
 													handleNavigate(item.href)
 												}
 											>
-												{item.label}
+												<span className="min-w-0 truncate text-small font-medium">
+													{item.label}
+												</span>
 											</Button>
 										);
 									})}
@@ -489,37 +515,53 @@ export const AppNavbar = memo(function AppNavbar() {
 					))}
 					<NavbarMenuItem className="w-full">
 						<section className="space-y-2">
-							<h2 className="px-1 text-xs font-semibold leading-5 text-foreground-500">
+							<h2 className={MOBILE_SECTION_TITLE_CLASS_NAME}>
 								资源包操作
 							</h2>
 							<div className="grid grid-cols-2 gap-2">
 								<Button
 									fullWidth
 									variant="light"
-									className="h-12 justify-start rounded-small border border-default-200/75 bg-content1/45 px-3 text-sm"
+									className={cn(
+										MOBILE_CARD_CONTENT_CLASS_NAME,
+										MOBILE_CARD_BASE_CLASS_NAME,
+										MOBILE_CARD_INACTIVE_CLASS_NAME
+									)}
 									onPress={() => {
 										setIsMenuOpen(false);
 										handleCreateBlank();
 									}}
 								>
-									全新创建
+									<span className="min-w-0 truncate text-small font-medium">
+										全新创建
+									</span>
 								</Button>
 								<Button
 									fullWidth
 									variant="light"
-									className="h-12 justify-start rounded-small border border-default-200/75 bg-content1/45 px-3 text-sm"
+									className={cn(
+										MOBILE_CARD_CONTENT_CLASS_NAME,
+										MOBILE_CARD_BASE_CLASS_NAME,
+										MOBILE_CARD_INACTIVE_CLASS_NAME
+									)}
 									isDisabled={isImporting}
 									onPress={() => {
 										setIsMenuOpen(false);
 										fileInputRef.current?.click();
 									}}
 								>
-									上传资源包（ZIP）
+									<span className="min-w-0 truncate text-small font-medium">
+										上传资源包（ZIP）
+									</span>
 								</Button>
 								<Button
 									fullWidth
 									variant="light"
-									className="h-12 justify-start rounded-small border border-default-200/75 bg-content1/45 px-3 text-sm"
+									className={cn(
+										MOBILE_CARD_CONTENT_CLASS_NAME,
+										MOBILE_CARD_BASE_CLASS_NAME,
+										MOBILE_CARD_INACTIVE_CLASS_NAME
+									)}
 									isDisabled={isExporting}
 									onPress={() => {
 										activeExportTriggerRef.current =
@@ -530,38 +572,52 @@ export const AppNavbar = memo(function AppNavbar() {
 										void handleExport();
 									}}
 								>
-									导出资源包（ZIP）
+									<span className="min-w-0 truncate text-small font-medium">
+										导出资源包（ZIP）
+									</span>
 								</Button>
 							</div>
 						</section>
 					</NavbarMenuItem>
 					<NavbarMenuItem className="w-full">
 						<section className="space-y-2">
-							<h2 className="px-1 text-xs font-semibold leading-5 text-foreground-500">
+							<h2 className={MOBILE_SECTION_TITLE_CLASS_NAME}>
 								更多
 							</h2>
 							<div className="grid grid-cols-2 gap-2">
 								<Button
 									fullWidth
 									variant="light"
-									className="h-12 justify-start rounded-small border border-default-200/75 bg-content1/45 px-3 text-sm"
+									className={cn(
+										MOBILE_CARD_CONTENT_CLASS_NAME,
+										MOBILE_CARD_BASE_CLASS_NAME,
+										MOBILE_CARD_INACTIVE_CLASS_NAME
+									)}
 									onPress={() => {
 										setIsMenuOpen(false);
 										openAnnouncementModal();
 									}}
 								>
-									公告
+									<span className="min-w-0 truncate text-small font-medium">
+										公告
+									</span>
 								</Button>
 								<Button
 									fullWidth
 									variant="light"
-									className="h-12 justify-start rounded-small border border-default-200/75 bg-content1/45 px-3 text-sm"
+									className={cn(
+										MOBILE_CARD_CONTENT_CLASS_NAME,
+										MOBILE_CARD_BASE_CLASS_NAME,
+										MOBILE_CARD_INACTIVE_CLASS_NAME
+									)}
 									onPress={() => {
 										setIsMenuOpen(false);
 										openGitHub();
 									}}
 								>
-									本项目代码仓库
+									<span className="min-w-0 truncate text-small font-medium">
+										本项目代码仓库
+									</span>
 								</Button>
 							</div>
 						</section>
