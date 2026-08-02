@@ -309,6 +309,7 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 								/>
 								<SectionDeleteButton
 									className="h-10 shrink-0 text-sm sm:h-10 sm:text-sm"
+									confirmTitle="确定要删除这个任务奖励吗？"
 									onPress={() => removeReward(index)}
 								>
 									删除奖励

@@ -244,7 +244,10 @@ const DialogActionRow = memo<DialogActionRowProps>(function DialogActionRow({
 					>
 						下移
 					</Button>
-					<SectionDeleteButton onPress={onRemove}>
+					<SectionDeleteButton
+						confirmTitle="确定要删除这个对话动作吗？"
+						onPress={onRemove}
+					>
 						删除动作
 					</SectionDeleteButton>
 				</div>
@@ -562,6 +565,7 @@ const BranchActionFields = memo<BranchActionFieldsProps>(
 									</Button>
 									<SectionDeleteButton
 										iconOnly
+										confirmTitle="确定要删除这个分支选项吗？"
 										onPress={() =>
 											removeOption(optionIndex)
 										}

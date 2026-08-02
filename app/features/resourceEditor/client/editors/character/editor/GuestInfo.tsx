@@ -421,6 +421,7 @@ export function GuestInfoEditor({
 									<SectionDeleteButton
 										iconOnly
 										className="h-10 w-10 shrink-0 sm:h-10 sm:w-10"
+										confirmTitle="确定要删除这条闲聊文本吗？"
 										onPress={() => removeConversation(i)}
 									>
 										删除闲聊文本

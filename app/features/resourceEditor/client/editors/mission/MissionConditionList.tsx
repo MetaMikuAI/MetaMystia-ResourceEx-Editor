@@ -531,6 +531,7 @@ function ConditionItem({
 				/>
 				<SectionDeleteButton
 					className="h-10 shrink-0 text-sm sm:h-10 sm:text-sm"
+					confirmTitle="确定要删除这个任务条件吗？"
 					onPress={onRemove}
 				>
 					删除条件
