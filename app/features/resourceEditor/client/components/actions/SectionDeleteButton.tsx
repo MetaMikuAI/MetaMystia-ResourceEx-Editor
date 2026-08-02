@@ -46,7 +46,7 @@ export const SectionDeleteButton = memo<IProps>(function SectionDeleteButton({
 				: { startContent: <TrashIcon className="h-4 w-4" /> })}
 			className={cn(
 				iconOnly
-					? 'h-10 w-10 rounded-medium sm:h-8 sm:w-8'
+					? 'h-10 w-10 shrink-0 rounded-medium sm:h-8 sm:w-8'
 					: 'h-10 rounded-medium px-3 text-sm sm:h-8 sm:text-xs',
 				className
 			)}
