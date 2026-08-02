@@ -1,23 +1,12 @@
 'use client';
 
-import { cn } from '@heroui/theme';
-import {
-	memo,
-	type ReactNode,
-	useEffect,
-	useId,
-	useRef,
-	useState,
-} from 'react';
+import { memo, type ReactNode, useEffect, useRef, useState } from 'react';
 
-import Button from '@/design/ui/components/button';
-import ScrollShadow from '@/design/ui/components/scrollShadow';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 import { SectionAddButton } from '@/features/resourceEditor/client/components/actions/SectionAddButton';
-import { ChevronRight } from '@/features/resourceEditor/client/components/icons/ChevronRight';
 
-import { EditorPanel } from './EditorPanel';
+import { EditorCollapsiblePanel } from './EditorCollapsiblePanel';
 import { EmptyState } from './EmptyState';
 
 interface IProps {
@@ -42,8 +31,6 @@ export const EditorCollectionPanel = memo<IProps>(
 		onAdd,
 		title,
 	}) {
-		const contentId = useId();
-		const titleId = useId();
 		const isReducedMotion = useReducedMotion();
 		const scrollContainerRef = useRef<HTMLDivElement>(null);
 		const pendingItemCountRef = useRef<number | null>(null);
@@ -91,87 +78,38 @@ export const EditorCollectionPanel = memo<IProps>(
 		});
 
 		return (
-			<EditorPanel
-				as="aside"
-				className={cn(
-					'flex h-min min-w-0 flex-col gap-0 lg:sticky lg:top-24 lg:h-[calc(100dvh-7rem)] lg:gap-4 lg:overflow-hidden',
-					className
-				)}
+			<EditorCollapsiblePanel
+				actions={
+					<SectionAddButton
+						onPress={() => {
+							pendingItemCountRef.current =
+								scrollContainerRef.current?.querySelectorAll(
+									'[data-editor-collection-item]'
+								).length ?? 0;
+							setIsCollapsed(false);
+							onAdd();
+						}}
+					>
+						{addLabel}
+					</SectionAddButton>
+				}
+				{...(className === undefined ? {} : { className })}
+				isCollapsed={isCollapsed}
+				onCollapsedChange={setIsCollapsed}
+				scrollContainerRef={scrollContainerRef}
+				title={title}
 			>
-				<div className="flex min-w-0 shrink-0 flex-wrap items-center justify-between gap-2">
-					<h2
-						id={titleId}
-						className="min-w-0 text-xl font-semibold leading-7 text-foreground"
-					>
-						{title}
-					</h2>
-					<div className="flex shrink-0 items-center gap-1.5">
-						<Button
-							isIconOnly
-							variant="light"
-							size="sm"
-							className="h-10 w-10 lg:hidden"
-							onPress={() => setIsCollapsed((value) => !value)}
-							aria-controls={contentId}
-							aria-expanded={!isCollapsed}
-							aria-label={isCollapsed ? '展开列表' : '折叠列表'}
-						>
-							<ChevronRight
-								className={cn(
-									'h-4 w-4 transition-transform motion-reduce:transition-none',
-									isCollapsed ? '-rotate-90' : 'rotate-90'
-								)}
-							/>
-						</Button>
-						<SectionAddButton
-							onPress={() => {
-								pendingItemCountRef.current =
-									scrollContainerRef.current?.querySelectorAll(
-										'[data-editor-collection-item]'
-									).length ?? 0;
-								setIsCollapsed(false);
-								onAdd();
-							}}
-						>
-							{addLabel}
-						</SectionAddButton>
-					</div>
-				</div>
-
-				<ScrollShadow
-					ref={scrollContainerRef}
-					aria-labelledby={titleId}
-					className="min-h-0 lg:flex-1"
-				>
-					<div
-						id={contentId}
-						className={cn(
-							'grid overflow-hidden transition-[grid-template-rows] motion-reduce:transition-none lg:overflow-x-auto',
-							isCollapsed
-								? 'grid-rows-[0fr] lg:grid-rows-[1fr]'
-								: 'grid-rows-[1fr]'
-						)}
-					>
-						<div className="min-h-0 min-w-0">
-							<div className="pt-4 lg:pt-0">
-								{hasItems ? (
-									<div className="flex flex-col gap-2">
-										{children}
-									</div>
-								) : (
-									<EmptyState
-										title={emptyTitle}
-										description={
-											emptyDescription ??
-											`使用“${addLabel}”添加第一项`
-										}
-									/>
-								)}
-							</div>
-						</div>
-					</div>
-				</ScrollShadow>
-			</EditorPanel>
+				{hasItems ? (
+					<div className="flex flex-col gap-2">{children}</div>
+				) : (
+					<EmptyState
+						title={emptyTitle}
+						description={
+							emptyDescription ?? `使用“${addLabel}”添加第一项`
+						}
+					/>
+				)}
+			</EditorCollapsiblePanel>
 		);
 	}
 );
