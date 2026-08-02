@@ -777,15 +777,15 @@ export function GuestInfoEditor({
 										return (
 											<div
 												key={spawn.izakayaId}
-												className="flex w-full flex-wrap items-center gap-4 rounded-large border border-divider bg-content1/50 p-3"
+												className="flex w-full flex-col gap-2 rounded-large border border-divider bg-content1/50 p-3"
 											>
-												<div className="w-32 shrink-0 text-xs font-semibold text-foreground-700">
+												<div className="w-full break-words text-sm font-semibold text-foreground-700">
 													<span className="mr-1 text-foreground-500">
 														（{spawn.izakayaId}）
 													</span>
 													{izakaya?.name}
 												</div>
-												<div className="flex w-full flex-1 flex-wrap items-center gap-6">
+												<div className="flex w-full flex-wrap items-center gap-6">
 													<div className="flex flex-1 flex-col gap-1">
 														<div className="flex items-center justify-between">
 															<Label
