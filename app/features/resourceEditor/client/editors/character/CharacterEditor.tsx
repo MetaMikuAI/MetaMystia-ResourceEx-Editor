@@ -1,6 +1,7 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useEffect, useRef } from 'react';
 
 import Switch from '@/design/ui/components/switch';
+import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 import type {
 	Character,
@@ -21,6 +22,7 @@ import { EditorDetailHeader } from '@/features/resourceEditor/client/components/
 import { EditorDetailPanel } from '@/features/resourceEditor/client/components/layout/EditorDetailPanel';
 import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
 import { EditorSection } from '@/features/resourceEditor/client/components/layout/EditorSection';
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import { BasicInfo } from './editor/BasicInfo';
 import { Descriptions } from './editor/Descriptions';
@@ -50,6 +52,36 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 		onRemove,
 		onUpdate,
 	}) {
+		const { clearGuestDrafts } = useResourceEditor();
+		const isReducedMotion = useReducedMotion();
+		const shouldFocusSpawnMarkerRef = useRef(false);
+		const spawnMarkerContainerRef = useRef<HTMLDivElement>(null);
+
+		useEffect(() => {
+			if (!character?.spawnMarker || !shouldFocusSpawnMarkerRef.current) {
+				return;
+			}
+			shouldFocusSpawnMarkerRef.current = false;
+
+			const frame = requestAnimationFrame(() => {
+				const container = spawnMarkerContainerRef.current;
+				if (!container) return;
+
+				container
+					.querySelector<HTMLElement>(
+						'[data-slot="trigger"]:not([aria-disabled="true"])'
+					)
+					?.focus({ preventScroll: true });
+				container.scrollIntoView({
+					behavior: isReducedMotion ? 'auto' : 'smooth',
+					block: 'nearest',
+					inline: 'nearest',
+				});
+			});
+
+			return () => cancelAnimationFrame(frame);
+		}, [character?.spawnMarker, isReducedMotion]);
+
 		const updateDescription = useCallback(
 			(index: number, value: string) => {
 				if (!character) {
@@ -68,6 +100,16 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 			},
 			[onUpdate]
 		);
+
+		const enableSpawnMarker = useCallback(() => {
+			shouldFocusSpawnMarkerRef.current = true;
+			updateSpawnMarker({
+				mapLabel: 'BeastForest',
+				x: 0,
+				y: 0,
+				rotation: 'Down',
+			});
+		}, [updateSpawnMarker]);
 
 		const addPortrait = useCallback(() => {
 			if (!character) {
@@ -191,8 +233,10 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 		}, [updateGuest]);
 
 		const disableGuest = useCallback(() => {
+			if (!character) return;
+			clearGuestDrafts(character.id);
 			onUpdate({ guest: undefined });
-		}, [onUpdate]);
+		}, [character, clearGuestDrafts, onUpdate]);
 
 		const updateKizuna = useCallback(
 			(updates: Partial<KizunaInfo>) => {
@@ -354,35 +398,28 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 					onUpdate={updateDescription}
 				/>
 
-				{character.spawnMarker ? (
-					<SpawnMarkerEditor
-						spawnMarker={character.spawnMarker}
-						onUpdate={updateSpawnMarker}
-					/>
-				) : (
-					<EditorSection
-						title="出没地点（Spawn Marker）"
-						actions={
-							<SectionAddButton
-								onPress={() =>
-									updateSpawnMarker({
-										mapLabel: 'BeastForest',
-										x: 0,
-										y: 0,
-										rotation: 'Down',
-									})
-								}
-							>
-								启用出没地点
-							</SectionAddButton>
-						}
-					>
-						<EmptyState
-							variant="text"
-							title="暂未配置白天出没地点"
+				<div ref={spawnMarkerContainerRef}>
+					{character.spawnMarker ? (
+						<SpawnMarkerEditor
+							spawnMarker={character.spawnMarker}
+							onUpdate={updateSpawnMarker}
 						/>
-					</EditorSection>
-				)}
+					) : (
+						<EditorSection
+							title="出没地点（Spawn Marker）"
+							actions={
+								<SectionAddButton onPress={enableSpawnMarker}>
+									启用出没地点
+								</SectionAddButton>
+							}
+						>
+							<EmptyState
+								variant="text"
+								title="暂未配置白天出没地点"
+							/>
+						</EditorSection>
+					)}
+				</div>
 
 				<EditorSection title="显示与分类">
 					<div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -441,6 +478,7 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 				/>
 
 				<GuestInfoEditor
+					characterId={character.id}
 					guest={character.guest}
 					onUpdate={updateGuest}
 					onEnable={enableGuest}

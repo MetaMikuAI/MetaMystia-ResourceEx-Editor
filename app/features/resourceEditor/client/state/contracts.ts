@@ -1,3 +1,7 @@
+import type {
+	LikeTag,
+	SpawnConfig,
+} from '@/domain/resourcePack/contracts/character';
 import type { ResourceEx } from '@/domain/resourcePack/contracts/resourceEx';
 
 import type {
@@ -9,6 +13,9 @@ import type {
 	TWorkspaceSaveStatus,
 	TWorkspaceStorageMode,
 } from '@/features/resourceEditor/client/workspaces/contracts';
+import { type TGuestLikeTagDraftField } from '@/features/resourceEditor/client/workspaces/workspaceEditorState';
+
+export type TResourceExportStatus = 'exported' | 'modified' | 'unexported';
 
 export interface IResourceEditorOperationResult {
 	isSuccess: boolean;
@@ -23,7 +30,7 @@ export interface IResourceEditorExportResult extends IResourceEditorOperationRes
 export interface IResourceEditorContext {
 	activeWorkspaceId: string | null;
 	assets: IAssetState;
-	hasUnexportedChanges: boolean;
+	exportStatus: TResourceExportStatus;
 	isExporting: boolean;
 	isLocalSavePending: boolean;
 	license: string;
@@ -32,6 +39,31 @@ export interface IResourceEditorContext {
 	resourcePack: ResourceEx;
 	revision: number;
 	storageMode: TWorkspaceStorageMode;
+	clearGuestDrafts(characterId: number): void;
+	getGuestLikeTagDraft(
+		characterId: number,
+		field: TGuestLikeTagDraftField,
+		tagId: number
+	): LikeTag | undefined;
+	getGuestSpawnDraft(
+		characterId: number,
+		izakayaId: number
+	): SpawnConfig | undefined;
+	replaceGuestLikeTagDraft(
+		characterId: number,
+		field: TGuestLikeTagDraftField,
+		tagId: number,
+		tag: LikeTag | undefined
+	): void;
+	replaceGuestSpawnDraft(
+		characterId: number,
+		izakayaId: number,
+		spawn: SpawnConfig | undefined
+	): void;
+	replaceGuestDraftCharacterId(
+		previousCharacterId: number,
+		nextCharacterId: number
+	): void;
 	flushLocalSave(): Promise<IResourceEditorOperationResult>;
 	retryLocalSave(): void;
 	updateResourcePack(updater: (current: ResourceEx) => ResourceEx): void;

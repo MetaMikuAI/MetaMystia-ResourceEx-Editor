@@ -1,5 +1,7 @@
 import type { ResourceEx } from '@/domain/resourcePack/contracts/resourceEx';
 
+import { type IWorkspaceEditorState } from './workspaceEditorState';
+
 export type TWorkspaceImportMatchStrength = 'exact' | 'metadata';
 
 export type TWorkspaceLoadSource = 'checkpoint' | 'current';
@@ -32,6 +34,7 @@ export type TWorkspacePersistenceErrorCode =
 	| 'transaction-failed';
 
 export interface IWorkspaceDocument {
+	editorState: IWorkspaceEditorState;
 	folders: readonly string[];
 	hasLicenseFile: boolean;
 	license: string;
@@ -64,8 +67,12 @@ export interface IWorkspaceLoadedSnapshot {
 	workspace: IWorkspaceSummary;
 }
 
-export interface ICreateWorkspaceArchiveInput extends IWorkspaceDocument {
+export interface ICreateWorkspaceArchiveInput extends Omit<
+	IWorkspaceDocument,
+	'editorState'
+> {
 	displayName?: string;
+	editorState?: IWorkspaceEditorState;
 	files: ReadonlyMap<string, Blob>;
 	isCheckpointExported?: boolean;
 	sourceArchiveHash?: string;

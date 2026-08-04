@@ -31,7 +31,12 @@ const DEFAULT_CHARACTER = {
 };
 
 export function CharacterEditorScreen() {
-	const { resourcePack: data, updateResourcePack } = useResourceEditor();
+	const {
+		clearGuestDrafts,
+		replaceGuestDraftCharacterId,
+		resourcePack: data,
+		updateResourcePack,
+	} = useResourceEditor();
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
 	const sortCharacters = useCallback((chars: Character[]) => {
@@ -77,11 +82,13 @@ export function CharacterEditorScreen() {
 				return;
 			}
 			const newCharacters = [...data.characters];
+			const removedCharacter = newCharacters[index];
+			if (removedCharacter) clearGuestDrafts(removedCharacter.id);
 			newCharacters.splice(index, 1);
 			updateResourcePack(() => ({ ...data, characters: newCharacters }));
 			setSelectedIndex(null);
 		},
-		[data, updateResourcePack]
+		[clearGuestDrafts, data, updateResourcePack]
 	);
 
 	const updateCharacter = useCallback(
@@ -97,6 +104,12 @@ export function CharacterEditorScreen() {
 				...previousCharacter,
 				...updates,
 			} as Character;
+			if (previousCharacter.id !== updatedChar.id) {
+				replaceGuestDraftCharacterId(
+					previousCharacter.id,
+					updatedChar.id
+				);
+			}
 			newCharacters[index] = updatedChar;
 			const sorted =
 				'id' in updates || 'type' in updates
@@ -147,7 +160,7 @@ export function CharacterEditorScreen() {
 				setSelectedIndex(newIndex);
 			}
 		},
-		[data, sortCharacters, updateResourcePack]
+		[data, replaceGuestDraftCharacterId, sortCharacters, updateResourcePack]
 	);
 
 	const selectedChar = useMemo(() => {
@@ -176,7 +189,7 @@ export function CharacterEditorScreen() {
 	);
 
 	return (
-		<EditorWorkspace>
+		<EditorWorkspace detailKey={selectedIndex}>
 			<CharacterList
 				characters={data.characters}
 				selectedIndex={selectedIndex}

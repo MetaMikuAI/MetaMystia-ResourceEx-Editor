@@ -26,6 +26,11 @@ import {
 	WorkspacePersistenceError,
 } from './workspaceDatabase';
 import {
+	cloneWorkspaceEditorState,
+	createEmptyWorkspaceEditorState,
+	normalizeWorkspaceEditorState,
+} from './workspaceEditorState';
+import {
 	type IWorkspaceFileBinding,
 	planWorkspaceManifestUpdate,
 } from './workspaceManifest';
@@ -33,11 +38,14 @@ import {
 const EMPTY_FOLDERS = ['assets/'] as const;
 
 function createStoredDocument(
-	document: IWorkspaceDocument,
+	document: ICreateWorkspaceArchiveInput | IWorkspaceDocument,
 	revision: number,
 	savedAt: number
 ): IStoredWorkspaceDocument {
 	return {
+		editorState: cloneWorkspaceEditorState(
+			document.editorState ?? createEmptyWorkspaceEditorState()
+		),
 		folders: [...document.folders],
 		hasLicenseFile: document.hasLicenseFile,
 		license: document.license,
@@ -279,6 +287,9 @@ class IndexedDbWorkspaceRepository implements IWorkspaceRepository {
 		this.bindingsByWorkspaceId.set(id, manifestUpdate.bindings);
 		return {
 			snapshot: {
+				editorState: cloneWorkspaceEditorState(
+					input.editorState ?? createEmptyWorkspaceEditorState()
+				),
 				files: new Map(input.files),
 				folders: [...input.folders],
 				hasLicenseFile: input.hasLicenseFile,
@@ -354,6 +365,7 @@ class IndexedDbWorkspaceRepository implements IWorkspaceRepository {
 		const loaded = await this.load(id, 'current');
 		return this.createWorkspace({
 			displayName: `${loaded.workspace.displayName}（副本）`,
+			editorState: loaded.snapshot.editorState,
 			files: loaded.snapshot.files,
 			folders: loaded.snapshot.folders,
 			hasLicenseFile: loaded.snapshot.hasLicenseFile,
@@ -482,6 +494,9 @@ class IndexedDbWorkspaceRepository implements IWorkspaceRepository {
 		}
 		return {
 			snapshot: {
+				editorState: normalizeWorkspaceEditorState(
+					document.editorState
+				),
 				files,
 				folders: [...document.folders],
 				hasLicenseFile: document.hasLicenseFile,
@@ -749,6 +764,9 @@ class IndexedDbWorkspaceRepository implements IWorkspaceRepository {
 		this.bindingsByWorkspaceId.set(id, manifestUpdate.bindings);
 		return {
 			snapshot: {
+				editorState: cloneWorkspaceEditorState(
+					input.editorState ?? createEmptyWorkspaceEditorState()
+				),
 				files: new Map(input.files),
 				folders: [...input.folders],
 				hasLicenseFile: input.hasLicenseFile,

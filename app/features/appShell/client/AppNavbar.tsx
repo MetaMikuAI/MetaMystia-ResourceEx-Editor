@@ -26,6 +26,9 @@ import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 import { openAnnouncementModal } from '@/features/announcements/client/AnnouncementModal';
 import { ConfirmDialog } from '@/features/resourceEditor/client/components/confirm/ConfirmDialog';
 import { ExportValidationDialog } from '@/features/resourceEditor/client/components/export/ExportValidationDialog';
+import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
+import { SuccessBadge } from '@/features/resourceEditor/client/components/status/SuccessBadge';
+import { WarningBadge } from '@/features/resourceEditor/client/components/status/WarningBadge';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 import {
 	type IResourcePackValidationIssue,
@@ -111,7 +114,7 @@ const NavDropdown = memo<INavDropdownProps>(function NavDropdown({
 
 	return (
 		<Dropdown>
-			<DropdownTrigger>
+			<DropdownTrigger showArrow>
 				<Button
 					variant={isActive ? 'flat' : 'light'}
 					color={isActive ? 'primary' : 'default'}
@@ -146,6 +149,45 @@ interface INotice {
 	description: string;
 }
 
+type TStatusBadgeTone = 'error' | 'success' | 'warning';
+
+interface IWorkspaceStatusBadgesProps {
+	badgeClassName?: string;
+	className?: string;
+	exportLabel: string;
+	isExported: boolean;
+	localSaveLabel: string;
+	localSaveTone: TStatusBadgeTone;
+}
+
+const WORKSPACE_STATUS_BADGE_CLASS_NAME = 'whitespace-nowrap px-2 py-1 text-xs';
+
+function WorkspaceStatusBadges({
+	badgeClassName = WORKSPACE_STATUS_BADGE_CLASS_NAME,
+	className,
+	exportLabel,
+	isExported,
+	localSaveLabel,
+	localSaveTone,
+}: IWorkspaceStatusBadgesProps) {
+	const LocalSaveBadge =
+		localSaveTone === 'error'
+			? ErrorBadge
+			: localSaveTone === 'warning'
+				? WarningBadge
+				: SuccessBadge;
+	const ExportBadge = isExported ? SuccessBadge : WarningBadge;
+
+	return (
+		<span className={cn('flex flex-wrap items-center gap-1.5', className)}>
+			<LocalSaveBadge className={badgeClassName}>
+				{localSaveLabel}
+			</LocalSaveBadge>
+			<ExportBadge className={badgeClassName}>{exportLabel}</ExportBadge>
+		</span>
+	);
+}
+
 export const AppNavbar = memo(function AppNavbar() {
 	const pathname = usePathname();
 	const router = useRouter();
@@ -158,8 +200,8 @@ export const AppNavbar = memo(function AppNavbar() {
 	const {
 		activeWorkspaceId,
 		assets: { urls: assetUrls },
+		exportStatus,
 		exportArchive,
-		hasUnexportedChanges,
 		isExporting,
 		localSaveError,
 		localSaveStatus,
@@ -406,17 +448,84 @@ export const AppNavbar = memo(function AppNavbar() {
 	const hasActiveMobileRoute = MOBILE_NAV_ITEMS.some(
 		(item) => item.href === pathname
 	);
-	const localSaveLabel =
-		storageMode === 'memory' || localSaveStatus === 'memory-only'
-			? '仅临时保存'
-			: localSaveStatus === 'saving'
-				? '正在保存到本机'
-				: localSaveStatus === 'error' || storageError !== null
-					? '本地保存失败'
-					: '已保存到本机';
 	const isTemporaryStorage =
 		storageMode === 'memory' || localSaveStatus === 'memory-only';
+	const localSaveLabel = isTemporaryStorage
+		? '仅临时保存'
+		: localSaveStatus === 'saving'
+			? '正在保存到本机'
+			: localSaveStatus === 'error' || storageError !== null
+				? '本地保存失败'
+				: '已保存到本机';
+	const exportStatusLabel =
+		exportStatus === 'modified'
+			? '有未导出的更改'
+			: exportStatus === 'unexported'
+				? '当前内容尚未导出'
+				: '当前版本已导出';
+	const localSaveTone: TStatusBadgeTone = isTemporaryStorage
+		? 'warning'
+		: localSaveStatus === 'saving'
+			? 'warning'
+			: localSaveStatus === 'error' || storageError !== null
+				? 'error'
+				: 'success';
+	const resourcePackVersion = resourcePack.packInfo.version || '未设置';
+	const resourcePackVersionLabel = resourcePack.packInfo.version
+		? `v${resourcePack.packInfo.version}`
+		: '版本未设置';
+	const compactLocalSaveLabel = isTemporaryStorage
+		? '临时保存'
+		: localSaveStatus === 'saving'
+			? '保存中'
+			: localSaveStatus === 'error' || storageError !== null
+				? '保存失败'
+				: '已保存';
+	const compactExportStatusLabel =
+		exportStatus === 'modified'
+			? '有修改'
+			: exportStatus === 'unexported'
+				? '尚未导出'
+				: '已导出';
 	const storageWarning = storageError ?? localSaveError;
+	const mobileWorkspaceSummaryCard = hasActiveWorkspace ? (
+		<>
+			<Button
+				fullWidth
+				variant="light"
+				className={cn(
+					MOBILE_CARD_CONTENT_CLASS_NAME,
+					MOBILE_CARD_BASE_CLASS_NAME,
+					MOBILE_CARD_INACTIVE_CLASS_NAME,
+					'py-3'
+				)}
+				onPress={() => handleNavigate('/')}
+			>
+				<span className="flex w-full min-w-0 flex-col gap-2">
+					<span className="flex min-w-0 items-baseline justify-between gap-3">
+						<span className="min-w-0 truncate text-small font-medium text-foreground-700">
+							{activeWorkspace.workspace.displayName}
+						</span>
+						<span className="shrink-0 font-mono text-xs text-foreground-500">
+							{resourcePackVersionLabel}
+						</span>
+					</span>
+					<WorkspaceStatusBadges
+						badgeClassName="whitespace-nowrap"
+						exportLabel={compactExportStatusLabel}
+						isExported={exportStatus === 'exported'}
+						localSaveLabel={compactLocalSaveLabel}
+						localSaveTone={localSaveTone}
+					/>
+				</span>
+			</Button>
+			{localSaveError && (
+				<p className="px-1 text-xs leading-5 text-warning-700 dark:text-warning">
+					{localSaveError}
+				</p>
+			)}
+		</>
+	) : null;
 
 	return (
 		<>
@@ -511,22 +620,6 @@ export const AppNavbar = memo(function AppNavbar() {
 				</NavbarContent>
 
 				<NavbarContent justify="end" className="hidden gap-1 xl:flex">
-					{hasActiveWorkspace && (
-						<Link
-							href="/"
-							className="mr-1 hidden max-w-44 text-right text-[11px] leading-4 text-foreground-500 2xl:block"
-						>
-							<span className="block truncate font-medium text-foreground-700">
-								{activeWorkspace.workspace.displayName}
-							</span>
-							<span className="block">{localSaveLabel}</span>
-							<span className="block">
-								{hasUnexportedChanges
-									? '有未导出的更改'
-									: '当前版本已导出'}
-							</span>
-						</Link>
-					)}
 					{pathname !== '/' && (
 						<>
 							{hasActiveWorkspace &&
@@ -576,7 +669,7 @@ export const AppNavbar = memo(function AppNavbar() {
 					)}
 					<NavbarItem className="ml-2">
 						<Dropdown>
-							<DropdownTrigger>
+							<DropdownTrigger showArrow>
 								<Button variant="light">更多</Button>
 							</DropdownTrigger>
 							<DropdownMenu
@@ -628,6 +721,11 @@ export const AppNavbar = memo(function AppNavbar() {
 					id={MOBILE_MENU_ID}
 					className="mobile-navbar-menu-scroll max-h-[calc(var(--safe-h-dvh)_-_var(--navbar-height))] gap-3.5 overflow-y-auto overflow-x-hidden px-6 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] pt-4 sm:px-8"
 				>
+					{mobileWorkspaceSummaryCard && (
+						<NavbarMenuItem className="w-full">
+							{mobileWorkspaceSummaryCard}
+						</NavbarMenuItem>
+					)}
 					{visibleMobileNavGroups.map((group, groupIndex) => (
 						<NavbarMenuItem key={group.label} className="w-full">
 							<section className="space-y-2">
@@ -686,25 +784,6 @@ export const AppNavbar = memo(function AppNavbar() {
 								<h2 className={MOBILE_SECTION_TITLE_CLASS_NAME}>
 									资源包操作
 								</h2>
-								{hasActiveWorkspace && (
-									<p className="px-1 text-xs leading-5 text-foreground-500">
-										<span className="block truncate font-medium text-foreground-700">
-											{
-												activeWorkspace.workspace
-													.displayName
-											}
-										</span>
-										{localSaveLabel}·
-										{hasUnexportedChanges
-											? '有未导出的更改'
-											: '当前版本已导出'}
-										{localSaveError && (
-											<span className="block text-warning-700 dark:text-warning">
-												{localSaveError}
-											</span>
-										)}
-									</p>
-								)}
 								<div className="grid grid-cols-2 gap-2">
 									<Button
 										{...(!hasActiveWorkspace
@@ -842,6 +921,33 @@ export const AppNavbar = memo(function AppNavbar() {
 					</NavbarMenuItem>
 				</NavbarMenu>
 			</HeroUINavbar>
+			{pathname !== '/' && hasActiveWorkspace && (
+				<div className="hidden border-b border-divider bg-content1/40 shadow-sm backdrop-blur xl:block">
+					<div className="mx-auto flex min-h-10 w-full max-w-7xl items-center gap-3 px-6 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl">
+						<Link
+							href="/"
+							aria-label="返回资源包管理页"
+							className="flex min-w-0 items-baseline gap-2 rounded-small text-xs text-foreground-500 transition-colors hover:text-foreground-700"
+						>
+							<span className="shrink-0">当前资源包</span>
+							<span className="truncate font-medium text-foreground-700">
+								{activeWorkspace.workspace.displayName}
+							</span>
+						</Link>
+						<span className="h-4 w-px shrink-0 bg-divider" />
+						<span className="shrink-0 font-mono text-xs text-foreground-500">
+							版本：{resourcePackVersion}
+						</span>
+						<WorkspaceStatusBadges
+							className="ml-auto shrink-0"
+							exportLabel={exportStatusLabel}
+							isExported={exportStatus === 'exported'}
+							localSaveLabel={localSaveLabel}
+							localSaveTone={localSaveTone}
+						/>
+					</div>
+				</div>
+			)}
 			{pathname !== '/' &&
 				hasActiveWorkspace &&
 				(isTemporaryStorage || storageError !== null) &&

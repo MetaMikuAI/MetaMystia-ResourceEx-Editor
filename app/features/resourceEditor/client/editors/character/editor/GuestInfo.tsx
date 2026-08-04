@@ -14,6 +14,7 @@ import {
 } from '@/domain/data/tags';
 import type {
 	GuestInfo,
+	LikeTag,
 	Request,
 	SpawnConfig,
 } from '@/domain/resourcePack/contracts/character';
@@ -30,8 +31,11 @@ import {
 	TagBadge,
 	TagButton,
 } from '@/features/resourceEditor/client/components/tags/TagButton';
+import { useFocusOnItemAppend } from '@/features/resourceEditor/client/hooks/useFocusOnItemAppend';
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 interface GuestInfoProps {
+	characterId: number;
 	guest: GuestInfo | undefined;
 	onUpdate: (updates: Partial<GuestInfo>) => void;
 	onEnable: () => void;
@@ -39,12 +43,22 @@ interface GuestInfoProps {
 }
 
 export function GuestInfoEditor({
+	characterId,
 	guest,
 	onUpdate,
 	onEnable,
 	onDisable,
 }: GuestInfoProps) {
+	const {
+		getGuestLikeTagDraft,
+		getGuestSpawnDraft,
+		replaceGuestLikeTagDraft,
+		replaceGuestSpawnDraft,
+	} = useResourceEditor();
 	const [isExpanded, setIsExpanded] = useState(false);
+	const conversationListRef = useFocusOnItemAppend(
+		guest?.conversation?.length ?? 0
+	);
 	const [isDisableConfirmationOpen, setIsDisableConfirmationOpen] =
 		useState(false);
 	const isFundRangeInvalid = Boolean(
@@ -69,9 +83,12 @@ export function GuestInfoEditor({
 		let newBevRequests = [...(guest.bevRequests || [])];
 
 		if (exists) {
+			replaceGuestLikeTagDraft(characterId, field, tagId, exists);
 			newTags = currentTags.filter((t) => t.tagId !== tagId);
 		} else {
-			newTags = [...currentTags, { tagId, weight: 1 }];
+			const draft = getGuestLikeTagDraft(characterId, field, tagId);
+			newTags = [...currentTags, draft ?? { tagId, weight: 1 }];
+			replaceGuestLikeTagDraft(characterId, field, tagId, undefined);
 			const newRequest = {
 				tagId,
 				request: '',
@@ -109,6 +126,18 @@ export function GuestInfoEditor({
 			foodRequests: newFoodRequests,
 			bevRequests: newBevRequests,
 		});
+	};
+
+	const updateLikeTagWeight = (
+		field: 'likeFoodTag' | 'likeBevTag',
+		tagId: number,
+		weight: number
+	) => {
+		if (!guest) return;
+		const nextTags = guest[field].map(
+			(tag): LikeTag => (tag.tagId === tagId ? { ...tag, weight } : tag)
+		);
+		onUpdate({ [field]: nextTags });
 	};
 
 	const toggleHateTag = (tagId: number) => {
@@ -214,17 +243,20 @@ export function GuestInfoEditor({
 
 		let newSpawns;
 		if (exists) {
+			replaceGuestSpawnDraft(characterId, izakayaId, exists);
 			newSpawns = currentSpawns.filter((s) => s.izakayaId !== izakayaId);
 		} else {
+			const draft = getGuestSpawnDraft(characterId, izakayaId);
 			newSpawns = [
 				...currentSpawns,
-				{
+				draft ?? {
 					izakayaId,
 					relativeProb: 0,
 					onlySpawnAfterUnlocking: false,
 					onlySpawnWhenPlaceBeRecorded: false,
 				},
 			];
+			replaceGuestSpawnDraft(characterId, izakayaId, undefined);
 		}
 
 		newSpawns.sort((a, b) => a.izakayaId - b.izakayaId);
@@ -419,10 +451,14 @@ export function GuestInfoEditor({
 								添加闲聊
 							</SectionAddButton>
 						</div>
-						<div className="flex flex-col gap-2">
+						<div
+							ref={conversationListRef}
+							className="flex flex-col gap-2"
+						>
 							{guest?.conversation?.map((conv, i) => (
 								<div
 									key={i}
+									data-editor-appended-item
 									className="flex min-w-0 items-center gap-2"
 								>
 									<Input
@@ -607,6 +643,29 @@ export function GuestInfoEditor({
 														tag.tagId}
 												</TagBadge>
 											</div>
+											<div className="flex shrink-0 items-center gap-2">
+												<span className="text-xs text-foreground-600">
+													权重
+												</span>
+												<Input
+													type="number"
+													min={0}
+													step="0.1"
+													aria-label={`${FOOD_TAG_MAP[tag.tagId] || tag.tagId}喜好权重`}
+													value={String(tag.weight)}
+													onChange={(event) =>
+														updateLikeTagWeight(
+															'likeFoodTag',
+															tag.tagId,
+															Number(
+																event.target
+																	.value
+															)
+														)
+													}
+													className="w-20"
+												/>
+											</div>
 											<div className="flex min-w-0 flex-1 flex-col gap-1">
 												<Input
 													type="text"
@@ -700,6 +759,29 @@ export function GuestInfoEditor({
 													}
 												</TagBadge>
 											</div>
+											<div className="flex shrink-0 items-center gap-2">
+												<span className="text-xs text-foreground-600">
+													权重
+												</span>
+												<Input
+													type="number"
+													min={0}
+													step="0.1"
+													aria-label={`${BEVERAGE_TAG_MAP[tag.tagId] || tag.tagId}喜好权重`}
+													value={String(tag.weight)}
+													onChange={(event) =>
+														updateLikeTagWeight(
+															'likeBevTag',
+															tag.tagId,
+															Number(
+																event.target
+																	.value
+															)
+														)
+													}
+													className="w-20"
+												/>
+											</div>
 											<div className="flex min-w-0 flex-1 flex-col gap-1">
 												<Input
 													type="text"
@@ -763,7 +845,7 @@ export function GuestInfoEditor({
 															izakaya.id
 													)
 												);
-												return (
+												const locationButton = (
 													<Button
 														key={izakaya.id}
 														size="sm"
@@ -802,6 +884,7 @@ export function GuestInfoEditor({
 														</span>
 													</Button>
 												);
+												return locationButton;
 											})}
 										</div>
 									</section>

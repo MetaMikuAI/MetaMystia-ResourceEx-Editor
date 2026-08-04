@@ -10,6 +10,10 @@ import {
 } from 'react';
 
 import { remapResourcePackAssetReferences } from '@/domain/resourcePack/assetReferences';
+import type {
+	LikeTag,
+	SpawnConfig,
+} from '@/domain/resourcePack/contracts/character';
 import type { ResourceEx } from '@/domain/resourcePack/contracts/resourceEx';
 import { createBlankResourcePack } from '@/domain/resourcePack/createBlankResourcePack';
 
@@ -18,8 +22,21 @@ import { writeResourcePackArchive } from '@/features/resourceEditor/client/archi
 import type { IAssetPathOperation } from '@/features/resourceEditor/client/assets/contracts';
 import { useAssetStore } from '@/features/resourceEditor/client/assets/useAssetStore';
 import { useResourceWorkspaces } from '@/features/resourceEditor/client/workspaces/useResourceWorkspaces';
+import {
+	clearGuestDrafts as clearStoredGuestDrafts,
+	createEmptyWorkspaceEditorState,
+	readGuestLikeTagDraft,
+	readGuestSpawnDraft,
+	replaceGuestLikeTagDraft as replaceStoredGuestLikeTagDraft,
+	replaceGuestSpawnDraft as replaceStoredGuestSpawnDraft,
+	replaceWorkspaceEditorStateCharacterId,
+	type TGuestLikeTagDraftField,
+} from '@/features/resourceEditor/client/workspaces/workspaceEditorState';
 
-import type { IResourceEditorExportResult } from './contracts';
+import type {
+	IResourceEditorExportResult,
+	TResourceExportStatus,
+} from './contracts';
 import { runResourcePackExport } from './runResourcePackExport';
 import { ResourceEditorContext } from './useResourceEditor';
 
@@ -52,10 +69,13 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 		createBlankResourcePack()
 	);
 	const [license, setLicense] = useState('');
-	const [hasUnexportedChanges, setHasUnexportedChanges] = useState(false);
+	const [hasChangesSinceCheckpoint, setHasChangesSinceCheckpoint] =
+		useState(false);
+	const [isCurrentExported, setIsCurrentExported] = useState(false);
 	const [isExporting, setIsExporting] = useState(false);
 	const [isLocalSavePending, setIsLocalSavePending] = useState(false);
 	const [revision, setRevision] = useState(0);
+	const editorStateRef = useRef(createEmptyWorkspaceEditorState());
 	const hasLicenseFileRef = useRef(false);
 	const isExportingRef = useRef(false);
 	const isExportSnapshotRef = useRef(isExportSnapshot);
@@ -73,7 +93,8 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 	const markDirty = useCallback(() => {
 		if (isExportSnapshotRef.current) return;
 		bumpRevision();
-		setHasUnexportedChanges(true);
+		setHasChangesSinceCheckpoint(true);
+		setIsCurrentExported(false);
 		setIsLocalSavePending(true);
 	}, [bumpRevision]);
 	const {
@@ -190,6 +211,75 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 		[markDirty]
 	);
 
+	const clearGuestDrafts = useCallback((characterId: number) => {
+		if (isExportSnapshotRef.current) return;
+		editorStateRef.current = clearStoredGuestDrafts(
+			editorStateRef.current,
+			characterId
+		);
+	}, []);
+
+	const getGuestLikeTagDraft = useCallback(
+		(characterId: number, field: TGuestLikeTagDraftField, tagId: number) =>
+			readGuestLikeTagDraft(
+				editorStateRef.current,
+				characterId,
+				field,
+				tagId
+			),
+		[]
+	);
+	const getGuestSpawnDraft = useCallback(
+		(characterId: number, izakayaId: number) =>
+			readGuestSpawnDraft(editorStateRef.current, characterId, izakayaId),
+		[]
+	);
+	const replaceGuestLikeTagDraft = useCallback(
+		(
+			characterId: number,
+			field: TGuestLikeTagDraftField,
+			tagId: number,
+			tag: LikeTag | undefined
+		) => {
+			if (isExportSnapshotRef.current) return;
+			editorStateRef.current = replaceStoredGuestLikeTagDraft(
+				editorStateRef.current,
+				characterId,
+				field,
+				tagId,
+				tag
+			);
+		},
+		[]
+	);
+	const replaceGuestSpawnDraft = useCallback(
+		(
+			characterId: number,
+			izakayaId: number,
+			spawn: SpawnConfig | undefined
+		) => {
+			if (isExportSnapshotRef.current) return;
+			editorStateRef.current = replaceStoredGuestSpawnDraft(
+				editorStateRef.current,
+				characterId,
+				izakayaId,
+				spawn
+			);
+		},
+		[]
+	);
+	const replaceGuestDraftCharacterId = useCallback(
+		(previousCharacterId: number, nextCharacterId: number) => {
+			if (isExportSnapshotRef.current) return;
+			editorStateRef.current = replaceWorkspaceEditorStateCharacterId(
+				editorStateRef.current,
+				previousCharacterId,
+				nextCharacterId
+			);
+		},
+		[]
+	);
+
 	const moveAssets = useCallback(
 		(operations: readonly IAssetPathOperation[]) => {
 			if (isExportSnapshotRef.current) return;
@@ -229,6 +319,7 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 			if (revisionRef.current !== expectedRevision) return null;
 			return {
 				...assets,
+				editorState: editorStateRef.current,
 				hasLicenseFile: hasLicenseFileRef.current,
 				license: licenseRef.current,
 				resourcePack: resourcePackRef.current,
@@ -240,11 +331,13 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 
 	useEffect(() => {
 		if (!activeWorkspace) {
+			editorStateRef.current = createEmptyWorkspaceEditorState();
 			setActiveWorkspaceId(null);
 			setIsLocalSavePending(false);
 			return;
 		}
 		const { snapshot, workspace } = activeWorkspace;
+		editorStateRef.current = snapshot.editorState;
 		replaceAssets(snapshot.files, snapshot.folders);
 		resourcePackRef.current = snapshot.resourcePack;
 		hasLicenseFileRef.current = snapshot.hasLicenseFile;
@@ -253,7 +346,10 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 		setResourcePack(snapshot.resourcePack);
 		setLicense(snapshot.license);
 		setRevision(snapshot.revision);
-		setHasUnexportedChanges(!workspace.isCurrentExported);
+		setHasChangesSinceCheckpoint(
+			workspace.currentRevision !== workspace.checkpointRevision
+		);
+		setIsCurrentExported(workspace.isCurrentExported);
 		setIsLocalSavePending(false);
 		setActiveWorkspaceId(workspace.id);
 	}, [activeWorkspace, replaceAssets]);
@@ -305,9 +401,16 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 	const clearDirtyIfRevision = useCallback((expectedRevision: number) => {
 		if (!isMountedRef.current) return false;
 		if (revisionRef.current !== expectedRevision) return false;
-		setHasUnexportedChanges(false);
+		setHasChangesSinceCheckpoint(false);
+		setIsCurrentExported(true);
 		return true;
 	}, []);
+
+	const exportStatus: TResourceExportStatus = hasChangesSinceCheckpoint
+		? 'modified'
+		: isCurrentExported
+			? 'exported'
+			: 'unexported';
 
 	const exportArchive = useCallback(
 		async (
@@ -360,12 +463,15 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 		() => ({
 			activeWorkspaceId,
 			assets: assetState,
+			clearGuestDrafts,
 			copyAssets,
 			createAssetFolder,
+			exportStatus,
 			exportArchive,
 			flushLocalSave,
+			getGuestLikeTagDraft,
+			getGuestSpawnDraft,
 			getAssetUrl,
-			hasUnexportedChanges,
 			isAssetGenerationCurrent,
 			isExporting,
 			isLocalSavePending,
@@ -376,6 +482,9 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 			removeAsset,
 			removeAssets,
 			removeAssetFolders,
+			replaceGuestDraftCharacterId,
+			replaceGuestLikeTagDraft,
+			replaceGuestSpawnDraft,
 			replaceLicense,
 			resourcePack,
 			retryLocalSave,
@@ -388,12 +497,15 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 		[
 			activeWorkspaceId,
 			assetState,
+			clearGuestDrafts,
 			copyAssets,
 			createAssetFolder,
+			exportStatus,
 			exportArchive,
 			flushLocalSave,
+			getGuestLikeTagDraft,
+			getGuestSpawnDraft,
 			getAssetUrl,
-			hasUnexportedChanges,
 			isAssetGenerationCurrent,
 			isExporting,
 			isLocalSavePending,
@@ -402,6 +514,9 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 			removeAsset,
 			removeAssets,
 			removeAssetFolders,
+			replaceGuestDraftCharacterId,
+			replaceGuestLikeTagDraft,
+			replaceGuestSpawnDraft,
 			replaceLicense,
 			resourcePack,
 			retryLocalSave,
