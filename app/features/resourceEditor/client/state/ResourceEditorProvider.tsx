@@ -337,6 +337,12 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 			return;
 		}
 		const { snapshot, workspace } = activeWorkspace;
+		if (
+			activeWorkspaceId === workspace.id &&
+			revisionRef.current === snapshot.revision
+		) {
+			return;
+		}
 		editorStateRef.current = snapshot.editorState;
 		replaceAssets(snapshot.files, snapshot.folders);
 		resourcePackRef.current = snapshot.resourcePack;
@@ -352,7 +358,7 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 		setIsCurrentExported(workspace.isCurrentExported);
 		setIsLocalSavePending(false);
 		setActiveWorkspaceId(workspace.id);
-	}, [activeWorkspace, replaceAssets]);
+	}, [activeWorkspace, activeWorkspaceId, replaceAssets]);
 
 	useEffect(() => {
 		if (
