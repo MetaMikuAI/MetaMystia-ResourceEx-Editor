@@ -46,6 +46,11 @@ import {
 	type IWorkspaceLeaseController,
 } from './workspaceLease';
 import { createWorkspaceLeaseLossCopyName } from './workspaceLeaseLoss';
+import {
+	readWorkspaceLeaseReleaseIntents,
+	removeWorkspaceLeaseReleaseIntent,
+	writeWorkspaceLeaseReleaseIntent,
+} from './workspaceLeaseReleaseIntent';
 import { migrateTemporaryWorkspaces } from './workspaceMigration';
 import { createWorkspaceRepository } from './workspaceRepository';
 import {
@@ -669,6 +674,12 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 			);
 		};
 		let catalogChannel: BroadcastChannel | null = null;
+		let leaseReleaseStorage: Storage | null = null;
+		try {
+			leaseReleaseStorage = window.localStorage;
+		} catch {
+			// The existing lease expiry remains the fallback when local storage is unavailable.
+		}
 		try {
 			catalogChannel = new BroadcastChannel(
 				WORKSPACE_CATALOG_CHANNEL_NAME
@@ -683,7 +694,13 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 				if (storageModeRef.current !== 'persistent') return;
 				void repositoryRef.current
 					.releaseLease(workspaceId, leaseId)
-					.then(() => refreshSummaries(true))
+					.then(() => {
+						removeWorkspaceLeaseReleaseIntent(
+							leaseReleaseStorage,
+							leaseId
+						);
+						return refreshSummaries(true);
+					})
 					.catch((error) => setStorageError(describeError(error)));
 			},
 			onWorkspaceTakeover: (workspaceId, ownerId) => {
@@ -701,7 +718,7 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 			if (document.visibilityState === 'visible')
 				refreshExternalCatalog();
 		};
-		const requestActiveLeaseRelease = () => {
+		const requestActiveLeaseRelease = (shouldPersistIntent = false) => {
 			const activeWorkspaceId = activeWorkspaceRef.current?.workspace.id;
 			const activeLeaseId = activeLeaseIdRef.current;
 			if (
@@ -711,11 +728,17 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 			) {
 				return;
 			}
+			if (shouldPersistIntent) {
+				writeWorkspaceLeaseReleaseIntent(leaseReleaseStorage, {
+					leaseId: activeLeaseId,
+					workspaceId: activeWorkspaceId,
+				});
+			}
 			catalogSync.requestLeaseRelease(activeWorkspaceId, activeLeaseId);
 		};
 		const handlePageHide = (event: PageTransitionEvent) => {
 			if (event.persisted) return;
-			requestActiveLeaseRelease();
+			requestActiveLeaseRelease(true);
 		};
 		workspaceCatalogSyncRef.current?.dispose();
 		workspaceCatalogSyncRef.current = catalogSync;
@@ -769,6 +792,22 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 					return;
 				}
 				installRepository(repository, 'persistent', null);
+				for (const intent of readWorkspaceLeaseReleaseIntents(
+					leaseReleaseStorage
+				)) {
+					try {
+						await repository.releaseLease(
+							intent.workspaceId,
+							intent.leaseId
+						);
+						removeWorkspaceLeaseReleaseIntent(
+							leaseReleaseStorage,
+							intent.leaseId
+						);
+					} catch {
+						// Keep the exact release intent for a later startup attempt.
+					}
+				}
 				await refreshSummaries();
 				try {
 					void navigator.storage?.persist?.().catch(() => undefined);
