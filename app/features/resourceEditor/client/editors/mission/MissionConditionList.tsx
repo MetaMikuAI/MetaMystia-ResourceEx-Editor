@@ -15,9 +15,13 @@ import { Label } from '@/features/resourceEditor/client/components/fields/Label'
 import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
 import { EditorSection } from '@/features/resourceEditor/client/components/layout/EditorSection';
 import { PRODUCT_TYPE_OPTIONS } from '@/features/resourceEditor/client/components/select/productTypeOptions';
-import { Select } from '@/features/resourceEditor/client/components/select/Select';
+import {
+	type ISelectChangeConfirmation,
+	Select,
+} from '@/features/resourceEditor/client/components/select/Select';
 import { WarningNotice } from '@/features/resourceEditor/client/components/status/WarningNotice';
 import { TagsField } from '@/features/resourceEditor/client/components/tags/TagsField';
+import { useFocusOnItemAppend } from '@/features/resourceEditor/client/hooks/useFocusOnItemAppend';
 
 import {
 	createMissionCondition,
@@ -105,6 +109,10 @@ interface SelectFieldProps {
 	options: readonly SelectOption[];
 	placeholder?: string;
 	disabled?: boolean;
+	getChangeConfirmation?: (
+		nextValue: string,
+		currentValue: string | undefined
+	) => ISelectChangeConfirmation | null;
 	onChange: (value: string) => void;
 }
 
@@ -114,6 +122,7 @@ function SelectField({
 	options,
 	placeholder,
 	disabled,
+	getChangeConfirmation,
 	onChange,
 }: SelectFieldProps) {
 	return (
@@ -124,6 +133,7 @@ function SelectField({
 				{...(disabled ? { isDisabled: true } : {})}
 				value={value !== undefined ? String(value) : ''}
 				onChange={(v) => onChange(v)}
+				{...(getChangeConfirmation ? { getChangeConfirmation } : {})}
 				items={options.map((o) => ({
 					value: String(o.value),
 					label: o.label,
@@ -310,6 +320,16 @@ function SubmitByTagEditor({ condition, onUpdate }: ConditionEditorProps) {
 				onChange={(v) =>
 					onUpdate({ sellableType: v as 'Food' | 'Beverage', tag: 0 })
 				}
+				getChangeConfirmation={(nextType, currentType) =>
+					nextType !== currentType && Boolean(condition.tag)
+						? {
+								confirmLabel: '切换类型',
+								description:
+									'切换可交付类型会清除当前选择的标签。',
+								title: '确定要切换可交付类型吗？',
+							}
+						: null
+				}
 			/>
 			<SelectField
 				label="标签（Tag）"
@@ -344,6 +364,16 @@ function SubmitByTagsEditor({ condition, onUpdate }: ConditionEditorProps) {
 						sellableType: v as 'Food' | 'Beverage',
 						tags: [],
 					})
+				}
+				getChangeConfirmation={(nextType, currentType) =>
+					nextType !== currentType && Boolean(condition.tags?.length)
+						? {
+								confirmLabel: '切换类型',
+								description:
+									'切换可交付类型会清除当前选择的标签。',
+								title: '确定要切换可交付类型吗？',
+							}
+						: null
 				}
 			/>
 			<TagsField
@@ -463,6 +493,7 @@ const CONDITION_EDITORS: Partial<
 interface ConditionItemProps {
 	condition: MissionCondition;
 	ctx: ConditionEditorContext;
+	hasReceiver: boolean;
 	onUpdate: (updates: Partial<MissionCondition>) => void;
 	onRemove: () => void;
 }
@@ -470,6 +501,7 @@ interface ConditionItemProps {
 function ConditionItem({
 	condition,
 	ctx,
+	hasReceiver,
 	onUpdate,
 	onRemove,
 }: ConditionItemProps) {
@@ -477,7 +509,10 @@ function ConditionItem({
 	const isSupported = SUPPORTED_CONDITION_TYPES.has(condition.conditionType);
 
 	return (
-		<div className="flex min-w-0 flex-col gap-3 rounded-large border border-divider bg-content1/50 p-4">
+		<div
+			data-editor-appended-item
+			className="flex min-w-0 flex-col gap-3 rounded-large border border-divider bg-content1/50 p-4"
+		>
 			<div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
 				<Select<ConditionType>
 					ariaLabel="完成条件类型"
@@ -486,6 +521,25 @@ function ConditionItem({
 					onChange={(v) =>
 						onUpdate(createMissionCondition(v as ConditionType))
 					}
+					getChangeConfirmation={(nextType, currentType) => {
+						if (nextType === currentType) return null;
+						const hasConfiguredCondition =
+							JSON.stringify(condition) !==
+							JSON.stringify(
+								createMissionCondition(condition.conditionType)
+							);
+						const willClearReceiver =
+							nextType === 'BillRepayment' && hasReceiver;
+						if (!hasConfiguredCondition && !willClearReceiver)
+							return null;
+						return {
+							confirmLabel: '切换类型',
+							description: willClearReceiver
+								? '切换后会清除当前条件配置和任务接取人。'
+								: '切换后会清除当前条件中已填写的配置。',
+							title: '确定要切换完成条件类型吗？',
+						};
+					}}
 					items={CONDITION_TYPES.map((t) => ({
 						value: t.type,
 						label: `${t.label}（${t.type}）`,
@@ -535,6 +589,7 @@ export const MissionConditionList = memo<MissionConditionListProps>(
 		onUpdate,
 	}) {
 		const conditions = mission.finishConditions ?? [];
+		const conditionListRef = useFocusOnItemAppend(conditions.length);
 		const updateConditions = useCallback(
 			(nextConditions: MissionCondition[]) => {
 				const hasBillRepayment = nextConditions.some(
@@ -606,12 +661,13 @@ export const MissionConditionList = memo<MissionConditionListProps>(
 					</SectionAddButton>
 				}
 			>
-				<div className="flex flex-col gap-3">
+				<div ref={conditionListRef} className="flex flex-col gap-3">
 					{conditions.map((condition, index) => (
 						<ConditionItem
 							key={index}
 							condition={condition}
 							ctx={ctx}
+							hasReceiver={mission.reciever.trim().length > 0}
 							onUpdate={(updates) =>
 								updateCondition(index, updates)
 							}

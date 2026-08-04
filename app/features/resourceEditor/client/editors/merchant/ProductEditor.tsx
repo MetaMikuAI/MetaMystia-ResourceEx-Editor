@@ -157,6 +157,19 @@ export const ProductEditor = memo<ProductEditorProps>(function ProductEditor({
 					<Select<ProductType>
 						value={product.productType}
 						onChange={handleTypeChange}
+						getChangeConfirmation={(nextType, currentType) =>
+							nextType !== currentType &&
+							(product.productId !== 0 ||
+								product.productAmount !== 1 ||
+								product.productLabel.trim().length > 0)
+								? {
+										confirmLabel: '切换类型',
+										description:
+											'切换商品类型会清空当前已选择的商品及关联配置。',
+										title: '确定要切换商品类型吗？',
+									}
+								: null
+						}
 						placeholder="请选择商品类型"
 						items={typeItems}
 					/>

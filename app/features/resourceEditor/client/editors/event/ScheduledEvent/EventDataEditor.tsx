@@ -40,6 +40,18 @@ export const EventDataEditor = memo<EventDataEditorProps>(
 									: { eventType: newType };
 							onChange(newEventData);
 						}}
+						getChangeConfirmation={(nextType, currentType) =>
+							nextType !== currentType &&
+							nextType !== 'Dialog' &&
+							Boolean(eventData?.dialogPackageName)
+								? {
+										confirmLabel: '切换类型',
+										description:
+											'切换后会清除当前选择的对话包。',
+										title: '确定要切换事件类型吗？',
+									}
+								: null
+						}
 						items={[
 							{ value: 'Null', label: '无（Null）' },
 							{ value: 'Timeline', label: '时间轴（Timeline）' },

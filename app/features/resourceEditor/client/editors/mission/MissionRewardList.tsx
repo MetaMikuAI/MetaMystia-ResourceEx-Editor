@@ -2,6 +2,7 @@ import { memo, useCallback, useMemo, useState } from 'react';
 
 import Button from '@/design/ui/components/button';
 import Input from '@/design/ui/components/input';
+import Tooltip from '@/design/ui/components/tooltip';
 
 import type {
 	MissionReward,
@@ -21,6 +22,7 @@ import {
 	Select,
 } from '@/features/resourceEditor/client/components/select/Select';
 import { WarningNotice } from '@/features/resourceEditor/client/components/status/WarningNotice';
+import { useFocusOnItemAppend } from '@/features/resourceEditor/client/hooks/useFocusOnItemAppend';
 
 import {
 	createMissionReward,
@@ -263,6 +265,7 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 			];
 			onUpdate(newRewards);
 		}, [rewards, onUpdate]);
+		const rewardListRef = useFocusOnItemAppend(rewards.length);
 
 		const removeReward = useCallback(
 			(index: number) => {
@@ -305,10 +308,11 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 					</SectionAddButton>
 				}
 			>
-				<div className="flex flex-col gap-3">
+				<div ref={rewardListRef} className="flex flex-col gap-3">
 					{(rewards || []).map((reward, index) => (
 						<div
 							key={index}
+							data-editor-appended-item
 							className="flex min-w-0 flex-col gap-3 rounded-large border border-divider bg-content1/50 p-4"
 						>
 							<div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
@@ -317,6 +321,25 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 									baseClassName="min-w-0 flex-1"
 									value={reward.rewardType}
 									onChange={(v) => replaceReward(index, v)}
+									getChangeConfirmation={(
+										nextType,
+										currentType
+									) =>
+										nextType !== currentType &&
+										JSON.stringify(reward) !==
+											JSON.stringify(
+												createMissionReward(
+													reward.rewardType
+												)
+											)
+											? {
+													confirmLabel: '切换类型',
+													description:
+														'切换奖励类型会清除当前奖励中已填写的配置。',
+													title: '确定要切换奖励类型吗？',
+												}
+											: null
+									}
 									items={REWARD_TYPES.map((t) => ({
 										value: t.type,
 										label: `${t.label}（${t.type}）`,
@@ -345,6 +368,24 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 													objectType: v,
 													rewardIntArray: [],
 												})
+											}
+											getChangeConfirmation={(
+												nextType,
+												currentType
+											) =>
+												nextType !== currentType &&
+												Boolean(
+													reward.rewardIntArray
+														?.length
+												)
+													? {
+															confirmLabel:
+																'切换类型',
+															description:
+																'切换物品类型会清空当前奖励中的物品列表。',
+															title: '确定要切换物品类型吗？',
+														}
+													: null
 											}
 											items={(
 												[
@@ -437,34 +478,36 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 															<span className="truncate">
 																{name}
 															</span>
-															<Button
-																isIconOnly
-																size="sm"
-																variant="light"
-																color="danger"
-																aria-label={`移除${name}`}
-																className="h-6 w-6 min-w-6"
-																onPress={() => {
-																	const newArray =
-																		[
-																			...(reward.rewardIntArray ||
-																				[]),
-																		];
-																	newArray.splice(
-																		i,
-																		1
-																	);
-																	updateReward(
-																		index,
-																		{
-																			rewardIntArray:
-																				newArray,
-																		}
-																	);
-																}}
-															>
-																<TrashIcon className="h-3 w-3" />
-															</Button>
+															<Tooltip content="移除物品">
+																<Button
+																	isIconOnly
+																	size="sm"
+																	variant="light"
+																	color="danger"
+																	aria-label="移除物品"
+																	className="h-6 w-6 min-w-6"
+																	onPress={() => {
+																		const newArray =
+																			[
+																				...(reward.rewardIntArray ||
+																					[]),
+																			];
+																		newArray.splice(
+																			i,
+																			1
+																		);
+																		updateReward(
+																			index,
+																			{
+																				rewardIntArray:
+																					newArray,
+																			}
+																		);
+																	}}
+																>
+																	<TrashIcon className="h-3 w-3" />
+																</Button>
+															</Tooltip>
 														</span>
 													);
 												}
