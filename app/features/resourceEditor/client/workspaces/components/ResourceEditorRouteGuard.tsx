@@ -1,10 +1,13 @@
 'use client';
 
+import { cn } from '@heroui/theme';
 import { useRouter } from 'next/navigation';
 import { type PropsWithChildren, useEffect, useRef, useState } from 'react';
 
+import { TYPOGRAPHY_STYLES } from '@/design/theme/styles/typography';
 import Button from '@/design/ui/components/button';
 import Card from '@/design/ui/components/card';
+import Heading from '@/design/ui/components/heading';
 
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 import { WorkspaceRecoveryDialog } from '@/features/resourceEditor/client/workspaces/components/WorkspaceRecoveryDialog';
@@ -95,18 +98,28 @@ export function ResourceEditorRouteGuard({ children }: PropsWithChildren) {
 			<div className="mx-auto flex min-h-[50dvh] w-full max-w-3xl items-center justify-center px-4 py-12 sm:px-6">
 				<Card
 					shadow="none"
-					className="w-full border border-divider bg-content1/55 p-5 backdrop-blur sm:p-6"
+					className="w-full rounded-large border border-divider bg-content1/55 p-5 backdrop-blur sm:p-6"
 				>
 					{workspaces.length > 0 ? (
 						<>
-							<h1 className="text-xl font-semibold">
+							<Heading variant="panel">
 								选择要编辑的资源包
-							</h1>
-							<p className="mt-2 text-sm leading-6 text-foreground-500">
+							</Heading>
+							<p
+								className={cn(
+									TYPOGRAPHY_STYLES.subtleDescription,
+									'mt-2'
+								)}
+							>
 								这个标签页尚未选择工作区。选择后会留在当前页面继续打开。
 							</p>
 							{restoreFallback.error && (
-								<p className="mt-3 text-sm text-danger">
+								<p
+									className={cn(
+										TYPOGRAPHY_STYLES.body,
+										'mt-3 text-danger'
+									)}
+								>
 									{restoreFallback.error}
 								</p>
 							)}
@@ -128,10 +141,22 @@ export function ResourceEditorRouteGuard({ children }: PropsWithChildren) {
 										}
 									>
 										<span className="flex min-w-0 flex-col items-start gap-0.5">
-											<span className="max-w-full truncate font-semibold">
+											<span
+												title={workspace.displayName}
+												className={cn(
+													TYPOGRAPHY_STYLES.itemTitle,
+													'max-w-full truncate'
+												)}
+											>
 												{workspace.displayName}
 											</span>
-											<span className="max-w-full truncate text-xs font-normal text-foreground-500">
+											<span
+												title={`${workspace.resourcePackName || '资源包名称未设置'}${workspace.version ? ` · 版本${workspace.version}` : ''}`}
+												className={cn(
+													TYPOGRAPHY_STYLES.caption,
+													'max-w-full truncate'
+												)}
+											>
 												{workspace.resourcePackName ||
 													'资源包名称未设置'}
 												{workspace.version
@@ -145,10 +170,15 @@ export function ResourceEditorRouteGuard({ children }: PropsWithChildren) {
 						</>
 					) : (
 						<>
-							<h1 className="text-xl font-semibold">
+							<Heading variant="panel">
 								当前浏览器中还没有资源包
-							</h1>
-							<p className="mt-2 text-sm leading-6 text-foreground-500">
+							</Heading>
+							<p
+								className={cn(
+									TYPOGRAPHY_STYLES.subtleDescription,
+									'mt-2'
+								)}
+							>
 								请先前往资源包管理页面新建或导入资源包。
 							</p>
 						</>
@@ -170,7 +200,12 @@ export function ResourceEditorRouteGuard({ children }: PropsWithChildren) {
 		activeWorkspaceId !== activeWorkspace.workspace.id
 	) {
 		return (
-			<div className="mx-auto flex min-h-[50dvh] max-w-7xl items-center justify-center px-4 py-12 text-sm text-foreground-500">
+			<div
+				className={cn(
+					TYPOGRAPHY_STYLES.subtleDescription,
+					'mx-auto flex min-h-[50dvh] max-w-7xl items-center justify-center px-4 py-12'
+				)}
+			>
 				正在读取本地资源包…
 			</div>
 		);

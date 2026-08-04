@@ -1,5 +1,7 @@
+import { cn } from '@heroui/theme';
 import { memo, useMemo } from 'react';
 
+import { TYPOGRAPHY_STYLES } from '@/design/theme/styles/typography';
 import Button from '@/design/ui/components/button';
 import Input from '@/design/ui/components/input';
 import Textarea from '@/design/ui/components/textarea';
@@ -201,7 +203,12 @@ export const MissionBasicInfo = memo<MissionBasicInfoProps>(
 								}
 							/>
 							{hasBillRepayment && (
-								<p className="text-xs leading-relaxed text-warning-700 dark:text-warning-600">
+								<p
+									className={cn(
+										TYPOGRAPHY_STYLES.compactBody,
+										'text-warning-700 dark:text-warning-600'
+									)}
+								>
 									存在BillRepayment条件时，Receiver必须为空字符串。
 								</p>
 							)}
@@ -243,7 +250,7 @@ export const MissionBasicInfo = memo<MissionBasicInfoProps>(
 							</EditorField>
 
 							<EditorField label="任务时限（Mission Time Limit）">
-								<div className="flex flex-col gap-3 rounded-large border border-divider bg-content1/50 p-4">
+								<div className="flex flex-col gap-3 rounded-medium border border-divider bg-content1/50 p-4">
 									<div className="flex flex-col gap-1">
 										<Label size="sm">
 											触发类型（Trigger Type）

@@ -45,7 +45,7 @@ export const EditorDetailPanel = memo<PropsWithChildren<IProps>>(
 		}, [detailKey, isReducedMotion]);
 
 		return (
-			<EditorPanel className="min-w-0 p-4 sm:p-6 lg:col-span-2">
+			<EditorPanel className="min-w-0 lg:col-span-2">
 				<div
 					ref={detailTopRef}
 					className={cn(

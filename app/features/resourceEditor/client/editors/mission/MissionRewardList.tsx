@@ -1,5 +1,7 @@
+import { cn } from '@heroui/theme';
 import { memo, useCallback, useMemo, useState } from 'react';
 
+import { TYPOGRAPHY_STYLES } from '@/design/theme/styles/typography';
 import Button from '@/design/ui/components/button';
 import Input from '@/design/ui/components/input';
 import Tooltip from '@/design/ui/components/tooltip';
@@ -14,8 +16,8 @@ import { SectionAddButton } from '@/features/resourceEditor/client/components/ac
 import { SectionDeleteButton } from '@/features/resourceEditor/client/components/actions/SectionDeleteButton';
 import { TrashIcon } from '@/features/resourceEditor/client/components/actions/TrashIcon';
 import { Label } from '@/features/resourceEditor/client/components/fields/Label';
-import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
 import { EditorSection } from '@/features/resourceEditor/client/components/layout/EditorSection';
+import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
 import { PRODUCT_TYPE_LABELS } from '@/features/resourceEditor/client/components/select/productTypeOptions';
 import {
 	type ISelectOption,
@@ -313,7 +315,7 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 						<div
 							key={index}
 							data-editor-appended-item
-							className="flex min-w-0 flex-col gap-3 rounded-large border border-divider bg-content1/50 p-4"
+							className="flex min-w-0 flex-col gap-3 rounded-medium border border-divider bg-content1/50 p-4"
 						>
 							<div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
 								<Select<RewardType>
@@ -355,7 +357,7 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 							</div>
 
 							{reward.rewardType === 'GiveItem' && (
-								<div className="flex flex-col gap-3 rounded-large border border-divider bg-content2/30 p-3">
+								<div className="flex flex-col gap-3 rounded-medium border border-divider bg-content2/30 p-3">
 									<div className="flex flex-col gap-1">
 										<Label size="sm">
 											物品类型（Object Type）
@@ -473,9 +475,15 @@ export const MissionRewardList = memo<MissionRewardListProps>(
 													return (
 														<span
 															key={i}
-															className="flex min-w-0 items-center gap-1 rounded-small bg-primary/15 py-1 pl-2 pr-1 text-primary-700 dark:text-primary"
+															className={cn(
+																TYPOGRAPHY_STYLES.compactInteractiveLabel,
+																'flex min-w-0 items-center gap-1 rounded-small bg-primary/15 py-1 pl-2 pr-1 text-primary-700 dark:text-primary'
+															)}
 														>
-															<span className="truncate">
+															<span
+																title={name}
+																className="truncate"
+															>
 																{name}
 															</span>
 															<Tooltip content="移除物品">

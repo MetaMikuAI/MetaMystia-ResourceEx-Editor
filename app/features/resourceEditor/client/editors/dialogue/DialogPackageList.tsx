@@ -1,6 +1,7 @@
 import { cn } from '@heroui/theme';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { TYPOGRAPHY_STYLES } from '@/design/theme/styles/typography';
 import Button from '@/design/ui/components/button';
 import Tooltip from '@/design/ui/components/tooltip';
 
@@ -168,8 +169,8 @@ function GroupHeader({
 					DIALOG_TREE_STICKY_TOP_CLASS_NAMES[stickyDepth],
 				stickyDepth !== undefined && 'sticky',
 				isTopLevel
-					? 'text-sm font-semibold text-foreground-700'
-					: 'text-xs font-medium text-foreground-600'
+					? TYPOGRAPHY_STYLES.subsectionTitle
+					: TYPOGRAPHY_STYLES.compactLabel
 			)}
 		>
 			<ChevronRight
@@ -178,8 +179,10 @@ function GroupHeader({
 					expanded && 'rotate-90'
 				)}
 			/>
-			<span className="truncate">{label}</span>
-			<span className="ml-auto shrink-0 text-xs text-foreground-500">
+			<span title={label} className="truncate">
+				{label}
+			</span>
+			<span className={cn(TYPOGRAPHY_STYLES.caption, 'ml-auto shrink-0')}>
 				{count}
 			</span>
 		</Button>
@@ -218,10 +221,15 @@ function DialogTreeItem({
 		>
 			<EditorCollectionItemTitle>
 				{item.displayName === item.pkg.name ? (
-					<span className="min-w-0 truncate">{item.displayName}</span>
+					<span title={item.displayName} className="min-w-0 truncate">
+						{item.displayName}
+					</span>
 				) : (
 					<Tooltip content={item.pkg.name}>
-						<span className="min-w-0 truncate">
+						<span
+							title={item.displayName}
+							className="min-w-0 truncate"
+						>
 							{item.displayName}
 						</span>
 					</Tooltip>

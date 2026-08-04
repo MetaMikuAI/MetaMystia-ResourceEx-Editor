@@ -1,5 +1,7 @@
+import { cn } from '@heroui/theme';
 import { memo, useCallback, useId, useMemo, useState } from 'react';
 
+import { TYPOGRAPHY_STYLES } from '@/design/theme/styles/typography';
 import Button from '@/design/ui/components/button';
 import Input from '@/design/ui/components/input';
 import Tooltip from '@/design/ui/components/tooltip';
@@ -143,9 +145,9 @@ export const DialogActionsEditor = memo<DialogActionsEditorProps>(
 		);
 
 		return (
-			<div className="flex min-w-0 flex-col gap-3 rounded-large border border-divider bg-content2/30 p-3">
+			<div className="flex min-w-0 flex-col gap-3 rounded-medium border border-divider bg-content2/30 p-3">
 				<div className="flex flex-wrap items-center justify-between gap-2">
-					<span className="text-xs font-semibold text-foreground-600">
+					<span className={TYPOGRAPHY_STYLES.compactTitle}>
 						动作列表（{list.length}）
 					</span>
 					<div className="flex flex-wrap gap-1">
@@ -225,14 +227,19 @@ const DialogActionRow = memo<DialogActionRowProps>(function DialogActionRow({
 	return (
 		<div
 			data-editor-appended-item
-			className="flex min-w-0 flex-col gap-3 rounded-large border border-divider bg-content1/50 p-3"
+			className="flex min-w-0 flex-col gap-3 rounded-medium border border-divider bg-content1/50 p-3"
 		>
 			<div className="flex items-center justify-between gap-2">
 				<div className="flex items-center gap-2">
-					<span className="rounded-small bg-primary/15 px-2 py-1 font-mono text-xs text-primary-700 dark:text-primary">
+					<span
+						className={cn(
+							TYPOGRAPHY_STYLES.metadata,
+							'rounded-small bg-primary/15 px-2 py-1 text-primary-700 dark:text-primary'
+						)}
+					>
 						#{index + 1}
 					</span>
-					<span className="text-xs font-medium">
+					<span className={TYPOGRAPHY_STYLES.compactLabel}>
 						{ACTION_LABEL[action.actionType]}
 					</span>
 				</div>
@@ -416,7 +423,7 @@ const SpriteActionFields = memo<SpriteActionFieldsProps>(
 									draggable={false}
 								/>
 							) : (
-								<span className="text-xs text-foreground-500">
+								<span className={TYPOGRAPHY_STYLES.caption}>
 									无预览
 								</span>
 							)}
@@ -460,7 +467,7 @@ const SpriteActionFields = memo<SpriteActionFieldsProps>(
 								</Button>
 							</div>
 							{availableAssets.length === 0 && (
-								<p className="text-xs text-foreground-500">
+								<p className={TYPOGRAPHY_STYLES.caption}>
 									{folder}下暂无资产，请前往「资产」页上传。
 								</p>
 							)}
@@ -524,7 +531,7 @@ const BranchActionFields = memo<BranchActionFieldsProps>(
 		return (
 			<div className="flex flex-col gap-2">
 				<div className="flex flex-wrap items-center justify-between gap-2">
-					<p className="text-xs leading-5 text-foreground-500">
+					<p className={TYPOGRAPHY_STYLES.caption}>
 						{`跳转目标使用左侧显示的对话编号，范围1～${finishTarget}，${finishTarget}表示结束当前对话包。`}
 					</p>
 					<SectionAddButton
@@ -536,7 +543,12 @@ const BranchActionFields = memo<BranchActionFieldsProps>(
 					</SectionAddButton>
 				</div>
 				{options.length === 0 ? (
-					<p className="rounded-medium border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning-700 dark:text-warning-600">
+					<p
+						className={cn(
+							TYPOGRAPHY_STYLES.compactBody,
+							'rounded-medium border border-warning/30 bg-warning/10 px-3 py-2 text-warning-700 dark:text-warning-600'
+						)}
+					>
 						Branch至少需要一个选项，否则运行时会被当作普通对话行。
 					</p>
 				) : (
@@ -545,7 +557,7 @@ const BranchActionFields = memo<BranchActionFieldsProps>(
 							<div
 								key={optionIndex}
 								data-editor-appended-item
-								className="grid min-w-0 gap-3 rounded-large border border-divider bg-content2/30 p-3 sm:grid-cols-[minmax(0,1fr)_112px_112px_auto]"
+								className="grid min-w-0 gap-3 rounded-medium border border-divider bg-content2/30 p-3 sm:grid-cols-[minmax(0,1fr)_112px_112px_auto]"
 							>
 								<div className="flex flex-col gap-1">
 									<Label size="sm">选项文本</Label>
@@ -682,7 +694,7 @@ const GotoActionFields = memo<GotoActionFieldsProps>(function GotoActionFields({
 					}
 					className="h-10 text-xs sm:h-8 sm:w-32"
 				/>
-				<p className="text-xs leading-5 text-foreground-500">
+				<p className={TYPOGRAPHY_STYLES.caption}>
 					使用左侧显示的对话编号，范围1～{finishTarget}，
 					{finishTarget}表示结束当前对话包。
 				</p>
@@ -712,7 +724,7 @@ const EndActionFields = memo<EndActionFieldsProps>(function EndActionFields({
 					}
 					className="h-10 text-xs sm:h-8 sm:w-32"
 				/>
-				<p className="text-xs leading-5 text-foreground-500">
+				<p className={TYPOGRAPHY_STYLES.caption}>
 					结束当前对话包。普通对话保持0即可，只有需要读取ExitCode的调用会使用这个值。
 				</p>
 			</div>
@@ -842,7 +854,7 @@ const SoundActionFields = memo<SoundActionFieldsProps>(
 						</Button>
 					</div>
 					{availableAssets.length === 0 && (
-						<p className="text-xs text-foreground-500">
+						<p className={TYPOGRAPHY_STYLES.caption}>
 							{folder}下暂无音频，请前往「资产」页上传.wav文件。
 						</p>
 					)}

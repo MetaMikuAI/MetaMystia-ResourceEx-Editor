@@ -1,8 +1,10 @@
 'use client';
 
 import { EyeIcon } from '@heroui/shared-icons';
+import { cn } from '@heroui/theme';
 import { memo, useMemo } from 'react';
 
+import { TYPOGRAPHY_STYLES } from '@/design/theme/styles/typography';
 import Button from '@/design/ui/components/button';
 import Popover, {
 	PopoverContent,
@@ -76,7 +78,9 @@ export const FoodPreviewPopover = memo<IProps>(function FoodPreviewPopover({
 				</span>
 			</Tooltip>
 			<PopoverContent className="w-80 max-w-[calc(100vw-1rem)] p-3">
-				<div className="grid w-full gap-3 text-sm text-foreground">
+				<div
+					className={cn(TYPOGRAPHY_STYLES.body, 'grid w-full gap-3')}
+				>
 					<div className="flex items-center gap-2">
 						{foodSpriteUrl ? (
 							<img
@@ -86,8 +90,16 @@ export const FoodPreviewPopover = memo<IProps>(function FoodPreviewPopover({
 							/>
 						) : null}
 						<div className="min-w-0">
-							<p className="truncate font-semibold">{foodName}</p>
-							<p className="font-mono text-xs text-foreground-500">
+							<p
+								title={foodName}
+								className={cn(
+									TYPOGRAPHY_STYLES.subsectionTitle,
+									'truncate'
+								)}
+							>
+								{foodName}
+							</p>
+							<p className={TYPOGRAPHY_STYLES.metadata}>
 								料理ID：{foodId}
 							</p>
 						</div>
@@ -95,12 +107,21 @@ export const FoodPreviewPopover = memo<IProps>(function FoodPreviewPopover({
 
 					{food ? (
 						<>
-							<div className="flex gap-4 text-xs text-foreground-600">
+							<div
+								className={cn(
+									TYPOGRAPHY_STYLES.compactDescription,
+									'flex gap-4'
+								)}
+							>
 								<p>售价：{food.baseValue}</p>
 								<p>等级：{food.level}</p>
 							</div>
 							{food.description ? (
-								<p className="text-xs leading-5 text-foreground-600">
+								<p
+									className={
+										TYPOGRAPHY_STYLES.compactDescription
+									}
+								>
 									{renderDescription(food.description)}
 								</p>
 							) : null}
@@ -126,7 +147,7 @@ export const FoodPreviewPopover = memo<IProps>(function FoodPreviewPopover({
 							) : null}
 						</>
 					) : (
-						<p className="text-xs text-foreground-500">
+						<p className={TYPOGRAPHY_STYLES.caption}>
 							游戏内料理；资源包未定义可编辑属性。
 						</p>
 					)}
@@ -168,13 +189,18 @@ export const FoodPreviewPopover = memo<IProps>(function FoodPreviewPopover({
 										)}
 									</div>
 								</div>
-								<p className="mt-1 font-mono text-xs text-foreground-500">
+								<p
+									className={cn(
+										TYPOGRAPHY_STYLES.metadata,
+										'mt-1'
+									)}
+								>
 									食谱ID：{recipe.id} · {recipe.cookTime}秒
 								</p>
 							</div>
 						))}
 						{recipes.length === 0 ? (
-							<p className="text-xs text-foreground-500">
+							<p className={TYPOGRAPHY_STYLES.caption}>
 								尚未关联食谱。
 							</p>
 						) : null}

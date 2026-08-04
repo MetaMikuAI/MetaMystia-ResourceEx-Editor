@@ -4,6 +4,7 @@ import { cn } from '@heroui/theme';
 import { memo, type ReactNode, type RefObject, useId } from 'react';
 
 import Button from '@/design/ui/components/button';
+import Heading from '@/design/ui/components/heading';
 import ScrollShadow from '@/design/ui/components/scrollShadow';
 import Tooltip from '@/design/ui/components/tooltip';
 
@@ -40,17 +41,19 @@ export const EditorCollapsiblePanel = memo<IProps>(
 			<EditorPanel
 				as="aside"
 				className={cn(
-					'flex h-min min-w-0 flex-col gap-0 lg:sticky lg:top-24 lg:h-[calc(100dvh-7rem)] lg:gap-4 lg:overflow-hidden',
+					'flex h-min min-w-0 flex-col gap-0 lg:sticky lg:top-24 lg:gap-4 lg:overflow-hidden',
 					className
 				)}
 			>
 				<div className="flex min-w-0 shrink-0 flex-wrap items-center justify-between gap-2">
-					<h2
+					<Heading
+						as="h2"
 						id={titleId}
-						className="min-w-0 text-xl font-semibold leading-7 text-foreground"
+						variant="panel"
+						className="min-w-0"
 					>
 						{title}
-					</h2>
+					</Heading>
 					<div className="flex shrink-0 items-center gap-1.5">
 						<Tooltip
 							content={isCollapsed ? '展开列表' : '折叠列表'}

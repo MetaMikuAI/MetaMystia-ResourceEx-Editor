@@ -1,5 +1,7 @@
 import { memo, useCallback } from 'react';
 
+import { TYPOGRAPHY_STYLES } from '@/design/theme/styles/typography';
+
 import type { MissionNode } from '@/domain/resourcePack/contracts/mission';
 
 import { SectionAddButton } from '@/features/resourceEditor/client/components/actions/SectionAddButton';
@@ -61,10 +63,10 @@ export const PostMissionList = memo<PostMissionListProps>(
 						<div
 							key={index}
 							data-editor-appended-item
-							className="flex min-w-0 flex-col gap-3 rounded-large border border-divider bg-content1/40 p-3 sm:p-4"
+							className="flex min-w-0 flex-col gap-3 rounded-medium border border-divider bg-content1/40 p-3 sm:p-4"
 						>
 							<div className="flex flex-col gap-1">
-								<p className="text-xs font-medium text-foreground-600">
+								<p className={TYPOGRAPHY_STYLES.compactLabel}>
 									任务标签（Label）
 								</p>
 								<div className="flex min-w-0 items-center gap-3">

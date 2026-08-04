@@ -1,5 +1,7 @@
+import { cn } from '@heroui/theme';
 import { memo, useCallback, useEffect, useRef } from 'react';
 
+import { TYPOGRAPHY_STYLES } from '@/design/theme/styles/typography';
 import Switch from '@/design/ui/components/switch';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
@@ -20,8 +22,8 @@ import { SectionDeleteButton } from '@/features/resourceEditor/client/components
 import { EditorDetailEmptyState } from '@/features/resourceEditor/client/components/layout/EditorDetailEmptyState';
 import { EditorDetailHeader } from '@/features/resourceEditor/client/components/layout/EditorDetailHeader';
 import { EditorDetailPanel } from '@/features/resourceEditor/client/components/layout/EditorDetailPanel';
-import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
 import { EditorSection } from '@/features/resourceEditor/client/components/layout/EditorSection';
+import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import { BasicInfo } from './editor/BasicInfo';
@@ -372,7 +374,12 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 						</>
 					}
 					meta={
-						<span className="rounded-full bg-primary/20 px-3 py-1 text-sm font-medium text-primary">
+						<span
+							className={cn(
+								TYPOGRAPHY_STYLES.emphasizedText,
+								'rounded-full bg-primary/20 px-3 py-1 text-primary'
+							)}
+						>
 							{CHARACTER_TYPE_LABELS[character.type]}
 						</span>
 					}
@@ -424,7 +431,7 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 				<EditorSection title="显示与分类">
 					<div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
 						<div className="flex min-h-10 items-center justify-between gap-3 rounded-medium border border-divider bg-content1/50 px-3">
-							<span className="text-sm text-foreground-700">
+							<span className={TYPOGRAPHY_STYLES.controlLabel}>
 								在图鉴中隐藏
 							</span>
 							<Switch
@@ -437,7 +444,7 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 							/>
 						</div>
 						<div className="flex min-h-10 items-center justify-between gap-3 rounded-medium border border-divider bg-content1/50 px-3">
-							<span className="text-sm text-foreground-700">
+							<span className={TYPOGRAPHY_STYLES.controlLabel}>
 								是特殊客人
 							</span>
 							<Switch
@@ -450,7 +457,7 @@ export const CharacterEditor = memo<CharacterEditorProps>(
 							/>
 						</div>
 						<div className="flex min-h-10 items-center justify-between gap-3 rounded-medium border border-divider bg-content1/50 px-3">
-							<span className="text-sm text-foreground-700">
+							<span className={TYPOGRAPHY_STYLES.controlLabel}>
 								是联动客人
 							</span>
 							<Switch

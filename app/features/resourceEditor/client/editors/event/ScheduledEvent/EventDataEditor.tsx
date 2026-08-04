@@ -20,7 +20,7 @@ interface EventDataEditorProps {
 export const EventDataEditor = memo<EventDataEditorProps>(
 	function EventDataEditor({ eventData, allDialogPackages, onChange }) {
 		return (
-			<div className="flex min-w-0 flex-col gap-3 rounded-large border border-divider bg-content1/50 p-4">
+			<div className="flex min-w-0 flex-col gap-3 rounded-medium border border-divider bg-content1/50 p-4">
 				<div className="flex flex-col gap-1">
 					<Label size="sm">事件类型（Event Type）</Label>
 					<Select<EventType>

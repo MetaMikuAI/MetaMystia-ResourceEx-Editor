@@ -14,7 +14,7 @@ export function TagSelector({
 	tone = 'neutral',
 }: IProps) {
 	return (
-		<div className="flex flex-wrap gap-2 rounded-large border border-divider bg-content2/30 p-3 sm:p-4">
+		<div className="flex flex-wrap gap-2 rounded-medium border border-divider bg-content2/30 p-3 sm:p-4">
 			{tagPool.map((tag) => (
 				<TagButton
 					key={tag.id}

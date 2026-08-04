@@ -1,5 +1,7 @@
+import { cn } from '@heroui/theme';
 import { memo, useCallback, useId, useMemo } from 'react';
 
+import { TYPOGRAPHY_STYLES } from '@/design/theme/styles/typography';
 import Input from '@/design/ui/components/input';
 
 import { COOKER_TYPE_NAMES, COOKER_TYPES } from '@/domain/data/cookerTypes';
@@ -21,8 +23,8 @@ import {
 } from '@/features/resourceEditor/client/components/select/Select';
 import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
 import { WarningNotice } from '@/features/resourceEditor/client/components/status/WarningNotice';
-import { parseIntegerInput } from '@/features/resourceEditor/client/editorValueAllocation';
 import { IdRangeBadge } from '@/features/resourceEditor/client/editors/info/IdRangeBadge';
+import { parseIntegerInput } from '@/features/resourceEditor/client/editorValueAllocation';
 import { useFocusOnItemAppend } from '@/features/resourceEditor/client/hooks/useFocusOnItemAppend';
 
 interface RecipeEditorProps {
@@ -225,9 +227,14 @@ export const RecipeEditor = memo<RecipeEditorProps>(function RecipeEditor({
 						<div
 							key={index}
 							data-editor-appended-item
-							className="flex items-center gap-3 rounded-large border border-divider bg-content1/50 p-3"
+							className="flex items-center gap-3 rounded-medium border border-divider bg-content1/50 p-3"
 						>
-							<span className="w-8 text-center text-sm font-medium text-foreground-500">
+							<span
+								className={cn(
+									TYPOGRAPHY_STYLES.navigationTitle,
+									'w-8 text-center'
+								)}
+							>
 								#{index + 1}
 							</span>
 							<Select<number>

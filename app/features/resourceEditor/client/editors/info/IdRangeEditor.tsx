@@ -1,9 +1,12 @@
 'use client';
 
 import { CheckIcon, CopyIcon } from '@heroui/shared-icons';
+import { cn } from '@heroui/theme';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { TYPOGRAPHY_STYLES } from '@/design/theme/styles/typography';
 import Button from '@/design/ui/components/button';
+import Heading from '@/design/ui/components/heading';
 import Input from '@/design/ui/components/input';
 import Textarea from '@/design/ui/components/textarea';
 import Tooltip from '@/design/ui/components/tooltip';
@@ -137,7 +140,7 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 				</>
 			}
 		>
-			<p className="text-xs leading-relaxed text-foreground-600">
+			<p className={TYPOGRAPHY_STYLES.compactDescription}>
 				请务必参考
 				<a
 					href="https://doc.meta-mystia.izakaya.cc/resource_ex/why_add_signature_check.html"
@@ -191,7 +194,9 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 			</div>
 
 			{rangeError && (
-				<span className="text-xs text-danger">{rangeError}</span>
+				<span className={cn(TYPOGRAPHY_STYLES.caption, 'text-danger')}>
+					{rangeError}
+				</span>
 			)}
 
 			{/* Signature */}
@@ -255,7 +260,9 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 				size="lg"
 				classNames={{ body: 'gap-0 py-3' }}
 			>
-				<h4 className="mb-4 text-lg font-bold">设置签名</h4>
+				<Heading as="h4" variant="dialog" className="mb-4">
+					设置签名
+				</Heading>
 
 				{/* Tab switcher */}
 				<div className="mb-4 flex gap-1 rounded-medium bg-default/30 p-1">
@@ -289,10 +296,15 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 
 				{dialogMode === 'sign' ? (
 					<>
-						<p className="mb-2 text-xs text-foreground-500">
+						<p className={cn(TYPOGRAPHY_STYLES.caption, 'mb-2')}>
 							待签名内容：{label}:{idRangeStart}-{idRangeEnd}
 						</p>
-						<p className="mb-4 text-xs text-danger">
+						<p
+							className={cn(
+								TYPOGRAPHY_STYLES.caption,
+								'mb-4 text-danger'
+							)}
+						>
 							私钥仅用于本次签名，不会被保存！
 						</p>
 						<Textarea
@@ -305,7 +317,7 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 					</>
 				) : (
 					<>
-						<p className="mb-4 text-xs text-foreground-500">
+						<p className={cn(TYPOGRAPHY_STYLES.caption, 'mb-4')}>
 							直接粘贴已有的Base64签名，提交后将自动验证。
 						</p>
 						<Textarea
@@ -319,7 +331,14 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 				)}
 
 				{signError && (
-					<p className="mb-4 text-xs text-danger">{signError}</p>
+					<p
+						className={cn(
+							TYPOGRAPHY_STYLES.caption,
+							'mb-4 text-danger'
+						)}
+					>
+						{signError}
+					</p>
 				)}
 				<div className="flex justify-end gap-2">
 					<Button

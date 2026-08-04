@@ -1,8 +1,10 @@
 'use client';
 
 import { EyeIcon } from '@heroui/shared-icons';
+import { cn } from '@heroui/theme';
 import { memo, useMemo } from 'react';
 
+import { TYPOGRAPHY_STYLES } from '@/design/theme/styles/typography';
 import Button from '@/design/ui/components/button';
 import Popover, {
 	PopoverContent,
@@ -57,7 +59,12 @@ export const BeveragePreviewPopover = memo<IProps>(
 					</span>
 				</Tooltip>
 				<PopoverContent className="w-80 max-w-[calc(100vw-1rem)] p-3">
-					<div className="grid w-full gap-3 text-sm text-foreground">
+					<div
+						className={cn(
+							TYPOGRAPHY_STYLES.body,
+							'grid w-full gap-3'
+						)}
+					>
 						<div className="flex items-center gap-2">
 							{spriteUrl ? (
 								<img
@@ -67,22 +74,33 @@ export const BeveragePreviewPopover = memo<IProps>(
 								/>
 							) : null}
 							<div className="min-w-0">
-								<p className="truncate font-semibold">
+								<p
+									title={beverageName}
+									className={cn(
+										TYPOGRAPHY_STYLES.subsectionTitle,
+										'truncate'
+									)}
+								>
 									{beverageName}
 								</p>
-								<p className="font-mono text-xs text-foreground-500">
+								<p className={TYPOGRAPHY_STYLES.metadata}>
 									酒水ID：{beverage.id}
 								</p>
 							</div>
 						</div>
 
-						<div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-foreground-600">
+						<div
+							className={cn(
+								TYPOGRAPHY_STYLES.compactDescription,
+								'flex flex-wrap gap-x-4 gap-y-1'
+							)}
+						>
 							<p>售价：{beverage.baseValue}</p>
 							<p>等级：{beverage.level}</p>
 						</div>
 
 						{beverage.description ? (
-							<p className="text-xs leading-5 text-foreground-600">
+							<p className={TYPOGRAPHY_STYLES.compactDescription}>
 								{renderDescription(beverage.description)}
 							</p>
 						) : null}

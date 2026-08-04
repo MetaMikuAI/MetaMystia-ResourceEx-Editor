@@ -1,5 +1,6 @@
 import { memo, useCallback } from 'react';
 
+import Heading from '@/design/ui/components/heading';
 import Input from '@/design/ui/components/input';
 
 import type {
@@ -16,8 +17,8 @@ import type {
 import { SectionAddButton } from '@/features/resourceEditor/client/components/actions/SectionAddButton';
 import { SectionDeleteButton } from '@/features/resourceEditor/client/components/actions/SectionDeleteButton';
 import { Label } from '@/features/resourceEditor/client/components/fields/Label';
-import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
 import { EditorSection } from '@/features/resourceEditor/client/components/layout/EditorSection';
+import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
 import { useFocusOnItemAppend } from '@/features/resourceEditor/client/hooks/useFocusOnItemAppend';
 
 import { ProductEditor } from './ProductEditor';
@@ -112,12 +113,12 @@ export const MerchandiseListEditor = memo<MerchandiseListEditorProps>(
 							<div
 								key={index}
 								data-editor-appended-item
-								className="flex min-w-0 flex-col gap-3 rounded-large border border-divider bg-content1/50 p-4"
+								className="flex min-w-0 flex-col gap-3 rounded-medium border border-divider bg-content1/50 p-4"
 							>
 								<div className="flex items-center justify-between">
-									<span className="text-sm font-semibold text-foreground-700">
+									<Heading as="h4" variant="subsection">
 										商品#{index + 1}
-									</span>
+									</Heading>
 									<SectionDeleteButton
 										iconOnly
 										confirmTitle="确定要删除这个商品吗？"

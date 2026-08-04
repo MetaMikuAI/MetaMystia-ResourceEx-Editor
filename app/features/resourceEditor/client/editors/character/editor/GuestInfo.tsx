@@ -1,7 +1,9 @@
 import { cn } from '@heroui/theme';
 import { useState } from 'react';
 
+import { TYPOGRAPHY_STYLES } from '@/design/theme/styles/typography';
 import Button from '@/design/ui/components/button';
+import Heading from '@/design/ui/components/heading';
 import Input from '@/design/ui/components/input';
 import Switch from '@/design/ui/components/switch';
 
@@ -25,8 +27,8 @@ import { ConfirmPopover } from '@/features/resourceEditor/client/components/conf
 import { InfoTip } from '@/features/resourceEditor/client/components/fields/InfoTip';
 import { Label } from '@/features/resourceEditor/client/components/fields/Label';
 import { ChevronRight } from '@/features/resourceEditor/client/components/icons/ChevronRight';
-import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
 import { EditorSection } from '@/features/resourceEditor/client/components/layout/EditorSection';
+import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
 import {
 	TagBadge,
 	TagButton,
@@ -282,7 +284,10 @@ export function GuestInfoEditor({
 						variant="light"
 						size="sm"
 						aria-expanded={isExpanded}
-						className="-ml-2 h-10 px-2 text-base font-semibold text-foreground-700 sm:h-8"
+						className={cn(
+							TYPOGRAPHY_STYLES.sectionTitle,
+							'-ml-2 h-10 px-2 sm:h-8'
+						)}
 						startContent={
 							<ChevronRight
 								className={cn(
@@ -302,7 +307,12 @@ export function GuestInfoEditor({
 			}
 			actions={
 				<div className="flex items-center gap-2">
-					<span className="whitespace-nowrap text-xs font-medium text-foreground-600">
+					<span
+						className={cn(
+							TYPOGRAPHY_STYLES.compactLabel,
+							'whitespace-nowrap'
+						)}
+					>
 						{guest ? '已启用顾客配置' : '启用顾客配置'}
 					</span>
 					{guest ? (
@@ -347,7 +357,10 @@ export function GuestInfoEditor({
 						guest?.hateFoodTag.includes(lt.tagId)
 					) && (
 						<div
-							className="rounded-large border border-danger/40 bg-danger/10 p-3 text-sm text-danger-700 dark:text-danger"
+							className={cn(
+								TYPOGRAPHY_STYLES.body,
+								'rounded-medium border border-danger/40 bg-danger/10 p-3 text-danger-700 dark:text-danger'
+							)}
 							role="alert"
 						>
 							<span className="font-semibold">标签冲突：</span>
@@ -499,7 +512,7 @@ export function GuestInfoEditor({
 									喜爱料理标签（Like Food Tags）
 								</Label>
 							</div>
-							<div className="flex flex-wrap gap-2 rounded-large border border-divider bg-content2/30 p-3 sm:p-4">
+							<div className="flex flex-wrap gap-2 rounded-medium border border-divider bg-content2/30 p-3 sm:p-4">
 								{FOOD_TAGS.map((tag) => {
 									const isSelected = guest?.likeFoodTag.some(
 										(t) => t.tagId === tag.id
@@ -535,7 +548,7 @@ export function GuestInfoEditor({
 							<Label tip="稀客厌恶的料理标签，请谨慎选择，避免与喜爱标签冲突。">
 								厌恶料理标签（Hate Food Tags）
 							</Label>
-							<div className="flex flex-wrap gap-2 rounded-large border border-divider bg-content2/30 p-3 sm:p-4">
+							<div className="flex flex-wrap gap-2 rounded-medium border border-divider bg-content2/30 p-3 sm:p-4">
 								{FOOD_TAGS.map((tag) => {
 									const isSelected =
 										guest?.hateFoodTag.includes(tag.id);
@@ -569,7 +582,7 @@ export function GuestInfoEditor({
 							<Label tip="稀客喜爱的酒水标签，在下方选择具体标签，并稍后编写酒水点单请求文本">
 								喜爱酒水标签（Like Beverage Tags）
 							</Label>
-							<div className="flex flex-wrap gap-2 rounded-large border border-divider bg-content2/30 p-3 sm:p-4">
+							<div className="flex flex-wrap gap-2 rounded-medium border border-divider bg-content2/30 p-3 sm:p-4">
 								{BEVERAGE_TAGS.map((tag) => {
 									const isSelected = guest?.likeBevTag.some(
 										(t) => t.tagId === tag.id
@@ -601,7 +614,7 @@ export function GuestInfoEditor({
 							>
 								料理点单请求（Food Requests）
 							</Label>
-							<span className="text-xs text-foreground-500">
+							<span className={TYPOGRAPHY_STYLES.caption}>
 								根据上方喜爱料理自动同步
 							</span>
 						</div>
@@ -617,7 +630,7 @@ export function GuestInfoEditor({
 										<div
 											key={tag.tagId}
 											className={cn(
-												'flex min-w-0 flex-col gap-3 rounded-large border p-3 sm:flex-row sm:items-center',
+												'flex min-w-0 flex-col gap-3 rounded-medium border p-3 sm:flex-row sm:items-center',
 												isEnabled
 													? 'border-divider bg-content1/50'
 													: 'border-divider bg-content2/30'
@@ -644,7 +657,11 @@ export function GuestInfoEditor({
 												</TagBadge>
 											</div>
 											<div className="flex shrink-0 items-center gap-2">
-												<span className="text-xs text-foreground-600">
+												<span
+													className={
+														TYPOGRAPHY_STYLES.compactLabel
+													}
+												>
 													权重
 												</span>
 												<Input
@@ -714,7 +731,7 @@ export function GuestInfoEditor({
 							>
 								酒水点单请求（Beverage Requests）
 							</Label>
-							<span className="text-xs text-foreground-500">
+							<span className={TYPOGRAPHY_STYLES.caption}>
 								根据上方喜爱酒水自动同步
 							</span>
 						</div>
@@ -730,7 +747,7 @@ export function GuestInfoEditor({
 										<div
 											key={tag.tagId}
 											className={cn(
-												'flex min-w-0 flex-col gap-3 rounded-large border p-3 sm:flex-row sm:items-center',
+												'flex min-w-0 flex-col gap-3 rounded-medium border p-3 sm:flex-row sm:items-center',
 												isEnabled
 													? 'border-divider bg-content1/50'
 													: 'border-divider bg-content2/30'
@@ -760,7 +777,11 @@ export function GuestInfoEditor({
 												</TagBadge>
 											</div>
 											<div className="flex shrink-0 items-center gap-2">
-												<span className="text-xs text-foreground-600">
+												<span
+													className={
+														TYPOGRAPHY_STYLES.compactLabel
+													}
+												>
 													权重
 												</span>
 												<Input
@@ -826,16 +847,20 @@ export function GuestInfoEditor({
 						<Label tip="出没地点是指稀客夜间可能出现的地点，您可以选择多个地点并设置其相对概率，有一些地图的备注可能让您疑惑，如“神社雀食堂”和“[客流量加倍的]神社雀酒屋”，难以区分时可以都选择">
 							出没地点（Spawn Locations）
 						</Label>
-						<div className="flex flex-col gap-4 rounded-large border border-divider bg-content2/30 p-3 sm:p-4">
+						<div className="flex flex-col gap-4 rounded-medium border border-divider bg-content2/30 p-3 sm:p-4">
 							<div className="flex flex-col gap-2">
 								{IZAKAYA_GROUPS.map((group) => (
 									<section
 										key={group.name}
 										className="flex flex-col gap-2 rounded-medium bg-content1/40 p-3 sm:flex-row sm:items-start"
 									>
-										<h3 className="shrink-0 text-xs font-semibold text-foreground-600 sm:w-24 sm:pt-2">
+										<Heading
+											as="h3"
+											variant="subsection"
+											className="shrink-0 sm:w-24 sm:pt-2"
+										>
 											{group.name}
-										</h3>
+										</Heading>
 										<div className="flex min-w-0 flex-1 flex-wrap gap-2">
 											{group.locations.map((izakaya) => {
 												const isSelected = Boolean(
@@ -900,14 +925,18 @@ export function GuestInfoEditor({
 										return (
 											<div
 												key={spawn.izakayaId}
-												className="flex w-full flex-col gap-2 rounded-large border border-divider bg-content1/50 p-3"
+												className="flex w-full flex-col gap-2 rounded-medium border border-divider bg-content1/50 p-3"
 											>
-												<div className="w-full break-words text-sm font-semibold text-foreground-700">
+												<Heading
+													as="h4"
+													variant="subsection"
+													className="w-full"
+												>
 													<span className="mr-1 text-foreground-500">
 														（{spawn.izakayaId}）
 													</span>
 													{izakaya?.name}
-												</div>
+												</Heading>
 												<div className="flex w-full flex-wrap items-center gap-6">
 													<div className="flex flex-1 flex-col gap-1">
 														<div className="flex items-center justify-between">
@@ -919,7 +948,11 @@ export function GuestInfoEditor({
 															>
 																相对概率
 															</Label>
-															<span className="text-xs text-foreground-500">
+															<span
+																className={
+																	TYPOGRAPHY_STYLES.caption
+																}
+															>
 																{
 																	spawn.relativeProb
 																}
@@ -949,7 +982,7 @@ export function GuestInfoEditor({
 																		}
 																	)
 																}
-																className="h-1 flex-1 cursor-pointer appearance-none rounded-lg bg-default-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-content1 disabled:cursor-not-allowed disabled:opacity-50 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-primary [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary"
+																className="h-1 flex-1 cursor-pointer appearance-none rounded-full bg-default-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-content1 disabled:cursor-not-allowed disabled:opacity-50 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-primary [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary"
 															/>
 															<Input
 																type="number"

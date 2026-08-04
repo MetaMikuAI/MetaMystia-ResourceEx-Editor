@@ -79,13 +79,13 @@ function DropdownTrigger({
 			? cloneElement(child, {
 					className: cn(child.props.className, 'group'),
 					endContent: (
-						<>
+						<span className="inline-flex items-center gap-1">
 							{child.props.endContent}
 							<ChevronDownIcon
 								aria-hidden="true"
 								className="size-4 shrink-0 transition-transform group-aria-expanded:rotate-180 motion-reduce:transition-none"
 							/>
-						</>
+						</span>
 					),
 				})
 			: children;

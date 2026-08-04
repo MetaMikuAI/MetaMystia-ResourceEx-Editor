@@ -149,7 +149,7 @@ export const ProductEditor = memo<ProductEditorProps>(function ProductEditor({
 	);
 
 	return (
-		<div className="flex min-w-0 flex-col gap-3 rounded-large border border-divider bg-content2/30 p-3">
+		<div className="flex min-w-0 flex-col gap-3 rounded-medium border border-divider bg-content2/30 p-3">
 			<div className="grid grid-cols-1 gap-3 md:grid-cols-2">
 				{/* Product Type */}
 				<div className="flex flex-col gap-1">

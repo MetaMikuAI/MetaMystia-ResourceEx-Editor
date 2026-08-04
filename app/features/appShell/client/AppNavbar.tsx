@@ -14,12 +14,14 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 
+import { TYPOGRAPHY_STYLES } from '@/design/theme/styles/typography';
 import Button from '@/design/ui/components/button';
 import Dropdown, {
 	DropdownItem,
 	DropdownMenu,
 	DropdownTrigger,
 } from '@/design/ui/components/dropdown';
+import Heading from '@/design/ui/components/heading';
 import PressElement from '@/design/ui/components/pressElement';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
@@ -86,8 +88,6 @@ const MOBILE_NAV_GROUPS: readonly INavGroup[] = [
 const MOBILE_NAV_ITEMS = MOBILE_NAV_GROUPS.flatMap((group) => group.items);
 
 const GITHUB_URL = 'https://github.com/MetaMystia/MetaMystia-ResourceEx-Editor';
-const MOBILE_SECTION_TITLE_CLASS_NAME =
-	'px-1 text-small font-medium text-foreground-500 dark:text-foreground-400';
 const MOBILE_CARD_BASE_CLASS_NAME =
 	'rounded-small border bg-content1/45 shadow-[0_1px_0_rgba(0,0,0,0.025)] transition-[background-color,border-color,box-shadow] motion-reduce:transition-none dark:bg-default-50/10 dark:shadow-none';
 const MOBILE_CARD_ACTIVE_CLASS_NAME =
@@ -160,10 +160,8 @@ interface IWorkspaceStatusBadgesProps {
 	localSaveTone: TStatusBadgeTone;
 }
 
-const WORKSPACE_STATUS_BADGE_CLASS_NAME = 'whitespace-nowrap px-2 py-1 text-xs';
-
 function WorkspaceStatusBadges({
-	badgeClassName = WORKSPACE_STATUS_BADGE_CLASS_NAME,
+	badgeClassName = 'whitespace-nowrap px-2 py-1 text-xs',
 	className,
 	exportLabel,
 	isExported,
@@ -503,10 +501,21 @@ export const AppNavbar = memo(function AppNavbar() {
 			>
 				<span className="flex w-full min-w-0 flex-col gap-2">
 					<span className="flex min-w-0 items-baseline justify-between gap-3">
-						<span className="min-w-0 truncate text-small font-medium text-foreground-700">
+						<span
+							title={activeWorkspace.workspace.displayName}
+							className={cn(
+								TYPOGRAPHY_STYLES.emphasizedText,
+								'min-w-0 truncate'
+							)}
+						>
 							{activeWorkspace.workspace.displayName}
 						</span>
-						<span className="shrink-0 font-mono text-xs text-foreground-500">
+						<span
+							className={cn(
+								TYPOGRAPHY_STYLES.metadata,
+								'shrink-0'
+							)}
+						>
 							{resourcePackVersionLabel}
 						</span>
 					</span>
@@ -520,7 +529,12 @@ export const AppNavbar = memo(function AppNavbar() {
 				</span>
 			</Button>
 			{localSaveError && (
-				<p className="px-1 text-xs leading-5 text-warning-700 dark:text-warning">
+				<p
+					className={cn(
+						TYPOGRAPHY_STYLES.compactBody,
+						'px-1 text-warning-700 dark:text-warning'
+					)}
+				>
 					{localSaveError}
 				</p>
 			)}
@@ -729,9 +743,13 @@ export const AppNavbar = memo(function AppNavbar() {
 					{visibleMobileNavGroups.map((group, groupIndex) => (
 						<NavbarMenuItem key={group.label} className="w-full">
 							<section className="space-y-2">
-								<h2 className={MOBILE_SECTION_TITLE_CLASS_NAME}>
+								<Heading
+									as="h2"
+									variant="navigation"
+									className="px-1"
+								>
 									{group.label}
-								</h2>
+								</Heading>
 								<div className="grid grid-cols-2 gap-2">
 									{group.items.map((item, itemIndex) => {
 										const isCurrent =
@@ -768,7 +786,12 @@ export const AppNavbar = memo(function AppNavbar() {
 													handleNavigate(item.href)
 												}
 											>
-												<span className="min-w-0 truncate text-small font-medium">
+												<span
+													className={cn(
+														TYPOGRAPHY_STYLES.interactiveLabel,
+														'min-w-0 truncate'
+													)}
+												>
 													{item.label}
 												</span>
 											</Button>
@@ -781,9 +804,13 @@ export const AppNavbar = memo(function AppNavbar() {
 					{pathname !== '/' && (
 						<NavbarMenuItem className="w-full">
 							<section className="space-y-2">
-								<h2 className={MOBILE_SECTION_TITLE_CLASS_NAME}>
+								<Heading
+									as="h2"
+									variant="navigation"
+									className="px-1"
+								>
 									资源包操作
-								</h2>
+								</Heading>
 								<div className="grid grid-cols-2 gap-2">
 									<Button
 										{...(!hasActiveWorkspace
@@ -802,7 +829,12 @@ export const AppNavbar = memo(function AppNavbar() {
 											void handleCreateBlank();
 										}}
 									>
-										<span className="min-w-0 truncate text-small font-medium">
+										<span
+											className={cn(
+												TYPOGRAPHY_STYLES.interactiveLabel,
+												'min-w-0 truncate'
+											)}
+										>
 											新建资源包
 										</span>
 									</Button>
@@ -821,7 +853,12 @@ export const AppNavbar = memo(function AppNavbar() {
 												void handleRetryStorage()
 											}
 										>
-											<span className="min-w-0 truncate text-small font-medium">
+											<span
+												className={cn(
+													TYPOGRAPHY_STYLES.interactiveLabel,
+													'min-w-0 truncate'
+												)}
+											>
 												重试本地存储
 											</span>
 										</Button>
@@ -840,7 +877,12 @@ export const AppNavbar = memo(function AppNavbar() {
 											fileInputRef.current?.click();
 										}}
 									>
-										<span className="min-w-0 truncate text-small font-medium">
+										<span
+											className={cn(
+												TYPOGRAPHY_STYLES.interactiveLabel,
+												'min-w-0 truncate'
+											)}
+										>
 											导入资源包
 										</span>
 									</Button>
@@ -865,7 +907,12 @@ export const AppNavbar = memo(function AppNavbar() {
 											void handleExport();
 										}}
 									>
-										<span className="min-w-0 truncate text-small font-medium">
+										<span
+											className={cn(
+												TYPOGRAPHY_STYLES.interactiveLabel,
+												'min-w-0 truncate'
+											)}
+										>
 											导出资源包
 										</span>
 									</Button>
@@ -875,9 +922,13 @@ export const AppNavbar = memo(function AppNavbar() {
 					)}
 					<NavbarMenuItem className="w-full">
 						<section className="space-y-2">
-							<h2 className={MOBILE_SECTION_TITLE_CLASS_NAME}>
+							<Heading
+								as="h2"
+								variant="navigation"
+								className="px-1"
+							>
 								更多
-							</h2>
+							</Heading>
 							<div className="grid grid-cols-2 gap-2">
 								<Button
 									{...(!hasActiveWorkspace && pathname === '/'
@@ -895,7 +946,12 @@ export const AppNavbar = memo(function AppNavbar() {
 										openAnnouncementModal();
 									}}
 								>
-									<span className="min-w-0 truncate text-small font-medium">
+									<span
+										className={cn(
+											TYPOGRAPHY_STYLES.interactiveLabel,
+											'min-w-0 truncate'
+										)}
+									>
 										公告
 									</span>
 								</Button>
@@ -912,7 +968,12 @@ export const AppNavbar = memo(function AppNavbar() {
 										openGitHub();
 									}}
 								>
-									<span className="min-w-0 truncate text-small font-medium">
+									<span
+										className={cn(
+											TYPOGRAPHY_STYLES.interactiveLabel,
+											'min-w-0 truncate'
+										)}
+									>
 										本项目代码仓库
 									</span>
 								</Button>
@@ -927,15 +988,29 @@ export const AppNavbar = memo(function AppNavbar() {
 						<Link
 							href="/"
 							aria-label="返回资源包管理页"
-							className="flex min-w-0 items-baseline gap-2 rounded-small text-xs text-foreground-500 transition-colors hover:text-foreground-700"
+							className={cn(
+								TYPOGRAPHY_STYLES.caption,
+								'flex min-w-0 items-baseline gap-2 rounded-small transition-colors hover:text-foreground-700'
+							)}
 						>
 							<span className="shrink-0">当前资源包</span>
-							<span className="truncate font-medium text-foreground-700">
+							<span
+								title={activeWorkspace.workspace.displayName}
+								className={cn(
+									TYPOGRAPHY_STYLES.emphasizedText,
+									'truncate'
+								)}
+							>
 								{activeWorkspace.workspace.displayName}
 							</span>
 						</Link>
 						<span className="h-4 w-px shrink-0 bg-divider" />
-						<span className="shrink-0 font-mono text-xs text-foreground-500">
+						<span
+							className={cn(
+								TYPOGRAPHY_STYLES.metadata,
+								'shrink-0'
+							)}
+						>
 							版本：{resourcePackVersion}
 						</span>
 						<WorkspaceStatusBadges
@@ -954,7 +1029,10 @@ export const AppNavbar = memo(function AppNavbar() {
 				storageWarning && (
 					<div
 						role="alert"
-						className="flex flex-col gap-2 border-b border-warning/30 bg-warning/10 px-4 py-2 text-sm text-warning-800 sm:flex-row sm:items-center sm:justify-between dark:text-warning"
+						className={cn(
+							TYPOGRAPHY_STYLES.body,
+							'flex flex-col gap-2 border-b border-warning/30 bg-warning/10 px-4 py-2 text-warning-800 sm:flex-row sm:items-center sm:justify-between dark:text-warning'
+						)}
 					>
 						<span>
 							{isTemporaryStorage

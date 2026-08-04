@@ -1,5 +1,6 @@
 import { memo } from 'react';
 
+import { TYPOGRAPHY_STYLES } from '@/design/theme/styles/typography';
 import Button from '@/design/ui/components/button';
 import Tooltip from '@/design/ui/components/tooltip';
 
@@ -19,7 +20,7 @@ export const DialogItemHeader = memo<DialogItemHeaderProps>(
 		return (
 			<div className="flex flex-wrap items-center justify-between gap-2 border-b border-divider pb-3">
 				<div className="flex min-w-0 items-center gap-2">
-					<span className="text-xs font-semibold text-foreground-600">
+					<span className={TYPOGRAPHY_STYLES.compactTitle}>
 						对话条目#{index + 1}
 					</span>
 					<Tooltip content="点击切换左右位置">

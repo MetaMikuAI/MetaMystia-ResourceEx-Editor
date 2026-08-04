@@ -123,7 +123,7 @@ export const TriggerEditor = memo<TriggerEditorProps>(function TriggerEditor({
 	}, [allCharacters]);
 
 	return (
-		<div className="flex min-w-0 flex-col gap-3 rounded-large border border-divider bg-content1/50 p-4">
+		<div className="flex min-w-0 flex-col gap-3 rounded-medium border border-divider bg-content1/50 p-4">
 			<div className="flex flex-col gap-1">
 				<Label size="sm">触发类型（Trigger Type）</Label>
 				<Select<string>

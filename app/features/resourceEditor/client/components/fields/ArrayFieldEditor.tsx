@@ -1,7 +1,9 @@
 'use client';
 
+import { cn } from '@heroui/theme';
 import { type ReactNode } from 'react';
 
+import { TYPOGRAPHY_STYLES } from '@/design/theme/styles/typography';
 import Input from '@/design/ui/components/input';
 
 import { SectionDeleteButton } from '@/features/resourceEditor/client/components/actions/SectionDeleteButton';
@@ -66,7 +68,12 @@ export function ArrayFieldEditor<T = string>({
 						)
 			)}
 			{items.length === 0 && (
-				<div className="rounded-medium border border-dashed border-divider p-4 text-center text-xs text-foreground-500">
+				<div
+					className={cn(
+						TYPOGRAPHY_STYLES.emptyDescription,
+						'rounded-medium border border-dashed border-divider p-4 text-center'
+					)}
+				>
 					{emptyMessage}
 				</div>
 			)}

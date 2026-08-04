@@ -1,6 +1,7 @@
 import { cn } from '@heroui/theme';
 import { memo, useCallback, useId, useMemo, useState } from 'react';
 
+import { TYPOGRAPHY_STYLES } from '@/design/theme/styles/typography';
 import Button from '@/design/ui/components/button';
 import Input from '@/design/ui/components/input';
 import Textarea from '@/design/ui/components/textarea';
@@ -20,8 +21,8 @@ import { EditorSection } from '@/features/resourceEditor/client/components/layou
 import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
 import { PortraitUploader } from '@/features/resourceEditor/client/components/uploads/PortraitUploader';
 import { SpriteUploader } from '@/features/resourceEditor/client/components/uploads/SpriteUploader';
-import { parseIntegerInput } from '@/features/resourceEditor/client/editorValueAllocation';
 import { IdRangeBadge } from '@/features/resourceEditor/client/editors/info/IdRangeBadge';
+import { parseIntegerInput } from '@/features/resourceEditor/client/editorValueAllocation';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import { SpriteGrid } from './SpriteGrid';
@@ -275,7 +276,10 @@ export const ClothesEditor = memo<ClothesEditorProps>(function ClothesEditor({
 							variant="light"
 							size="sm"
 							aria-expanded={isSpriteExpanded}
-							className="-ml-2 h-10 px-2 text-base font-semibold text-foreground-700 sm:h-8"
+							className={cn(
+								TYPOGRAPHY_STYLES.sectionTitle,
+								'-ml-2 h-10 px-2 sm:h-8'
+							)}
 							startContent={
 								<ChevronRight
 									className={cn(
@@ -297,11 +301,13 @@ export const ClothesEditor = memo<ClothesEditorProps>(function ClothesEditor({
 				}
 			>
 				{isSpriteExpanded && (
-					<div className="animate-in fade-in slide-in-from-top-2 flex flex-col gap-6 rounded-large border border-divider bg-content2/30 p-4 duration-200 sm:p-6">
+					<div className="animate-in fade-in slide-in-from-top-2 flex flex-col gap-6 rounded-medium border border-divider bg-content2/30 p-4 duration-200 sm:p-6">
 						<div className="flex flex-col gap-2">
 							<div className="ml-1 flex items-center justify-between">
 								<Label
-									className="text-sm font-semibold text-foreground-700"
+									className={
+										TYPOGRAPHY_STYLES.subsectionTitle
+									}
 									tip="衣服小人名称，格式为_{PackLabel}_Clothes_{衣服名称}_{ID}，根据资源包标识符、衣服名称和ID自动生成。"
 								>
 									衣服小人名称（Name）
@@ -314,7 +320,12 @@ export const ClothesEditor = memo<ClothesEditorProps>(function ClothesEditor({
 									刷新默认填充
 								</Button>
 							</div>
-							<div className="select-all rounded-medium border border-divider bg-content1/50 p-3 font-mono text-sm text-foreground-600">
+							<div
+								className={cn(
+									TYPOGRAPHY_STYLES.codeBody,
+									'select-all rounded-medium border border-divider bg-content1/50 p-3'
+								)}
+							>
 								{autoName}
 							</div>
 						</div>

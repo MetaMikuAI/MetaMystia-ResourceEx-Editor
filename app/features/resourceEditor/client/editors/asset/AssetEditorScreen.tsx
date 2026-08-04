@@ -3,12 +3,17 @@
 import { cn } from '@heroui/theme';
 import { useCallback, useMemo, useState } from 'react';
 
-import Button from '@/design/ui/components/button';
+import { TYPOGRAPHY_STYLES } from '@/design/theme/styles/typography';
 
 import { collectResourcePackAssetReferences } from '@/domain/resourcePack/assetReferences';
 
 import type { IAssetPathOperation } from '@/features/resourceEditor/client/assets/contracts';
 import { EditorCollapsiblePanel } from '@/features/resourceEditor/client/components/layout/EditorCollapsiblePanel';
+import {
+	EditorCollectionItem,
+	EditorCollectionItemMeta,
+	EditorCollectionItemTitle,
+} from '@/features/resourceEditor/client/components/layout/EditorCollectionItem';
 import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
@@ -93,38 +98,44 @@ export function AssetEditorScreen() {
 			>
 				<div className="flex min-h-0 flex-col gap-2">
 					{QUICK_FOLDERS.map((folder) => (
-						<Button
+						<EditorCollectionItem
 							key={folder.path}
-							onPress={() => {
+							isSelected={activeFolder === folder.path}
+							onSelect={() => {
 								handleFolderChange(folder.path);
 								setIsCollapsed(true);
 							}}
-							className={cn(
-								'h-auto min-h-16 shrink-0 flex-col items-stretch whitespace-normal border px-3 py-2 text-left text-foreground',
-								activeFolder === folder.path
-									? 'border-primary bg-primary/15'
-									: 'border-divider bg-content2/30 data-[hover=true]:border-primary/40 data-[hover=true]:bg-default/40'
-							)}
+							className="shrink-0"
 						>
-							<div className="text-sm font-bold">
+							<EditorCollectionItemTitle>
 								{folder.label}
-							</div>
-							<div className="break-all font-mono text-xs text-foreground-600">
+							</EditorCollectionItemTitle>
+							<EditorCollectionItemMeta>
 								{folder.path}
-							</div>
-							<div className="mt-1 break-words text-xs leading-relaxed text-foreground-500">
+							</EditorCollectionItemMeta>
+							<p
+								className={cn(
+									TYPOGRAPHY_STYLES.compactDescription,
+									'mt-1'
+								)}
+							>
 								{folder.description}
-							</div>
-						</Button>
+							</p>
+						</EditorCollectionItem>
 					))}
 
-					<div className="mt-4 shrink-0 rounded-large border border-dashed border-divider bg-content2/20 p-3 text-xs leading-relaxed text-foreground-600">
+					<div
+						className={cn(
+							TYPOGRAPHY_STYLES.compactDescription,
+							'mt-4 shrink-0 rounded-medium border border-dashed border-divider bg-content2/20 p-3 text-justify'
+						)}
+					>
 						<p>
 							此页按资源包内真实路径管理文件。复制、移动、删除会直接修改导出的ZIP内容，移动时会同步更新ResourceEx.json中的资产引用。
 						</p>
 						<p className="mt-2">
 							导出会保留导入压缩包中的任意文件，包括
-							<code className="rounded bg-default/40 px-1 font-mono">
+							<code className="rounded-small bg-default/40 px-1 font-mono">
 								assets/
 							</code>
 							外的额外内容。

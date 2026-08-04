@@ -1,8 +1,11 @@
 'use client';
 
+import { cn } from '@heroui/theme';
 import { useEffect, useMemo, useState } from 'react';
 
+import { TYPOGRAPHY_STYLES } from '@/design/theme/styles/typography';
 import Button from '@/design/ui/components/button';
+import Heading from '@/design/ui/components/heading';
 
 import { CoordinatedModal, pushOverlayChild } from '@/features/overlays/client';
 import { ConfirmDialog } from '@/features/resourceEditor/client/components/confirm/ConfirmDialog';
@@ -77,10 +80,10 @@ export function WorkspaceDuplicateDialog({ onResolved }: IProps) {
 			>
 				<div className="space-y-4">
 					<div className="space-y-2">
-						<h2 className="text-xl font-semibold">
+						<Heading as="h2" variant="dialog">
 							发现可能重复的资源包
-						</h2>
-						<p className="text-sm leading-6 text-foreground-600">
+						</Heading>
+						<p className={TYPOGRAPHY_STYLES.description}>
 							{selectedCandidate
 								? isExact
 									? `本次导入与“${selectedCandidate.workspace.displayName}”的原始文件完全一致。`
@@ -108,7 +111,14 @@ export function WorkspaceDuplicateDialog({ onResolved }: IProps) {
 								/>
 							)}
 						{error && (
-							<p className="text-sm text-danger">{error}</p>
+							<p
+								className={cn(
+									TYPOGRAPHY_STYLES.body,
+									'text-danger'
+								)}
+							>
+								{error}
+							</p>
 						)}
 					</div>
 					<div className="flex flex-wrap justify-end gap-2 border-t border-divider pt-4">

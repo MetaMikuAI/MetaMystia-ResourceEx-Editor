@@ -176,6 +176,9 @@ export function Select<V extends TSelectValue = TSelectValue>({
 			isVirtualized={false}
 			{...(isDisabled === undefined ? {} : { isDisabled })}
 			{...(isInvalid === undefined ? {} : { isInvalid })}
+			listboxProps={{
+				itemClasses: { description: 'break-all', title: 'break-all' },
+			}}
 			popoverProps={{ shouldCloseOnScroll: false }}
 			maxListboxHeight={menuMaxHeight}
 			showScrollIndicators

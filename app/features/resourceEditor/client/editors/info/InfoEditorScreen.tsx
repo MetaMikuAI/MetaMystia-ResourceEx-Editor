@@ -65,7 +65,7 @@ export function InfoEditorScreen() {
 	return (
 		<EditorWorkspace columns={1} contentClassName="flex flex-col">
 			<EditorHeader title="资源包基础信息（Pack Info）" />
-			<EditorPanel className="flex flex-col gap-6 p-4 sm:p-6">
+			<EditorPanel className="flex flex-col gap-6">
 				<div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
 					{/* Name */}
 					<EditorField label="资源包名称（Name）">

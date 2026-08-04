@@ -169,7 +169,7 @@ export function IngredientPreviewIcon({
 			<span
 				aria-label={name}
 				role="img"
-				className="flex h-8 w-8 shrink-0 items-center justify-center rounded border border-divider text-xs text-foreground/40"
+				className="flex h-8 w-8 shrink-0 items-center justify-center rounded-medium border border-divider text-xs text-foreground/40"
 			>
 				?
 			</span>

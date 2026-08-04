@@ -511,7 +511,7 @@ function ConditionItem({
 	return (
 		<div
 			data-editor-appended-item
-			className="flex min-w-0 flex-col gap-3 rounded-large border border-divider bg-content1/50 p-4"
+			className="flex min-w-0 flex-col gap-3 rounded-medium border border-divider bg-content1/50 p-4"
 		>
 			<div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
 				<Select<ConditionType>

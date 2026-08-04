@@ -1,6 +1,7 @@
 import { cn } from '@heroui/theme';
 import { type ReactNode } from 'react';
 
+import { TYPOGRAPHY_STYLES } from '@/design/theme/styles/typography';
 import Button from '@/design/ui/components/button';
 import Tooltip from '@/design/ui/components/tooltip';
 
@@ -56,7 +57,8 @@ export function TagBadge({
 	return (
 		<span
 			className={cn(
-				'inline-flex min-h-7 items-center rounded-medium border px-2 py-1 text-xs font-medium',
+				TYPOGRAPHY_STYLES.compactInteractiveLabel,
+				'inline-flex min-h-7 items-center break-all rounded-small border px-2 py-1 text-center',
 				isMuted
 					? 'border-divider bg-default/20 text-foreground-500'
 					: TAG_TONE_CLASS_NAMES[tone].selected
@@ -93,7 +95,8 @@ export function TagButton({
 			aria-invalid={isInvalid || undefined}
 			aria-pressed={isSelected}
 			className={cn(
-				'h-10 min-w-0 rounded-medium border px-3 text-xs font-medium sm:h-8 sm:px-2',
+				TYPOGRAPHY_STYLES.compactInteractiveLabel,
+				'h-auto min-h-10 min-w-0 whitespace-normal break-all rounded-medium border px-3 py-2 text-center sm:min-h-8 sm:px-2 sm:py-1',
 				TAG_TONE_CLASS_NAMES[tone][
 					isSelected ? 'selected' : 'unselected'
 				],
