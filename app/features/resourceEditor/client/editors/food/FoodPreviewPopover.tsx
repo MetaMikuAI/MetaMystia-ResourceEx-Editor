@@ -8,6 +8,7 @@ import Popover, {
 	PopoverContent,
 	PopoverTrigger,
 } from '@/design/ui/components/popover';
+import Tooltip from '@/design/ui/components/tooltip';
 
 import { FOOD_NAMES } from '@/domain/data/foods';
 import { FOOD_TAGS } from '@/domain/data/tags';
@@ -57,8 +58,7 @@ export const FoodPreviewPopover = memo<IProps>(function FoodPreviewPopover({
 	const previewButton = (
 		<Button
 			isIconOnly
-			aria-label={`预览${foodName}`}
-			title={`预览${foodName}`}
+			aria-label="预览料理"
 			color="primary"
 			variant="flat"
 			size="sm"
@@ -70,7 +70,11 @@ export const FoodPreviewPopover = memo<IProps>(function FoodPreviewPopover({
 
 	return (
 		<Popover showArrow>
-			<PopoverTrigger>{previewButton}</PopoverTrigger>
+			<Tooltip content="预览料理">
+				<span className="inline-flex">
+					<PopoverTrigger>{previewButton}</PopoverTrigger>
+				</span>
+			</Tooltip>
 			<PopoverContent className="w-80 max-w-[calc(100vw-1rem)] p-3">
 				<div className="grid w-full gap-3 text-sm text-foreground">
 					<div className="flex items-center gap-2">

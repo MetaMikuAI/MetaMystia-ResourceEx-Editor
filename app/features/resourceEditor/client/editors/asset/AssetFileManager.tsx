@@ -6,6 +6,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Button from '@/design/ui/components/button';
 import Input from '@/design/ui/components/input';
 import PressElement from '@/design/ui/components/pressElement';
+import Tooltip from '@/design/ui/components/tooltip';
 
 import { isValidPackLabel } from '@/domain/resourcePack/constants';
 
@@ -1192,22 +1193,24 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 											{index > 0 && (
 												<ChevronRight className="h-3 w-3 shrink-0 text-foreground-400" />
 											)}
-											<Button
-												variant="light"
-												size="sm"
-												onPress={() =>
-													navigateTo(crumb.path)
-												}
-												className={cn(
-													'h-8 min-w-0 max-w-[10rem] truncate rounded-medium px-2 font-mono text-xs sm:max-w-[14rem]',
-													crumb.path === currentFolder
-														? 'bg-default/40 text-foreground'
-														: 'text-primary-600'
-												)}
-												title={crumb.path}
-											>
-												{crumb.label}
-											</Button>
+											<Tooltip content={crumb.path}>
+												<Button
+													variant="light"
+													size="sm"
+													onPress={() =>
+														navigateTo(crumb.path)
+													}
+													className={cn(
+														'h-8 min-w-0 max-w-[10rem] truncate rounded-medium px-2 font-mono text-xs sm:max-w-[14rem]',
+														crumb.path ===
+															currentFolder
+															? 'bg-default/40 text-foreground'
+															: 'text-primary-600'
+													)}
+												>
+													{crumb.label}
+												</Button>
+											</Tooltip>
 										</div>
 									))}
 								</div>
@@ -1245,17 +1248,18 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 									>
 										上传文件
 									</Button>
-									<Button
-										variant="flat"
-										size="sm"
-										onPress={() =>
-											folderInputRef.current?.click()
-										}
-										className="min-h-11 rounded-medium px-3 text-xs sm:min-h-8"
-										title="浏览器不会提供空目录；请使用“新建文件夹”单独创建"
-									>
-										上传目录
-									</Button>
+									<Tooltip content="浏览器不会提供空目录；请使用“新建文件夹”单独创建">
+										<Button
+											variant="flat"
+											size="sm"
+											onPress={() =>
+												folderInputRef.current?.click()
+											}
+											className="min-h-11 rounded-medium px-3 text-xs sm:min-h-8"
+										>
+											上传目录
+										</Button>
+									</Tooltip>
 									<input
 										ref={fileInputRef}
 										type="file"
@@ -1515,25 +1519,28 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 											? 'border-primary bg-primary/15'
 											: 'border-divider bg-content2/30'
 									)}
-									title={entry.path}
 								>
-									<AssetEntrySelectionButton
-										className="rounded-large hover:ring-1 hover:ring-inset hover:ring-primary/40"
-										entry={entry}
-										isSelected={selectedPaths.has(
-											entry.path
-										)}
-										onSelect={(isAdditive) =>
-											selectEntry(entry, isAdditive)
-										}
-										{...(entry.kind === 'folder' ||
-										isSelectOnly
-											? {
-													onOpen: () =>
-														handleEntryOpen(entry),
-												}
-											: {})}
-									/>
+									<div className="absolute inset-0 z-0">
+										<AssetEntrySelectionButton
+											className="rounded-large hover:ring-1 hover:ring-inset hover:ring-primary/40"
+											entry={entry}
+											isSelected={selectedPaths.has(
+												entry.path
+											)}
+											onSelect={(isAdditive) =>
+												selectEntry(entry, isAdditive)
+											}
+											{...(entry.kind === 'folder' ||
+											isSelectOnly
+												? {
+														onOpen: () =>
+															handleEntryOpen(
+																entry
+															),
+													}
+												: {})}
+										/>
+									</div>
 									<div
 										className={cn(
 											'pointer-events-none relative z-10 flex h-28 items-center justify-center overflow-hidden',
@@ -1558,56 +1565,62 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 										<div className="pointer-events-auto mt-1 flex flex-wrap gap-1">
 											{entry.kind !== 'folder' && (
 												<>
-													<Button
-														variant="bordered"
-														size="sm"
-														onPress={() =>
-															copyText(
-																`path:${entry.path}`,
-																entry.path
-															)
-														}
-														className={cn(
-															'h-8 min-w-0 rounded-medium border-divider px-2 font-mono text-xs',
-															copiedKey ===
-																`path:${entry.path}` &&
-																'border-success text-success'
-														)}
-														title="复制assets/...路径"
-													>
-														{copiedKey ===
-														`path:${entry.path}`
-															? '已复制'
-															: 'path'}
-													</Button>
-													<Button
-														variant="bordered"
-														size="sm"
-														onPress={() =>
-															handleCopyRexUri(
-																entry.path
-															)
-														}
-														isDisabled={
-															!canCopyRexUri
-														}
-														className={cn(
-															'h-8 min-w-0 rounded-medium border-divider px-2 font-mono text-xs',
-															copiedKey ===
-																`uri:${entry.path}` &&
-																'border-success text-success'
-														)}
-														title={
+													<Tooltip content="复制assets/...路径">
+														<Button
+															variant="bordered"
+															size="sm"
+															onPress={() =>
+																copyText(
+																	`path:${entry.path}`,
+																	entry.path
+																)
+															}
+															className={cn(
+																'h-8 min-w-0 rounded-medium border-divider px-2 font-mono text-xs',
+																copiedKey ===
+																	`path:${entry.path}` &&
+																	'border-success text-success'
+															)}
+														>
+															{copiedKey ===
+															`path:${entry.path}`
+																? '已复制'
+																: 'path'}
+														</Button>
+													</Tooltip>
+													<Tooltip
+														content={
 															canCopyRexUri
-																? '复制rex:// URI'
+																? '复制rex://URI'
 																: '请先设置有效的资源包标识符'
 														}
 													>
-														{copiedKey ===
-														`uri:${entry.path}`
-															? '已复制'
-															: 'URI'}
-													</Button>
+														<span className="inline-flex">
+															<Button
+																variant="bordered"
+																size="sm"
+																onPress={() =>
+																	handleCopyRexUri(
+																		entry.path
+																	)
+																}
+																isDisabled={
+																	!canCopyRexUri
+																}
+																className={cn(
+																	'h-8 min-w-0 rounded-medium border-divider px-2 font-mono text-xs',
+																	copiedKey ===
+																		`uri:${entry.path}` &&
+																		'border-success text-success'
+																)}
+															>
+																{copiedKey ===
+																`uri:${entry.path}`
+																	? '已复制'
+																	: 'URI'}
+															</Button>
+														</span>
+													</Tooltip>
 												</>
 											)}
 											{(entry.kind === 'folder' ||
@@ -1641,24 +1654,27 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 											? 'bg-primary/15'
 											: ''
 									)}
-									title={entry.path}
 								>
-									<AssetEntrySelectionButton
-										entry={entry}
-										isSelected={selectedPaths.has(
-											entry.path
-										)}
-										onSelect={(isAdditive) =>
-											selectEntry(entry, isAdditive)
-										}
-										{...(entry.kind === 'folder' ||
-										isSelectOnly
-											? {
-													onOpen: () =>
-														handleEntryOpen(entry),
-												}
-											: {})}
-									/>
+									<div className="absolute inset-0 z-0">
+										<AssetEntrySelectionButton
+											entry={entry}
+											isSelected={selectedPaths.has(
+												entry.path
+											)}
+											onSelect={(isAdditive) =>
+												selectEntry(entry, isAdditive)
+											}
+											{...(entry.kind === 'folder' ||
+											isSelectOnly
+												? {
+														onOpen: () =>
+															handleEntryOpen(
+																entry
+															),
+													}
+												: {})}
+										/>
+									</div>
 									<div className="pointer-events-none relative z-10 flex h-10 w-10 items-center justify-center overflow-hidden rounded-medium bg-default/30">
 										{entry.kind === 'image' && entry.url ? (
 											<img
@@ -1682,54 +1698,62 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 									<div className="pointer-events-auto relative z-10 col-span-2 flex flex-wrap items-center justify-end gap-1 sm:col-span-1">
 										{entry.kind !== 'folder' ? (
 											<>
-												<Button
-													variant="bordered"
-													size="sm"
-													onPress={() =>
-														copyText(
-															`path:${entry.path}`,
-															entry.path
-														)
-													}
-													className={cn(
-														'h-8 min-w-0 rounded-medium border-divider px-2 font-mono text-xs',
-														copiedKey ===
-															`path:${entry.path}` &&
-															'border-success text-success'
-													)}
-													title="复制assets/...路径"
-												>
-													{copiedKey ===
-													`path:${entry.path}`
-														? '已复制'
-														: 'path'}
-												</Button>
-												<Button
-													variant="bordered"
-													size="sm"
-													onPress={() =>
-														handleCopyRexUri(
-															entry.path
-														)
-													}
-													isDisabled={!canCopyRexUri}
-													className={cn(
-														'h-8 min-w-0 rounded-medium border-divider px-2 font-mono text-xs',
-														copiedKey ===
-															`uri:${entry.path}` &&
-															'border-success text-success'
-													)}
-													title={
+												<Tooltip content="复制assets/...路径">
+													<Button
+														variant="bordered"
+														size="sm"
+														onPress={() =>
+															copyText(
+																`path:${entry.path}`,
+																entry.path
+															)
+														}
+														className={cn(
+															'h-8 min-w-0 rounded-medium border-divider px-2 font-mono text-xs',
+															copiedKey ===
+																`path:${entry.path}` &&
+																'border-success text-success'
+														)}
+													>
+														{copiedKey ===
+														`path:${entry.path}`
+															? '已复制'
+															: 'path'}
+													</Button>
+												</Tooltip>
+												<Tooltip
+													content={
 														canCopyRexUri
 															? '复制rex://URI'
 															: '请先设置有效的资源包标识符'
 													}
 												>
-													{copiedKey ===
-													`uri:${entry.path}`
-														? '已复制'
-														: 'URI'}
-												</Button>
+													<span className="inline-flex">
+														<Button
+															variant="bordered"
+															size="sm"
+															onPress={() =>
+																handleCopyRexUri(
+																	entry.path
+																)
+															}
+															isDisabled={
+																!canCopyRexUri
+															}
+															className={cn(
+																'h-8 min-w-0 rounded-medium border-divider px-2 font-mono text-xs',
+																copiedKey ===
+																	`uri:${entry.path}` &&
+																	'border-success text-success'
+															)}
+														>
+															{copiedKey ===
+															`uri:${entry.path}`
+																? '已复制'
+																: 'URI'}
+														</Button>
+													</span>
+												</Tooltip>
 											</>
 										) : (
 											<Button

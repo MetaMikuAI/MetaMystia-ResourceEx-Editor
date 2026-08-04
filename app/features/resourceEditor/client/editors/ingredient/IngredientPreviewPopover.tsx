@@ -8,6 +8,7 @@ import Popover, {
 	PopoverContent,
 	PopoverTrigger,
 } from '@/design/ui/components/popover';
+import Tooltip from '@/design/ui/components/tooltip';
 
 import { getIngredientPrefixLabel } from '@/domain/data/ingredientPrefixes';
 import { FOOD_TAGS } from '@/domain/data/tags';
@@ -45,19 +46,22 @@ export const IngredientPreviewPopover = memo<IProps>(
 
 		return (
 			<Popover showArrow>
-				<PopoverTrigger>
-					<Button
-						isIconOnly
-						aria-label={`预览${ingredientName}`}
-						title={`预览${ingredientName}`}
-						color="primary"
-						variant="flat"
-						size="sm"
-						className="h-10 w-10 rounded-medium sm:h-8 sm:w-8"
-					>
-						<EyeIcon className="h-4 w-4" />
-					</Button>
-				</PopoverTrigger>
+				<Tooltip content="预览食材">
+					<span className="inline-flex">
+						<PopoverTrigger>
+							<Button
+								isIconOnly
+								aria-label="预览食材"
+								color="primary"
+								variant="flat"
+								size="sm"
+								className="h-10 w-10 rounded-medium sm:h-8 sm:w-8"
+							>
+								<EyeIcon className="h-4 w-4" />
+							</Button>
+						</PopoverTrigger>
+					</span>
+				</Tooltip>
 				<PopoverContent className="w-80 max-w-[calc(100vw-1rem)] p-3">
 					<div className="grid w-full gap-3 text-sm text-foreground">
 						<div className="flex items-center gap-2">

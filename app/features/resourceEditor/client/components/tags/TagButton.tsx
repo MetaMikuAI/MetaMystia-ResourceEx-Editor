@@ -2,6 +2,7 @@ import { cn } from '@heroui/theme';
 import { type ReactNode } from 'react';
 
 import Button from '@/design/ui/components/button';
+import Tooltip from '@/design/ui/components/tooltip';
 
 export type TTagTone =
 	| 'beverage'
@@ -83,7 +84,7 @@ export function TagButton({
 	tone = 'neutral',
 	title,
 }: IProps) {
-	return (
+	const button = (
 		<Button
 			color="default"
 			variant={isSelected ? 'flat' : 'bordered'}
@@ -99,9 +100,10 @@ export function TagButton({
 				isInvalid &&
 					'ring-2 ring-danger/70 ring-offset-1 ring-offset-content2'
 			)}
-			title={title}
 		>
 			{tag.name}
 		</Button>
 	);
+
+	return title ? <Tooltip content={title}>{button}</Tooltip> : button;
 }

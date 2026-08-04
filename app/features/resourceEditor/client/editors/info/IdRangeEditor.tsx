@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Button from '@/design/ui/components/button';
 import Input from '@/design/ui/components/input';
 import Textarea from '@/design/ui/components/textarea';
+import Tooltip from '@/design/ui/components/tooltip';
 
 import type { PackInfo } from '@/domain/resourcePack/contracts/resourceEx';
 
@@ -213,30 +214,36 @@ export function IdRangeEditor({ packInfo, onUpdate }: IdRangeEditorProps) {
 					>
 						设置签名
 					</Button>
-					<Button
-						isIconOnly
-						aria-label={copied ? '已复制签名' : '复制签名'}
-						title={copied ? '已复制' : '复制签名'}
-						color={copied ? 'success' : 'default'}
-						variant="flat"
-						onPress={() => {
-							if (!idSignature) return;
-							navigator.clipboard
-								.writeText(idSignature)
-								.then(() => {
-									setCopied(true);
-									setTimeout(() => setCopied(false), 2000);
-								});
-						}}
-						isDisabled={!idSignature}
-						className="h-10 w-10 shrink-0 rounded-medium"
-					>
-						{copied ? (
-							<CheckIcon className="h-4 w-4" />
-						) : (
-							<CopyIcon className="h-4 w-4" />
-						)}
-					</Button>
+					<Tooltip content={copied ? '已复制' : '复制签名'}>
+						<span className="inline-flex">
+							<Button
+								isIconOnly
+								aria-label={copied ? '已复制签名' : '复制签名'}
+								color={copied ? 'success' : 'default'}
+								variant="flat"
+								onPress={() => {
+									if (!idSignature) return;
+									navigator.clipboard
+										.writeText(idSignature)
+										.then(() => {
+											setCopied(true);
+											setTimeout(
+												() => setCopied(false),
+												2000
+											);
+										});
+								}}
+								isDisabled={!idSignature}
+								className="h-10 w-10 shrink-0 rounded-medium"
+							>
+								{copied ? (
+									<CheckIcon className="h-4 w-4" />
+								) : (
+									<CopyIcon className="h-4 w-4" />
+								)}
+							</Button>
+						</span>
+					</Tooltip>
 				</div>
 			</EditorField>
 
