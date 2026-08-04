@@ -1,4 +1,4 @@
-export const ANNOUNCEMENT_VERSION = 'v0.12.0-2026-08-03';
+export const ANNOUNCEMENT_VERSION = 'v0.12.1-2026-08-04';
 
 export const ANNOUNCEMENT_TITLE = 'MetaMystia ResourceEx Editor公告';
 
