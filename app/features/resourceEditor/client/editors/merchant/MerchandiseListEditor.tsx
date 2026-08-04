@@ -18,6 +18,7 @@ import { SectionDeleteButton } from '@/features/resourceEditor/client/components
 import { Label } from '@/features/resourceEditor/client/components/fields/Label';
 import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
 import { EditorSection } from '@/features/resourceEditor/client/components/layout/EditorSection';
+import { useFocusOnItemAppend } from '@/features/resourceEditor/client/hooks/useFocusOnItemAppend';
 
 import { ProductEditor } from './ProductEditor';
 
@@ -54,6 +55,7 @@ export const MerchandiseListEditor = memo<MerchandiseListEditorProps>(
 		const handleAdd = useCallback(() => {
 			onUpdate([...merchandiseList, { ...DEFAULT_MERCHANDISE }]);
 		}, [merchandiseList, onUpdate]);
+		const merchandiseListRef = useFocusOnItemAppend(merchandiseList.length);
 
 		const handleRemove = useCallback(
 			(index: number) => {
@@ -104,11 +106,12 @@ export const MerchandiseListEditor = memo<MerchandiseListEditorProps>(
 					/>
 				)}
 
-				<div className="flex flex-col gap-4">
+				<div ref={merchandiseListRef} className="flex flex-col gap-4">
 					{merchandiseList.length > 0 &&
 						merchandiseList.map((merch, index) => (
 							<div
 								key={index}
+								data-editor-appended-item
 								className="flex min-w-0 flex-col gap-3 rounded-large border border-divider bg-content1/50 p-4"
 							>
 								<div className="flex items-center justify-between">
@@ -117,7 +120,6 @@ export const MerchandiseListEditor = memo<MerchandiseListEditorProps>(
 									</span>
 									<SectionDeleteButton
 										iconOnly
-										title="确定要删除这个商品吗？"
 										confirmTitle="确定要删除这个商品吗？"
 										onPress={() => handleRemove(index)}
 									>

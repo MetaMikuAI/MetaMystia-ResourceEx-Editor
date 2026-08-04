@@ -5,6 +5,7 @@ import { memo, type ReactNode, type RefObject, useId } from 'react';
 
 import Button from '@/design/ui/components/button';
 import ScrollShadow from '@/design/ui/components/scrollShadow';
+import Tooltip from '@/design/ui/components/tooltip';
 
 import { ChevronRight } from '@/features/resourceEditor/client/components/icons/ChevronRight';
 
@@ -12,6 +13,7 @@ import { EditorPanel } from './EditorPanel';
 
 interface IProps {
 	actions?: ReactNode;
+	allowsStickyContent?: boolean;
 	children: ReactNode;
 	className?: string;
 	isCollapsed: boolean;
@@ -23,6 +25,7 @@ interface IProps {
 export const EditorCollapsiblePanel = memo<IProps>(
 	function EditorCollapsiblePanel({
 		actions,
+		allowsStickyContent = false,
 		children,
 		className,
 		isCollapsed,
@@ -49,38 +52,54 @@ export const EditorCollapsiblePanel = memo<IProps>(
 						{title}
 					</h2>
 					<div className="flex shrink-0 items-center gap-1.5">
-						<Button
-							isIconOnly
-							variant="light"
-							size="sm"
-							className="h-10 w-10 lg:hidden"
-							onPress={() => onCollapsedChange(!isCollapsed)}
-							aria-controls={contentId}
-							aria-expanded={!isCollapsed}
-							aria-label={isCollapsed ? '展开列表' : '折叠列表'}
+						<Tooltip
+							content={isCollapsed ? '展开列表' : '折叠列表'}
 						>
-							<ChevronRight
-								className={cn(
-									'h-4 w-4 shrink-0 transition-transform motion-reduce:transition-none',
-									isCollapsed ? '-rotate-90' : 'rotate-90'
-								)}
-							/>
-						</Button>
+							<Button
+								isIconOnly
+								variant="light"
+								size="sm"
+								className="h-10 w-10 lg:hidden"
+								onPress={() => onCollapsedChange(!isCollapsed)}
+								aria-controls={contentId}
+								aria-expanded={!isCollapsed}
+								aria-label={
+									isCollapsed ? '展开列表' : '折叠列表'
+								}
+							>
+								<ChevronRight
+									className={cn(
+										'h-4 w-4 shrink-0 transition-transform motion-reduce:transition-none',
+										isCollapsed ? '-rotate-90' : 'rotate-90'
+									)}
+								/>
+							</Button>
+						</Tooltip>
 						{actions}
 					</div>
 				</div>
 
 				<ScrollShadow
+					isEnabled={!allowsStickyContent}
 					{...(scrollContainerRef === undefined
 						? {}
 						: { ref: scrollContainerRef })}
 					aria-labelledby={titleId}
-					className="min-h-0 lg:flex-1"
+					className={cn(
+						'min-h-0 lg:flex-1',
+						allowsStickyContent &&
+							'overflow-visible lg:overflow-y-auto'
+					)}
 				>
 					<div
 						id={contentId}
 						className={cn(
-							'grid overflow-hidden transition-[grid-template-rows] motion-reduce:transition-none lg:overflow-x-auto',
+							'grid transition-[grid-template-rows] motion-reduce:transition-none',
+							allowsStickyContent
+								? isCollapsed
+									? 'overflow-hidden lg:overflow-visible'
+									: 'overflow-visible'
+								: 'overflow-hidden lg:overflow-x-auto',
 							isCollapsed
 								? 'grid-rows-[0fr] lg:grid-rows-[1fr]'
 								: 'grid-rows-[1fr]'

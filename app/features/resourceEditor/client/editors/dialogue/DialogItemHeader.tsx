@@ -1,6 +1,7 @@
 import { memo } from 'react';
 
 import Button from '@/design/ui/components/button';
+import Tooltip from '@/design/ui/components/tooltip';
 
 import type { Dialog } from '@/domain/resourcePack/contracts/dialogue';
 
@@ -21,16 +22,19 @@ export const DialogItemHeader = memo<DialogItemHeaderProps>(
 					<span className="text-xs font-semibold text-foreground-600">
 						对话条目#{index + 1}
 					</span>
-					<Button
-						size="sm"
-						variant="flat"
-						color={position === 'Left' ? 'primary' : 'secondary'}
-						className="h-10 rounded-medium px-2 text-xs sm:h-8"
-						onPress={onTogglePosition}
-						title="点击切换左右位置"
-					>
-						{position === 'Left' ? '左侧' : '右侧'}
-					</Button>
+					<Tooltip content="点击切换左右位置">
+						<Button
+							size="sm"
+							variant="flat"
+							color={
+								position === 'Left' ? 'primary' : 'secondary'
+							}
+							className="h-10 rounded-medium px-2 text-xs sm:h-8"
+							onPress={onTogglePosition}
+						>
+							{position === 'Left' ? '左侧' : '右侧'}
+						</Button>
+					</Tooltip>
 				</div>
 				<SectionDeleteButton
 					confirmTitle="确定要删除这条对话吗？"

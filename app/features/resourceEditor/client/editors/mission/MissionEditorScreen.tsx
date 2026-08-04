@@ -91,7 +91,7 @@ export function MissionEditorScreen() {
 			: null;
 
 	return (
-		<EditorWorkspace>
+		<EditorWorkspace detailKey={selectedIndex}>
 			<MissionList
 				missions={data.missionNodes}
 				selectedIndex={selectedIndex}

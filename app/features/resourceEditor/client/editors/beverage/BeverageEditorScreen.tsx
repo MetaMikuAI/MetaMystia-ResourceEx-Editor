@@ -1,11 +1,14 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import type { Beverage } from '@/domain/resourcePack/contracts/items';
 import { remapResourcePackItemReferences } from '@/domain/resourcePack/entityReferences';
 
-import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
+import {
+	EditorWorkspace,
+	useEditorSelection,
+} from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
 import {
 	findNextAvailableInteger,
 	findNextAvailableSuffixedValue,
@@ -18,7 +21,8 @@ import { BeverageList } from './BeverageList';
 
 export function BeverageEditorScreen() {
 	const { resourcePack: data, updateResourcePack } = useResourceEditor();
-	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+	const { detailKey, replaceSelection, selectedIndex, setSelectedIndex } =
+		useEditorSelection();
 
 	const addBeverage = useCallback(() => {
 		const beverages = data.beverages ?? [];
@@ -50,12 +54,12 @@ export function BeverageEditorScreen() {
 			);
 			updateResourcePack(() => ({ ...data, beverages: newBeverages }));
 			if (selectedIndex === index) {
-				setSelectedIndex(newBeverages.length > 0 ? 0 : null);
+				replaceSelection(newBeverages.length > 0 ? 0 : null);
 			} else if (selectedIndex !== null && selectedIndex > index) {
 				setSelectedIndex(selectedIndex - 1);
 			}
 		},
-		[data, selectedIndex, updateResourcePack]
+		[data, replaceSelection, selectedIndex, updateResourcePack]
 	);
 
 	const updateBeverage = useCallback(
@@ -96,7 +100,7 @@ export function BeverageEditorScreen() {
 	);
 
 	return (
-		<EditorWorkspace>
+		<EditorWorkspace detailKey={detailKey}>
 			<BeverageList
 				beverages={data.beverages || []}
 				selectedIndex={selectedIndex}

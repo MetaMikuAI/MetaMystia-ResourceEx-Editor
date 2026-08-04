@@ -13,6 +13,7 @@ import { ChevronRight } from '@/features/resourceEditor/client/components/icons/
 import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
 import { EditorSection } from '@/features/resourceEditor/client/components/layout/EditorSection';
 import { PortraitUploader } from '@/features/resourceEditor/client/components/uploads/PortraitUploader';
+import { useFocusOnItemAppend } from '@/features/resourceEditor/client/hooks/useFocusOnItemAppend';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 interface PortraitsProps {
@@ -35,6 +36,7 @@ export function Portraits({
 	onSetDefault,
 }: PortraitsProps) {
 	const [isExpanded, setIsExpanded] = useState(true);
+	const portraitsRef = useFocusOnItemAppend(portraits.length);
 	const { updateAsset } = useResourceEditor();
 
 	const isPidDuplicate = (pid: number, currentIndex: number) => {
@@ -73,7 +75,12 @@ export function Portraits({
 				</Button>
 			}
 			actions={
-				<SectionAddButton onPress={onAdd}>
+				<SectionAddButton
+					onPress={() => {
+						setIsExpanded(true);
+						onAdd();
+					}}
+				>
 					添加立绘配置
 				</SectionAddButton>
 			}
@@ -82,13 +89,14 @@ export function Portraits({
 				为角色配置不同的立绘表情，可用于对话系统和小碎骨笔记本图鉴。
 			</p>
 			{isExpanded && (
-				<div className="grid grid-cols-1 gap-3">
+				<div ref={portraitsRef} className="grid grid-cols-1 gap-3">
 					{portraits.map((portrait, i) => {
 						const duplicatePid = isPidDuplicate(portrait.pid, i);
 
 						return (
 							<article
 								key={i}
+								data-editor-appended-item
 								className={cn(
 									'flex min-w-0 flex-col gap-4 rounded-large border bg-content1/50 p-4',
 									duplicatePid

@@ -82,7 +82,7 @@ export function EventEditorScreen() {
 			: null;
 
 	return (
-		<EditorWorkspace>
+		<EditorWorkspace detailKey={selectedIndex}>
 			<EventList
 				events={data.eventNodes || []}
 				selectedIndex={selectedIndex}

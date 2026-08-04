@@ -6,6 +6,7 @@ import { SectionAddButton } from '@/features/resourceEditor/client/components/ac
 import { SectionDeleteButton } from '@/features/resourceEditor/client/components/actions/SectionDeleteButton';
 import { EditorSection } from '@/features/resourceEditor/client/components/layout/EditorSection';
 import { EmptyState } from '@/features/resourceEditor/client/components/layout/EmptyState';
+import { useFocusOnItemAppend } from '@/features/resourceEditor/client/hooks/useFocusOnItemAppend';
 import {
 	Select,
 	type SelectItem as SelectItemSpec,
@@ -22,6 +23,7 @@ export const PostEventList = memo<PostEventListProps>(function PostEventList({
 	allEvents,
 	onUpdate,
 }) {
+	const postEventListRef = useFocusOnItemAppend(postEvents?.length ?? 0);
 	const eventItems = useMemo<SelectItemSpec<string>[]>(() => {
 		return allEvents.map((e) => ({
 			value: e.label,
@@ -63,10 +65,11 @@ export const PostEventList = memo<PostEventListProps>(function PostEventList({
 				</SectionAddButton>
 			}
 		>
-			<div className="flex flex-col gap-3">
+			<div ref={postEventListRef} className="flex flex-col gap-3">
 				{(postEvents || []).map((pe, index) => (
 					<div
 						key={index}
+						data-editor-appended-item
 						className="flex min-w-0 flex-col gap-3 rounded-large border border-divider bg-content1/40 p-3 sm:p-4"
 					>
 						<div className="flex flex-col gap-1">
@@ -87,7 +90,7 @@ export const PostEventList = memo<PostEventListProps>(function PostEventList({
 								<SectionDeleteButton
 									iconOnly
 									className="shrink-0 sm:h-10 sm:w-10"
-									aria-label={`删除后继事件${index + 1}`}
+									aria-label="删除后继事件"
 									onPress={() => removePostEvent(index)}
 								/>
 							</div>

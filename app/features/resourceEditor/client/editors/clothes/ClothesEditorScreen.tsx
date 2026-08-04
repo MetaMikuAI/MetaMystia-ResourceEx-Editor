@@ -1,10 +1,13 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import type { Clothes } from '@/domain/resourcePack/contracts/items';
 
-import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
+import {
+	EditorWorkspace,
+	useEditorSelection,
+} from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
 import {
 	findNextAvailableInteger,
 	findNextAvailableSuffixedValue,
@@ -17,7 +20,8 @@ import { ClothesList } from './ClothesList';
 
 export function ClothesEditorScreen() {
 	const { resourcePack: data, updateResourcePack } = useResourceEditor();
-	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+	const { detailKey, replaceSelection, selectedIndex, setSelectedIndex } =
+		useEditorSelection();
 
 	const addClothes = useCallback(() => {
 		const clothes = data.clothes ?? [];
@@ -76,12 +80,12 @@ export function ClothesEditorScreen() {
 			);
 			updateResourcePack(() => ({ ...data, clothes: newClothesList }));
 			if (selectedIndex === index) {
-				setSelectedIndex(newClothesList.length > 0 ? 0 : null);
+				replaceSelection(newClothesList.length > 0 ? 0 : null);
 			} else if (selectedIndex !== null && selectedIndex > index) {
 				setSelectedIndex(selectedIndex - 1);
 			}
 		},
-		[data, selectedIndex, updateResourcePack]
+		[data, replaceSelection, selectedIndex, updateResourcePack]
 	);
 
 	const updateClothes = useCallback(
@@ -108,7 +112,7 @@ export function ClothesEditorScreen() {
 	);
 
 	return (
-		<EditorWorkspace>
+		<EditorWorkspace detailKey={detailKey}>
 			<ClothesList
 				clothes={data.clothes || []}
 				selectedIndex={selectedIndex}
@@ -118,6 +122,7 @@ export function ClothesEditorScreen() {
 			/>
 
 			<ClothesEditor
+				key={detailKey ?? 'empty'}
 				clothes={selectedClothes}
 				clothesIndex={selectedIndex}
 				onUpdate={(updates: Partial<Clothes>) => {

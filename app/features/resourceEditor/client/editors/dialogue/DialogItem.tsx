@@ -52,7 +52,6 @@ export const DialogItem = memo<DialogItemProps>(function DialogItem({
 						? 'left-0 bg-primary'
 						: 'right-0 bg-secondary'
 				}`}
-				title={`位置：${dialog.position === 'Left' ? '左侧' : '右侧'}`}
 			/>
 			<DialogItemHeader
 				index={index}
