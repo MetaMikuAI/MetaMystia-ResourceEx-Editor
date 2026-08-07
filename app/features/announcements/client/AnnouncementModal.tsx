@@ -80,7 +80,7 @@ export const AnnouncementModal = memo(function AnnouncementModal() {
 						{ANNOUNCEMENT_SUMMARY}
 					</p>
 				</div>
-				<div className="grid gap-3 sm:grid-cols-2">
+				<div className="flex flex-col gap-3">
 					{ANNOUNCEMENT_SECTIONS.map((section) => (
 						<section
 							key={section.title}
