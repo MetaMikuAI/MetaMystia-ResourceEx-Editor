@@ -13,6 +13,7 @@ import {
 	findNextAvailableInteger,
 	getEntityIdAllocationStart,
 } from '@/features/resourceEditor/client/editorValueAllocation';
+import { useEditorEntityNavigationIntent } from '@/features/resourceEditor/client/navigation/editorNavigationIntent';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import { RecipeEditor } from './RecipeEditor';
@@ -22,6 +23,12 @@ export function RecipeEditorScreen() {
 	const { resourcePack: data, updateResourcePack } = useResourceEditor();
 	const { detailKey, replaceSelection, selectedIndex, setSelectedIndex } =
 		useEditorSelection();
+	useEditorEntityNavigationIntent({
+		entityKind: 'recipe',
+		getStableKey: (recipe) => recipe.id,
+		items: data.recipes ?? [],
+		onSelect: setSelectedIndex,
+	});
 
 	const customIngredients = useMemo(
 		() => data.ingredients.map((ing) => ({ id: ing.id, name: ing.name })),

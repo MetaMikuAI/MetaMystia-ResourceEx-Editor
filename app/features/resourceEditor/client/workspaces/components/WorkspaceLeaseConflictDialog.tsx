@@ -31,6 +31,7 @@ export function WorkspaceLeaseConflictDialog() {
 	}, [leaseConflict?.workspace.id]);
 
 	if (!leaseConflict) return null;
+	const isComparisonRoute = pathname === '/compare';
 	const isExportRequest =
 		pendingExportWorkspaceId === leaseConflict.workspace.id;
 
@@ -92,10 +93,10 @@ export function WorkspaceLeaseConflictDialog() {
 						isDisabled={pendingAction !== null}
 						onPress={() => {
 							dismissLeaseConflict();
-							router.push('/');
+							if (!isComparisonRoute) router.push('/');
 						}}
 					>
-						返回资源包列表
+						{isComparisonRoute ? '继续观察' : '返回资源包列表'}
 					</Button>
 					{isExportRequest && (
 						<Button

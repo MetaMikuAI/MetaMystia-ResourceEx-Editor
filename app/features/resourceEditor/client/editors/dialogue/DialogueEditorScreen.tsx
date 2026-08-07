@@ -17,6 +17,7 @@ import {
 	useEditorSelection,
 } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
 import { findNextAvailableSuffixedValue } from '@/features/resourceEditor/client/editorValueAllocation';
+import { useEditorEntityNavigationIntent } from '@/features/resourceEditor/client/navigation/editorNavigationIntent';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import { DialogEditor } from './DialogEditor';
@@ -34,6 +35,12 @@ export function DialogueEditorScreen() {
 	const { resourcePack: data, updateResourcePack } = useResourceEditor();
 	const { detailKey, replaceSelection, selectedIndex, setSelectedIndex } =
 		useEditorSelection();
+	useEditorEntityNavigationIntent({
+		entityKind: 'dialogue',
+		getStableKey: (dialogPackage) => dialogPackage.name,
+		items: data.dialogPackages,
+		onSelect: setSelectedIndex,
+	});
 
 	const addDialogPackage = useCallback(() => {
 		const packLabel = data.packInfo.label;

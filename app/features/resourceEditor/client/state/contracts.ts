@@ -10,6 +10,7 @@ import type {
 	IAssetState,
 } from '@/features/resourceEditor/client/assets/contracts';
 import type {
+	IWorkspaceSnapshot,
 	TWorkspaceSaveStatus,
 	TWorkspaceStorageMode,
 } from '@/features/resourceEditor/client/workspaces/contracts';
@@ -20,6 +21,22 @@ export type TResourceExportStatus = 'exported' | 'modified' | 'unexported';
 export interface IResourceEditorOperationResult {
 	isSuccess: boolean;
 	error?: string;
+}
+
+export type TResourceEditorMutationSnapshot = Omit<
+	IWorkspaceSnapshot,
+	'revision'
+>;
+
+export interface IResourceEditorBatchMutationInput {
+	expectedRevision: number;
+	mutate(
+		current: TResourceEditorMutationSnapshot
+	): TResourceEditorMutationSnapshot;
+}
+
+export interface IResourceEditorBatchMutationResult extends IResourceEditorOperationResult {
+	revision?: number;
 }
 
 export interface IResourceEditorExportResult extends IResourceEditorOperationResult {
@@ -39,6 +56,9 @@ export interface IResourceEditorContext {
 	resourcePack: ResourceEx;
 	revision: number;
 	storageMode: TWorkspaceStorageMode;
+	applyWorkspaceMutation(
+		input: IResourceEditorBatchMutationInput
+	): IResourceEditorBatchMutationResult;
 	clearGuestDrafts(characterId: number): void;
 	getGuestLikeTagDraft(
 		characterId: number,
@@ -49,6 +69,7 @@ export interface IResourceEditorContext {
 		characterId: number,
 		izakayaId: number
 	): SpawnConfig | undefined;
+	readCurrentWorkspaceSnapshot(): IWorkspaceSnapshot | null;
 	replaceGuestLikeTagDraft(
 		characterId: number,
 		field: TGuestLikeTagDraftField,

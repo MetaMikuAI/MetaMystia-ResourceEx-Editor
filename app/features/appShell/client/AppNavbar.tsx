@@ -31,6 +31,7 @@ import { ExportValidationDialog } from '@/features/resourceEditor/client/compone
 import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
 import { SuccessBadge } from '@/features/resourceEditor/client/components/status/SuccessBadge';
 import { WarningBadge } from '@/features/resourceEditor/client/components/status/WarningBadge';
+import { subscribeEditorNavigationNotice } from '@/features/resourceEditor/client/navigation/editorNavigationIntent';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 import {
 	type IResourcePackValidationIssue,
@@ -189,6 +190,7 @@ function WorkspaceStatusBadges({
 export const AppNavbar = memo(function AppNavbar() {
 	const pathname = usePathname();
 	const router = useRouter();
+	const isComparisonRoute = pathname === '/compare';
 	const isReducedMotion = useReducedMotion();
 	const activeExportTriggerRef = useRef<HTMLButtonElement | null>(null);
 	const desktopExportTriggerRef = useRef<HTMLButtonElement>(null);
@@ -225,9 +227,17 @@ export const AppNavbar = memo(function AppNavbar() {
 		issues: IResourcePackValidationIssue[];
 		revision: number;
 	} | null>(null);
+	useEffect(
+		() =>
+			subscribeEditorNavigationNotice((nextNotice) =>
+				setNotice(nextNotice)
+			),
+		[]
+	);
 	const hasActiveWorkspace =
 		activeWorkspace !== null &&
 		activeWorkspace.workspace.id === activeWorkspaceId;
+	const hasEditorNavigation = hasActiveWorkspace && !isComparisonRoute;
 	const isFileOperationPending =
 		isExporting ||
 		isRetryingStorage ||
@@ -306,10 +316,14 @@ export const AppNavbar = memo(function AppNavbar() {
 		async (file: File) => {
 			const result = await importWorkspace(file);
 			if (!result.isSuccess) {
+				if (result.isLeaseConflict) return;
 				showOperationError('导入资源包', result.error);
 				return;
 			}
-			if (result.workspaceId) router.push('/');
+			if (result.resolution === 'cancel') return;
+			if (result.workspaceId) {
+				router.push(result.resolution === 'open' ? '/info' : '/');
+			}
 		},
 		[importWorkspace, router, showOperationError]
 	);
@@ -442,7 +456,7 @@ export const AppNavbar = memo(function AppNavbar() {
 	const openGitHub = useCallback(() => {
 		window.open(GITHUB_URL, '_blank', 'noopener,noreferrer');
 	}, []);
-	const visibleMobileNavGroups = hasActiveWorkspace ? MOBILE_NAV_GROUPS : [];
+	const visibleMobileNavGroups = hasEditorNavigation ? MOBILE_NAV_GROUPS : [];
 	const hasActiveMobileRoute = MOBILE_NAV_ITEMS.some(
 		(item) => item.href === pathname
 	);
@@ -486,7 +500,7 @@ export const AppNavbar = memo(function AppNavbar() {
 				? '尚未导出'
 				: '已导出';
 	const storageWarning = storageError ?? localSaveError;
-	const mobileWorkspaceSummaryCard = hasActiveWorkspace ? (
+	const mobileWorkspaceSummaryCard = hasEditorNavigation ? (
 		<>
 			<Button
 				fullWidth
@@ -592,7 +606,7 @@ export const AppNavbar = memo(function AppNavbar() {
 							</Link>
 						</PressElement>
 					</NavbarBrand>
-					{hasActiveWorkspace && (
+					{hasEditorNavigation && (
 						<nav className="hidden shrink-0 items-center gap-1 xl:flex">
 							<NavbarItem>
 								<Button
@@ -634,7 +648,7 @@ export const AppNavbar = memo(function AppNavbar() {
 				</NavbarContent>
 
 				<NavbarContent justify="end" className="hidden gap-1 xl:flex">
-					{pathname !== '/' && (
+					{pathname !== '/' && !isComparisonRoute && (
 						<>
 							{hasActiveWorkspace &&
 								(isTemporaryStorage ||
@@ -801,7 +815,7 @@ export const AppNavbar = memo(function AppNavbar() {
 							</section>
 						</NavbarMenuItem>
 					))}
-					{pathname !== '/' && (
+					{pathname !== '/' && !isComparisonRoute && (
 						<NavbarMenuItem className="w-full">
 							<section className="space-y-2">
 								<Heading
@@ -920,6 +934,39 @@ export const AppNavbar = memo(function AppNavbar() {
 							</section>
 						</NavbarMenuItem>
 					)}
+					{isComparisonRoute && (
+						<NavbarMenuItem className="w-full">
+							<section className="space-y-2">
+								<Heading
+									as="h2"
+									variant="navigation"
+									className="px-1"
+								>
+									版本对比
+								</Heading>
+								<Button
+									ref={mobileMenuFirstItemRef}
+									fullWidth
+									variant="light"
+									className={cn(
+										MOBILE_CARD_CONTENT_CLASS_NAME,
+										MOBILE_CARD_BASE_CLASS_NAME,
+										MOBILE_CARD_INACTIVE_CLASS_NAME
+									)}
+									onPress={() => handleNavigate('/')}
+								>
+									<span
+										className={cn(
+											TYPOGRAPHY_STYLES.interactiveLabel,
+											'min-w-0 truncate'
+										)}
+									>
+										返回资源包管理
+									</span>
+								</Button>
+							</section>
+						</NavbarMenuItem>
+					)}
 					<NavbarMenuItem className="w-full">
 						<section className="space-y-2">
 							<Heading
@@ -982,7 +1029,7 @@ export const AppNavbar = memo(function AppNavbar() {
 					</NavbarMenuItem>
 				</NavbarMenu>
 			</HeroUINavbar>
-			{pathname !== '/' && hasActiveWorkspace && (
+			{pathname !== '/' && hasEditorNavigation && (
 				<div className="hidden border-b border-divider bg-content1/40 shadow-sm backdrop-blur xl:block">
 					<div className="mx-auto flex min-h-10 w-full max-w-7xl items-center gap-3 px-6 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl">
 						<Link
@@ -1024,7 +1071,7 @@ export const AppNavbar = memo(function AppNavbar() {
 				</div>
 			)}
 			{pathname !== '/' &&
-				hasActiveWorkspace &&
+				hasEditorNavigation &&
 				(isTemporaryStorage || storageError !== null) &&
 				storageWarning && (
 					<div
@@ -1073,11 +1120,7 @@ export const AppNavbar = memo(function AppNavbar() {
 				confirmLabel="知道了"
 				onConfirm={() => setNotice(null)}
 			/>
-			<WorkspaceDuplicateDialog
-				onResolved={(_workspaceId, resolution) => {
-					router.push(resolution === 'open' ? '/info' : '/');
-				}}
-			/>
+			<WorkspaceDuplicateDialog />
 			<WorkspaceLeaseConflictDialog />
 			<WorkspaceLeaseLossDialog />
 		</>

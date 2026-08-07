@@ -14,6 +14,7 @@ import {
 	findNextAvailableSuffixedValue,
 	getEntityIdAllocationStart,
 } from '@/features/resourceEditor/client/editorValueAllocation';
+import { useEditorEntityNavigationIntent } from '@/features/resourceEditor/client/navigation/editorNavigationIntent';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import { IngredientEditor } from './IngredientEditor';
@@ -23,6 +24,12 @@ export function IngredientEditorScreen() {
 	const { resourcePack: data, updateResourcePack } = useResourceEditor();
 	const { detailKey, replaceSelection, selectedIndex, setSelectedIndex } =
 		useEditorSelection();
+	useEditorEntityNavigationIntent({
+		entityKind: 'ingredient',
+		getStableKey: (ingredient) => ingredient.id,
+		items: data.ingredients,
+		onSelect: setSelectedIndex,
+	});
 
 	const addIngredient = useCallback(() => {
 		const newId = findNextAvailableInteger(

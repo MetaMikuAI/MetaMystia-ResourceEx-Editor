@@ -15,6 +15,7 @@ export function WorkspaceLeaseLossDialog() {
 	const pathname = usePathname();
 	const router = useRouter();
 	const {
+		consumeLeaseLossResolution,
 		discardLeaseLossChanges,
 		dismissResolvedLeaseLoss,
 		leaseLoss,
@@ -32,14 +33,26 @@ export function WorkspaceLeaseLossDialog() {
 
 	useEffect(() => {
 		if (!leaseLoss?.isResolved) return;
+		if (pathname === '/compare') {
+			dismissResolvedLeaseLoss();
+			return;
+		}
 		if (pathname === '/') {
+			consumeLeaseLossResolution();
 			dismissResolvedLeaseLoss();
 			return;
 		}
 		router.replace('/');
-	}, [dismissResolvedLeaseLoss, leaseLoss?.isResolved, pathname, router]);
+	}, [
+		consumeLeaseLossResolution,
+		dismissResolvedLeaseLoss,
+		leaseLoss?.isResolved,
+		pathname,
+		router,
+	]);
 
 	if (!leaseLoss) return null;
+	const isComparisonRoute = pathname === '/compare';
 
 	const runAction = async (action: 'discard' | 'save-copy') => {
 		setPendingAction(action);
@@ -70,7 +83,9 @@ export function WorkspaceLeaseLossDialog() {
 					</Heading>
 					{leaseLoss.isResolved ? (
 						<p className={TYPOGRAPHY_STYLES.description}>
-							正在返回资源包管理…
+							{isComparisonRoute
+								? '正在恢复对比页…'
+								: '正在返回资源包管理…'}
 						</p>
 					) : leaseLoss.hasChanges ? (
 						<div
@@ -95,12 +110,17 @@ export function WorkspaceLeaseLossDialog() {
 							<p>
 								如需另外保留当前版本，可以选择“保存为副本”以创建新工作区“
 								{leaseLoss.copyDisplayName}
-								”，创建后将自动返回资源包管理。
+								”，创建后
+								{isComparisonRoute
+									? '可继续在对比页选择该副本。'
+									: '将自动返回资源包管理。'}
 							</p>
 						</div>
 					) : (
 						<p className={TYPOGRAPHY_STYLES.description}>
-							当前页面没有需要另行保留的修改，返回资源包管理后可查看最新状态。
+							{isComparisonRoute
+								? '当前页面没有需要另行保留的修改。继续后可查看其他页面保存的最新内容。'
+								: '当前页面没有需要另行保留的修改，返回资源包管理后可查看最新状态。'}
 						</p>
 					)}
 					{error && (
@@ -151,7 +171,9 @@ export function WorkspaceLeaseLossDialog() {
 						>
 							{leaseLoss.hasChanges
 								? '保存为副本'
-								: '返回资源包管理'}
+								: isComparisonRoute
+									? '继续观察'
+									: '返回资源包管理'}
 						</Button>
 					</div>
 				)}

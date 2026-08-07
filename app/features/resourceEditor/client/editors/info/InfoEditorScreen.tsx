@@ -17,11 +17,14 @@ import { EditorHeader } from '@/features/resourceEditor/client/components/layout
 import { EditorPanel } from '@/features/resourceEditor/client/components/layout/EditorPanel';
 import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
 import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
+import { useEditorPageNavigationIntent } from '@/features/resourceEditor/client/navigation/editorNavigationIntent';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import { DependencySelector } from './DependencySelector';
 import { IdRangeEditor } from './IdRangeEditor';
 import { useVersionValidation } from './useVersionValidation';
+
+const INFO_EDITOR_ENTITY_KINDS = ['pack-info', 'license'] as const;
 
 export function InfoEditorScreen() {
 	const {
@@ -30,6 +33,7 @@ export function InfoEditorScreen() {
 		resourcePack: data,
 		updateResourcePack,
 	} = useResourceEditor();
+	useEditorPageNavigationIntent({ entityKinds: INFO_EDITOR_ENTITY_KINDS });
 	const packInfo = data.packInfo || {};
 	const isVersionValid = useVersionValidation(packInfo.version);
 	const labelValue = packInfo.label || '';

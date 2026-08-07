@@ -17,6 +17,7 @@ import {
 	findNextAvailableSuffixedValue,
 	getEntityIdAllocationStart,
 } from '@/features/resourceEditor/client/editorValueAllocation';
+import { useEditorEntityNavigationIntent } from '@/features/resourceEditor/client/navigation/editorNavigationIntent';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import { CharacterEditor } from './CharacterEditor';
@@ -38,6 +39,12 @@ export function CharacterEditorScreen() {
 		updateResourcePack,
 	} = useResourceEditor();
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+	useEditorEntityNavigationIntent({
+		entityKind: 'character',
+		getStableKey: (character) => character.id,
+		items: data.characters,
+		onSelect: setSelectedIndex,
+	});
 
 	const sortCharacters = useCallback((chars: Character[]) => {
 		const typeOrder: Record<CharacterType, number> = {

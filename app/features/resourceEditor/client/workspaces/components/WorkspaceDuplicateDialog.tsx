@@ -13,14 +13,7 @@ import { Select } from '@/features/resourceEditor/client/components/select/Selec
 import type { TWorkspaceImportResolution } from '@/features/resourceEditor/client/workspaces/contracts';
 import { useResourceWorkspaces } from '@/features/resourceEditor/client/workspaces/useResourceWorkspaces';
 
-interface IProps {
-	onResolved(
-		workspaceId: string,
-		resolution: TWorkspaceImportResolution
-	): void;
-}
-
-export function WorkspaceDuplicateDialog({ onResolved }: IProps) {
+export function WorkspaceDuplicateDialog() {
 	const { duplicateIntent, resolveImport } = useResourceWorkspaces();
 	const [error, setError] = useState<string | null>(null);
 	const [isPending, setIsPending] = useState(false);
@@ -63,7 +56,6 @@ export function WorkspaceDuplicateDialog({ onResolved }: IProps) {
 			setError(result.error ?? '无法处理导入的资源包');
 			return;
 		}
-		if (result.workspaceId) onResolved(result.workspaceId, resolution);
 	};
 
 	const isExact = selectedCandidate?.matchStrength === 'exact';

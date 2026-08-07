@@ -7,6 +7,7 @@ import { remapResourcePackLabelReferences } from '@/domain/resourcePack/entityRe
 
 import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
 import { findNextAvailableSuffixedValue } from '@/features/resourceEditor/client/editorValueAllocation';
+import { useEditorEntityNavigationIntent } from '@/features/resourceEditor/client/navigation/editorNavigationIntent';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import EventEditor from './EventEditor';
@@ -21,6 +22,12 @@ const DEFAULT_EVENT = {
 export function EventEditorScreen() {
 	const { resourcePack: data, updateResourcePack } = useResourceEditor();
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+	useEditorEntityNavigationIntent({
+		entityKind: 'event',
+		getStableKey: (eventNode) => eventNode.label,
+		items: data.eventNodes,
+		onSelect: setSelectedIndex,
+	});
 
 	const addEvent = useCallback(() => {
 		const packLabel = data.packInfo.label;

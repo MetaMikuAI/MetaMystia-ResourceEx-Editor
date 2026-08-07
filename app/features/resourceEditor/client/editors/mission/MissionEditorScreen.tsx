@@ -11,6 +11,7 @@ import { remapResourcePackLabelReferences } from '@/domain/resourcePack/entityRe
 
 import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
 import { findNextAvailableSuffixedValue } from '@/features/resourceEditor/client/editorValueAllocation';
+import { useEditorEntityNavigationIntent } from '@/features/resourceEditor/client/navigation/editorNavigationIntent';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import MissionEditor from './MissionEditor';
@@ -32,6 +33,12 @@ const DEFAULT_MISSION = {
 export function MissionEditorScreen() {
 	const { resourcePack: data, updateResourcePack } = useResourceEditor();
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+	useEditorEntityNavigationIntent({
+		entityKind: 'mission',
+		getStableKey: (missionNode) => missionNode.label,
+		items: data.missionNodes,
+		onSelect: setSelectedIndex,
+	});
 
 	const addMission = useCallback(() => {
 		const packLabel = data.packInfo.label;

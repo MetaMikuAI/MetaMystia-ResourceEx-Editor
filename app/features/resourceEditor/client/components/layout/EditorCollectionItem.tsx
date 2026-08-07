@@ -76,7 +76,7 @@ export function EditorCollectionItemTitle({
 		<div
 			className={cn(
 				TYPOGRAPHY_STYLES.itemTitle,
-				'flex min-w-0 flex-wrap items-start gap-2',
+				'flex min-w-0 flex-wrap items-start gap-2 text-clip whitespace-normal break-all',
 				className
 			)}
 		>

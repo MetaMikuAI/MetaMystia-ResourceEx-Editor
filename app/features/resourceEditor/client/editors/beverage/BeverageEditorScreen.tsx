@@ -14,6 +14,7 @@ import {
 	findNextAvailableSuffixedValue,
 	getEntityIdAllocationStart,
 } from '@/features/resourceEditor/client/editorValueAllocation';
+import { useEditorEntityNavigationIntent } from '@/features/resourceEditor/client/navigation/editorNavigationIntent';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import { BeverageEditor } from './BeverageEditor';
@@ -23,6 +24,12 @@ export function BeverageEditorScreen() {
 	const { resourcePack: data, updateResourcePack } = useResourceEditor();
 	const { detailKey, replaceSelection, selectedIndex, setSelectedIndex } =
 		useEditorSelection();
+	useEditorEntityNavigationIntent({
+		entityKind: 'beverage',
+		getStableKey: (beverage) => beverage.id,
+		items: data.beverages ?? [],
+		onSelect: setSelectedIndex,
+	});
 
 	const addBeverage = useCallback(() => {
 		const beverages = data.beverages ?? [];

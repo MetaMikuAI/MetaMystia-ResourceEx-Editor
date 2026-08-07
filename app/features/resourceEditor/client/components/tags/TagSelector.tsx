@@ -1,6 +1,7 @@
 import { TagButton, type TTagTone } from './TagButton';
 
 interface IProps {
+	isReadOnly?: boolean;
 	tags: number[];
 	tagPool: { id: number; name: string }[];
 	onToggle: (tagId: number) => void;
@@ -8,6 +9,7 @@ interface IProps {
 }
 
 export function TagSelector({
+	isReadOnly = false,
 	onToggle,
 	tagPool,
 	tags,
@@ -19,6 +21,7 @@ export function TagSelector({
 				<TagButton
 					key={tag.id}
 					tag={tag}
+					isDisabled={isReadOnly}
 					isSelected={tags.includes(tag.id)}
 					onClick={() => onToggle(tag.id)}
 					tone={tone}

@@ -11,10 +11,14 @@ import Heading from '@/design/ui/components/heading';
 import Input from '@/design/ui/components/input';
 
 import { CoordinatedModal } from '@/features/overlays/client';
+import { WorkspaceComparePicker } from '@/features/resourceComparison/client/components/WorkspaceComparePicker';
 import { ConfirmDialog } from '@/features/resourceEditor/client/components/confirm/ConfirmDialog';
 import { SuccessBadge } from '@/features/resourceEditor/client/components/status/SuccessBadge';
 import { WarningBadge } from '@/features/resourceEditor/client/components/status/WarningBadge';
-import type { IWorkspaceSummary } from '@/features/resourceEditor/client/workspaces/contracts';
+import type {
+	IWorkspaceSummary,
+	TWorkspaceImportResolution,
+} from '@/features/resourceEditor/client/workspaces/contracts';
 import { useResourceWorkspaces } from '@/features/resourceEditor/client/workspaces/useResourceWorkspaces';
 
 const dateTimeFormatter = new Intl.DateTimeFormat('zh-CN', {
@@ -117,6 +121,7 @@ export function WorkspaceManagerScreen() {
 			error?: string;
 			isLeaseConflict?: boolean;
 			isSuccess: boolean;
+			resolution?: TWorkspaceImportResolution;
 			workspaceId?: string;
 		}>,
 		action: string,
@@ -134,7 +139,12 @@ export function WorkspaceManagerScreen() {
 				});
 				return;
 			}
-			if (result.workspaceId && isEditorOpenExpected) openEditor();
+			if (
+				result.workspaceId &&
+				(isEditorOpenExpected || result.resolution === 'open')
+			) {
+				openEditor();
+			}
 		} catch (error) {
 			setNotice({
 				description:
@@ -209,6 +219,13 @@ export function WorkspaceManagerScreen() {
 						</p>
 					</div>
 					<div className="grid grid-cols-2 gap-2 sm:flex">
+						<Button
+							variant="flat"
+							className="col-span-2 sm:col-span-1"
+							onPress={() => router.push('/compare')}
+						>
+							版本对比
+						</Button>
 						<Button
 							variant="flat"
 							isDisabled={isWorkspaceOperationPending}
@@ -489,7 +506,13 @@ export function WorkspaceManagerScreen() {
 										>
 											打开资源包
 										</Button>
-										<div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+										<div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+											<WorkspaceComparePicker
+												isDisabled={
+													isWorkspaceOperationPending
+												}
+												rightWorkspace={workspace}
+											/>
 											<Button
 												fullWidth
 												variant="flat"

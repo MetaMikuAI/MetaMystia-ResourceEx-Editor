@@ -7,6 +7,10 @@ import { TYPOGRAPHY_STYLES } from '@/design/theme/styles/typography';
 
 import { collectResourcePackAssetReferences } from '@/domain/resourcePack/assetReferences';
 
+import {
+	collectAssetFolders,
+	getAssetParentFolder,
+} from '@/features/resourceEditor/client/assets/assetPaths';
 import type { IAssetPathOperation } from '@/features/resourceEditor/client/assets/contracts';
 import { EditorCollapsiblePanel } from '@/features/resourceEditor/client/components/layout/EditorCollapsiblePanel';
 import {
@@ -15,6 +19,7 @@ import {
 	EditorCollectionItemTitle,
 } from '@/features/resourceEditor/client/components/layout/EditorCollectionItem';
 import { EditorWorkspace } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
+import { useEditorPageNavigationIntent } from '@/features/resourceEditor/client/navigation/editorNavigationIntent';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import { AssetFileManager } from './AssetFileManager';
@@ -38,6 +43,8 @@ const QUICK_FOLDERS = [
 		description: '自由管理额外资源，按需要在JSON中引用。',
 	},
 ] as const;
+
+const ASSET_EDITOR_ENTITY_KINDS = ['asset'] as const;
 
 export function AssetEditorScreen() {
 	const {
@@ -69,6 +76,30 @@ export function AssetEditorScreen() {
 			setNavigation({ folder, generation: assetGeneration }),
 		[assetGeneration]
 	);
+	const handleNavigationTarget = useCallback(
+		(target: { stableKey: number | string }) => {
+			if (typeof target.stableKey !== 'string') return false;
+			const path = target.stableKey;
+			const knownFolders = new Set([
+				...collectAssetFolders(Object.keys(assetUrls)),
+				...assetFolders,
+			]);
+			if (path.endsWith('/')) {
+				if (!knownFolders.has(path)) return false;
+				handleFolderChange(path);
+			} else {
+				if (!Object.hasOwn(assetUrls, path)) return false;
+				handleFolderChange(getAssetParentFolder(path));
+			}
+			setIsCollapsed(true);
+			return true;
+		},
+		[assetFolders, assetUrls, handleFolderChange]
+	);
+	useEditorPageNavigationIntent({
+		entityKinds: ASSET_EDITOR_ENTITY_KINDS,
+		onTarget: handleNavigationTarget,
+	});
 
 	const referencedPaths = useMemo(
 		() => collectResourcePackAssetReferences(data),

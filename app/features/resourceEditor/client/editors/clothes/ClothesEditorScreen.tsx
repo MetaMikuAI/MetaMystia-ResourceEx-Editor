@@ -13,6 +13,7 @@ import {
 	findNextAvailableSuffixedValue,
 	getEntityIdAllocationStart,
 } from '@/features/resourceEditor/client/editorValueAllocation';
+import { useEditorEntityNavigationIntent } from '@/features/resourceEditor/client/navigation/editorNavigationIntent';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import { ClothesEditor } from './ClothesEditor';
@@ -22,6 +23,12 @@ export function ClothesEditorScreen() {
 	const { resourcePack: data, updateResourcePack } = useResourceEditor();
 	const { detailKey, replaceSelection, selectedIndex, setSelectedIndex } =
 		useEditorSelection();
+	useEditorEntityNavigationIntent({
+		entityKind: 'clothes',
+		getStableKey: (clothes) => clothes.id,
+		items: data.clothes ?? [],
+		onSelect: setSelectedIndex,
+	});
 
 	const addClothes = useCallback(() => {
 		const clothes = data.clothes ?? [];

@@ -15,7 +15,7 @@ const EditorDetailKeyContext = createContext<TEditorDetailKey>(undefined);
 interface IProps {
 	className?: string;
 	contentClassName?: string;
-	columns?: 1 | 3 | 4;
+	columns?: 1 | 2 | 3 | 4;
 	detailKey?: TEditorDetailKey;
 }
 
@@ -41,6 +41,7 @@ export const EditorWorkspace = memo<PropsWithChildren<IProps>>(
 						<div
 							className={cn(
 								'grid min-w-0 grid-cols-1 gap-4 sm:gap-6 lg:gap-8',
+								columns === 2 && 'lg:grid-cols-2',
 								columns === 3 && 'lg:grid-cols-3',
 								columns === 4 && 'lg:grid-cols-4',
 								contentClassName

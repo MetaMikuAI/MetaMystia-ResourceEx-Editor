@@ -71,6 +71,7 @@ export function TagBadge({
 
 interface IProps {
 	tag: { id: number; name: string };
+	isDisabled?: boolean;
 	isInvalid?: boolean;
 	isSelected: boolean;
 	onClick: () => void;
@@ -79,6 +80,7 @@ interface IProps {
 }
 
 export function TagButton({
+	isDisabled = false,
 	isInvalid = false,
 	isSelected,
 	onClick,
@@ -89,6 +91,7 @@ export function TagButton({
 	const button = (
 		<Button
 			color="default"
+			isDisabled={isDisabled}
 			variant={isSelected ? 'flat' : 'bordered'}
 			size="sm"
 			onPress={onClick}

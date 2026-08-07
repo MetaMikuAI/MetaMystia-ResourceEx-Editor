@@ -381,7 +381,7 @@ const SpriteActionFields = memo<SpriteActionFieldsProps>(
 					? {}
 					: { onPress: () => handleModeChange('clear') })}
 			>
-				清空（shouldSet：false）
+				清空图片
 			</Button>
 		);
 
@@ -419,7 +419,7 @@ const SpriteActionFields = memo<SpriteActionFieldsProps>(
 								<img
 									src={previewUrl}
 									alt="预览"
-									className="h-full w-full object-contain"
+									className="image-rendering-pixelated h-full w-full object-contain"
 									draggable={false}
 								/>
 							) : (

@@ -9,6 +9,11 @@ import Button from '@/design/ui/components/button';
 import Card from '@/design/ui/components/card';
 import Heading from '@/design/ui/components/heading';
 
+import {
+	clearEditorNavigationIntent,
+	readEditorNavigationIntent,
+	type IEditorNavigationIntent,
+} from '@/features/resourceEditor/client/navigation/editorNavigationIntent';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 import { WorkspaceRecoveryDialog } from '@/features/resourceEditor/client/workspaces/components/WorkspaceRecoveryDialog';
 import { useResourceWorkspaces } from '@/features/resourceEditor/client/workspaces/useResourceWorkspaces';
@@ -33,6 +38,9 @@ export function ResourceEditorRouteGuard({ children }: PropsWithChildren) {
 		workspaces,
 	} = useResourceWorkspaces();
 	const attemptedRestoreRef = useRef(false);
+	const navigationIntentRef = useRef<
+		IEditorNavigationIntent | null | undefined
+	>(undefined);
 	const [openingWorkspaceId, setOpeningWorkspaceId] = useState<string | null>(
 		null
 	);
@@ -40,34 +48,86 @@ export function ResourceEditorRouteGuard({ children }: PropsWithChildren) {
 		useState<IRestoreFallback | null>(null);
 
 	useEffect(() => {
+		if (navigationIntentRef.current === undefined) {
+			navigationIntentRef.current = readEditorNavigationIntent();
+		}
+		const navigationIntent = navigationIntentRef.current;
+		const navigationWorkspaceId = navigationIntent?.workspaceId;
+		if (leaseConflict || leaseLoss || recoveryWorkspace) return;
+		if (!navigationWorkspaceId && activeWorkspace) {
+			attemptedRestoreRef.current = true;
+			return;
+		}
 		if (
-			activeWorkspace ||
-			leaseConflict ||
-			leaseLoss ||
-			recoveryWorkspace
+			navigationWorkspaceId &&
+			activeWorkspace?.workspace.id === navigationWorkspaceId &&
+			activeWorkspaceId === navigationWorkspaceId
 		) {
 			attemptedRestoreRef.current = true;
 			return;
 		}
-		if (lifecycleStatus !== 'manager' || attemptedRestoreRef.current) {
+		if (attemptedRestoreRef.current) return;
+		if (lifecycleStatus !== 'manager' && lifecycleStatus !== 'editing') {
 			return;
 		}
 		attemptedRestoreRef.current = true;
-		void openLastWorkspace().then((result) => {
+		const openInitialWorkspace = async () => {
+			const workspaceId = navigationIntent?.workspaceId;
+			if (workspaceId) {
+				setOpeningWorkspaceId(workspaceId);
+				if (
+					activeWorkspace &&
+					activeWorkspace.workspace.id !== workspaceId
+				) {
+					const closeResult = await closeWorkspace();
+					if (!closeResult.isSuccess) {
+						setOpeningWorkspaceId(null);
+						setRestoreFallback({
+							error: closeResult.error ?? '无法结束当前资源包',
+						});
+						return;
+					}
+				}
+				const result = await openWorkspace(workspaceId, {
+					recoveryMode: navigationIntent?.continueCurrent
+						? 'continue-current'
+						: 'prompt',
+				});
+				setOpeningWorkspaceId(null);
+				if (!result.isSuccess) {
+					setRestoreFallback({
+						error: result.isLeaseConflict
+							? '目标资源包正由其他页面编辑'
+							: (result.error ?? '无法打开目标资源包'),
+					});
+					if (!result.isLeaseConflict) {
+						navigationIntentRef.current = null;
+						clearEditorNavigationIntent();
+					}
+				}
+				return;
+			}
+			const result = await openLastWorkspace();
 			if (!result.isSuccess && !result.isLeaseConflict) {
 				setRestoreFallback({});
 			}
-		});
+		};
+		void openInitialWorkspace();
 	}, [
+		activeWorkspaceId,
 		activeWorkspace,
+		closeWorkspace,
 		leaseConflict,
 		leaseLoss,
 		lifecycleStatus,
 		openLastWorkspace,
+		openWorkspace,
 		recoveryWorkspace,
 	]);
 
 	const handleOpenWorkspace = async (workspaceId: string) => {
+		navigationIntentRef.current = null;
+		clearEditorNavigationIntent();
 		setOpeningWorkspaceId(workspaceId);
 		setRestoreFallback(null);
 		const result = await openWorkspace(workspaceId);

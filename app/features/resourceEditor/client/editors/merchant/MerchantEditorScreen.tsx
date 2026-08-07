@@ -8,6 +8,7 @@ import {
 	EditorWorkspace,
 	useEditorSelection,
 } from '@/features/resourceEditor/client/components/layout/EditorWorkspace';
+import { useEditorEntityNavigationIntent } from '@/features/resourceEditor/client/navigation/editorNavigationIntent';
 import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 import { MerchantEditor } from './MerchantEditor';
@@ -29,6 +30,12 @@ export function MerchantEditorScreen() {
 		useEditorSelection();
 
 	const merchants = useMemo(() => data.merchants || [], [data.merchants]);
+	useEditorEntityNavigationIntent({
+		entityKind: 'merchant',
+		getStableKey: (merchant) => merchant.key,
+		items: merchants,
+		onSelect: setSelectedIndex,
+	});
 
 	const addMerchant = useCallback(() => {
 		const newMerchants = [...merchants, { ...DEFAULT_MERCHANT }];

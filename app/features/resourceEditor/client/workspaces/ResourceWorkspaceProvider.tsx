@@ -13,21 +13,27 @@ import { createBlankResourcePack } from '@/domain/resourcePack/createBlankResour
 
 import { readResourcePackArchive } from '@/features/resourceEditor/client/archive/readResourcePackArchive';
 
+import { calculateBlobSha256 } from '@/infrastructure/browser/crypto/calculateBlobSha256';
 import { safeStorage } from '@/infrastructure/browser/storage/safeStorage';
 
 import type {
 	ICreateWorkspaceArchiveInput,
 	IWorkspaceDuplicateIntent,
 	IWorkspaceImportCandidate,
+	IWorkspaceImportResult,
 	IWorkspaceLeaseConflict,
 	IWorkspaceLeaseLoss,
+	IWorkspaceLeaseLossResolution,
 	IWorkspaceLoadedSnapshot,
 	IWorkspaceOperationResult,
+	IWorkspaceOpenOptions,
 	IWorkspaceRepository,
 	IWorkspaceSnapshot,
 	IWorkspaceSummary,
+	IWorkspaceYieldResult,
 	TWorkspaceImportResolution,
 	TWorkspaceLifecycleStatus,
+	TWorkspaceLoadSource,
 	TWorkspaceSaveStatus,
 	TWorkspaceStorageMode,
 } from './contracts';
@@ -39,7 +45,6 @@ import {
 	WORKSPACE_CATALOG_CHANNEL_NAME,
 } from './workspaceCatalogSync';
 import { WorkspacePersistenceError } from './workspaceDatabase';
-import { calculateBlobSha256 } from './workspaceHash';
 import {
 	claimWorkspaceOwnerId,
 	createWorkspaceLeaseController,
@@ -69,6 +74,7 @@ const WORKSPACE_RECOVERY_COPY_SUFFIX = '（恢复副本）';
 interface IPendingImport {
 	candidates: readonly IWorkspaceImportCandidate[];
 	input: ICreateWorkspaceArchiveInput;
+	settle(result: IWorkspaceImportResult): void;
 }
 
 function describeError(error: unknown) {
@@ -128,6 +134,14 @@ async function loadCurrentAndCheckpoint(
 	return { checkpointSnapshot, current };
 }
 
+function markWorkspaceReleased(
+	loaded: IWorkspaceLoadedSnapshot
+): IWorkspaceLoadedSnapshot {
+	const workspace = { ...loaded.workspace, isEditing: false };
+	delete workspace.editingExpiresAt;
+	return { snapshot: loaded.snapshot, workspace };
+}
+
 export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 	const [memoryRepository] = useState<IWorkspaceRepository>(() =>
 		createMemoryWorkspaceRepository({
@@ -145,6 +159,8 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 	const [leaseLoss, setLeaseLoss] = useState<IWorkspaceLeaseLoss | null>(
 		null
 	);
+	const [leaseLossResolution, setLeaseLossResolution] =
+		useState<IWorkspaceLeaseLossResolution | null>(null);
 	const [isExportSnapshot, setIsExportSnapshot] = useState(false);
 	const [isRetryingStorage, setIsRetryingStorage] = useState(false);
 	const [lifecycleStatus, setLifecycleStatus] =
@@ -162,6 +178,8 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 	const [workspaces, setWorkspaces] = useState<readonly IWorkspaceSummary[]>(
 		[]
 	);
+	const [workspaceCatalogGeneration, setWorkspaceCatalogGeneration] =
+		useState(0);
 	const activeLeaseIdRef = useRef<string | null>(null);
 	const activeCheckpointIsExportedRef = useRef(false);
 	const activeCheckpointRevisionRef = useRef<number | null>(null);
@@ -182,6 +200,9 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 	const isResolvingLeaseLossRef = useRef(false);
 	const leaseLossPromiseRef = useRef<Promise<void> | null>(null);
 	const leaseLossRef = useRef<IWorkspaceLeaseLoss | null>(null);
+	const leaseLossResolutionRef = useRef<IWorkspaceLeaseLossResolution | null>(
+		null
+	);
 	const latestSnapshotRef = useRef<IWorkspaceSnapshot | null>(null);
 	const persistedRevisionRef = useRef<number | null>(null);
 	const isExportSnapshotRef = useRef(false);
@@ -205,6 +226,18 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 	const workspaceCatalogSyncRef = useRef<IWorkspaceCatalogSync | null>(null);
 	const workspaceOwnerIdRef = useRef<string | null>(null);
 	const workspacesRef = useRef<readonly IWorkspaceSummary[]>([]);
+
+	const completePendingImport = useCallback(
+		(result: IWorkspaceImportResult): IWorkspaceImportResult => {
+			const pendingImport = pendingImportRef.current;
+			if (!pendingImport) return result;
+			pendingImportRef.current = null;
+			setDuplicateIntent(null);
+			pendingImport.settle(result);
+			return result;
+		},
+		[]
+	);
 
 	const clearAutosaveTimeout = useCallback(() => {
 		if (autosaveTimeoutRef.current === null) return;
@@ -358,6 +391,9 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 			}
 			workspacesRef.current = summaries;
 			setWorkspaces(summaries);
+			if (isCatalogMutation) {
+				setWorkspaceCatalogGeneration((generation) => generation + 1);
+			}
 			const activeWorkspaceId = activeWorkspaceRef.current?.workspace.id;
 			const activeSummary = summaries.find(
 				(summary) => summary.id === activeWorkspaceId
@@ -601,6 +637,8 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 			const loadedWorkspace = activeWorkspaceRef.current;
 			if (!loadedWorkspace || isExportSnapshotRef.current) return;
 			const workspaceId = loadedWorkspace.workspace.id;
+			leaseLossResolutionRef.current = null;
+			setLeaseLossResolution(null);
 			isLeaseLostRef.current = true;
 			activeLeaseIdRef.current = null;
 			clearAutosaveTimeout();
@@ -670,6 +708,7 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 		initializationGenerationRef.current = generation;
 		const refreshExternalCatalog = () => {
 			if (storageModeRef.current !== 'persistent') return;
+			setWorkspaceCatalogGeneration((current) => current + 1);
 			void refreshSummaries().catch((error) =>
 				setStorageError(describeError(error))
 			);
@@ -846,6 +885,13 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 			ownerClaimDisposeRef.current = null;
 			leaseControllerRef.current?.dispose();
 			saveQueueRef.current?.dispose();
+			const pendingImport = pendingImportRef.current;
+			pendingImportRef.current = null;
+			pendingImport?.settle({
+				error: '导入流程已结束',
+				isSuccess: false,
+				resolution: 'cancel',
+			});
 			const repository = repositoryRef.current;
 			queueMicrotask(() => repository.dispose());
 		};
@@ -1008,7 +1054,8 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 		(
 			loaded: IWorkspaceLoadedSnapshot,
 			leaseId: string,
-			checkpointSnapshot: IWorkspaceSnapshot
+			checkpointSnapshot: IWorkspaceSnapshot,
+			options: IWorkspaceOpenOptions
 		) => {
 			setLeaseConflict(null);
 			activeCheckpointSnapshotRef.current = checkpointSnapshot;
@@ -1017,7 +1064,8 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 			if (
 				loaded.workspace.currentRevision !==
 					loaded.workspace.checkpointRevision &&
-				pendingExportWorkspaceIdRef.current !== loaded.workspace.id
+				pendingExportWorkspaceIdRef.current !== loaded.workspace.id &&
+				options.recoveryMode !== 'continue-current'
 			) {
 				clearAutosaveTimeout();
 				saveQueueRef.current?.dispose();
@@ -1039,11 +1087,23 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 	);
 
 	const openWorkspace = useCallback(
-		async (id: string): Promise<IWorkspaceOperationResult> => {
+		async (
+			id: string,
+			options: IWorkspaceOpenOptions = {}
+		): Promise<IWorkspaceOperationResult> => {
 			setLifecycleStatus('opening');
 			let preparedController: IWorkspaceLeaseController | null = null;
+			const cancelOpen = () => {
+				restoreCurrentLifecycle();
+				return {
+					error: '已取消打开资源包',
+					isSuccess: false,
+				} satisfies IWorkspaceOperationResult;
+			};
 			try {
+				if (options.signal?.aborted) return cancelOpen();
 				await flushCurrentWorkspace();
+				if (options.signal?.aborted) return cancelOpen();
 				if (
 					activeWorkspaceRef.current?.workspace.id === id &&
 					!isExportSnapshotRef.current &&
@@ -1059,6 +1119,7 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 						(workspace) => workspace.id === id
 					);
 				if (!summary) throw new Error('未找到要打开的资源包');
+				if (options.signal?.aborted) return cancelOpen();
 				preparedController = createLeaseController(
 					repositoryRef.current
 				);
@@ -1077,11 +1138,31 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 						error: '该资源包正在其他页面中编辑',
 						isLeaseConflict: true,
 						isSuccess: false,
+						workspaceId: id,
 					};
+				}
+				if (options.signal?.aborted) {
+					await preparedController.release();
+					preparedController.dispose();
+					preparedController = null;
+					return cancelOpen();
 				}
 				const { checkpointSnapshot, current } =
 					await loadCurrentAndCheckpoint(repositoryRef.current, id);
+				if (options.signal?.aborted) {
+					await preparedController.release();
+					preparedController.dispose();
+					preparedController = null;
+					return cancelOpen();
+				}
 				await leaseControllerRef.current?.release();
+				if (options.signal?.aborted) {
+					await preparedController.release();
+					preparedController.dispose();
+					preparedController = null;
+					clearActiveWorkspaceState();
+					return cancelOpen();
+				}
 				installLeaseController(
 					repositoryRef.current,
 					preparedController
@@ -1090,9 +1171,18 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 				finishWorkspaceOpen(
 					current,
 					leaseResult.lease.leaseId,
-					checkpointSnapshot
+					checkpointSnapshot,
+					options
 				);
 				await refreshSummaries(true);
+				if (
+					options.signal?.aborted &&
+					activeWorkspaceRef.current?.workspace.id === id
+				) {
+					await leaseControllerRef.current?.release();
+					clearActiveWorkspaceState();
+					return cancelOpen();
+				}
 				return { isSuccess: true, workspaceId: id };
 			} catch (error) {
 				if (preparedController) {
@@ -1111,6 +1201,7 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 			}
 		},
 		[
+			clearActiveWorkspaceState,
 			createLeaseController,
 			finishWorkspaceOpen,
 			flushCurrentWorkspace,
@@ -1159,6 +1250,23 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 		]
 	);
 
+	const readWorkspaceSnapshot = useCallback(
+		async (id: string, source: TWorkspaceLoadSource = 'current') => {
+			const repository = repositoryRef.current;
+			try {
+				return await repository.load(id, source);
+			} catch (error) {
+				if (repositoryRef.current !== repository) {
+					return repositoryRef.current.load(id, source);
+				}
+				if (!shouldUseMemoryFallback(error)) throw error;
+				await fallbackToMemory(error);
+				return repositoryRef.current.load(id, source);
+			}
+		},
+		[fallbackToMemory]
+	);
+
 	const createWorkspace = useCallback(async () => {
 		setLifecycleStatus('opening');
 		try {
@@ -1187,7 +1295,13 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 	]);
 
 	const importWorkspace = useCallback(
-		async (file: File) => {
+		async (file: File): Promise<IWorkspaceImportResult> => {
+			if (pendingImportRef.current) {
+				return {
+					error: '已有一个导入资源包正在等待处理',
+					isSuccess: false,
+				};
+			}
 			setLifecycleStatus('importing');
 			try {
 				const archive = await readResourcePackArchive(file);
@@ -1227,16 +1341,23 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 					);
 				}
 				if (candidates.length > 0) {
-					pendingImportRef.current = { candidates, input };
-					setDuplicateIntent({
-						candidates,
-						displayName:
-							archive.resourcePack.packInfo.name?.trim() ||
-							archive.resourcePack.packInfo.label?.trim() ||
-							file.name,
-					});
 					restoreCurrentLifecycle();
-					return { isSuccess: true };
+					return await new Promise<IWorkspaceImportResult>(
+						(settle) => {
+							pendingImportRef.current = {
+								candidates,
+								input,
+								settle,
+							};
+							setDuplicateIntent({
+								candidates,
+								displayName:
+									archive.resourcePack.packInfo.name?.trim() ||
+									archive.resourcePack.packInfo.label?.trim() ||
+									file.name,
+							});
+						}
+					);
 				}
 				let loaded: IWorkspaceLoadedSnapshot;
 				try {
@@ -1346,6 +1467,83 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 		refreshSummaries,
 		safelyFallbackToMemory,
 	]);
+
+	const yieldActiveWorkspace = useCallback(
+		async (expectedWorkspaceId: string): Promise<IWorkspaceYieldResult> => {
+			const loadedWorkspace = activeWorkspaceRef.current;
+			const leaseId = activeLeaseIdRef.current;
+			const leaseController = leaseControllerRef.current;
+			const repository = repositoryRef.current;
+			if (storageModeRef.current === 'memory') {
+				return {
+					error: '内存模式不支持跨标签页交接编辑权',
+					isSuccess: false,
+				};
+			}
+			if (
+				!loadedWorkspace ||
+				loadedWorkspace.workspace.id !== expectedWorkspaceId ||
+				!leaseId ||
+				!leaseController
+			) {
+				return {
+					error: '当前页面没有该资源包的编辑权',
+					isSuccess: false,
+				};
+			}
+			if (isExportSnapshotRef.current) {
+				return {
+					error: '只读导出快照不能交接编辑权',
+					isSuccess: false,
+				};
+			}
+			if (pendingRecoveryRef.current) {
+				return { error: '请先处理资源包恢复选择', isSuccess: false };
+			}
+			if (leaseLossRef.current || isLeaseLostRef.current) {
+				return {
+					error: '当前页面已经失去资源包编辑权',
+					isSuccess: false,
+				};
+			}
+			try {
+				enqueueLatestSnapshot();
+				await saveQueueRef.current?.flush();
+				const savedWorkspace = await repository.load(
+					expectedWorkspaceId,
+					'current'
+				);
+				if (
+					repositoryRef.current !== repository ||
+					leaseControllerRef.current !== leaseController ||
+					activeLeaseIdRef.current !== leaseId ||
+					activeWorkspaceRef.current?.workspace.id !==
+						expectedWorkspaceId
+				) {
+					return {
+						error: '资源包编辑状态已变化，请重试',
+						isSuccess: false,
+					};
+				}
+				await leaseController.release();
+				activeLeaseIdRef.current = null;
+				try {
+					await refreshSummaries(true);
+				} catch (error) {
+					setStorageError(describeError(error));
+				}
+				clearActiveWorkspaceState();
+				return {
+					isSuccess: true,
+					loaded: markWorkspaceReleased(savedWorkspace),
+					workspaceId: expectedWorkspaceId,
+				};
+			} catch (error) {
+				return operationError(error);
+			}
+		},
+		[clearActiveWorkspaceState, enqueueLatestSnapshot, refreshSummaries]
+	);
 
 	const duplicateWorkspace = useCallback(
 		async (id: string): Promise<IWorkspaceOperationResult> => {
@@ -1482,16 +1680,14 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 		async (
 			resolution: TWorkspaceImportResolution,
 			workspaceId?: string
-		): Promise<IWorkspaceOperationResult> => {
+		): Promise<IWorkspaceImportResult> => {
 			const pendingImport = pendingImportRef.current;
 			if (!pendingImport) {
 				return { error: '没有等待处理的导入资源包', isSuccess: false };
 			}
 			if (resolution === 'cancel') {
-				pendingImportRef.current = null;
-				setDuplicateIntent(null);
 				restoreCurrentLifecycle();
-				return { isSuccess: true };
+				return completePendingImport({ isSuccess: true, resolution });
 			}
 			if (!workspaceId && resolution !== 'copy') {
 				return { error: '未选择已有资源包', isSuccess: false };
@@ -1522,12 +1718,11 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 					}
 					const result = await openWorkspace(targetWorkspaceId);
 					if (result.isSuccess || result.isLeaseConflict) {
-						pendingImportRef.current = null;
-						setDuplicateIntent(null);
+						return completePendingImport({ ...result, resolution });
 					} else if (storageModeRef.current === 'memory') {
 						await refreshPendingImportCandidates();
 					}
-					return result;
+					return { ...result, resolution };
 				}
 				if (resolution === 'replace') {
 					await flushCurrentWorkspace();
@@ -1584,8 +1779,6 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 						preparedController.dispose();
 						preparedController = null;
 					}
-					pendingImportRef.current = null;
-					setDuplicateIntent(null);
 					if (isActiveTarget && activeLeaseId) {
 						publishLoadedWorkspace(
 							loaded,
@@ -1596,21 +1789,24 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 						restoreCurrentLifecycle();
 					}
 					await refreshSummaries(true);
-					return {
+					return completePendingImport({
 						isSuccess: true,
+						resolution,
 						workspaceId: loaded.workspace.id,
-					};
+					});
 				}
 				await flushCurrentWorkspace();
 				const loaded = await repositoryRef.current.createFromArchive({
 					...pendingImport.input,
 					displayName: `${pendingDisplayName}（副本）`,
 				});
-				pendingImportRef.current = null;
-				setDuplicateIntent(null);
 				await refreshSummaries(true);
 				restoreCurrentLifecycle();
-				return { isSuccess: true, workspaceId: loaded.workspace.id };
+				return completePendingImport({
+					isSuccess: true,
+					resolution,
+					workspaceId: loaded.workspace.id,
+				});
 			} catch (error) {
 				const fallbackResult = shouldUseMemoryFallback(error)
 					? await safelyFallbackToMemory(error)
@@ -1628,14 +1824,13 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 									...pendingImport.input,
 									displayName: `${pendingDisplayName}（副本）`,
 								});
-							pendingImportRef.current = null;
-							setDuplicateIntent(null);
 							await refreshSummaries(true);
 							restoreCurrentLifecycle();
-							return {
+							return completePendingImport({
 								isSuccess: true,
+								resolution,
 								workspaceId: loaded.workspace.id,
-							};
+							});
 						}
 						await refreshPendingImportCandidates();
 					} catch (fallbackError) {
@@ -1646,6 +1841,7 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 			}
 		},
 		[
+			completePendingImport,
 			createLeaseController,
 			duplicateIntent?.displayName,
 			flushCurrentWorkspace,
@@ -1683,7 +1879,8 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 			finishWorkspaceOpen(
 				current,
 				result.lease.leaseId,
-				checkpointSnapshot
+				checkpointSnapshot,
+				{}
 			);
 			const ownerId = workspaceOwnerIdRef.current;
 			if (ownerId) {
@@ -1719,14 +1916,26 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 		safelyFallbackToMemory,
 	]);
 
-	const resolveLeaseLoss = useCallback(() => {
-		const currentLeaseLoss = leaseLossRef.current;
-		if (!currentLeaseLoss) return;
-		clearActiveWorkspaceState();
-		const resolvedLeaseLoss = { ...currentLeaseLoss, isResolved: true };
-		leaseLossRef.current = resolvedLeaseLoss;
-		setLeaseLoss(resolvedLeaseLoss);
-	}, [clearActiveWorkspaceState]);
+	const consumeLeaseLossResolution = useCallback(() => {
+		const resolution = leaseLossResolutionRef.current;
+		leaseLossResolutionRef.current = null;
+		setLeaseLossResolution(null);
+		return resolution;
+	}, []);
+
+	const resolveLeaseLoss = useCallback(
+		(resolution: IWorkspaceLeaseLossResolution) => {
+			const currentLeaseLoss = leaseLossRef.current;
+			if (!currentLeaseLoss) return;
+			leaseLossResolutionRef.current = resolution;
+			setLeaseLossResolution(resolution);
+			clearActiveWorkspaceState();
+			const resolvedLeaseLoss = { ...currentLeaseLoss, isResolved: true };
+			leaseLossRef.current = resolvedLeaseLoss;
+			setLeaseLoss(resolvedLeaseLoss);
+		},
+		[clearActiveWorkspaceState]
+	);
 
 	const discardLeaseLossChanges = useCallback(async () => {
 		if (!leaseLossRef.current || leaseLossRef.current.isResolved) {
@@ -1741,7 +1950,7 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 		} catch (error) {
 			setStorageError(describeError(error));
 		}
-		resolveLeaseLoss();
+		resolveLeaseLoss({ action: 'discard' });
 		return { isSuccess: true };
 	}, [refreshSummaries, resolveLeaseLoss]);
 
@@ -1792,7 +2001,10 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 		} catch (error) {
 			setStorageError(describeError(error));
 		}
-		resolveLeaseLoss();
+		resolveLeaseLoss({
+			action: 'save-copy',
+			workspaceId: loaded.workspace.id,
+		});
 		return { isSuccess: true, workspaceId: loaded.workspace.id };
 	}, [
 		installRepository,
@@ -2084,6 +2296,7 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 			activeWorkspace,
 			clearPendingWorkspaceExport,
 			closeWorkspace,
+			consumeLeaseLossResolution,
 			continueRecovery,
 			createWorkspace,
 			discardLeaseLossChanges,
@@ -2098,12 +2311,14 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 			isRetryingStorage,
 			leaseConflict,
 			leaseLoss,
+			leaseLossResolution,
 			lifecycleStatus,
 			openLastWorkspace,
 			openWorkspace,
 			openWorkspaceForExport,
 			pendingExportWorkspaceId,
 			promoteActiveCheckpoint,
+			readWorkspaceSnapshot,
 			recoveryWorkspace,
 			removeWorkspace,
 			requestWorkspaceExport,
@@ -2118,12 +2333,15 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 			storageError,
 			storageMode,
 			takeOverWorkspace,
+			workspaceCatalogGeneration,
 			workspaces,
+			yieldActiveWorkspace,
 		}),
 		[
 			activeWorkspace,
 			clearPendingWorkspaceExport,
 			closeWorkspace,
+			consumeLeaseLossResolution,
 			continueRecovery,
 			createWorkspace,
 			discardLeaseLossChanges,
@@ -2138,12 +2356,14 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 			isRetryingStorage,
 			leaseConflict,
 			leaseLoss,
+			leaseLossResolution,
 			lifecycleStatus,
 			openLastWorkspace,
 			openWorkspace,
 			openWorkspaceForExport,
 			pendingExportWorkspaceId,
 			promoteActiveCheckpoint,
+			readWorkspaceSnapshot,
 			recoveryWorkspace,
 			removeWorkspace,
 			requestWorkspaceExport,
@@ -2158,7 +2378,9 @@ export function ResourceWorkspaceProvider({ children }: PropsWithChildren) {
 			storageError,
 			storageMode,
 			takeOverWorkspace,
+			workspaceCatalogGeneration,
 			workspaces,
+			yieldActiveWorkspace,
 		]
 	);
 

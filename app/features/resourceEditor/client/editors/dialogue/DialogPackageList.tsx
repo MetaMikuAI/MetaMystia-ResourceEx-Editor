@@ -279,7 +279,7 @@ function TreeGroup({
 				const count = countTreeItems(childNode);
 
 				return (
-					<div key={key}>
+					<div key={key} className="flex flex-col gap-1">
 						<GroupHeader
 							label={key}
 							count={count}
@@ -487,7 +487,7 @@ export const DialogPackageList = memo<DialogPackageListProps>(
 						<>
 							{/* 符合命名规范的分组树 */}
 							{hasConforming && (
-								<div>
+								<div className="flex flex-col gap-1">
 									<GroupHeader
 										label={packLabelPrefix}
 										count={countTreeItems(conforming)}
@@ -521,7 +521,7 @@ export const DialogPackageList = memo<DialogPackageListProps>(
 
 							{/* 不符合命名规范的条目 */}
 							{hasNonConforming && (
-								<div>
+								<div className="flex flex-col gap-1">
 									{hasConforming && (
 										<div className="my-1 border-t border-divider" />
 									)}

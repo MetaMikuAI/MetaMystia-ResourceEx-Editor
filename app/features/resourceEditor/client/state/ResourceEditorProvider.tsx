@@ -34,7 +34,10 @@ import {
 } from '@/features/resourceEditor/client/workspaces/workspaceEditorState';
 
 import type {
+	IResourceEditorBatchMutationInput,
+	IResourceEditorBatchMutationResult,
 	IResourceEditorExportResult,
+	TResourceEditorMutationSnapshot,
 	TResourceExportStatus,
 } from './contracts';
 import { runResourcePackExport } from './runResourcePackExport';
@@ -54,6 +57,7 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 		activeWorkspace,
 		flushActiveSave,
 		isExportSnapshot,
+		leaseLoss,
 		promoteActiveCheckpoint,
 		retryActiveSave,
 		saveActiveSnapshot,
@@ -75,15 +79,18 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 	const [isExporting, setIsExporting] = useState(false);
 	const [isLocalSavePending, setIsLocalSavePending] = useState(false);
 	const [revision, setRevision] = useState(0);
+	const activeWorkspaceIdRef = useRef<string | null>(null);
 	const editorStateRef = useRef(createEmptyWorkspaceEditorState());
 	const hasLicenseFileRef = useRef(false);
 	const isExportingRef = useRef(false);
 	const isExportSnapshotRef = useRef(isExportSnapshot);
 	const isMountedRef = useRef(false);
 	const licenseRef = useRef(license);
+	const leaseLossRef = useRef(leaseLoss);
 	const resourcePackRef = useRef(resourcePack);
 	const revisionRef = useRef(revision);
 	isExportSnapshotRef.current = isExportSnapshot;
+	leaseLossRef.current = leaseLoss;
 	const bumpRevision = useCallback(() => {
 		const nextRevision = revisionRef.current + 1;
 		revisionRef.current = nextRevision;
@@ -101,6 +108,7 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 		assetState,
 		copyAssets: copyStoredAssets,
 		createAssetFolder: createStoredAssetFolder,
+		getAssetGeneration,
 		getAssetSnapshot,
 		getAssetUrl,
 		isAssetGenerationCurrent,
@@ -109,6 +117,7 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 		removeAssets: removeStoredAssets,
 		removeAssetFolders: removeStoredAssetFolders,
 		replaceAssets,
+		replaceAssetSnapshot,
 		updateAsset: updateStoredAsset,
 		updateAssets: updateStoredAssets,
 	} = useAssetStore(markDirty);
@@ -209,6 +218,96 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 			markDirty();
 		},
 		[markDirty]
+	);
+
+	const applyWorkspaceMutation = useCallback(
+		(
+			input: IResourceEditorBatchMutationInput
+		): IResourceEditorBatchMutationResult => {
+			if (!isMountedRef.current) {
+				return {
+					error: RESOURCE_EDITOR_UNMOUNTED_ERROR,
+					isSuccess: false,
+				};
+			}
+			if (isExportSnapshotRef.current) {
+				return {
+					error: RESOURCE_EDITOR_EXPORT_SNAPSHOT_ERROR,
+					isSuccess: false,
+				};
+			}
+			const workspaceId = activeWorkspaceIdRef.current;
+			if (!workspaceId) {
+				return { error: '当前没有可编辑的资源包', isSuccess: false };
+			}
+			if (leaseLossRef.current) {
+				return {
+					error: '当前页面已失去资源包编辑权',
+					isSuccess: false,
+				};
+			}
+			if (revisionRef.current !== input.expectedRevision) {
+				return {
+					error: '资源内容已变化，请重新操作',
+					isSuccess: false,
+				};
+			}
+
+			const assetGeneration = getAssetGeneration();
+			const assets = getAssetSnapshot();
+			const current = {
+				...assets,
+				editorState: editorStateRef.current,
+				hasLicenseFile: hasLicenseFileRef.current,
+				license: licenseRef.current,
+				resourcePack: resourcePackRef.current,
+			};
+			let next: TResourceEditorMutationSnapshot;
+			try {
+				next = input.mutate(current);
+			} catch (error) {
+				return { error: describeError(error), isSuccess: false };
+			}
+
+			const canCommit = () =>
+				isMountedRef.current &&
+				!isExportSnapshotRef.current &&
+				!leaseLossRef.current &&
+				activeWorkspaceIdRef.current === workspaceId &&
+				revisionRef.current === input.expectedRevision &&
+				getAssetGeneration() === assetGeneration;
+			if (!canCommit()) {
+				return {
+					error: '资源内容已变化，请重新操作',
+					isSuccess: false,
+				};
+			}
+			const assetResult = replaceAssetSnapshot({
+				canCommit,
+				expectedGeneration: assetGeneration,
+				files: next.files,
+				folders: next.folders,
+			});
+			if (!assetResult.isSuccess) return assetResult;
+
+			editorStateRef.current = next.editorState;
+			hasLicenseFileRef.current = next.hasLicenseFile;
+			licenseRef.current = next.license;
+			resourcePackRef.current = next.resourcePack;
+			setLicense(next.license);
+			setResourcePack(next.resourcePack);
+			const nextRevision = bumpRevision();
+			setHasChangesSinceCheckpoint(true);
+			setIsCurrentExported(false);
+			setIsLocalSavePending(true);
+			return { isSuccess: true, revision: nextRevision };
+		},
+		[
+			bumpRevision,
+			getAssetGeneration,
+			getAssetSnapshot,
+			replaceAssetSnapshot,
+		]
 	);
 
 	const clearGuestDrafts = useCallback((characterId: number) => {
@@ -328,10 +427,15 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 		},
 		[getAssetSnapshot]
 	);
+	const readCurrentWorkspaceSnapshot = useCallback(
+		() => readCurrentSnapshot(revisionRef.current),
+		[readCurrentSnapshot]
+	);
 
 	useEffect(() => {
 		if (!activeWorkspace) {
 			editorStateRef.current = createEmptyWorkspaceEditorState();
+			activeWorkspaceIdRef.current = null;
 			setActiveWorkspaceId(null);
 			setIsLocalSavePending(false);
 			return;
@@ -357,6 +461,7 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 		);
 		setIsCurrentExported(workspace.isCurrentExported);
 		setIsLocalSavePending(false);
+		activeWorkspaceIdRef.current = workspace.id;
 		setActiveWorkspaceId(workspace.id);
 	}, [activeWorkspace, activeWorkspaceId, replaceAssets]);
 
@@ -468,6 +573,7 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 	const value = useMemo(
 		() => ({
 			activeWorkspaceId,
+			applyWorkspaceMutation,
 			assets: assetState,
 			clearGuestDrafts,
 			copyAssets,
@@ -485,6 +591,7 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 			localSaveError: saveError,
 			localSaveStatus: saveStatus,
 			moveAssets,
+			readCurrentWorkspaceSnapshot,
 			removeAsset,
 			removeAssets,
 			removeAssetFolders,
@@ -502,6 +609,7 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 		}),
 		[
 			activeWorkspaceId,
+			applyWorkspaceMutation,
 			assetState,
 			clearGuestDrafts,
 			copyAssets,
@@ -517,6 +625,7 @@ export function ResourceEditorProvider({ children }: PropsWithChildren) {
 			isLocalSavePending,
 			license,
 			moveAssets,
+			readCurrentWorkspaceSnapshot,
 			removeAsset,
 			removeAssets,
 			removeAssetFolders,

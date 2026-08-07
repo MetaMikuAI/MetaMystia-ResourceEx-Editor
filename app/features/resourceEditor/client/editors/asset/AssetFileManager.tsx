@@ -118,7 +118,7 @@ function FilePreview({ entry }: { entry: AssetEntry }) {
 			<img
 				src={entry.url}
 				alt={entry.name}
-				className="h-full w-full object-contain"
+				className="image-rendering-pixelated h-full w-full object-contain"
 				draggable={false}
 			/>
 		);
@@ -1702,7 +1702,7 @@ export const AssetFileManager = memo<AssetFileManagerProps>(
 											<img
 												src={entry.url}
 												alt={entry.name}
-												className="h-full w-full object-contain"
+												className="image-rendering-pixelated h-full w-full object-contain"
 												draggable={false}
 											/>
 										) : (
