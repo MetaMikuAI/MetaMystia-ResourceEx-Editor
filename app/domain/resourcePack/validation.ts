@@ -888,7 +888,12 @@ export function validateResourcePackRules(
 		id: number,
 		owner: string
 	): void {
-		if (!Number.isFinite(id) || !Number.isInteger(id) || id < 0) {
+		const isBuiltInIngredientId = kind === 'Ingredient' && id === -1;
+		if (
+			!Number.isFinite(id) ||
+			!Number.isInteger(id) ||
+			(id < 0 && !isBuiltInIngredientId)
+		) {
 			reportDanglingReference(`${owner}引用了无效的${kind} ID（${id}）`);
 			return;
 		}
