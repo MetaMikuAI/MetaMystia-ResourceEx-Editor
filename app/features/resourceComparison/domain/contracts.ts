@@ -109,6 +109,7 @@ export type TComparisonReferenceKind =
 	| 'event'
 	| 'food'
 	| 'ingredient'
+	| 'item'
 	| 'mission'
 	| 'recipe';
 

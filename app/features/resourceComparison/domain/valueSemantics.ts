@@ -75,6 +75,7 @@ const ORDERED_ARRAY_PATHS = [
 	'eventNodes[].scheduledEvent.trigger.labels',
 	'eventNodes[].postRewards[].rewardIntArray',
 	'eventNodes[].rewards[].rewardIntArray',
+	'gifts',
 	'merchants[].merchandise',
 	'merchants[].nullDialogPackageNames',
 	'merchants[].welcomeDialogPackageNames',

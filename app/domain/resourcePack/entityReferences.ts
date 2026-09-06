@@ -5,7 +5,12 @@ import type { EventNodeTrigger } from './contracts/event';
 import type { MissionCondition, MissionReward } from './contracts/mission';
 import type { ResourceEx } from './contracts/resourceEx';
 
-export type TItemReferenceKind = 'Beverage' | 'Food' | 'Ingredient' | 'Recipe';
+export type TItemReferenceKind =
+	| 'Beverage'
+	| 'Food'
+	| 'Ingredient'
+	| 'Item'
+	| 'Recipe';
 
 export type TLabelReferenceKind = 'DialogPackage' | 'Event' | 'Mission';
 
@@ -102,6 +107,12 @@ export function remapResourcePackItemReferences(
 ): ResourceEx {
 	if (fromId === toId) return resourcePack;
 	const next = cloneJsonObject(resourcePack);
+
+	if (kind === 'Item') {
+		(next.gifts ?? []).forEach((gift) => {
+			if (gift.itemId === fromId) gift.itemId = toId;
+		});
+	}
 
 	next.recipes.forEach((recipe) => {
 		if (kind === 'Food') {
@@ -270,6 +281,13 @@ export function remapResourcePackLabelReferences(
 		});
 	});
 	if (kind === 'DialogPackage') {
+		(next.gifts ?? []).forEach((gift) => {
+			gift.dialogPackageName = remapString(
+				gift.dialogPackageName,
+				fromLabel,
+				toLabel
+			);
+		});
 		next.merchants.forEach((merchant) => {
 			remapLabelArray(
 				merchant.welcomeDialogPackageNames,

@@ -59,6 +59,7 @@ const NAV_GROUPS = [
 			{ href: '/character', label: '稀客' },
 			{ href: '/dialogue', label: '对话' },
 			{ href: '/merchant', label: '商人' },
+			{ href: '/gift', label: '礼物邮箱' },
 		],
 	},
 	{

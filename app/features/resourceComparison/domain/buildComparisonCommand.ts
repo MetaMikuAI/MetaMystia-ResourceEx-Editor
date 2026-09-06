@@ -41,7 +41,12 @@ const ENTITY_REFERENCE_DESCRIPTORS: readonly IEntityReferenceDescriptor[] = [
 		referencedKind: 'character',
 		stableKey: 'id',
 	},
-	{ collection: 'clothes', ownerKind: 'clothes', stableKey: 'id' },
+	{
+		collection: 'clothes',
+		ownerKind: 'clothes',
+		referencedKind: 'item',
+		stableKey: 'id',
+	},
 	{
 		collection: 'dialogPackages',
 		ownerKind: 'dialogPackage',
@@ -90,6 +95,7 @@ const REFERENCE_KIND_MAP = {
 	event: 'event',
 	food: 'food',
 	ingredient: 'ingredient',
+	item: 'item',
 	mission: 'mission',
 	recipe: 'recipe',
 } as const satisfies Record<

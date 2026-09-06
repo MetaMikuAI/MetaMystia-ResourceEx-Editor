@@ -250,6 +250,15 @@ function createNavigationTarget(
 	fieldPath: readonly TComparisonPathSegment[],
 	stableKey?: number | string
 ): IResourceEditorNavigationTarget | undefined {
+	if (fieldPath[0] === 'gifts') {
+		// 礼物只有顺序，没有稳定标识；旧快照的索引不能用于选择当前条目。
+		return {
+			entityKind: 'gift',
+			fieldPath: Object.freeze(['gifts']),
+			route: '/gift',
+			stableKey: 'gifts',
+		};
+	}
 	if (
 		stableKey !== undefined &&
 		isResourceEditorCollection(input.semanticPath)
@@ -648,10 +657,16 @@ export function compareResourcePacks(
 		fieldPath: [],
 		kind: 'root',
 		label: '资源包',
-		leftValue: createPresentComparisonValue(leftResourcePack),
+		leftValue: createPresentComparisonValue({
+			...leftResourcePack,
+			gifts: leftResourcePack.gifts ?? [],
+		}),
 		parentId: null,
 		rawFieldName: null,
-		rightValue: createPresentComparisonValue(rightResourcePack),
+		rightValue: createPresentComparisonValue({
+			...rightResourcePack,
+			gifts: rightResourcePack.gifts ?? [],
+		}),
 		semanticPath: '',
 	});
 	const root = options.includeUnchanged

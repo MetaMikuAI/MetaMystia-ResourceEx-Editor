@@ -15,7 +15,7 @@ export interface IComparisonEntityDescriptor {
 	collection: TResourceEntityCollection;
 	displayField: string;
 	label: string;
-	stableKey: TComparisonStableKey;
+	stableKey?: TComparisonStableKey;
 }
 
 export interface IComparisonNestedEntityDescriptor {
@@ -62,6 +62,7 @@ export const RESOURCE_ENTITY_DESCRIPTORS = [
 		label: '料理',
 		stableKey: 'id',
 	},
+	{ collection: 'gifts', displayField: 'title', label: '礼物邮箱' },
 	{
 		collection: 'ingredients',
 		displayField: 'name',

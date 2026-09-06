@@ -53,7 +53,10 @@ export function cloneComparisonContentSnapshot(
 		folders: [...snapshot.folders],
 		hasLicenseFile: snapshot.hasLicenseFile,
 		license: snapshot.license,
-		resourcePack: cloneValue(snapshot.resourcePack),
+		resourcePack: {
+			...cloneValue(snapshot.resourcePack),
+			gifts: cloneValue(snapshot.resourcePack.gifts ?? []),
+		},
 	};
 }
 
@@ -251,7 +254,7 @@ export function applyComparisonNodeChange(
 		? node.leftValue.value
 		: undefined;
 	const mutation = mutateValueAtPath(
-		current.resourcePack,
+		next.resourcePack,
 		node.fieldPath,
 		commandKind,
 		desiredValue

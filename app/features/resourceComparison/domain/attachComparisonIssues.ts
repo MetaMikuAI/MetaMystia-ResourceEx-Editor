@@ -23,7 +23,7 @@ export interface IAttachComparisonIssuesOptions {
 
 interface IReferenceOwnerDescriptor {
 	collection: string;
-	stableKey: string;
+	stableKey?: string;
 }
 
 const VALIDATION_CATEGORY_COLLECTIONS = {
@@ -32,6 +32,8 @@ const VALIDATION_CATEGORY_COLLECTIONS = {
 	商人: 'merchants',
 	对话动作: 'dialogPackages',
 	对话包: 'dialogPackages',
+	礼物: 'gifts',
+	礼物邮箱: 'gifts',
 	衣服: 'clothes',
 	衣服小人: 'clothes',
 	角色: 'characters',
@@ -54,6 +56,7 @@ const REFERENCE_OWNER_DESCRIPTORS = {
 	dialogPackage: { collection: 'dialogPackages', stableKey: 'name' },
 	event: { collection: 'eventNodes', stableKey: 'label' },
 	food: { collection: 'foods', stableKey: 'id' },
+	gift: { collection: 'gifts' },
 	ingredient: { collection: 'ingredients', stableKey: 'id' },
 	merchant: { collection: 'merchants', stableKey: 'key' },
 	mission: { collection: 'missionNodes', stableKey: 'label' },
@@ -72,6 +75,7 @@ const COMPARISON_REFERENCE_KINDS = {
 	event: 'event',
 	food: 'food',
 	ingredient: 'ingredient',
+	item: 'item',
 	mission: 'mission',
 	recipe: 'recipe',
 } as const satisfies Record<
@@ -185,10 +189,12 @@ function getReferenceOwnerFieldPath(
 	const descriptor = REFERENCE_OWNER_DESCRIPTORS[location.ownerKind];
 	return Object.freeze([
 		descriptor.collection,
-		createComparisonStableKeyPathSegment(
-			descriptor.stableKey,
-			location.ownerKey
-		),
+		'stableKey' in descriptor
+			? createComparisonStableKeyPathSegment(
+					descriptor.stableKey,
+					location.ownerKey
+				)
+			: location.ownerKey,
 		...location.fieldPath,
 	]);
 }

@@ -18,6 +18,7 @@ import { EditorCollectionPanel } from '@/features/resourceEditor/client/componen
 import { ErrorBadge } from '@/features/resourceEditor/client/components/status/ErrorBadge';
 import { WarningBadge } from '@/features/resourceEditor/client/components/status/WarningBadge';
 import { usePackLabelPrefix } from '@/features/resourceEditor/client/hooks/useLabelPrefixValidation';
+import { useResourceEditor } from '@/features/resourceEditor/client/state/useResourceEditor';
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -204,6 +205,12 @@ function DialogTreeItem({
 	onSelect: () => void;
 	onRemove: () => void;
 }) {
+	const { resourcePack } = useResourceEditor();
+	const giftTitles = (resourcePack.gifts ?? []).flatMap((gift, index) =>
+		gift.dialogPackageName === item.pkg.name
+			? [`${index + 1}. ${gift.title || '未命名礼物'}`]
+			: []
+	);
 	return (
 		<EditorCollectionItem
 			isInvalid={isDuplicate}
@@ -213,6 +220,11 @@ function DialogTreeItem({
 				<SectionDeleteButton
 					iconOnly
 					confirmTitle="确定要删除这个对话包吗？"
+					confirmDescription={
+						giftTitles.length > 0
+							? `以下礼物仍绑定此对话：${giftTitles.join('、')}。删除后请修改对应礼物。`
+							: undefined
+					}
 					onPress={onRemove}
 				>
 					删除对话包

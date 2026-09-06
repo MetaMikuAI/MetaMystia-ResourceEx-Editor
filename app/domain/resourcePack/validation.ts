@@ -13,6 +13,7 @@ import {
 import type { EventData, EventNodeTrigger } from './contracts/event';
 import type { MissionReward } from './contracts/mission';
 import type { ResourceEx } from './contracts/resourceEx';
+import { validateGift } from './giftValidation';
 
 export type IssueSeverity = 'error' | 'warning';
 
@@ -43,6 +44,16 @@ export function validateResourcePackRules(
 	const checkedAssetReferences = new Set<string>();
 	const packLabel = data.packInfo.label;
 	const prefix = packLabel ? `_${packLabel}_` : '';
+
+	(data.gifts ?? []).forEach((gift, index) => {
+		for (const issue of validateGift(gift, data)) {
+			issues.push({
+				severity: issue.severity,
+				category: '礼物邮箱',
+				message: `礼物#${index + 1}“${gift.title || '未命名礼物'}”：${issue.message}`,
+			});
+		}
+	});
 
 	// ── Pack Info ──────────────────────────────────────────
 	if (!packLabel) {

@@ -11,6 +11,7 @@ export type TResourcePackReferenceKind =
 	| 'event'
 	| 'food'
 	| 'ingredient'
+	| 'item'
 	| 'mission'
 	| 'recipe';
 
@@ -21,6 +22,7 @@ export type TResourcePackReferenceOwnerKind =
 	| 'dialogPackage'
 	| 'event'
 	| 'food'
+	| 'gift'
 	| 'ingredient'
 	| 'merchant'
 	| 'mission'
@@ -45,12 +47,13 @@ const ITEM_REFERENCE_KIND_MAP = {
 	Beverage: 'beverage',
 	Food: 'food',
 	Ingredient: 'ingredient',
+	Item: 'item',
 	Recipe: 'recipe',
 } as const satisfies Record<
 	string,
 	Extract<
 		TResourcePackReferenceKind,
-		'beverage' | 'food' | 'ingredient' | 'recipe'
+		'beverage' | 'food' | 'ingredient' | 'item' | 'recipe'
 	>
 >;
 
@@ -59,7 +62,7 @@ const itemReferenceKindsByName: Readonly<
 		string,
 		Extract<
 			TResourcePackReferenceKind,
-			'beverage' | 'food' | 'ingredient' | 'recipe'
+			'beverage' | 'food' | 'ingredient' | 'item' | 'recipe'
 		>
 	>
 > = ITEM_REFERENCE_KIND_MAP;
@@ -245,6 +248,24 @@ export function collectResourcePackReferenceLocations(
 	resourcePack: ResourceEx
 ): readonly IResourcePackReferenceLocation[] {
 	const locations: IResourcePackReferenceLocation[] = [];
+
+	(resourcePack.gifts ?? []).forEach((gift, index) => {
+		const owner = { key: index, kind: 'gift' } as const;
+		addReference(
+			locations,
+			owner,
+			['itemId'],
+			'item',
+			gift.itemId ?? undefined
+		);
+		addReference(
+			locations,
+			owner,
+			['dialogPackageName'],
+			'dialogPackage',
+			gift.dialogPackageName
+		);
+	});
 
 	resourcePack.ingredients.forEach((ingredient) =>
 		addAssetReference(

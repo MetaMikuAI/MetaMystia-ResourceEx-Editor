@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from 'react';
 
 import type { Clothes } from '@/domain/resourcePack/contracts/items';
+import { remapResourcePackItemReferences } from '@/domain/resourcePack/entityReferences';
 
 import {
 	EditorWorkspace,
@@ -100,14 +101,21 @@ export function ClothesEditorScreen() {
 			if (index === null) {
 				return;
 			}
-			const newClothesList = [...(data.clothes || [])];
-			newClothesList[index] = {
-				...newClothesList[index],
-				...updates,
-			} as Clothes;
-			updateResourcePack(() => ({ ...data, clothes: newClothesList }));
+			updateResourcePack((current) => {
+				const previous = current.clothes[index];
+				if (!previous) return current;
+				const clothes = [...current.clothes];
+				const updated = { ...previous, ...updates };
+				clothes[index] = updated;
+				return remapResourcePackItemReferences(
+					{ ...current, clothes },
+					'Item',
+					previous.id,
+					updated.id
+				);
+			});
 		},
-		[data, updateResourcePack]
+		[updateResourcePack]
 	);
 
 	const selectedClothes = useMemo(

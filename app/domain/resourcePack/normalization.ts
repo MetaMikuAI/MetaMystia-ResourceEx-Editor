@@ -23,6 +23,7 @@ import type {
 	EventNodeTrigger,
 	ScheduledEvent,
 } from './contracts/event';
+import type { IGiftConfig } from './contracts/gift';
 import type {
 	Beverage,
 	Clothes,
@@ -47,6 +48,7 @@ import type { IResourcePackWire } from './contracts/resourcePackWire';
 const COLLECTION_KEYS = [
 	'characters',
 	'dialogPackages',
+	'gifts',
 	'ingredients',
 	'foods',
 	'beverages',
@@ -1296,6 +1298,31 @@ function readCollection(
 	return value;
 }
 
+function readGift(value: unknown, path: string): IGiftConfig {
+	const record = value === null ? {} : readRecord(value, path);
+	return {
+		...record,
+		...readOptionalProperty(record, 'itemId', path, (itemId, itemPath) =>
+			itemId === null ? null : readNumber(itemId, itemPath)
+		),
+		allowRepeat:
+			readOptionalValue(record, 'allowRepeat', path, readBoolean) ??
+			false,
+		title:
+			readOptionalValue(record, 'title', path, (title, titlePath) =>
+				title === null ? '' : readString(title, titlePath)
+			) ?? '',
+		dialogPackageName:
+			readOptionalValue(
+				record,
+				'dialogPackageName',
+				path,
+				(name, namePath) =>
+					name === null ? '' : readString(name, namePath)
+			) ?? '',
+	};
+}
+
 export function parseResourcePackWire(input: unknown): IResourcePackWire {
 	const record = readRecord(input, 'ResourceEx');
 	const legacyLabel = readOptionalValue(
@@ -1333,6 +1360,9 @@ export function parseResourcePackWire(input: unknown): IResourcePackWire {
 		dialogPackages: readCollection(record, 'dialogPackages').map(
 			(value, index) =>
 				readDialogPackage(value, `dialogPackages[${index}]`)
+		),
+		gifts: readCollection(record, 'gifts').map((value, index) =>
+			readGift(value, `gifts[${index}]`)
 		),
 		ingredients: readCollection(record, 'ingredients').map((value, index) =>
 			readIngredient(value, `ingredients[${index}]`)
@@ -1467,6 +1497,7 @@ export function normalizeResourcePack(input: unknown): ResourceEx {
 		packInfo: normalizePackInfo(wire),
 		characters: (wire.characters ?? []).map(normalizeCharacter),
 		dialogPackages: [...(wire.dialogPackages ?? [])],
+		gifts: [...(wire.gifts ?? [])],
 		ingredients: [...(wire.ingredients ?? [])],
 		foods: (wire.foods ?? []).map((food) => ({
 			...food,

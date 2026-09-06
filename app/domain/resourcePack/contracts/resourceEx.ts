@@ -1,6 +1,7 @@
 import type { Character } from './character';
 import type { DialogPackage } from './dialogue';
 import type { EventNode } from './event';
+import type { IGiftConfig } from './gift';
 import type { Beverage, Clothes, Food, Ingredient, Recipe } from './items';
 import type { MerchantConfig } from './merchant';
 import type { MissionNode } from './mission';
@@ -21,6 +22,7 @@ export interface ResourceEx {
 	packInfo: PackInfo;
 	characters: Character[];
 	dialogPackages: DialogPackage[];
+	gifts: IGiftConfig[];
 	ingredients: Ingredient[];
 	foods: Food[];
 	beverages: Beverage[];

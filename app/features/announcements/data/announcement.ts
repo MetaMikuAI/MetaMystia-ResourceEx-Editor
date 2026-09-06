@@ -1,9 +1,9 @@
-export const ANNOUNCEMENT_VERSION = 'v0.13.1-2026-08-10';
+export const ANNOUNCEMENT_VERSION = 'v0.14.0-2026-09-06';
 
 export const ANNOUNCEMENT_TITLE = 'MetaMystia ResourceEx Editor公告';
 
 export const ANNOUNCEMENT_SUMMARY =
-	'现在可以把多个资源包保存在浏览器中，自动保存后继续编辑；也可以对比同一资源包的不同版本，再决定如何修改新版。';
+	'新增礼物邮箱编辑：配置礼物标题、Item ID、重复领取规则和绑定对话，支持调整顺序、自动保存和导出。';
 
 export interface IAnnouncementSection {
 	title: string;
@@ -11,6 +11,10 @@ export interface IAnnouncementSection {
 }
 
 export const ANNOUNCEMENT_SECTIONS: IAnnouncementSection[] = [
+	{
+		title: 'v0.14.0 · 礼物邮箱',
+		items: ['可在“角色 → 礼物邮箱”中新增、编辑、删除和调整礼物顺序。'],
+	},
 	{
 		title: '编辑更稳妥',
 		items: [
